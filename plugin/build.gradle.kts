@@ -1,6 +1,7 @@
 plugins {
     id("cleancode.java-conventions")
     `java-gradle-plugin`
+    `maven-publish`
 }
 
 dependencies {
