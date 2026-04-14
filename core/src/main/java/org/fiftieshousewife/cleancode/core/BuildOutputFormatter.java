@@ -102,6 +102,11 @@ public final class BuildOutputFormatter {
         out.append("  ").append(code.name()).append(": ").append(name);
         out.append(" (").append(group.size()).append(")\n");
 
+        final String summary = HeuristicDescriptions.summary(code);
+        if (summary != null) {
+            out.append("  ").append(summary).append('\n');
+        }
+
         final String reference = HeuristicDescriptions.reference(code);
         if (reference != null) {
             out.append("  ").append(reference).append('\n');

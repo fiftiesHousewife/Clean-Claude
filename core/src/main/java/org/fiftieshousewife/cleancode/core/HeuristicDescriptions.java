@@ -450,8 +450,61 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.Ch10_2, "Clean Code Ch.10 'Classes' p.138")
     );
 
+    private static final Map<HeuristicCode, String> SUMMARIES = Map.ofEntries(
+            Map.entry(HeuristicCode.C3, "Delete comments that restate the code."),
+            Map.entry(HeuristicCode.C5, "Delete commented-out code. Source control remembers."),
+            Map.entry(HeuristicCode.E1, "Keep dependencies up to date."),
+            Map.entry(HeuristicCode.F1, "Reduce arguments — three is the practical maximum."),
+            Map.entry(HeuristicCode.F2, "Don't mutate arguments. Return the result."),
+            Map.entry(HeuristicCode.F3, "Split boolean-parameterised methods into two."),
+            Map.entry(HeuristicCode.F4, "Delete uncalled methods."),
+            Map.entry(HeuristicCode.G4, "Don't suppress warnings. Fix the underlying issue."),
+            Map.entry(HeuristicCode.G5, "Eliminate duplication — extract the shared logic."),
+            Map.entry(HeuristicCode.G8, "Reduce public surface. Keep interfaces tight."),
+            Map.entry(HeuristicCode.G9, "Delete dead code."),
+            Map.entry(HeuristicCode.G10, "Declare variables just before their first use."),
+            Map.entry(HeuristicCode.G11, "Pick one verb for each concept and use it consistently."),
+            Map.entry(HeuristicCode.G12, "Delete unused imports, empty statements, and noise."),
+            Map.entry(HeuristicCode.G14, "Move the method to the class whose data it uses."),
+            Map.entry(HeuristicCode.G16, "Nested ternaries obscure intent. Use if/else or a named method."),
+            Map.entry(HeuristicCode.G19, "Extract complex expressions to named intermediate variables."),
+            Map.entry(HeuristicCode.G20, "If you must read the body to know what it does, rename it."),
+            Map.entry(HeuristicCode.G22, "Declare variables final when they don't change."),
+            Map.entry(HeuristicCode.G23, "Replace type-switching with polymorphism or an enum."),
+            Map.entry(HeuristicCode.G24, "Follow the project's formatting conventions."),
+            Map.entry(HeuristicCode.G25, "Extract repeated literals to named constants."),
+            Map.entry(HeuristicCode.G26, "Use precise types — BigDecimal for money, LocalDate for dates."),
+            Map.entry(HeuristicCode.G28, "Extract complex boolean logic to a well-named method."),
+            Map.entry(HeuristicCode.G29, "Rewrite double negatives as positive conditions."),
+            Map.entry(HeuristicCode.G30, "Each function should do exactly one thing."),
+            Map.entry(HeuristicCode.G33, "Extract boundary arithmetic to a named variable."),
+            Map.entry(HeuristicCode.G34, "Section comments mean the method mixes abstraction levels. Extract."),
+            Map.entry(HeuristicCode.G36, "Don't reach through objects. Talk to immediate collaborators only."),
+            Map.entry(HeuristicCode.J1, "Replace wildcard imports with explicit ones."),
+            Map.entry(HeuristicCode.J2, "Use static imports instead of inheriting from a constants interface."),
+            Map.entry(HeuristicCode.J3, "Use enums instead of static final constant groups."),
+            Map.entry(HeuristicCode.N1, "Choose names that reveal intent."),
+            Map.entry(HeuristicCode.N5, "Name length should match scope size. Single-char only in loops."),
+            Map.entry(HeuristicCode.N6, "Drop type prefixes. Modern IDEs make them obsolete."),
+            Map.entry(HeuristicCode.N7, "If a getter has side effects, the name is lying. Rename or split."),
+            Map.entry(HeuristicCode.T1, "Untested code is untrustworthy code. Increase coverage."),
+            Map.entry(HeuristicCode.T2, "Configure and run a coverage tool."),
+            Map.entry(HeuristicCode.T3, "Don't disable tests. Fix them or delete them."),
+            Map.entry(HeuristicCode.T4, "A disabled test is an unresolved question. Answer it."),
+            Map.entry(HeuristicCode.T9, "Slow tests don't get run. Keep them fast."),
+            Map.entry(HeuristicCode.Ch3_1, "Non-trivial private methods should be package-private and tested."),
+            Map.entry(HeuristicCode.Ch7_1, "Don't catch and log. Propagate with context."),
+            Map.entry(HeuristicCode.Ch7_2, "Don't return or check for null. Use Optional or fail fast."),
+            Map.entry(HeuristicCode.Ch10_1, "Classes with more than one responsibility are too big. Split."),
+            Map.entry(HeuristicCode.Ch10_2, "Large records are data clumps. Group fields into smaller types.")
+    );
+
     public static String name(HeuristicCode code) {
         return NAMES.getOrDefault(code, code.name());
+    }
+
+    public static String summary(HeuristicCode code) {
+        return SUMMARIES.get(code);
     }
 
     public static String guidance(HeuristicCode code) {
