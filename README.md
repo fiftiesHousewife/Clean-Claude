@@ -5,7 +5,7 @@
 [![Gradle](https://img.shields.io/badge/Gradle-9.0-blue)](https://gradle.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 26 custom OpenRewrite recipes, normalises all findings into Martin's taxonomy, and produces human-readable output with book references and prescriptive guidance.
+A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 32 custom OpenRewrite recipes, normalises all findings into Martin's taxonomy, and produces human-readable output with book references and prescriptive guidance.
 
 > *"Clean code reads like well-written prose."* -- Robert C. Martin, *Clean Code* (2008)
 
@@ -27,7 +27,11 @@ Every finding is mapped to a specific heuristic from *Clean Code* Chapter 17 ("S
 | G8     | Too Much Information                        | Ch.17 p.291     | VisibilityReductionRecipe, PMD ExcessivePublicCount              |
 | G9     | Dead Code                                   | Ch.17 p.292     | PMD UnusedLocalVariable, SpotBugs UUF_UNUSED_FIELD               |
 | G10    | Vertical Separation                         | Ch.17 p.292     | VerticalSeparationRecipe                                         |
+| G11    | Inconsistency                               | Ch.17 p.292     | InconsistentNamingRecipe                                         |
 | G12    | Clutter                                     | Ch.17 p.293     | PMD/Checkstyle UnusedImports, RedundantImport                    |
+| G14    | Feature Envy                                | Ch.17 p.293     | FeatureEnvyRecipe                                                |
+| G16    | Obscured Intent                             | Ch.17 p.295     | NestedTernaryRecipe                                              |
+| G19    | Use Explanatory Variables                   | Ch.17 p.296     | MissingExplanatoryVariableRecipe                                 |
 | G20    | Function Names Should Say What They Do      | Ch.17 p.297     | PMD UseLocaleWithCaseConversions                                 |
 | G22    | Make Logical Dependencies Physical          | Ch.17 p.298     | Checkstyle FinalLocalVariable                                    |
 | G23    | Prefer Polymorphism to If/Else or Switch    | Ch.17 p.299     | SwitchOnTypeRecipe, StringSwitchRecipe                           |
@@ -36,6 +40,7 @@ Every finding is mapped to a specific heuristic from *Clean Code* Chapter 17 ("S
 | G28    | Encapsulate Conditionals                    | Ch.17 p.301     | EncapsulateConditionalRecipe                                     |
 | G29    | Avoid Negative Conditionals                 | Ch.17 p.302     | NegativeConditionalRecipe                                        |
 | G30    | Functions Should Do One Thing               | Ch.17 p.302     | WhitespaceSplitMethodRecipe, ImperativeLoopRecipe                |
+| G33    | Encapsulate Boundary Conditions             | Ch.17 p.304     | BoundaryConditionRecipe                                          |
 | G34    | Functions Should Descend Only One Level     | Ch.17 p.304     | SectionCommentRecipe                                             |
 | G36    | Avoid Transitive Navigation                 | Ch.17 p.306     | LawOfDemeterRecipe (fluent APIs excluded)                        |
 | J1     | Avoid Long Import Lists                     | Ch.17 p.307     | Checkstyle AvoidStarImport                                       |
@@ -44,6 +49,7 @@ Every finding is mapped to a specific heuristic from *Clean Code* Chapter 17 ("S
 | N1     | Choose Descriptive Names                    | Ch.17 p.309     | Checkstyle LocalVariableName, MethodName, TypeName               |
 | N5     | Use Long Names for Long Scopes             | Ch.17 p.312     | ShortVariableNameRecipe                                          |
 | N6     | Avoid Encodings                             | Ch.17 p.312     | EncodingNamingRecipe                                             |
+| N7     | Names Should Describe Side-Effects          | Ch.17 p.313     | SideEffectNamingRecipe                                           |
 | T1     | Insufficient Tests                          | Ch.17 p.313     | JaCoCo line coverage analysis                                    |
 | T2     | Use a Coverage Tool                         | Ch.17 p.313     | JaCoCo report presence check                                     |
 | T3     | Don't Skip Trivial Tests                    | Ch.17 p.313     | DisabledTestRecipe                                               |
