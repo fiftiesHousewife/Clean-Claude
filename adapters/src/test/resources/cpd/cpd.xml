@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+<duplication lines="25" tokens="150">
+    <file line="10" path="/project/src/main/java/com/example/Foo.java"/>
+    <file line="50" path="/project/src/main/java/com/example/Bar.java"/>
+    <codefragment><![CDATA[
+        // duplicated code here
+    ]]></codefragment>
+</duplication>
+<duplication lines="10" tokens="75">
+    <file line="100" path="/project/src/main/java/com/example/Baz.java"/>
+    <file line="200" path="/project/src/main/java/com/example/Qux.java"/>
+    <codefragment><![CDATA[
+        // smaller duplicate
+    ]]></codefragment>
+</duplication>
+<duplication lines="40" tokens="250">
+    <file line="5" path="/project/src/main/java/com/example/Big.java"/>
+    <file line="80" path="/project/src/main/java/com/example/Large.java"/>
+    <codefragment><![CDATA[
+        // large duplicate
+    ]]></codefragment>
+</duplication>
+</pmd-cpd>

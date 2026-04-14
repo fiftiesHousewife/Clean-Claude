@@ -1,0 +1,16 @@
+[versions]
+junit = "5.10.0"
+javaparser = "3.26.2"
+gson = "2.11.0"
+openrewrite = "8.40.2"
+
+[libraries]
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+javaparser-core = { module = "com.github.javaparser:javaparser-core", version.ref = "javaparser" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+openrewrite-core = { module = "org.openrewrite:rewrite-core", version.ref = "openrewrite" }
+openrewrite-java = { module = "org.openrewrite:rewrite-java", version.ref = "openrewrite" }
+openrewrite-java21 = { module = "org.openrewrite:rewrite-java-21", version.ref = "openrewrite" }
+openrewrite-test = { module = "org.openrewrite:rewrite-test", version.ref = "openrewrite" }

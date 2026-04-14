@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report name="MediumCoverageProject">
+<package name="com/example">
+    <class name="com/example/Mid" sourcefilename="Mid.java">
+        <counter type="LINE" missed="40" covered="60"/>
+        <counter type="BRANCH" missed="5" covered="15"/>
+    </class>
+</package>
+<counter type="LINE" missed="40" covered="60"/>
+<counter type="BRANCH" missed="5" covered="15"/>
+</report>

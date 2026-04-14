@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd xmlns="http://pmd.sourceforge.net/report/2.0.0"
+     version="6.55.0" timestamp="2024-01-15T10:30:00.000">
+<file name="/project/src/main/java/com/example/Foo.java">
+    <violation beginline="15" endline="25" begincolumn="5" endcolumn="6"
+               rule="CyclomaticComplexity" ruleset="Design"
+               priority="3"
+               class="Foo" method="doStuff">
+        The method 'doStuff()' has a cyclomatic complexity of 15.
+    </violation>
+    <violation beginline="42" endline="42" begincolumn="9" endcolumn="30"
+               rule="UnusedLocalVariable" ruleset="Best Practices"
+               priority="4"
+               class="Foo" method="doStuff">
+        Avoid unused local variables such as 'temp'.
+    </violation>
+</file>
+<file name="/project/src/main/java/com/example/Bar.java">
+    <violation beginline="8" endline="12" begincolumn="5" endcolumn="6"
+               rule="EmptyCatchBlock" ruleset="Error Handling"
+               priority="2"
+               class="Bar" method="handle">
+        Avoid empty catch blocks.
+    </violation>
+    <violation beginline="30" endline="30" begincolumn="1" endcolumn="1"
+               rule="CommentedOutCodeLine" ruleset="Documentation"
+               priority="3"
+               class="Bar">
+        This line appears to be commented-out code.
+    </violation>
+</file>
+</pmd>

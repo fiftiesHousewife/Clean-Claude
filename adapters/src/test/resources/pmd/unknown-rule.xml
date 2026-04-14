@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd xmlns="http://pmd.sourceforge.net/report/2.0.0"
+     version="6.55.0" timestamp="2024-01-15T10:30:00.000">
+<file name="/project/src/main/java/com/example/Foo.java">
+    <violation beginline="10" endline="10" begincolumn="1" endcolumn="1"
+               rule="SomeUnknownRule" ruleset="Custom"
+               priority="3"
+               class="Foo" method="test">
+        Some unknown rule violation.
+    </violation>
+</file>
+</pmd>

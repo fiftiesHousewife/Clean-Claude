@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BugCollection version="4.8.0" sequence="0" release="">
+<Project projectName="test-project">
+    <SrcDir>/project/src/main/java</SrcDir>
+</Project>
+<BugInstance type="NP_NULL_ON_SOME_PATH" priority="1" rank="3" category="CORRECTNESS">
+    <ShortMessage>Possible null pointer dereference</ShortMessage>
+    <SourceLine classname="com.example.Foo" start="15" end="15"
+                sourcefile="Foo.java" sourcepath="com/example/Foo.java"/>
+</BugInstance>
+<BugInstance type="DE_MIGHT_IGNORE" priority="2" rank="4" category="BAD_PRACTICE">
+    <ShortMessage>Method might ignore exception</ShortMessage>
+    <SourceLine classname="com.example.Foo" start="30" end="35"
+                sourcefile="Foo.java" sourcepath="com/example/Foo.java"/>
+</BugInstance>
+<BugInstance type="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" priority="2" rank="7" category="BAD_PRACTICE">
+    <ShortMessage>Write to static field from instance method</ShortMessage>
+    <SourceLine classname="com.example.Bar" start="42" end="42"
+                sourcefile="Bar.java" sourcepath="com/example/Bar.java"/>
+</BugInstance>
+<BugInstance type="URF_UNREAD_FIELD" priority="3" rank="12" category="STYLE">
+    <ShortMessage>Unread field</ShortMessage>
+    <SourceLine classname="com.example.Bar" start="5" end="5"
+                sourcefile="Bar.java" sourcepath="com/example/Bar.java"/>
+</BugInstance>
+<BugInstance type="DM_BOXED_PRIMITIVE_FOR_COMPARE" priority="3" rank="15" category="PERFORMANCE">
+    <ShortMessage>Boxed primitive for compare</ShortMessage>
+    <SourceLine classname="com.example.Baz" start="20" end="20"
+                sourcefile="Baz.java" sourcepath="com/example/Baz.java"/>
+</BugInstance>
+<BugInstance type="MS_MUTABLE_ARRAY" priority="2" rank="6" category="MALICIOUS_CODE">
+    <ShortMessage>Mutable array field</ShortMessage>
+    <SourceLine classname="com.example.Baz" start="8" end="8"
+                sourcefile="Baz.java" sourcepath="com/example/Baz.java"/>
+</BugInstance>
+<BugInstance type="UNKNOWN_TYPE" priority="3" rank="10" category="UNKNOWN_CATEGORY">
+    <ShortMessage>Unknown bug type</ShortMessage>
+    <SourceLine classname="com.example.Qux" start="1" end="1"
+                sourcefile="Qux.java" sourcepath="com/example/Qux.java"/>
+</BugInstance>
+</BugCollection>

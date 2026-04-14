@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report name="HighCoverageProject">
+<package name="com/example">
+    <class name="com/example/Good" sourcefilename="Good.java">
+        <counter type="LINE" missed="5" covered="95"/>
+        <counter type="BRANCH" missed="2" covered="18"/>
+    </class>
+</package>
+<counter type="LINE" missed="5" covered="95"/>
+<counter type="BRANCH" missed="2" covered="18"/>
+</report>
