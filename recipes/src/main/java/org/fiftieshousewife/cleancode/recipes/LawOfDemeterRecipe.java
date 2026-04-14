@@ -13,7 +13,17 @@ import java.util.Set;
 
 public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumulator> {
 
-    private static final int CHAIN_DEPTH_THRESHOLD = 3;
+    private static final int DEFAULT_CHAIN_DEPTH_THRESHOLD = 3;
+
+    private final int chainDepthThreshold;
+
+    public LawOfDemeterRecipe() {
+        this(DEFAULT_CHAIN_DEPTH_THRESHOLD);
+    }
+
+    public LawOfDemeterRecipe(final int chainDepthThreshold) {
+        this.chainDepthThreshold = chainDepthThreshold;
+    }
 
     private static final Set<String> FLUENT_METHOD_NAMES = Set.of(
             "append", "add", "put", "set", "with", "and", "or",
@@ -71,7 +81,7 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                 }
 
                 final int depth = chainDepth(m);
-                if (depth >= CHAIN_DEPTH_THRESHOLD && !isFluentChain(m)) {
+                if (depth >= chainDepthThreshold && !isFluentChain(m)) {
                     final String chain = buildChainString(m);
                     acc.rows.add(new Row(
                             findEnclosingClassName(),

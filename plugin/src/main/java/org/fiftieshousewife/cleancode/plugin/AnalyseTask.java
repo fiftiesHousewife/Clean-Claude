@@ -7,6 +7,7 @@ import org.gradle.api.tasks.TaskAction;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 public abstract class AnalyseTask extends DefaultTask {
 
@@ -15,6 +16,10 @@ public abstract class AnalyseTask extends DefaultTask {
         final Path projectRoot = getProject().getProjectDir().toPath();
         final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
         final Path reportsDir = buildDir.resolve("reports");
+
+        final CleanCodeExtension ext = getProject().getExtensions().getByType(CleanCodeExtension.class);
+        final RecipeThresholds thresholds = ext.buildRecipeThresholds();
+        final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
 
         final ProjectContext context = new ProjectContext(
                 projectRoot,
@@ -34,13 +39,30 @@ public abstract class AnalyseTask extends DefaultTask {
                 new JacocoFindingSource(),
                 new SurefireFindingSource(),
                 new DependencyUpdatesFindingSource(),
-                new OpenRewriteFindingSource());
+                new OpenRewriteFindingSource(thresholds));
 
-        final AggregatedReport report = FindingAggregator.aggregate(sources, context);
+        final AggregatedReport fullReport = FindingAggregator.aggregate(sources, context);
+        final AggregatedReport report = filterDisabledRecipes(fullReport, disabledRecipes);
 
         final Path outputDir = buildDir.resolve("reports/clean-code");
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
 
         getLogger().lifecycle(BuildOutputFormatter.format(report));
+    }
+
+    private AggregatedReport filterDisabledRecipes(final AggregatedReport report,
+                                                   final Set<String> disabledRecipes) {
+        if (disabledRecipes.isEmpty()) {
+            return report;
+        }
+        final List<Finding> filtered = report.findings().stream()
+                .filter(f -> !disabledRecipes.contains(f.code().name()))
+                .toList();
+        return new AggregatedReport(
+                filtered,
+                report.coveredCodes(),
+                report.generatedAt(),
+                report.projectName(),
+                report.projectVersion());
     }
 }

@@ -21,6 +21,16 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private static final String TOOL = "openrewrite";
 
+    private final RecipeThresholds thresholds;
+
+    public OpenRewriteFindingSource() {
+        this(RecipeThresholds.defaults());
+    }
+
+    public OpenRewriteFindingSource(final RecipeThresholds thresholds) {
+        this.thresholds = thresholds;
+    }
+
     private static final Set<HeuristicCode> COVERED = Set.of(
             HeuristicCode.F2, HeuristicCode.F3,
             HeuristicCode.C3, HeuristicCode.C5,
@@ -30,6 +40,7 @@ public class OpenRewriteFindingSource implements FindingSource {
             HeuristicCode.G10, HeuristicCode.G23, HeuristicCode.G25,
             HeuristicCode.G28, HeuristicCode.G29,
             HeuristicCode.G30, HeuristicCode.G34, HeuristicCode.G36,
+            HeuristicCode.G4, HeuristicCode.G8,
             HeuristicCode.J2, HeuristicCode.J3,
             HeuristicCode.N5, HeuristicCode.N6,
             HeuristicCode.T3, HeuristicCode.T4);
@@ -68,25 +79,28 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new OutputArgumentRecipe(),
                 new CatchLogContinueRecipe(),
                 new NegativeConditionalRecipe(),
-                new LawOfDemeterRecipe(),
+                new LawOfDemeterRecipe(thresholds.chainDepthThreshold()),
                 new EncapsulateConditionalRecipe(),
-                new NullDensityRecipe(),
-                new ClassLineLengthRecipe(),
-                new LargeRecordRecipe(),
+                new NullDensityRecipe(thresholds.nullCheckDensity()),
+                new ClassLineLengthRecipe(thresholds.classLineCount()),
+                new LargeRecordRecipe(thresholds.recordComponentCount()),
                 new DisabledTestRecipe(),
                 new SwitchOnTypeRecipe(),
                 new CommentedCodeRecipe(),
                 new MumblingCommentRecipe(),
                 new SectionCommentRecipe(),
                 new EncodingNamingRecipe(),
-                new VerticalSeparationRecipe(),
+                new VerticalSeparationRecipe(thresholds.verticalSeparationDistance()),
                 new InheritConstantsRecipe(),
                 new EnumForConstantsRecipe(),
-                new ShortVariableNameRecipe(),
-                new MagicStringRecipe(),
-                new WhitespaceSplitMethodRecipe(),
-                new PrivateMethodTestabilityRecipe(),
-                new StringSwitchRecipe());
+                new ShortVariableNameRecipe(thresholds.shortNameMinLength()),
+                new MagicStringRecipe(thresholds.magicStringMinOccurrences()),
+                new WhitespaceSplitMethodRecipe(thresholds.methodBlankLineSections()),
+                new PrivateMethodTestabilityRecipe(thresholds.privateMethodMinLines()),
+                new StringSwitchRecipe(thresholds.stringSwitchMinCases()),
+                new VisibilityReductionRecipe(),
+                new ImperativeLoopRecipe(),
+                new UncheckedCastRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -121,6 +135,9 @@ public class OpenRewriteFindingSource implements FindingSource {
             case WhitespaceSplitMethodRecipe r -> mapWhitespaceSplit(r.collectedRows());
             case PrivateMethodTestabilityRecipe r -> mapPrivateMethod(r.collectedRows());
             case StringSwitchRecipe r -> mapStringSwitch(r.collectedRows());
+            case VisibilityReductionRecipe r -> mapVisibility(r.collectedRows());
+            case ImperativeLoopRecipe r -> mapImperativeLoop(r.collectedRows());
+            case UncheckedCastRecipe r -> mapUncheckedCast(r.collectedRows());
             default -> List.of();
         };
     }
@@ -293,6 +310,30 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.G23, r.className(), r.lineNumber(),
                         "Switch on String '%s' with %d cases — replace with an enum that encapsulates the behaviour".formatted(
                                 r.selectorName(), r.caseCount())))
+                .toList();
+    }
+
+    private List<Finding> mapVisibility(List<VisibilityReductionRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G8, r.className(), r.lineNumber(),
+                        "Field '%s' is %s and mutable — should be private".formatted(
+                                r.fieldName(), r.currentVisibility())))
+                .toList();
+    }
+
+    private List<Finding> mapImperativeLoop(List<ImperativeLoopRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G30, r.className(), r.lineNumber(),
+                        "Loop in '%s' (%s) can be replaced with a stream operation".formatted(
+                                r.methodName(), r.loopPattern())))
+                .toList();
+    }
+
+    private List<Finding> mapUncheckedCast(List<UncheckedCastRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G4, r.className(), r.lineNumber(),
+                        "@SuppressWarnings(\"unchecked\") on '%s' — redesign to avoid unsafe casts".formatted(
+                                r.memberName())))
                 .toList();
     }
 

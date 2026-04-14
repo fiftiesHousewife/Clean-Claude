@@ -12,7 +12,17 @@ import java.util.List;
 
 public class WhitespaceSplitMethodRecipe extends ScanningRecipe<WhitespaceSplitMethodRecipe.Accumulator> {
 
-    private static final int BLANK_LINE_THRESHOLD = 2;
+    private static final int DEFAULT_BLANK_LINE_THRESHOLD = 2;
+
+    private final int blankLineThreshold;
+
+    public WhitespaceSplitMethodRecipe() {
+        this(DEFAULT_BLANK_LINE_THRESHOLD);
+    }
+
+    public WhitespaceSplitMethodRecipe(final int blankLineThreshold) {
+        this.blankLineThreshold = blankLineThreshold;
+    }
 
     public record Row(String className, String methodName, int blankLineCount, int totalLines, int lineNumber) {}
 
@@ -54,7 +64,7 @@ public class WhitespaceSplitMethodRecipe extends ScanningRecipe<WhitespaceSplitM
                 final int blankLineCount = countInternalBlankLines(lines);
                 final int totalLines = lines.size();
 
-                if (blankLineCount >= BLANK_LINE_THRESHOLD) {
+                if (blankLineCount >= blankLineThreshold) {
                     acc.rows.add(new Row(
                             findEnclosingClassName(),
                             m.getSimpleName(),

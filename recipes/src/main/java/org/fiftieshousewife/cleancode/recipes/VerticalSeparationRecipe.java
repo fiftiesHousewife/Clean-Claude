@@ -12,7 +12,17 @@ import java.util.List;
 
 public class VerticalSeparationRecipe extends ScanningRecipe<VerticalSeparationRecipe.Accumulator> {
 
-    private static final int DISTANCE_THRESHOLD = 5;
+    private static final int DEFAULT_DISTANCE_THRESHOLD = 5;
+
+    private final int distanceThreshold;
+
+    public VerticalSeparationRecipe() {
+        this(DEFAULT_DISTANCE_THRESHOLD);
+    }
+
+    public VerticalSeparationRecipe(final int distanceThreshold) {
+        this.distanceThreshold = distanceThreshold;
+    }
 
     public record Row(String className, String methodName, String variableName,
                       int declarationLine, int firstUseLine, int distance) {}
@@ -59,7 +69,7 @@ public class VerticalSeparationRecipe extends ScanningRecipe<VerticalSeparationR
 
                             if (firstUseLine > 0) {
                                 final int distance = firstUseLine - declLine;
-                                if (distance > DISTANCE_THRESHOLD) {
+                                if (distance > distanceThreshold) {
                                     acc.rows.add(new Row(className, m.getSimpleName(),
                                             varName, declLine, firstUseLine, distance));
                                 }

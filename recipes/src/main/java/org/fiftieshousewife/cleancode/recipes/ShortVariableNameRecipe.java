@@ -13,7 +13,17 @@ import java.util.Set;
 
 public class ShortVariableNameRecipe extends ScanningRecipe<ShortVariableNameRecipe.Accumulator> {
 
-    private static final int MIN_NAME_LENGTH = 2;
+    private static final int DEFAULT_MIN_NAME_LENGTH = 2;
+
+    private final int minNameLength;
+
+    public ShortVariableNameRecipe() {
+        this(DEFAULT_MIN_NAME_LENGTH);
+    }
+
+    public ShortVariableNameRecipe(final int minNameLength) {
+        this.minNameLength = minNameLength;
+    }
 
     private static final Set<String> ALLOWED_SHORT_NAMES = Set.of(
             "i", "j", "k", "x", "y", "z", "e", "ex", "id");
@@ -52,7 +62,7 @@ public class ShortVariableNameRecipe extends ScanningRecipe<ShortVariableNameRec
 
                 v.getVariables().forEach(variable -> {
                     final String name = variable.getSimpleName();
-                    if (name.length() >= MIN_NAME_LENGTH || ALLOWED_SHORT_NAMES.contains(name)) {
+                    if (name.length() >= minNameLength || ALLOWED_SHORT_NAMES.contains(name)) {
                         return;
                     }
                     if (isInsideForLoop() || isInsideLambda() || isMethodParameter()) {
@@ -78,7 +88,7 @@ public class ShortVariableNameRecipe extends ScanningRecipe<ShortVariableNameRec
                         .map(p -> (J.VariableDeclarations) p)
                         .forEach(paramDecl -> paramDecl.getVariables().forEach(param -> {
                             final String name = param.getSimpleName();
-                            if (name.length() >= MIN_NAME_LENGTH || ALLOWED_SHORT_NAMES.contains(name)) {
+                            if (name.length() >= minNameLength || ALLOWED_SHORT_NAMES.contains(name)) {
                                 return;
                             }
                             acc.rows.add(new Row(

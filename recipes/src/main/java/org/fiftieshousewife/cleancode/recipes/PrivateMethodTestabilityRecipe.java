@@ -12,7 +12,17 @@ import java.util.List;
 
 public class PrivateMethodTestabilityRecipe extends ScanningRecipe<PrivateMethodTestabilityRecipe.Accumulator> {
 
-    private static final int MIN_BODY_LINES = 5;
+    private static final int DEFAULT_MIN_BODY_LINES = 5;
+
+    private final int minBodyLines;
+
+    public PrivateMethodTestabilityRecipe() {
+        this(DEFAULT_MIN_BODY_LINES);
+    }
+
+    public PrivateMethodTestabilityRecipe(final int minBodyLines) {
+        this.minBodyLines = minBodyLines;
+    }
 
     public record PrivateMethodTestabilityRow(
             String className,
@@ -61,7 +71,7 @@ public class PrivateMethodTestabilityRecipe extends ScanningRecipe<PrivateMethod
                 }
 
                 final int bodyLineCount = body.getStatements().size();
-                if (bodyLineCount <= MIN_BODY_LINES) {
+                if (bodyLineCount <= minBodyLines) {
                     return m;
                 }
 

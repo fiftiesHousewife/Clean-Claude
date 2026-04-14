@@ -16,7 +16,17 @@ import java.util.Set;
 public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumulator> {
 
     private static final int MIN_LENGTH = 3;
-    private static final int MIN_OCCURRENCES = 2;
+    private static final int DEFAULT_MIN_OCCURRENCES = 2;
+
+    private final int minOccurrences;
+
+    public MagicStringRecipe() {
+        this(DEFAULT_MIN_OCCURRENCES);
+    }
+
+    public MagicStringRecipe(final int minOccurrences) {
+        this.minOccurrences = minOccurrences;
+    }
     private static final Set<String> IGNORED_VALUES = Set.of(
             "UTF-8", "application/json", "text/plain", "text/html",
             "Content-Type", "Accept", "Authorization"
@@ -81,7 +91,7 @@ public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumula
                 occurrences.forEach(occ -> grouped.computeIfAbsent(occ.value(), k -> new ArrayList<>()).add(occ));
 
                 grouped.forEach((value, occs) -> {
-                    if (occs.size() >= MIN_OCCURRENCES) {
+                    if (occs.size() >= minOccurrences) {
                         final int firstLine = occs.getFirst().lineNumber();
                         acc.rows.add(new Row(className, value, occs.size(), firstLine));
                     }

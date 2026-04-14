@@ -12,8 +12,20 @@ import java.util.List;
 
 public class ClassLineLengthRecipe extends ScanningRecipe<ClassLineLengthRecipe.Accumulator> {
 
-    private static final int COMPOSITE_THRESHOLD = 150;
-    private static final int STANDALONE_THRESHOLD = 300;
+    private static final int DEFAULT_COMPOSITE_THRESHOLD = 150;
+    private static final int STANDALONE_MULTIPLIER = 2;
+
+    private final int compositeThreshold;
+    private final int standaloneThreshold;
+
+    public ClassLineLengthRecipe() {
+        this(DEFAULT_COMPOSITE_THRESHOLD);
+    }
+
+    public ClassLineLengthRecipe(final int compositeThreshold) {
+        this.compositeThreshold = compositeThreshold;
+        this.standaloneThreshold = compositeThreshold * STANDALONE_MULTIPLIER;
+    }
 
     public record Row(String className, int lineCount, int lineNumber) {}
 
@@ -47,7 +59,7 @@ public class ClassLineLengthRecipe extends ScanningRecipe<ClassLineLengthRecipe.
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
                 final int lineCount = computeLineCount(c);
 
-                if (lineCount > COMPOSITE_THRESHOLD) {
+                if (lineCount > compositeThreshold) {
                     acc.rows.add(new Row(c.getSimpleName(), lineCount, -1));
                 }
 
@@ -71,10 +83,10 @@ public class ClassLineLengthRecipe extends ScanningRecipe<ClassLineLengthRecipe.
     }
 
     int compositeThreshold() {
-        return COMPOSITE_THRESHOLD;
+        return compositeThreshold;
     }
 
     int standaloneThreshold() {
-        return STANDALONE_THRESHOLD;
+        return standaloneThreshold;
     }
 }

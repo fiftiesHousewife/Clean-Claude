@@ -13,7 +13,17 @@ import java.util.List;
 
 public class LargeRecordRecipe extends ScanningRecipe<LargeRecordRecipe.Accumulator> {
 
-    private static final int COMPONENT_THRESHOLD = 4;
+    private static final int DEFAULT_COMPONENT_THRESHOLD = 4;
+
+    private final int componentThreshold;
+
+    public LargeRecordRecipe() {
+        this(DEFAULT_COMPONENT_THRESHOLD);
+    }
+
+    public LargeRecordRecipe(final int componentThreshold) {
+        this.componentThreshold = componentThreshold;
+    }
 
     public record Row(String className, int componentCount, int lineNumber) {}
 
@@ -30,7 +40,7 @@ public class LargeRecordRecipe extends ScanningRecipe<LargeRecordRecipe.Accumula
 
     @Override
     public String getDescription() {
-        return "Detects records with more than " + COMPONENT_THRESHOLD + " components and no nested Builder class.";
+        return "Detects records with more than " + componentThreshold + " components and no nested Builder class.";
     }
 
     @Override
@@ -51,7 +61,7 @@ public class LargeRecordRecipe extends ScanningRecipe<LargeRecordRecipe.Accumula
                 }
 
                 final int componentCount = countRecordComponents(c);
-                if (componentCount > COMPONENT_THRESHOLD && !hasNestedBuilder(c)) {
+                if (componentCount > componentThreshold && !hasNestedBuilder(c)) {
                     acc.rows.add(new Row(c.getSimpleName(), componentCount, -1));
                 }
 

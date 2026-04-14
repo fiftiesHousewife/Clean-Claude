@@ -14,7 +14,17 @@ import java.util.List;
 
 public class StringSwitchRecipe extends ScanningRecipe<StringSwitchRecipe.Accumulator> {
 
-    private static final int MIN_CASE_COUNT = 3;
+    private static final int DEFAULT_MIN_CASE_COUNT = 3;
+
+    private final int minCaseCount;
+
+    public StringSwitchRecipe() {
+        this(DEFAULT_MIN_CASE_COUNT);
+    }
+
+    public StringSwitchRecipe(final int minCaseCount) {
+        this.minCaseCount = minCaseCount;
+    }
     private static final String JAVA_LANG_STRING = "java.lang.String";
 
     public record Row(
@@ -67,7 +77,7 @@ public class StringSwitchRecipe extends ScanningRecipe<StringSwitchRecipe.Accumu
             private void inspect(J.ControlParentheses<Expression> selector, int caseCount, Accumulator acc) {
                 final Expression selectorExpr = selector.getTree();
 
-                if (!isStringType(selectorExpr) || caseCount < MIN_CASE_COUNT) {
+                if (!isStringType(selectorExpr) || caseCount < minCaseCount) {
                     return;
                 }
 

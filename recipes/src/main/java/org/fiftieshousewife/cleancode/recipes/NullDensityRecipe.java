@@ -14,6 +14,16 @@ public class NullDensityRecipe extends ScanningRecipe<NullDensityRecipe.Accumula
 
     private static final int DEFAULT_THRESHOLD = 3;
 
+    private final int threshold;
+
+    public NullDensityRecipe() {
+        this(DEFAULT_THRESHOLD);
+    }
+
+    public NullDensityRecipe(final int threshold) {
+        this.threshold = threshold;
+    }
+
     public record Row(String className, String methodName, int nullCheckCount, int lineNumber) {}
 
     public static class Accumulator {
@@ -46,7 +56,7 @@ public class NullDensityRecipe extends ScanningRecipe<NullDensityRecipe.Accumula
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
                 final int count = countNullChecks(m);
 
-                if (count >= DEFAULT_THRESHOLD) {
+                if (count >= threshold) {
                     final String className = findEnclosingClassName();
                     acc.rows.add(new Row(className, m.getSimpleName(), count, -1));
                 }
