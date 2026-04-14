@@ -49,7 +49,7 @@ class BuildOutputFormatterTest {
                 () -> assertTrue(output.contains("T1: Insufficient Tests")),
                 () -> assertTrue(output.contains("Boolean parameter")),
                 () -> assertTrue(output.contains("Boolean arguments loudly declare")),
-                () -> assertTrue(output.contains("silently swallow")),
+                () -> assertTrue(output.contains("merely log it")),
                 () -> assertTrue(output.contains("3 findings"))
         );
     }

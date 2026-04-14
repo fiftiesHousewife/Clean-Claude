@@ -65,4 +65,67 @@ class MumblingCommentRecipeTest {
         assertEquals("fetch All Pets", MumblingCommentRecipe.camelToWords("fetchAllPets"));
         assertEquals("get User By Id", MumblingCommentRecipe.camelToWords("getUserById"));
     }
+
+    @Test
+    void ignoresDoubleSlashInsideStringLiteral() {
+        final var recipe = new MumblingCommentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void buildUrl() {
+                        String url = "https://example.com/api";
+                        int x = 1;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty());
+    }
+
+    @Test
+    void ignoresFormattedStringContainingDoubleSlash() {
+        final var recipe = new MumblingCommentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void report(String name, int line) {
+                        String msg = "Mumbling comment in '%s': %s //extra".formatted(name, line);
+                        int x = 1;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty());
+    }
+
+    @Test
+    void ignoresVeryShortComments() {
+        final var recipe = new MumblingCommentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void doSomething() {
+                        int x = 1; // })
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty());
+    }
+
+    @Test
+    void stillDetectsRealMumblingCommentOnLineWithString() {
+        final var recipe = new MumblingCommentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void fetchAllPets() {
+                        String s = "hello"; // fetch all pets
+                        int x = 1;
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size());
+    }
 }

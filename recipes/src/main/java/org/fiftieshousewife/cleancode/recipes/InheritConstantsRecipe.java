@@ -5,6 +5,7 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
 
 import java.util.ArrayList;
@@ -49,6 +50,9 @@ public class InheritConstantsRecipe extends ScanningRecipe<InheritConstantsRecip
                 }
 
                 c.getImplements().forEach(iface -> {
+                    if (!isConstantOnlyInterface(iface)) {
+                        return;
+                    }
                     final String interfaceName = iface instanceof J.Identifier id
                             ? id.getSimpleName()
                             : iface.toString();
@@ -67,5 +71,13 @@ public class InheritConstantsRecipe extends ScanningRecipe<InheritConstantsRecip
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    private static boolean isConstantOnlyInterface(TypeTree iface) {
+        final JavaType type = iface.getType();
+        if (!(type instanceof JavaType.FullyQualified resolved)) {
+            return false;
+        }
+        return resolved.getMethods().isEmpty() && !resolved.getMembers().isEmpty();
     }
 }

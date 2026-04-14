@@ -14,9 +14,13 @@ final class RecipeTestHelper {
     private RecipeTestHelper() {}
 
     static void runAgainst(ScanningRecipe<?> recipe, String source) {
+        runAgainst(recipe, new String[]{source});
+    }
+
+    static void runAgainst(ScanningRecipe<?> recipe, String... sources) {
         final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)
-                .build().parse(source).toList();
+                .build().parse(sources).toList();
         final ExecutionContext ctx = new InMemoryExecutionContext(Throwable::printStackTrace);
         recipe.run(new InMemoryLargeSourceSet(sourceFiles), ctx);
     }

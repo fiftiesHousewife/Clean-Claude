@@ -16,6 +16,8 @@ import java.util.Set;
 
 public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.Accumulator> {
 
+    private static final int MIN_COMMENT_LENGTH = 3;
+
     public record Row(String className, String methodName, String commentPreview, int lineNumber) {}
 
     public static class Accumulator {
@@ -62,12 +64,36 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
             private List<String> extractLineComments(String source) {
                 final List<String> comments = new ArrayList<>();
                 source.lines().forEach(line -> {
-                    final int idx = line.indexOf("//");
+                    final String stripped = stripStringLiterals(line);
+                    final int idx = stripped.indexOf("//");
                     if (idx >= 0) {
-                        comments.add(line.substring(idx + 2).trim());
+                        final String text = stripped.substring(idx + 2).trim();
+                        if (text.length() >= MIN_COMMENT_LENGTH) {
+                            comments.add(text);
+                        }
                     }
                 });
                 return comments;
+            }
+
+            private String stripStringLiterals(String line) {
+                final StringBuilder result = new StringBuilder(line.length());
+                boolean inString = false;
+                for (int i = 0; i < line.length(); i++) {
+                    final char ch = line.charAt(i);
+                    if (ch == '\\' && inString && i + 1 < line.length()) {
+                        i++;
+                        continue;
+                    }
+                    if (ch == '"') {
+                        inString = !inString;
+                        continue;
+                    }
+                    if (!inString) {
+                        result.append(ch);
+                    }
+                }
+                return result.toString();
             }
 
             private boolean isMumbling(String normalisedComment, String methodName, Set<String> paramNames) {

@@ -116,15 +116,15 @@ public class OpenRewriteFindingSource implements FindingSource {
     private List<Finding> mapFlagArgs(List<FlagArgumentRecipe.FlagArgumentRow> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.F3, r.className(),
-                        "Boolean parameter '%s' on method '%s'".formatted(r.paramName(), r.methodName())))
+                        "Method '%s' takes boolean parameter '%s' — split into two methods instead".formatted(r.methodName(), r.paramName())))
                 .toList();
     }
 
     private List<Finding> mapOutputArgs(List<OutputArgumentRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.F2, r.className(), r.lineNumber(),
-                        "Output argument '%s' (%s) on method '%s'".formatted(
-                                r.paramName(), r.paramType(), r.methodName())))
+                        "Method '%s' mutates its argument '%s' (%s) — return the result instead".formatted(
+                                r.methodName(), r.paramName(), r.paramType())))
                 .toList();
     }
 
@@ -224,8 +224,8 @@ public class OpenRewriteFindingSource implements FindingSource {
     private List<Finding> mapVerticalSeparation(List<VerticalSeparationRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G10, r.className(), r.declarationLine(),
-                        "Variable '%s' in '%s' declared %d lines from first use".formatted(
-                                r.variableName(), r.methodName(), r.distance())))
+                        "'%s' is declared in %s() but not used until %d lines later — move the declaration closer to line %d".formatted(
+                                r.variableName(), r.methodName(), r.distance(), r.firstUseLine())))
                 .toList();
     }
 

@@ -9,10 +9,31 @@ import org.openrewrite.java.tree.J;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumulator> {
 
     private static final int CHAIN_DEPTH_THRESHOLD = 3;
+
+    private static final Set<String> FLUENT_METHOD_NAMES = Set.of(
+            "append", "add", "put", "set", "with", "and", "or",
+            "builder", "build", "create", "of", "from",
+            "stream", "filter", "map", "flatMap", "collect", "reduce",
+            "sorted", "distinct", "limit", "skip", "peek",
+            "forEach", "toList", "toSet", "toMap",
+            "findFirst", "findAny", "anyMatch", "allMatch", "noneMatch",
+            "count", "min", "max", "sum", "average",
+            "orElse", "orElseGet", "orElseThrow",
+            "ifPresent", "ifPresentOrElse",
+            "thenApply", "thenCompose", "thenAccept", "thenRun",
+            "whenComplete", "exceptionally",
+            "configure", "configureEach", "register", "named",
+            "resolve", "toUri", "toPath", "toFile",
+            "getRequired", "getAsFile",
+            "logCompilationWarningsAndErrors",
+            "parse", "replace", "replaceAll", "trim", "strip",
+            "toLowerCase", "toUpperCase", "substring",
+            "format", "formatted");
 
     public record Row(String className, String methodName, String chain, int depth, int lineNumber) {}
 
@@ -50,7 +71,7 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                 }
 
                 final int depth = chainDepth(m);
-                if (depth >= CHAIN_DEPTH_THRESHOLD) {
+                if (depth >= CHAIN_DEPTH_THRESHOLD && !isFluentChain(m)) {
                     final String chain = buildChainString(m);
                     acc.rows.add(new Row(
                             findEnclosingClassName(),
@@ -61,6 +82,20 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                 }
 
                 return m;
+            }
+
+            private boolean isFluentChain(J.MethodInvocation invocation) {
+                int total = 0;
+                int fluent = 0;
+                var current = invocation;
+                while (current != null) {
+                    total++;
+                    if (FLUENT_METHOD_NAMES.contains(current.getSimpleName())) {
+                        fluent++;
+                    }
+                    current = current.getSelect() instanceof J.MethodInvocation nested ? nested : null;
+                }
+                return fluent > total / 2;
             }
 
             private boolean isPartOfChain(J.MethodInvocation method) {
