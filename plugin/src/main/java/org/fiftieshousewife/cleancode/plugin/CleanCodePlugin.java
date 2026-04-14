@@ -4,6 +4,12 @@ import com.github.spotbugs.snom.SpotBugsExtension;
 import com.github.spotbugs.snom.SpotBugsTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.CheckstyleExtension;
 import org.gradle.api.plugins.quality.Pmd;
@@ -22,6 +28,7 @@ public class CleanCodePlugin implements Plugin<Project> {
                 .create("cleanCode", CleanCodeExtension.class);
 
         applyStaticAnalysisPlugins(project);
+        scaffoldSkillFiles(project);
 
         final TaskProvider<AnalyseTask> analyse = project.getTasks()
                 .register("analyseCleanCode", AnalyseTask.class, task -> {
@@ -50,6 +57,42 @@ public class CleanCodePlugin implements Plugin<Project> {
                     task.setDescription("Print skill guidance for a finding concern");
                     task.setGroup("help");
                 });
+    }
+
+    private static final List<String> SKILL_FILES = List.of(
+            "SKILLS.md",
+            "exception-handling.md",
+            "null-handling.md",
+            "functions.md",
+            "classes.md",
+            "naming.md",
+            "conditionals-and-expressions.md",
+            "comments-and-clutter.md",
+            "java-idioms.md");
+
+    private void scaffoldSkillFiles(Project project) {
+        final Path skillsDir = project.getProjectDir().toPath().resolve(".claude/skills");
+        try {
+            Files.createDirectories(skillsDir);
+        } catch (IOException e) {
+            project.getLogger().warn("Could not create skills directory: {}", skillsDir, e);
+            return;
+        }
+
+        SKILL_FILES.forEach(filename -> {
+            final Path target = skillsDir.resolve(filename);
+            if (Files.exists(target)) {
+                return;
+            }
+            try (InputStream is = getClass().getResourceAsStream("/skills/" + filename)) {
+                if (is != null) {
+                    Files.copy(is, target);
+                    project.getLogger().lifecycle("Scaffolded skill file: {}", target);
+                }
+            } catch (IOException e) {
+                project.getLogger().warn("Could not scaffold skill file: {}", filename, e);
+            }
+        });
     }
 
     private void applyStaticAnalysisPlugins(Project project) {

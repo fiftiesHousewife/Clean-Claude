@@ -41,7 +41,7 @@ class ClaudeMdGeneratorTest {
         ClaudeMdGenerator.generate(report, output, null);
 
         String content = Files.readString(output);
-        assertTrue(content.contains("> Read `.claude/skills/ch7-exception-handling.md`"));
+        assertTrue(content.contains("> Read `.claude/skills/exception-handling.md`"));
     }
 
     @Test
