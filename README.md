@@ -1,5 +1,10 @@
 # Clean Code Plugin
 
+[![CI](https://github.com/fiftiesHousewife/Clean-Claude/actions/workflows/ci.yml/badge.svg)](https://github.com/fiftiesHousewife/Clean-Claude/actions/workflows/ci.yml)
+[![Java](https://img.shields.io/badge/Java-21-blue)](https://openjdk.org/projects/jdk/21/)
+[![Gradle](https://img.shields.io/badge/Gradle-9.0-blue)](https://gradle.org/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
 A Gradle plugin that detects Clean Code violations across a Java codebase using multiple static analysis tools, normalises all findings into a single data model, and generates CLAUDE.md reports with skill file pointers for AI-assisted remediation.
 
 Based on Robert C. Martin's *Clean Code* heuristics (C1-C5, E1-E2, F1-F4, G1-G36, N1-N7, T1-T9) plus chapter-specific patterns (Ch3, Ch6, Ch7, Ch10).
@@ -107,6 +112,46 @@ The plugin automatically:
 - Provides a bundled Checkstyle config if the project has none
 - Wires `analyseCleanCode` to depend on all tool report tasks
 - Picks up Ben-Manes `dependencyUpdates` if the versions plugin is applied
+
+## Sample Output
+
+```
+═══════════════════════════════════════════════════════════════
+  CLEAN CODE ANALYSIS  —  my-project
+═══════════════════════════════════════════════════════════════
+
+  1 errors  ·  18 warnings  ·  2 info
+
+───────────────────────────────────────────────────────────────
+
+  Ch7_1 (1)
+     ! UserService.java  Catch block in 'save' only logs or is empty
+
+  F3 (1)
+     ! OrderController.java  Boolean parameter 'verbose' on method 'list'
+
+  G23 (1)
+     ! PaymentGateway.java  Type switch in 'process': if/else-if chain with type dispatch
+
+  J3 (1)
+     ! Status.java  5 static final fields with prefix 'STATUS' should be an enum
+
+  T1 (1)
+    !! (project)  Overall line coverage: 42.3% (210/497 lines covered)
+
+───────────────────────────────────────────────────────────────
+
+  Sources:
+    openrewrite: 12
+    checkstyle: 5
+    spotbugs: 3
+    pmd: 1
+    jacoco: 1
+
+═══════════════════════════════════════════════════════════════
+  22 findings  —  Run ./gradlew cleanCodeExplain --finding=<code> for guidance
+═══════════════════════════════════════════════════════════════
+```
 
 ## Build
 

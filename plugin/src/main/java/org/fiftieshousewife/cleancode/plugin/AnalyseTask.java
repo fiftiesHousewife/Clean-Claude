@@ -41,7 +41,6 @@ public abstract class AnalyseTask extends DefaultTask {
         final Path outputDir = buildDir.resolve("reports/clean-code");
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
 
-        getLogger().lifecycle("Clean code analysis: {} findings across {} sources",
-                report.findings().size(), sources.size());
+        getLogger().lifecycle(BuildOutputFormatter.format(report));
     }
 }
