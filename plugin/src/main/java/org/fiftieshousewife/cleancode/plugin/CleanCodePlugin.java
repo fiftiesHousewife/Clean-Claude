@@ -68,7 +68,8 @@ public class CleanCodePlugin implements Plugin<Project> {
             "naming.md",
             "conditionals-and-expressions.md",
             "comments-and-clutter.md",
-            "java-idioms.md");
+            "java-idioms.md",
+            "project-conventions.md");
 
     private void scaffoldSkillFiles(Project project) {
         final Path skillsDir = project.getProjectDir().toPath().resolve(".claude/skills");

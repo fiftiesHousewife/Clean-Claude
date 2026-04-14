@@ -18,6 +18,7 @@ Developers: these are also a reference for the patterns each concern requires.
 | Conditionals and expressions | `conditionals-and-expressions.md`   | G19, G23, G28, G29, G33     | Switch-on-type, complex conditions, boundaries  |
 | Comments and clutter         | `comments-and-clutter.md`           | C3, C5, G9, G10, G12, G24   | Dead code, redundant comments, formatting       |
 | Java idioms                  | `java-idioms.md`                    | J1-3, G4, G25, G26          | Imports, constants, enums, magic numbers        |
+| Project conventions          | `project-conventions.md`            | (team-specific)              | Naming, libraries, architecture, domain rules   |
 
 ## How skill files work
 

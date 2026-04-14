@@ -51,7 +51,7 @@ public abstract class AnalyseTask extends DefaultTask {
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
         HtmlReportWriter.write(report, outputDir.resolve("findings.html"));
 
-        final Path baselineFile = projectRoot.resolve(".cleancode-baseline.json");
+        final Path baselineFile = projectRoot.resolve("clean-code-baseline.json");
         final Map<HeuristicCode, BaselineManager.Delta> deltas = Files.exists(baselineFile)
                 ? BaselineManager.computeDeltas(report, baselineFile)
                 : Map.of();
