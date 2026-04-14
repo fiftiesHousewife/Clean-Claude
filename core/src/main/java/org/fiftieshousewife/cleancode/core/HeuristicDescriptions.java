@@ -340,11 +340,92 @@ public final class HeuristicDescriptions {
                     "are hiding inside.")
     );
 
+    private static final Map<HeuristicCode, String> REFERENCES = Map.ofEntries(
+            Map.entry(HeuristicCode.C1, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.286"),
+            Map.entry(HeuristicCode.C2, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.286"),
+            Map.entry(HeuristicCode.C3, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.286"),
+            Map.entry(HeuristicCode.C4, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.287"),
+            Map.entry(HeuristicCode.C5, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.287"),
+            Map.entry(HeuristicCode.E1, "Clean Code Ch.17 'Smells and Heuristics — Environment' p.287"),
+            Map.entry(HeuristicCode.E2, "Clean Code Ch.17 'Smells and Heuristics — Environment' p.287"),
+            Map.entry(HeuristicCode.F1, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
+            Map.entry(HeuristicCode.F2, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
+            Map.entry(HeuristicCode.F3, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
+            Map.entry(HeuristicCode.F4, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
+            Map.entry(HeuristicCode.G1, "Clean Code Ch.17 'Smells and Heuristics — General' p.288"),
+            Map.entry(HeuristicCode.G2, "Clean Code Ch.17 'Smells and Heuristics — General' p.288"),
+            Map.entry(HeuristicCode.G3, "Clean Code Ch.17 'Smells and Heuristics — General' p.289"),
+            Map.entry(HeuristicCode.G4, "Clean Code Ch.17 'Smells and Heuristics — General' p.289"),
+            Map.entry(HeuristicCode.G5, "Clean Code Ch.17 'Smells and Heuristics — General' p.289"),
+            Map.entry(HeuristicCode.G6, "Clean Code Ch.17 'Smells and Heuristics — General' p.290"),
+            Map.entry(HeuristicCode.G7, "Clean Code Ch.17 'Smells and Heuristics — General' p.291"),
+            Map.entry(HeuristicCode.G8, "Clean Code Ch.17 'Smells and Heuristics — General' p.291"),
+            Map.entry(HeuristicCode.G9, "Clean Code Ch.17 'Smells and Heuristics — General' p.292"),
+            Map.entry(HeuristicCode.G10, "Clean Code Ch.17 'Smells and Heuristics — General' p.292"),
+            Map.entry(HeuristicCode.G11, "Clean Code Ch.17 'Smells and Heuristics — General' p.292"),
+            Map.entry(HeuristicCode.G12, "Clean Code Ch.17 'Smells and Heuristics — General' p.293"),
+            Map.entry(HeuristicCode.G13, "Clean Code Ch.17 'Smells and Heuristics — General' p.293"),
+            Map.entry(HeuristicCode.G14, "Clean Code Ch.17 'Smells and Heuristics — General' p.293"),
+            Map.entry(HeuristicCode.G15, "Clean Code Ch.17 'Smells and Heuristics — General' p.294"),
+            Map.entry(HeuristicCode.G16, "Clean Code Ch.17 'Smells and Heuristics — General' p.295"),
+            Map.entry(HeuristicCode.G17, "Clean Code Ch.17 'Smells and Heuristics — General' p.295"),
+            Map.entry(HeuristicCode.G18, "Clean Code Ch.17 'Smells and Heuristics — General' p.296"),
+            Map.entry(HeuristicCode.G19, "Clean Code Ch.17 'Smells and Heuristics — General' p.296"),
+            Map.entry(HeuristicCode.G20, "Clean Code Ch.17 'Smells and Heuristics — General' p.297"),
+            Map.entry(HeuristicCode.G21, "Clean Code Ch.17 'Smells and Heuristics — General' p.297"),
+            Map.entry(HeuristicCode.G22, "Clean Code Ch.17 'Smells and Heuristics — General' p.298"),
+            Map.entry(HeuristicCode.G23, "Clean Code Ch.17 'Smells and Heuristics — General' p.299"),
+            Map.entry(HeuristicCode.G24, "Clean Code Ch.17 'Smells and Heuristics — General' p.299"),
+            Map.entry(HeuristicCode.G25, "Clean Code Ch.17 'Smells and Heuristics — General' p.300"),
+            Map.entry(HeuristicCode.G26, "Clean Code Ch.17 'Smells and Heuristics — General' p.301"),
+            Map.entry(HeuristicCode.G27, "Clean Code Ch.17 'Smells and Heuristics — General' p.301"),
+            Map.entry(HeuristicCode.G28, "Clean Code Ch.17 'Smells and Heuristics — General' p.301"),
+            Map.entry(HeuristicCode.G29, "Clean Code Ch.17 'Smells and Heuristics — General' p.302"),
+            Map.entry(HeuristicCode.G30, "Clean Code Ch.17 'Smells and Heuristics — General' p.302"),
+            Map.entry(HeuristicCode.G31, "Clean Code Ch.17 'Smells and Heuristics — General' p.302"),
+            Map.entry(HeuristicCode.G32, "Clean Code Ch.17 'Smells and Heuristics — General' p.303"),
+            Map.entry(HeuristicCode.G33, "Clean Code Ch.17 'Smells and Heuristics — General' p.304"),
+            Map.entry(HeuristicCode.G34, "Clean Code Ch.17 'Smells and Heuristics — General' p.304"),
+            Map.entry(HeuristicCode.G35, "Clean Code Ch.17 'Smells and Heuristics — General' p.306"),
+            Map.entry(HeuristicCode.G36, "Clean Code Ch.17 'Smells and Heuristics — General' p.306"),
+            Map.entry(HeuristicCode.J1, "Clean Code Ch.17 'Smells and Heuristics — Java' p.307"),
+            Map.entry(HeuristicCode.J2, "Clean Code Ch.17 'Smells and Heuristics — Java' p.307"),
+            Map.entry(HeuristicCode.J3, "Clean Code Ch.17 'Smells and Heuristics — Java' p.308"),
+            Map.entry(HeuristicCode.N1, "Clean Code Ch.17 'Smells and Heuristics — Names' p.309"),
+            Map.entry(HeuristicCode.N2, "Clean Code Ch.17 'Smells and Heuristics — Names' p.311"),
+            Map.entry(HeuristicCode.N3, "Clean Code Ch.17 'Smells and Heuristics — Names' p.311"),
+            Map.entry(HeuristicCode.N4, "Clean Code Ch.17 'Smells and Heuristics — Names' p.312"),
+            Map.entry(HeuristicCode.N5, "Clean Code Ch.17 'Smells and Heuristics — Names' p.312"),
+            Map.entry(HeuristicCode.N6, "Clean Code Ch.17 'Smells and Heuristics — Names' p.312"),
+            Map.entry(HeuristicCode.N7, "Clean Code Ch.17 'Smells and Heuristics — Names' p.313"),
+            Map.entry(HeuristicCode.T1, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.313"),
+            Map.entry(HeuristicCode.T2, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.313"),
+            Map.entry(HeuristicCode.T3, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.313"),
+            Map.entry(HeuristicCode.T4, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.313"),
+            Map.entry(HeuristicCode.T5, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
+            Map.entry(HeuristicCode.T6, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
+            Map.entry(HeuristicCode.T7, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
+            Map.entry(HeuristicCode.T8, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
+            Map.entry(HeuristicCode.T9, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
+            Map.entry(HeuristicCode.Ch3_1, "Clean Code Ch.3 'Functions' p.34"),
+            Map.entry(HeuristicCode.Ch3_2, "Clean Code Ch.3 'Functions' p.35"),
+            Map.entry(HeuristicCode.Ch3_3, "Clean Code Ch.3 'Functions' p.36"),
+            Map.entry(HeuristicCode.Ch6_1, "Clean Code Ch.6 'Objects and Data Structures' p.95"),
+            Map.entry(HeuristicCode.Ch7_1, "Clean Code Ch.7 'Error Handling' p.103"),
+            Map.entry(HeuristicCode.Ch7_2, "Clean Code Ch.7 'Error Handling' p.110"),
+            Map.entry(HeuristicCode.Ch10_1, "Clean Code Ch.10 'Classes' p.136"),
+            Map.entry(HeuristicCode.Ch10_2, "Clean Code Ch.10 'Classes' p.138")
+    );
+
     public static String name(HeuristicCode code) {
         return NAMES.getOrDefault(code, code.name());
     }
 
     public static String guidance(HeuristicCode code) {
         return GUIDANCE.get(code);
+    }
+
+    public static String reference(HeuristicCode code) {
+        return REFERENCES.get(code);
     }
 }

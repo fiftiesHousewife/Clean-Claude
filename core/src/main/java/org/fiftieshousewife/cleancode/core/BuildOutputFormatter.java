@@ -67,8 +67,14 @@ public final class BuildOutputFormatter {
         out.append("  ").append(code.name()).append(": ").append(name);
         out.append(" (").append(group.size()).append(")\n");
 
+        final String reference = HeuristicDescriptions.reference(code);
+        if (reference != null) {
+            out.append("  ").append(reference).append('\n');
+        }
+
         final String guidance = HeuristicDescriptions.guidance(code);
         if (guidance != null) {
+            out.append('\n');
             appendWrapped(out, guidance, "  ", WRAP_WIDTH);
         }
 

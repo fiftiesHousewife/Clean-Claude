@@ -5,162 +5,152 @@
 [![Gradle](https://img.shields.io/badge/Gradle-9.0-blue)](https://gradle.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-A Gradle plugin that detects Clean Code violations across a Java codebase using multiple static analysis tools, normalises all findings into a single data model, and generates CLAUDE.md reports with skill file pointers for AI-assisted remediation.
+A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 23 custom OpenRewrite recipes, normalises all findings into Martin's taxonomy, and produces human-readable output with book references and prescriptive guidance.
 
-Based on Robert C. Martin's *Clean Code* heuristics (C1-C5, E1-E2, F1-F4, G1-G36, N1-N7, T1-T9) plus chapter-specific patterns (Ch3, Ch6, Ch7, Ch10).
+> *"Clean code reads like well-written prose."* -- Robert C. Martin, *Clean Code* (2008)
+
+## Heuristic Coverage
+
+Every finding is mapped to a specific heuristic from Chapter 17 of *Clean Code* ("Smells and Heuristics") or to a chapter-specific pattern. The plugin currently detects:
+
+### Comments (Ch.17 p.286-287)
+| Code | Name | Detection |
+|------|------|-----------|
+| C3 | Redundant Comment | MumblingCommentRecipe -- comments that restate the method name or parameters |
+| C5 | Commented-Out Code | CommentedCodeRecipe -- commented-out code blocks that should be deleted |
+
+### Environment (Ch.17 p.287)
+| Code | Name | Detection |
+|------|------|-----------|
+| E1 | Build Requires More Than One Step | DependencyUpdatesFindingSource -- outdated dependencies (minor versions) |
+
+### Functions (Ch.17 p.288)
+| Code | Name | Detection |
+|------|------|-----------|
+| F1 | Too Many Arguments | Checkstyle ParameterNumber check |
+| F2 | Output Arguments | OutputArgumentRecipe -- methods that mutate collection arguments |
+| F3 | Flag Arguments | FlagArgumentRecipe -- boolean parameters on non-private methods |
+| F4 | Dead Function | PMD UnusedPrivateMethod rule |
+
+### General (Ch.17 p.288-306)
+| Code | Name | Detection |
+|------|------|-----------|
+| G4 | Overridden Safeties | PMD EmptyCatchBlock, SpotBugs DE_MIGHT_IGNORE |
+| G5 | Duplication | CPD token-based duplication detection |
+| G8 | Too Much Information | PMD ExcessivePublicCount, CouplingBetweenObjects, TooManyFields |
+| G9 | Dead Code | PMD UnusedLocalVariable, SpotBugs UUF_UNUSED_FIELD |
+| G10 | Vertical Separation | VerticalSeparationRecipe -- variables declared far from first use |
+| G12 | Clutter | PMD UnusedImports, Checkstyle UnusedImports/RedundantImport |
+| G20 | Function Names Should Say What They Do | PMD UseLocaleWithCaseConversions |
+| G22 | Make Logical Dependencies Physical | Checkstyle FinalLocalVariable |
+| G23 | Prefer Polymorphism to If/Else or Switch/Case | SwitchOnTypeRecipe + StringSwitchRecipe |
+| G24 | Follow Standard Conventions | Checkstyle LeftCurly/RightCurly/LineLength |
+| G25 | Replace Magic Numbers with Named Constants | MagicStringRecipe -- duplicated string literals |
+| G28 | Encapsulate Conditionals | EncapsulateConditionalRecipe -- complex boolean conditions |
+| G29 | Avoid Negative Conditionals | NegativeConditionalRecipe -- double negation |
+| G30 | Functions Should Do One Thing | WhitespaceSplitMethodRecipe -- methods with multiple blank-line sections |
+| G34 | Functions Should Descend Only One Level | SectionCommentRecipe -- section comment banners |
+| G36 | Avoid Transitive Navigation | LawOfDemeterRecipe -- method chains (fluent APIs excluded) |
+
+### Java (Ch.17 p.307-308)
+| Code | Name | Detection |
+|------|------|-----------|
+| J1 | Avoid Long Import Lists | Checkstyle AvoidStarImport |
+| J2 | Don't Inherit Constants | InheritConstantsRecipe -- constant-only interface implementation |
+| J3 | Constants versus Enums | EnumForConstantsRecipe -- static final groups that should be enums |
+
+### Names (Ch.17 p.309-313)
+| Code | Name | Detection |
+|------|------|-----------|
+| N1 | Choose Descriptive Names | Checkstyle LocalVariableName/MethodName/TypeName |
+| N5 | Use Long Names for Long Scopes | ShortVariableNameRecipe -- single-letter names outside loops/lambdas |
+| N6 | Avoid Encodings | EncodingNamingRecipe -- Hungarian notation and type prefixes |
+
+### Tests (Ch.17 p.313-314)
+| Code | Name | Detection |
+|------|------|-----------|
+| T1 | Insufficient Tests | JaCoCo line coverage analysis |
+| T2 | Use a Coverage Tool | JaCoCo report presence check |
+| T3 | Don't Skip Trivial Tests | DisabledTestRecipe -- @Disabled/@Ignore without reason |
+| T4 | An Ignored Test Is a Question | DisabledTestRecipe -- disabled tests signal ambiguity |
+| T8 | Test Coverage Patterns | JaCoCo per-class coverage analysis |
+| T9 | Tests Should Be Fast | Surefire test timing analysis |
+
+### Chapter-Specific Patterns
+| Code | Name | Reference | Detection |
+|------|------|-----------|-----------|
+| Ch3.1 | Small Functions | Ch.3 p.34 | PrivateMethodTestabilityRecipe -- non-trivial private methods |
+| Ch7.1 | Use Exceptions Rather Than Return Codes | Ch.7 p.103 | CatchLogContinueRecipe -- swallowed exceptions |
+| Ch7.2 | Don't Return Null | Ch.7 p.110 | NullDensityRecipe + SpotBugs redundant null checks |
+| Ch10.1 | Classes Should Be Small | Ch.10 p.136 | ClassLineLengthRecipe -- classes exceeding 150 lines |
+| Ch10.2 | The Single Responsibility Principle | Ch.10 p.138 | LargeRecordRecipe -- records with too many components |
+
+## Sample Output
+
+```
+═══════════════════════════════════════════════════════════════════════════
+  CLEAN CODE ANALYSIS  —  my-project
+═══════════════════════════════════════════════════════════════════════════
+
+  1 errors  ·  18 warnings  ·  2 info
+
+───────────────────────────────────────────────────────────────────────────
+  Ch7_1: Use Exceptions Rather Than Return Codes (1)
+  Clean Code Ch.7 'Error Handling' p.103
+
+  Exceptions are for exceptional circumstances. When you catch an
+  exception and merely log it — or worse, leave the catch block empty —
+  you've told the calling code that everything is fine when it isn't.
+  The caller makes decisions based on a lie.
+
+     ! UserService.java  Catch block in 'save' only logs or is empty
+
+───────────────────────────────────────────────────────────────────────────
+  F3: Flag Arguments (1)
+  Clean Code Ch.17 'Smells and Heuristics — Functions' p.288
+
+  Boolean arguments loudly declare that the function does more than one
+  thing. It does one thing if the flag is true and another if the flag
+  is false. Split it into two methods.
+
+     ! OrderController.java  Method 'list' takes boolean parameter 'verbose' — split into two methods instead
+
+───────────────────────────────────────────────────────────────────────────
+  G23: Prefer Polymorphism to If/Else or Switch/Case (1)
+  Clean Code Ch.17 'Smells and Heuristics — General' p.299
+
+  When you see code that tests for a type to decide what behaviour to
+  invoke, consider replacing it with polymorphism.
+
+     ! PaymentGateway.java  Switch on String 'type' with 5 cases — replace with an enum that encapsulates the behaviour
+
+───────────────────────────────────────────────────────────────────────────
+  Sources:
+    openrewrite: 14
+    checkstyle: 4
+    spotbugs: 3
+    pmd: 1
+    jacoco: 1
+
+═══════════════════════════════════════════════════════════════════════════
+  23 findings  —  ./gradlew cleanCodeExplain --finding=<code>
+═══════════════════════════════════════════════════════════════════════════
+```
 
 ## Architecture
 
 ```
 CleanClaude/
 ├── annotations/   HeuristicCode enum, @SuppressCleanCode annotation
-├── core/          Finding, FindingSource, AggregatedReport, SuppressionIndex,
-│                  FindingFilter, FindingAggregator, BaselineManager,
+├── core/          Finding, AggregatedReport, BuildOutputFormatter,
+│                  HeuristicDescriptions, SuppressionIndex, BaselineManager,
 │                  ClaudeMdGenerator, JSON report I/O
-├── recipes/       18 custom OpenRewrite ScanningRecipes
+├── recipes/       23 custom OpenRewrite ScanningRecipes
 ├── adapters/      8 FindingSource implementations (PMD, Checkstyle, SpotBugs,
 │                  CPD, JaCoCo, Surefire, Dependency Updates, OpenRewrite)
 ├── plugin/        Gradle plugin, tasks, extension DSL
 └── build-logic/   Convention plugins (cleancode.java-conventions, cleancode.java-library)
 ```
-
-## What the plugin does
-
-When you run `./gradlew analyseCleanCode`, the plugin:
-
-1. **Applies** PMD, Checkstyle, SpotBugs, and JaCoCo to the project
-2. **Runs** all static analysis tools with sensible defaults (configurable)
-3. **Parses** 18 custom OpenRewrite recipes directly against source
-4. **Reads** Ben-Manes dependency update reports (if available)
-5. **Maps** every finding to a Robert Martin heuristic code
-6. **Writes** a consolidated `findings.json` report
-
-## Modules
-
-### annotations
-
-Pure Java module containing the `HeuristicCode` enum (76 values covering all Martin heuristics, chapter codes, Java codes, and meta codes) and the `@SuppressCleanCode` annotation (`@Repeatable`, `RetentionPolicy.SOURCE`, mandatory `reason()`).
-
-### core
-
-The domain layer:
-
-- **Finding** -- immutable record normalising all tool output into a single type
-- **FindingSource** -- interface each adapter implements
-- **AggregatedReport** -- collects findings with `byCode()` and `bySeverity()` grouping
-- **SuppressionIndex** -- scans source with JavaParser for `@SuppressCleanCode` annotations, tracks expiry dates, produces meta-findings for expired/blank suppressions
-- **FindingFilter** -- post-filter removing suppressed findings (SpotBugs excluded -- it handles its own suppression natively)
-- **FindingAggregator** -- orchestrates all FindingSources into an AggregatedReport
-- **BaselineManager** -- writes/reads baseline snapshots, computes deltas
-- **ClaudeMdGenerator** -- generates/updates CLAUDE.md with finding sections, preserves `<!-- ANNOTATE -->` blocks across regenerations, includes delta tables and skill pointers
-- **JsonReportWriter/Reader** -- Gson-based serialisation of AggregatedReport
-
-### recipes
-
-18 custom OpenRewrite `ScanningRecipe` implementations detecting patterns that off-the-shelf tools miss:
-
-| Recipe | Code | Detects |
-|--------|------|---------|
-| FlagArgumentRecipe | F3 | Boolean params on non-private methods |
-| OutputArgumentRecipe | F2 | Output arguments (mutated collection params) |
-| CatchLogContinueRecipe | Ch7.1 | Catch blocks that only log or are empty |
-| NullDensityRecipe | Ch7.2 | Methods with >= 3 null checks |
-| ClassLineLengthRecipe | Ch10.1 | Classes exceeding 150 lines |
-| LargeRecordRecipe | Ch10.2 | Records with too many components |
-| LawOfDemeterRecipe | G36 | Method chains of depth >= 3 |
-| NegativeConditionalRecipe | G29 | Double negation (`!isNotEmpty()`) |
-| EncapsulateConditionalRecipe | G28 | Complex conditions with 2+ logical operators |
-| VerticalSeparationRecipe | G10 | Variables declared far from first use |
-| SwitchOnTypeRecipe | G23 | Type-switching if/else chains (prefer polymorphism) |
-| DisabledTestRecipe | T3/T4 | `@Disabled`/`@Ignore` without meaningful reason |
-| CommentedCodeRecipe | C5 | Commented-out code blocks |
-| MumblingCommentRecipe | C3 | Incoherent or restating comments |
-| SectionCommentRecipe | G34 | Section comment banners in methods |
-| EncodingNamingRecipe | N6 | Hungarian notation and type encoding |
-| InheritConstantsRecipe | J2 | Constants inherited via interface |
-| EnumForConstantsRecipe | J3 | Static final groups that should be enums |
-
-All 18 recipes share a single parsed LST -- source files are parsed once and reused across all recipe runs.
-
-### adapters
-
-8 `FindingSource` implementations, each mapping tool output to `HeuristicCode` values:
-
-| Adapter | Tool | Report format | Key mappings |
-|---------|------|---------------|-------------|
-| PmdFindingSource | PMD | `pmd/main.xml` | 21 rules -> G30, F4, G9, G12, G8, C5, G4, G23, G17, J2, G20, G22 |
-| CheckstyleFindingSource | Checkstyle | `checkstyle/main.xml` | 26 checks -> F1, G25, N1, G30, J1, G12, J2, G8, G18, G28, G24, G10, G22, G4, Ch10.1 |
-| SpotBugsFindingSource | SpotBugs | `spotbugs/main.xml` | Category/type pairs -> G4, G18, G9, G26, G8, Ch7.2 |
-| CpdFindingSource | CPD | `cpd/cpd.xml` | All duplication -> G5, severity by token count |
-| JacocoFindingSource | JaCoCo | `jacoco/test/jacocoTestReport.xml` | Coverage -> T1, T2, T8 |
-| SurefireFindingSource | Surefire | `surefire-reports/TEST-*.xml` | Timing/skips -> T3, T4, T9 |
-| DependencyUpdatesFindingSource | Ben-Manes | `dependencyUpdates/report.json` | Outdated deps -> E1 (minor versions only) |
-| OpenRewriteFindingSource | OpenRewrite | Inline source scan | Runs all 18 custom recipes |
-
-### plugin
-
-Gradle plugin (`org.fiftieshousewife.cleancode`) providing:
-
-- **analyseCleanCode** -- applies PMD, Checkstyle, SpotBugs, JaCoCo; runs all tools; runs 18 OpenRewrite recipes; consolidates findings into `build/reports/clean-code/findings.json`
-- **generateClaudeMd** -- generates CLAUDE.md from findings
-- **cleanCodeBaseline** -- snapshots current findings as baseline
-- **cleanCodeExplain** -- prints skill file content to terminal
-
-The plugin automatically:
-- Applies the `java`, `pmd`, `checkstyle`, `jacoco`, and `com.github.spotbugs` plugins
-- Configures `ignoreFailures = true` so analysis runs to completion
-- Provides a bundled Checkstyle config if the project has none
-- Wires `analyseCleanCode` to depend on all tool report tasks
-- Picks up Ben-Manes `dependencyUpdates` if the versions plugin is applied
-
-## Sample Output
-
-```
-═══════════════════════════════════════════════════════════════
-  CLEAN CODE ANALYSIS  —  my-project
-═══════════════════════════════════════════════════════════════
-
-  1 errors  ·  18 warnings  ·  2 info
-
-───────────────────────────────────────────────────────────────
-
-  Ch7_1 (1)
-     ! UserService.java  Catch block in 'save' only logs or is empty
-
-  F3 (1)
-     ! OrderController.java  Boolean parameter 'verbose' on method 'list'
-
-  G23 (1)
-     ! PaymentGateway.java  Type switch in 'process': if/else-if chain with type dispatch
-
-  J3 (1)
-     ! Status.java  5 static final fields with prefix 'STATUS' should be an enum
-
-  T1 (1)
-    !! (project)  Overall line coverage: 42.3% (210/497 lines covered)
-
-───────────────────────────────────────────────────────────────
-
-  Sources:
-    openrewrite: 12
-    checkstyle: 5
-    spotbugs: 3
-    pmd: 1
-    jacoco: 1
-
-═══════════════════════════════════════════════════════════════
-  22 findings  —  Run ./gradlew cleanCodeExplain --finding=<code> for guidance
-═══════════════════════════════════════════════════════════════
-```
-
-## Build
-
-```bash
-./gradlew build                 # compile + run all tests
-./gradlew publishToMavenLocal   # publish all modules to ~/.m2
-```
-
-Requires Java 21. Uses Gradle 9.0 with version catalog (`gradle/libs.versions.toml`).
 
 ## Usage
 
@@ -171,11 +161,22 @@ plugins {
 ```
 
 ```bash
-./gradlew analyseCleanCode                        # full analysis
-./gradlew generateClaudeMd                        # generate CLAUDE.md
-./gradlew cleanCodeBaseline                       # snapshot baseline
+./gradlew analyseCleanCode                           # full analysis
+./gradlew generateClaudeMd                           # generate CLAUDE.md
+./gradlew cleanCodeBaseline                          # snapshot baseline
 ./gradlew cleanCodeExplain --finding=error-handling  # print skill guidance
 ```
+
+The plugin automatically applies `java`, `pmd`, `checkstyle`, `jacoco`, and `com.github.spotbugs`. It provides a bundled Checkstyle configuration if the project has none, and wires `analyseCleanCode` to depend on all tool report tasks.
+
+## Build
+
+```bash
+./gradlew build                 # compile + run all tests
+./gradlew publishToMavenLocal   # publish all modules to ~/.m2
+```
+
+Requires Java 21. Uses Gradle 9.0 with version catalog (`gradle/libs.versions.toml`).
 
 ## Dependencies
 
@@ -187,3 +188,12 @@ plugins {
 | OpenRewrite | 8.40.2 | recipes, adapters |
 | SpotBugs Gradle Plugin | 6.5.0 | plugin |
 | Ben-Manes Versions | 0.53.0 | build-logic |
+
+## References
+
+Robert C. Martin, *Clean Code: A Handbook of Agile Software Craftsmanship*, Prentice Hall, 2008.
+
+- Chapter 3: Functions (p.31-52) -- function size, arguments, flag arguments
+- Chapter 7: Error Handling (p.103-112) -- exceptions vs return codes, null handling
+- Chapter 10: Classes (p.135-151) -- class size, single responsibility principle
+- Chapter 17: Smells and Heuristics (p.285-314) -- the complete taxonomy of 66 code smells
