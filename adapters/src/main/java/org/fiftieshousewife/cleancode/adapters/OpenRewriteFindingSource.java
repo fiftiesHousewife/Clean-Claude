@@ -37,12 +37,14 @@ public class OpenRewriteFindingSource implements FindingSource {
             HeuristicCode.Ch3_1,
             HeuristicCode.Ch7_1, HeuristicCode.Ch7_2,
             HeuristicCode.Ch10_1, HeuristicCode.Ch10_2,
-            HeuristicCode.G10, HeuristicCode.G23, HeuristicCode.G25,
-            HeuristicCode.G28, HeuristicCode.G29,
-            HeuristicCode.G30, HeuristicCode.G34, HeuristicCode.G36,
             HeuristicCode.G4, HeuristicCode.G8,
+            HeuristicCode.G10, HeuristicCode.G11, HeuristicCode.G14,
+            HeuristicCode.G16, HeuristicCode.G19,
+            HeuristicCode.G23, HeuristicCode.G25,
+            HeuristicCode.G28, HeuristicCode.G29,
+            HeuristicCode.G30, HeuristicCode.G33, HeuristicCode.G34, HeuristicCode.G36,
             HeuristicCode.J2, HeuristicCode.J3,
-            HeuristicCode.N5, HeuristicCode.N6,
+            HeuristicCode.N5, HeuristicCode.N6, HeuristicCode.N7,
             HeuristicCode.T3, HeuristicCode.T4);
 
     @Override
@@ -100,7 +102,13 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new StringSwitchRecipe(thresholds.stringSwitchMinCases()),
                 new VisibilityReductionRecipe(),
                 new ImperativeLoopRecipe(),
-                new UncheckedCastRecipe());
+                new UncheckedCastRecipe(),
+                new FeatureEnvyRecipe(),
+                new NestedTernaryRecipe(),
+                new MissingExplanatoryVariableRecipe(),
+                new BoundaryConditionRecipe(),
+                new SideEffectNamingRecipe(),
+                new InconsistentNamingRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -138,6 +146,12 @@ public class OpenRewriteFindingSource implements FindingSource {
             case VisibilityReductionRecipe r -> mapVisibility(r.collectedRows());
             case ImperativeLoopRecipe r -> mapImperativeLoop(r.collectedRows());
             case UncheckedCastRecipe r -> mapUncheckedCast(r.collectedRows());
+            case FeatureEnvyRecipe r -> mapFeatureEnvy(r.collectedRows());
+            case NestedTernaryRecipe r -> mapNestedTernary(r.collectedRows());
+            case MissingExplanatoryVariableRecipe r -> mapMissingExplanatory(r.collectedRows());
+            case BoundaryConditionRecipe r -> mapBoundaryCondition(r.collectedRows());
+            case SideEffectNamingRecipe r -> mapSideEffectNaming(r.collectedRows());
+            case InconsistentNamingRecipe r -> mapInconsistentNaming(r.collectedRows());
             default -> List.of();
         };
     }
@@ -334,6 +348,54 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.G4, r.className(), r.lineNumber(),
                         "@SuppressWarnings(\"unchecked\") on '%s' — redesign to avoid unsafe casts".formatted(
                                 r.memberName())))
+                .toList();
+    }
+
+    private List<Finding> mapFeatureEnvy(List<FeatureEnvyRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G14, r.className(), r.lineNumber(),
+                        "Method '%s' calls %d methods on '%s' but only %d on its own class — it wants to live elsewhere".formatted(
+                                r.methodName(), r.externalCallCount(), r.enviedClass(), r.selfCallCount())))
+                .toList();
+    }
+
+    private List<Finding> mapNestedTernary(List<NestedTernaryRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G16, r.className(), r.lineNumber(),
+                        "Ternary nested %d deep in '%s' — extract to an if/else or a named method".formatted(
+                                r.depth(), r.methodName())))
+                .toList();
+    }
+
+    private List<Finding> mapMissingExplanatory(List<MissingExplanatoryVariableRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G19, r.className(), r.lineNumber(),
+                        "Complex expression in '%s' should be extracted to a named variable: %s".formatted(
+                                r.methodName(), r.expressionPreview())))
+                .toList();
+    }
+
+    private List<Finding> mapBoundaryCondition(List<BoundaryConditionRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G33, r.className(), r.lineNumber(),
+                        "Boundary adjustment '%s' in '%s' — extract to a named variable".formatted(
+                                r.expression(), r.methodName())))
+                .toList();
+    }
+
+    private List<Finding> mapSideEffectNaming(List<SideEffectNamingRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.N7, r.className(), r.lineNumber(),
+                        "Method '%s' is named like a query but %s — rename to reveal the side effect".formatted(
+                                r.methodName(), r.sideEffect())))
+                .toList();
+    }
+
+    private List<Finding> mapInconsistentNaming(List<InconsistentNamingRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G11, r.className(), r.lineNumber(),
+                        "Class uses inconsistent prefixes %s for the same concept: %s".formatted(
+                                r.conflictingPrefixes(), r.methodNames())))
                 .toList();
     }
 

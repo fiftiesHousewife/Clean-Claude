@@ -173,11 +173,32 @@ public final class HeuristicDescriptions {
                     "separation between declaration and use makes the reader hold a mental " +
                     "placeholder — 'what was that variable for again?' — while reading unrelated " +
                     "code. Declare variables at the point of need, not at the top of the method."),
+            Map.entry(HeuristicCode.G11,
+                    "If you do something a certain way, do all similar things the same way. If " +
+                    "you name one method fetchUsers, don't name a similar method getOrders and " +
+                    "another retrieveProducts. Inconsistency breeds confusion — the reader must " +
+                    "wonder whether the different names signify different semantics when they don't."),
             Map.entry(HeuristicCode.G12,
                     "Clutter is anything that adds noise without adding value: unused variables, " +
                     "never-called functions, redundant imports, purposeless comments. Keep your " +
                     "source files clean. A lean source file is easier to read, easier to " +
                     "understand, and easier to change."),
+            Map.entry(HeuristicCode.G14,
+                    "A method that calls six methods on another object but only one on its own " +
+                    "class has Feature Envy — it clearly wants to be over there, not here. Move " +
+                    "the method to the class whose data it is actually manipulating. Methods should " +
+                    "operate on the data of their own class, not reach across into another."),
+            Map.entry(HeuristicCode.G16,
+                    "Obscured intent is the opposite of expressiveness. Code that uses nested " +
+                    "ternaries, overly terse variable names, or magic expressions is prioritising " +
+                    "brevity over clarity. The reader shouldn't need a debugger to understand what " +
+                    "a line of code does. If you're impressed by how cleverly terse your code is, " +
+                    "that's a bad sign."),
+            Map.entry(HeuristicCode.G19,
+                    "Complex expressions should be broken into intermediate variables with " +
+                    "explanatory names. 'wasPressed' is better than 'event.getTarget().isButton() " +
+                    "&& event.getState() == CLICKED'. The intermediate variable documents the " +
+                    "programmer's intent and makes the code read like a well-written paragraph."),
             Map.entry(HeuristicCode.G17,
                     "One of the most important decisions a developer makes is where to put code. " +
                     "A data class is a class with public fields and no real behaviour — it " +
@@ -234,6 +255,12 @@ public final class HeuristicDescriptions {
                     "A function that is too long is probably doing too many things. If you can " +
                     "extract another function from it with a name that is not merely a restatement " +
                     "of its implementation, then the original is doing more than one thing."),
+            Map.entry(HeuristicCode.G33,
+                    "Boundary conditions are hard to keep track of. Put the processing for them " +
+                    "in one place. Don't let them leak all over the code. 'array.length - 1' " +
+                    "scattered through your code is a bug waiting to happen. Extract it: " +
+                    "'final int lastIndex = array.length - 1;' — the name documents the intent " +
+                    "and the adjustment happens in exactly one place."),
             Map.entry(HeuristicCode.G34,
                     "Mixing levels of abstraction within a function is always confusing. Section " +
                     "comments — '// initialisation', '// processing', '// cleanup' — are a dead " +
@@ -281,6 +308,12 @@ public final class HeuristicDescriptions {
                     "necessary. Today, with modern languages and IDEs, Hungarian notation and " +
                     "type prefixes (strName, iCount, m_field) are nothing but noise. They make " +
                     "names harder to read and harder to change. Let the type system do its job."),
+            Map.entry(HeuristicCode.N7,
+                    "If a method has side effects, the name should describe them. A method named " +
+                    "getPassword that also initialises the session is lying. It should be called " +
+                    "getPasswordAndInitialiseSession — or better, split into two methods. If a " +
+                    "reader must look at the implementation to discover a side effect, the name " +
+                    "has broken its promise."),
 
             // Tests
             Map.entry(HeuristicCode.T1,
