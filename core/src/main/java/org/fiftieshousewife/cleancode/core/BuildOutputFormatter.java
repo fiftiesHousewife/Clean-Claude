@@ -10,9 +10,10 @@ import java.util.stream.Collectors;
 public final class BuildOutputFormatter {
 
     private static final String HEADER =
-            "═══════════════════════════════════════════════════════════════";
+            "═══════════════════════════════════════════════════════════════════════════";
     private static final String DIVIDER =
-            "───────────────────────────────────────────────────────────────";
+            "───────────────────────────────────────────────────────────────────────────";
+    private static final int WRAP_WIDTH = 72;
 
     private BuildOutputFormatter() {}
 
@@ -25,7 +26,7 @@ public final class BuildOutputFormatter {
         out.append(HEADER).append('\n');
 
         if (findings.isEmpty()) {
-            out.append("\n  No violations found.\n");
+            out.append("\n  No violations found. The code is clean.\n");
             out.append('\n').append(HEADER).append('\n');
             return out.toString();
         }
@@ -54,18 +55,27 @@ public final class BuildOutputFormatter {
         final Map<HeuristicCode, List<Finding>> byCode = findings.stream()
                 .collect(Collectors.groupingBy(Finding::code));
 
-        out.append('\n').append(DIVIDER).append('\n');
-
         byCode.entrySet().stream()
                 .sorted(Comparator.comparing(e -> e.getKey().name()))
-                .forEach(entry -> {
-                    final HeuristicCode code = entry.getKey();
-                    final List<Finding> group = entry.getValue();
-                    out.append("\n  ").append(code.name()).append(" (").append(group.size()).append(")\n");
-                    group.stream()
-                            .sorted(Comparator.comparing(f -> f.sourceFile() != null ? f.sourceFile() : ""))
-                            .forEach(f -> appendFinding(out, f));
-                });
+                .forEach(entry -> appendCodeGroup(out, entry.getKey(), entry.getValue()));
+    }
+
+    private static void appendCodeGroup(StringBuilder out, HeuristicCode code, List<Finding> group) {
+        out.append('\n').append(DIVIDER).append('\n');
+
+        final String name = HeuristicDescriptions.name(code);
+        out.append("  ").append(code.name()).append(": ").append(name);
+        out.append(" (").append(group.size()).append(")\n");
+
+        final String guidance = HeuristicDescriptions.guidance(code);
+        if (guidance != null) {
+            appendWrapped(out, guidance, "  ", WRAP_WIDTH);
+        }
+
+        out.append('\n');
+        group.stream()
+                .sorted(Comparator.comparing(f -> f.sourceFile() != null ? f.sourceFile() : ""))
+                .forEach(f -> appendFinding(out, f));
     }
 
     private static void appendFinding(StringBuilder out, Finding finding) {
@@ -73,6 +83,25 @@ public final class BuildOutputFormatter {
         out.append("    ").append(severityIcon(finding.severity()));
         out.append(" ").append(location);
         out.append("  ").append(finding.message()).append('\n');
+    }
+
+    private static void appendWrapped(StringBuilder out, String text, String indent, int width) {
+        final String[] words = text.split(" ");
+        final StringBuilder line = new StringBuilder(indent);
+        for (final String word : words) {
+            if (line.length() + word.length() + 1 > width && line.length() > indent.length()) {
+                out.append(line).append('\n');
+                line.setLength(0);
+                line.append(indent);
+            }
+            if (line.length() > indent.length()) {
+                line.append(' ');
+            }
+            line.append(word);
+        }
+        if (line.length() > indent.length()) {
+            out.append(line).append('\n');
+        }
     }
 
     private static String formatLocation(Finding finding) {
@@ -107,7 +136,7 @@ public final class BuildOutputFormatter {
                 .collect(Collectors.groupingBy(Finding::tool, Collectors.counting()));
 
         out.append('\n').append(DIVIDER).append('\n');
-        out.append("\n  Sources:\n");
+        out.append("  Sources:\n");
 
         byTool.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
@@ -119,7 +148,7 @@ public final class BuildOutputFormatter {
     private static void appendFooter(StringBuilder out, List<Finding> findings) {
         out.append('\n').append(HEADER).append('\n');
         out.append("  ").append(findings.size()).append(" findings");
-        out.append("  —  Run ./gradlew cleanCodeExplain --finding=<code> for guidance\n");
+        out.append("  —  ./gradlew cleanCodeExplain --finding=<code>\n");
         out.append(HEADER).append('\n');
     }
 }

@@ -26,16 +26,16 @@ class BuildOutputFormatterTest {
     }
 
     @Test
-    void formatsReportWithFindingsGroupedByCode() {
+    void formatsReportWithNarrativeDescriptionsPerCode() {
         final Finding f1 = Finding.at(HeuristicCode.F3, "Foo.java", 10, 10,
                 "Boolean parameter 'verbose'", Severity.WARNING, Confidence.HIGH, "openrewrite", "F3");
-        final Finding f2 = Finding.at(HeuristicCode.G36, "Bar.java", 20, 20,
-                "Method chain depth 4", Severity.WARNING, Confidence.HIGH, "openrewrite", "G36");
+        final Finding f2 = Finding.at(HeuristicCode.Ch7_1, "Bar.java", 20, 20,
+                "Catch block only logs", Severity.WARNING, Confidence.HIGH, "openrewrite", "Ch7_1");
         final Finding f3 = Finding.projectLevel(HeuristicCode.T1,
                 "Coverage 42%", Severity.ERROR, Confidence.HIGH, "jacoco", "line-coverage");
 
         final AggregatedReport report = new AggregatedReport(
-                List.of(f1, f2, f3), Set.of(HeuristicCode.F3, HeuristicCode.G36, HeuristicCode.T1),
+                List.of(f1, f2, f3), Set.of(HeuristicCode.F3, HeuristicCode.Ch7_1, HeuristicCode.T1),
                 Instant.now(), "my-project", "1.0");
 
         final String output = BuildOutputFormatter.format(report);
@@ -44,12 +44,13 @@ class BuildOutputFormatterTest {
                 () -> assertTrue(output.contains("my-project")),
                 () -> assertTrue(output.contains("1 errors")),
                 () -> assertTrue(output.contains("2 warnings")),
-                () -> assertTrue(output.contains("F3 (1)")),
-                () -> assertTrue(output.contains("G36 (1)")),
-                () -> assertTrue(output.contains("T1 (1)")),
+                () -> assertTrue(output.contains("F3: Flag Arguments")),
+                () -> assertTrue(output.contains("Ch7_1: Use Exceptions Rather Than Return Codes")),
+                () -> assertTrue(output.contains("T1: Insufficient Tests")),
                 () -> assertTrue(output.contains("Boolean parameter")),
-                () -> assertTrue(output.contains("3 findings")),
-                () -> assertTrue(output.contains("cleanCodeExplain"))
+                () -> assertTrue(output.contains("Boolean arguments loudly declare")),
+                () -> assertTrue(output.contains("silently swallow")),
+                () -> assertTrue(output.contains("3 findings"))
         );
     }
 
