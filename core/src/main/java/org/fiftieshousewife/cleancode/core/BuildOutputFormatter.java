@@ -18,6 +18,11 @@ public final class BuildOutputFormatter {
     private BuildOutputFormatter() {}
 
     public static String format(AggregatedReport report) {
+        return format(report, Map.of());
+    }
+
+    public static String format(AggregatedReport report,
+                                Map<HeuristicCode, BaselineManager.Delta> deltas) {
         final StringBuilder out = new StringBuilder();
         final List<Finding> findings = report.findings();
 
@@ -32,11 +37,41 @@ public final class BuildOutputFormatter {
         }
 
         appendSeveritySummary(out, report);
+
+        if (!deltas.isEmpty()) {
+            appendBaselineDelta(out, deltas);
+        }
+
         appendFindingsByCode(out, findings);
         appendToolSummary(out, findings);
         appendFooter(out, findings);
 
         return out.toString();
+    }
+
+    private static void appendBaselineDelta(StringBuilder out,
+                                            Map<HeuristicCode, BaselineManager.Delta> deltas) {
+        final int newViolations = deltas.values().stream()
+                .mapToInt(d -> Math.max(0, d.change()))
+                .sum();
+        final int fixedViolations = deltas.values().stream()
+                .mapToInt(d -> Math.max(0, -d.change()))
+                .sum();
+
+        out.append("  vs baseline: ");
+        if (newViolations > 0) {
+            out.append("+").append(newViolations).append(" new");
+        }
+        if (newViolations > 0 && fixedViolations > 0) {
+            out.append("  ·  ");
+        }
+        if (fixedViolations > 0) {
+            out.append("-").append(fixedViolations).append(" fixed");
+        }
+        if (newViolations == 0 && fixedViolations == 0) {
+            out.append("no change");
+        }
+        out.append('\n');
     }
 
     private static void appendSeveritySummary(StringBuilder out, AggregatedReport report) {

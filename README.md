@@ -142,7 +142,7 @@ CleanClaude/
 ├── core/          Finding, AggregatedReport, BuildOutputFormatter,
 │                  HeuristicDescriptions, SuppressionIndex, BaselineManager,
 │                  ClaudeMdGenerator, JSON report I/O
-├── recipes/       26 custom OpenRewrite ScanningRecipes
+├── recipes/       32 custom OpenRewrite ScanningRecipes
 ├── adapters/      8 FindingSource implementations (PMD, Checkstyle, SpotBugs,
 │                  CPD, JaCoCo, Surefire, Dependency Updates, OpenRewrite)
 ├── plugin/        Gradle plugin, tasks, extension DSL

@@ -1,12 +1,15 @@
 package org.fiftieshousewife.cleancode.plugin;
 
 import org.fiftieshousewife.cleancode.adapters.*;
+import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import org.fiftieshousewife.cleancode.core.*;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class AnalyseTask extends DefaultTask {
@@ -46,8 +49,14 @@ public abstract class AnalyseTask extends DefaultTask {
 
         final Path outputDir = buildDir.resolve("reports/clean-code");
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
+        HtmlReportWriter.write(report, outputDir.resolve("findings.html"));
 
-        getLogger().lifecycle(BuildOutputFormatter.format(report));
+        final Path baselineFile = projectRoot.resolve(".cleancode-baseline.json");
+        final Map<HeuristicCode, BaselineManager.Delta> deltas = Files.exists(baselineFile)
+                ? BaselineManager.computeDeltas(report, baselineFile)
+                : Map.of();
+
+        getLogger().lifecycle(BuildOutputFormatter.format(report, deltas));
     }
 
     private AggregatedReport filterDisabledRecipes(final AggregatedReport report,
