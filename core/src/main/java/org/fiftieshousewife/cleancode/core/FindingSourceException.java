@@ -1,6 +1,8 @@
 package org.fiftieshousewife.cleancode.core;
 
 public class FindingSourceException extends Exception {
+    private static final long serialVersionUID = 1L;
+
     public FindingSourceException(String message, Throwable cause) {
         super(message, cause);
     }

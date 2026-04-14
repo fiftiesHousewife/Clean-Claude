@@ -6,3 +6,7 @@ repositories {
     gradlePluginPortal()
     mavenCentral()
 }
+
+dependencies {
+    implementation(libs.ben.manes.versions.plugin)
+}
