@@ -16,12 +16,15 @@ public class SpotBugsFindingSource implements FindingSource {
     private record RuleMapping(HeuristicCode code, Severity severity, Confidence confidence) {}
 
     // Specific category/type pairs take precedence
-    private static final Map<String, RuleMapping> TYPE_MAP = Map.of(
-            "BAD_PRACTICE/DE_MIGHT_IGNORE", new RuleMapping(HeuristicCode.G4, Severity.ERROR, Confidence.HIGH),
-            "BAD_PRACTICE/ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", new RuleMapping(HeuristicCode.G18, Severity.WARNING, Confidence.HIGH),
-            "STYLE/URF_UNREAD_FIELD", new RuleMapping(HeuristicCode.G9, Severity.INFO, Confidence.HIGH),
-            "PERFORMANCE/DM_BOXED_PRIMITIVE_FOR_COMPARE", new RuleMapping(HeuristicCode.G26, Severity.INFO, Confidence.HIGH),
-            "MALICIOUS_CODE/MS_MUTABLE_ARRAY", new RuleMapping(HeuristicCode.G8, Severity.WARNING, Confidence.HIGH)
+    private static final Map<String, RuleMapping> TYPE_MAP = Map.ofEntries(
+            Map.entry("BAD_PRACTICE/DE_MIGHT_IGNORE", new RuleMapping(HeuristicCode.G4, Severity.ERROR, Confidence.HIGH)),
+            Map.entry("BAD_PRACTICE/ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", new RuleMapping(HeuristicCode.G18, Severity.WARNING, Confidence.HIGH)),
+            Map.entry("STYLE/URF_UNREAD_FIELD", new RuleMapping(HeuristicCode.G9, Severity.INFO, Confidence.HIGH)),
+            Map.entry("STYLE/RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", new RuleMapping(HeuristicCode.Ch7_2, Severity.WARNING, Confidence.HIGH)),
+            Map.entry("STYLE/RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", new RuleMapping(HeuristicCode.Ch7_2, Severity.ERROR, Confidence.HIGH)),
+            Map.entry("PERFORMANCE/DM_BOXED_PRIMITIVE_FOR_COMPARE", new RuleMapping(HeuristicCode.G26, Severity.INFO, Confidence.HIGH)),
+            Map.entry("PERFORMANCE/UUF_UNUSED_FIELD", new RuleMapping(HeuristicCode.G9, Severity.INFO, Confidence.HIGH)),
+            Map.entry("MALICIOUS_CODE/MS_MUTABLE_ARRAY", new RuleMapping(HeuristicCode.G8, Severity.WARNING, Confidence.HIGH))
     );
 
     // Category-level fallback

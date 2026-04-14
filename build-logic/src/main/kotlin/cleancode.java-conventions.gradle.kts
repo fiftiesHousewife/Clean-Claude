@@ -31,3 +31,10 @@ tasks.withType<JavaCompile>().configureEach {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>().configureEach {
+    outputFormatter = "json"
+    rejectVersionIf {
+        candidate.version.substringBefore(".") != currentVersion.substringBefore(".")
+    }
+}

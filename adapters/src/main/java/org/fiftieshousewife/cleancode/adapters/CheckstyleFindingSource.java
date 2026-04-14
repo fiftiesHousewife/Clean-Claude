@@ -33,7 +33,15 @@ public class CheckstyleFindingSource implements FindingSource {
             Map.entry("WhitespaceAround", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH)),
             Map.entry("EmptyLineSeparator", new RuleMapping(HeuristicCode.G10, Severity.WARNING, Confidence.MEDIUM)),
             Map.entry("MethodName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("TypeName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM))
+            Map.entry("TypeName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM)),
+            Map.entry("FinalLocalVariable", new RuleMapping(HeuristicCode.G22, Severity.WARNING, Confidence.HIGH)),
+            Map.entry("SimplifyBooleanExpression", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.HIGH)),
+            Map.entry("SimplifyBooleanReturn", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.HIGH)),
+            Map.entry("RedundantImport", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH)),
+            Map.entry("UnusedImports", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH)),
+            Map.entry("EmptyBlock", new RuleMapping(HeuristicCode.G4, Severity.WARNING, Confidence.HIGH)),
+            Map.entry("FileLength", new RuleMapping(HeuristicCode.Ch10_1, Severity.WARNING, Confidence.MEDIUM)),
+            Map.entry("LineLength", new RuleMapping(HeuristicCode.G24, Severity.INFO, Confidence.HIGH))
     );
 
     @Override

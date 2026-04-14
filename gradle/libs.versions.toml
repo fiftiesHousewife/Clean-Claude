@@ -5,7 +5,12 @@ gson = "2.11.0"
 openrewrite = "8.40.2"
 versions = "0.53.0"
 
+spotbugs-plugin = "6.5.0"
+cpd-plugin = "3.4"
+
 [libraries]
+spotbugs-gradle-plugin = { module = "com.github.spotbugs:com.github.spotbugs.gradle.plugin", version.ref = "spotbugs-plugin" }
+cpd-gradle-plugin = { module = "de.aaschmid:gradle-cpd-plugin", version.ref = "cpd-plugin" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }

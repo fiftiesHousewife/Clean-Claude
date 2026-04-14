@@ -12,11 +12,11 @@ public abstract class AnalyseTask extends DefaultTask {
 
     @TaskAction
     public void analyse() throws Exception {
-        Path projectRoot = getProject().getProjectDir().toPath();
-        Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
-        Path reportsDir = buildDir.resolve("reports");
+        final Path projectRoot = getProject().getProjectDir().toPath();
+        final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
+        final Path reportsDir = buildDir.resolve("reports");
 
-        ProjectContext context = new ProjectContext(
+        final ProjectContext context = new ProjectContext(
                 projectRoot,
                 getProject().getName(),
                 getProject().getVersion().toString(),
@@ -26,17 +26,19 @@ public abstract class AnalyseTask extends DefaultTask {
                 buildDir,
                 reportsDir);
 
-        List<FindingSource> sources = List.of(
+        final List<FindingSource> sources = List.of(
                 new PmdFindingSource(),
                 new CheckstyleFindingSource(),
                 new SpotBugsFindingSource(),
                 new CpdFindingSource(),
                 new JacocoFindingSource(),
-                new SurefireFindingSource());
+                new SurefireFindingSource(),
+                new DependencyUpdatesFindingSource(),
+                new OpenRewriteFindingSource());
 
-        AggregatedReport report = FindingAggregator.aggregate(sources, context);
+        final AggregatedReport report = FindingAggregator.aggregate(sources, context);
 
-        Path outputDir = buildDir.resolve("reports/clean-code");
+        final Path outputDir = buildDir.resolve("reports/clean-code");
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
 
         getLogger().lifecycle("Clean code analysis: {} findings across {} sources",

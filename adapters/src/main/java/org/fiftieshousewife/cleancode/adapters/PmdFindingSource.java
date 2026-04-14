@@ -32,7 +32,11 @@ public class PmdFindingSource implements FindingSource {
             Map.entry("TooManyFields", new RuleMapping(HeuristicCode.G8, Severity.WARNING, Confidence.MEDIUM)),
             Map.entry("TooManyMethods", new RuleMapping(HeuristicCode.G8, Severity.WARNING, Confidence.MEDIUM)),
             Map.entry("GodClass", new RuleMapping(HeuristicCode.G8, Severity.ERROR, Confidence.MEDIUM)),
-            Map.entry("DataClass", new RuleMapping(HeuristicCode.G17, Severity.INFO, Confidence.LOW))
+            Map.entry("DataClass", new RuleMapping(HeuristicCode.G17, Severity.INFO, Confidence.LOW)),
+            Map.entry("UseLocaleWithCaseConversions", new RuleMapping(HeuristicCode.G20, Severity.WARNING, Confidence.HIGH)),
+            Map.entry("LooseCoupling", new RuleMapping(HeuristicCode.G8, Severity.WARNING, Confidence.MEDIUM)),
+            Map.entry("CloseResource", new RuleMapping(HeuristicCode.G4, Severity.WARNING, Confidence.MEDIUM)),
+            Map.entry("AvoidReassigningParameters", new RuleMapping(HeuristicCode.G22, Severity.WARNING, Confidence.HIGH))
     );
 
     @Override

@@ -4,10 +4,15 @@ plugins {
     `maven-publish`
 }
 
+repositories {
+    gradlePluginPortal()
+}
+
 dependencies {
     implementation(project(":core"))
     implementation(project(":adapters"))
     implementation(project(":annotations"))
+    implementation(libs.spotbugs.gradle.plugin)
 }
 
 gradlePlugin {
