@@ -24,12 +24,14 @@ public class OpenRewriteFindingSource implements FindingSource {
     private static final Set<HeuristicCode> COVERED = Set.of(
             HeuristicCode.F2, HeuristicCode.F3,
             HeuristicCode.C3, HeuristicCode.C5,
+            HeuristicCode.Ch3_1,
             HeuristicCode.Ch7_1, HeuristicCode.Ch7_2,
             HeuristicCode.Ch10_1, HeuristicCode.Ch10_2,
-            HeuristicCode.G10, HeuristicCode.G23, HeuristicCode.G28, HeuristicCode.G29,
-            HeuristicCode.G34, HeuristicCode.G36,
+            HeuristicCode.G10, HeuristicCode.G23, HeuristicCode.G25,
+            HeuristicCode.G28, HeuristicCode.G29,
+            HeuristicCode.G30, HeuristicCode.G34, HeuristicCode.G36,
             HeuristicCode.J2, HeuristicCode.J3,
-            HeuristicCode.N6,
+            HeuristicCode.N5, HeuristicCode.N6,
             HeuristicCode.T3, HeuristicCode.T4);
 
     @Override
@@ -79,7 +81,12 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new EncodingNamingRecipe(),
                 new VerticalSeparationRecipe(),
                 new InheritConstantsRecipe(),
-                new EnumForConstantsRecipe());
+                new EnumForConstantsRecipe(),
+                new ShortVariableNameRecipe(),
+                new MagicStringRecipe(),
+                new WhitespaceSplitMethodRecipe(),
+                new PrivateMethodTestabilityRecipe(),
+                new StringSwitchRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -109,6 +116,11 @@ public class OpenRewriteFindingSource implements FindingSource {
             case VerticalSeparationRecipe r -> mapVerticalSeparation(r.collectedRows());
             case InheritConstantsRecipe r -> mapInheritConstants(r.collectedRows());
             case EnumForConstantsRecipe r -> mapEnumForConstants(r.collectedRows());
+            case ShortVariableNameRecipe r -> mapShortNames(r.collectedRows());
+            case MagicStringRecipe r -> mapMagicStrings(r.collectedRows());
+            case WhitespaceSplitMethodRecipe r -> mapWhitespaceSplit(r.collectedRows());
+            case PrivateMethodTestabilityRecipe r -> mapPrivateMethod(r.collectedRows());
+            case StringSwitchRecipe r -> mapStringSwitch(r.collectedRows());
             default -> List.of();
         };
     }
@@ -241,6 +253,46 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.J3, r.className(), r.lineNumber(),
                         "%d static final fields with prefix '%s' should be an enum".formatted(
                                 r.fieldCount(), r.prefix())))
+                .toList();
+    }
+
+    private List<Finding> mapShortNames(List<ShortVariableNameRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.N5, r.className(), r.lineNumber(),
+                        "'%s' in %s() is not a meaningful name — rename to reveal intent (%s)".formatted(
+                                r.variableName(), r.methodName(), r.context())))
+                .toList();
+    }
+
+    private List<Finding> mapMagicStrings(List<MagicStringRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G25, r.className(), r.lineNumber(),
+                        "String \"%s\" appears %d times — extract to a named constant".formatted(
+                                r.value(), r.count())))
+                .toList();
+    }
+
+    private List<Finding> mapWhitespaceSplit(List<WhitespaceSplitMethodRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G30, r.className(), r.lineNumber(),
+                        "Method '%s' has %d blank-line sections across %d lines — each section should be its own method".formatted(
+                                r.methodName(), r.blankLineCount(), r.totalLines())))
+                .toList();
+    }
+
+    private List<Finding> mapPrivateMethod(List<PrivateMethodTestabilityRecipe.PrivateMethodTestabilityRow> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.Ch3_1, r.className(), r.lineNumber(),
+                        "Private method '%s' (%d lines) should be package-private so it can be tested directly".formatted(
+                                r.methodName(), r.lineCount())))
+                .toList();
+    }
+
+    private List<Finding> mapStringSwitch(List<StringSwitchRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G23, r.className(), r.lineNumber(),
+                        "Switch on String '%s' with %d cases — replace with an enum that encapsulates the behaviour".formatted(
+                                r.selectorName(), r.caseCount())))
                 .toList();
     }
 

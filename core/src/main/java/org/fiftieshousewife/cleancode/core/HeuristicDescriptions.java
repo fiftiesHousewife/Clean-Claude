@@ -271,6 +271,11 @@ public final class HeuristicDescriptions {
                     "class should answer the big questions: why it exists, what it does, and " +
                     "how it is used. If a name requires a comment, then the name is not revealing " +
                     "its intent."),
+            Map.entry(HeuristicCode.N5,
+                    "The length of a name should correspond to the size of its scope. A variable " +
+                    "named 'i' is fine in a three-line for-loop. But a variable named 's' in a " +
+                    "fifty-line method is a riddle. If the scope is long, the name should be long " +
+                    "enough to be found, remembered, and understood without scrolling."),
             Map.entry(HeuristicCode.N6,
                     "In the days of early C and Fortran, encoding type information in names was " +
                     "necessary. Today, with modern languages and IDEs, Hungarian notation and " +
