@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: read
-  checks: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,13 +23,11 @@ jobs:
       - name: Build and test
         run: ./gradlew build
 
-      - name: Publish test results
-        uses: dorny/test-reporter@v1
+      - name: Test summary
+        uses: test-summary/action@v2
         if: always()
         with:
-          name: Test Results
-          path: '**/build/test-results/test/TEST-*.xml'
-          reporter: java-junit
+          paths: '**/build/test-results/test/TEST-*.xml'
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
