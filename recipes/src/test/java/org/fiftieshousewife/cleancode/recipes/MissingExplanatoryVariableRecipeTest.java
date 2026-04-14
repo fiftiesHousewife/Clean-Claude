@@ -7,14 +7,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class MissingExplanatoryVariableRecipeTest {
 
     @Test
-    void detectsChainedMethodCallInArgument() {
+    void detectsDeeplyChainedMethodCallInArgument() {
         final var recipe = new MissingExplanatoryVariableRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
                     Object bar;
                     void process() {
-                        System.out.println(bar.getX().transform());
+                        System.out.println(bar.getX().transform().serialize());
                     }
                 }
                 """);
@@ -27,14 +27,14 @@ class MissingExplanatoryVariableRecipeTest {
     }
 
     @Test
-    void ignoresSingleMethodCallInArgument() {
+    void ignoresShortChainedMethodCallInArgument() {
         final var recipe = new MissingExplanatoryVariableRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
                     Object bar;
                     void process() {
-                        System.out.println(bar.getName());
+                        System.out.println(bar.getX().transform());
                     }
                 }
                 """);
@@ -48,8 +48,8 @@ class MissingExplanatoryVariableRecipeTest {
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
-                    int compute(int a, int b, int c, int d) {
-                        return a + b * c - d;
+                    int compute(int a, int b, int c, int d, int e) {
+                        return a + b * c - d + e;
                     }
                 }
                 """);
@@ -66,8 +66,8 @@ class MissingExplanatoryVariableRecipeTest {
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
-                    int add(int a, int b) {
-                        return a + b;
+                    int compute(int a, int b, int c, int d) {
+                        return a + b * c - d;
                     }
                 }
                 """);

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumulator> {
 
@@ -29,8 +30,11 @@ public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumula
     }
     private static final Set<String> IGNORED_VALUES = Set.of(
             "UTF-8", "application/json", "text/plain", "text/html",
-            "Content-Type", "Accept", "Authorization"
+            "Content-Type", "Accept", "Authorization",
+            "<unknown>"
     );
+
+    private static final Pattern TOOL_ID_PATTERN = Pattern.compile("^[a-z][a-z0-9-]*$");
 
     public record Row(String className, String value, int count, int lineNumber) {}
 
@@ -71,7 +75,7 @@ public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumula
                     @Override
                     public J.Literal visitLiteral(J.Literal literal, List<Occurrence> collected) {
                         final J.Literal lit = super.visitLiteral(literal, collected);
-                        if (isInsideAnnotation()) {
+                        if (isInsideAnnotation() || isInsideMapEntry()) {
                             return lit;
                         }
                         if (lit.getValue() instanceof String stringValue && isCandidate(stringValue)) {
@@ -84,6 +88,11 @@ public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumula
 
                     private boolean isInsideAnnotation() {
                         return getCursor().firstEnclosing(J.Annotation.class) != null;
+                    }
+
+                    private boolean isInsideMapEntry() {
+                        final J.MethodInvocation enclosing = getCursor().firstEnclosing(J.MethodInvocation.class);
+                        return enclosing != null && "entry".equals(enclosing.getSimpleName());
                     }
                 }.visit(c.getBody(), occurrences);
 
@@ -102,8 +111,26 @@ public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumula
         };
     }
 
-    static boolean isCandidate(String value) {
-        return value.length() >= MIN_LENGTH && !IGNORED_VALUES.contains(value);
+    static boolean isCandidate(final String value) {
+        if (value.length() < MIN_LENGTH) {
+            return false;
+        }
+        if (IGNORED_VALUES.contains(value)) {
+            return false;
+        }
+        if (value.isBlank()) {
+            return false;
+        }
+        if (value.contains("<") || value.contains(">")) {
+            return false;
+        }
+        if (value.contains("/") || value.contains(".claude/")) {
+            return false;
+        }
+        if (value.length() < 15 && TOOL_ID_PATTERN.matcher(value).matches()) {
+            return false;
+        }
+        return true;
     }
 
     @Override

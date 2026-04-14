@@ -46,6 +46,10 @@ public class SideEffectNamingRecipe extends ScanningRecipe<SideEffectNamingRecip
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
+                if (hasOverrideAnnotation(m)) {
+                    return m;
+                }
+
                 if (!hasQueryPrefix(m.getSimpleName())) {
                     return m;
                 }
@@ -65,6 +69,11 @@ public class SideEffectNamingRecipe extends ScanningRecipe<SideEffectNamingRecip
                 }
 
                 return m;
+            }
+
+            private boolean hasOverrideAnnotation(J.MethodDeclaration method) {
+                return method.getLeadingAnnotations().stream()
+                        .anyMatch(ann -> "Override".equals(ann.getSimpleName()));
             }
 
             private boolean hasQueryPrefix(String name) {

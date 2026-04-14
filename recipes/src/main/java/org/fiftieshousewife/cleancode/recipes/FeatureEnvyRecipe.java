@@ -55,7 +55,8 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
-                if (isConstructor(m) || isStatic(m) || isInTestClass()) {
+                if (isConstructor(m) || isStatic(m) || isInTestClass()
+                        || isVisitorMethod(m)) {
                     return m;
                 }
 
@@ -85,7 +86,7 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                 }
 
                 counter.externalCalls.entrySet().stream()
-                        .filter(entry -> entry.getValue() > counter.selfCalls)
+                        .filter(entry -> entry.getValue() > counter.selfCalls * 2)
                         .max(Map.Entry.comparingByValue())
                         .ifPresent(entry -> acc.rows.add(new Row(
                                 findEnclosingClassName(),
@@ -96,6 +97,10 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                                 -1)));
 
                 return m;
+            }
+
+            private boolean isVisitorMethod(J.MethodDeclaration method) {
+                return method.getSimpleName().startsWith("visit");
             }
 
             private boolean isConstructor(J.MethodDeclaration method) {

@@ -26,7 +26,8 @@ public class ShortVariableNameRecipe extends ScanningRecipe<ShortVariableNameRec
     }
 
     private static final Set<String> ALLOWED_SHORT_NAMES = Set.of(
-            "i", "j", "k", "x", "y", "z", "e", "ex", "id");
+            "i", "j", "k", "x", "y", "z", "e", "ex", "id",
+            "m", "v", "s", "c", "p", "t", "r", "n", "f");
 
     public record Row(String className, String methodName, String variableName,
                       String context, int lineNumber) {}

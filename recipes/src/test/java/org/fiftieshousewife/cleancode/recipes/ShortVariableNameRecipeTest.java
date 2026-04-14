@@ -13,8 +13,8 @@ class ShortVariableNameRecipeTest {
                 package com.example;
                 public class Foo {
                     public void process() {
-                        String s = "hello";
-                        int n = 42;
+                        String a = "hello";
+                        int b = 42;
                     }
                 }
                 """);
@@ -28,7 +28,7 @@ class ShortVariableNameRecipeTest {
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
-                    public void process(String s, int n) {}
+                    public void process(String a, int b) {}
                 }
                 """);
 
@@ -124,7 +124,7 @@ class ShortVariableNameRecipeTest {
                 package com.example;
                 public class MyService {
                     public void transform() {
-                        String s = "value";
+                        String a = "value";
                     }
                 }
                 """);
@@ -133,7 +133,7 @@ class ShortVariableNameRecipeTest {
                 () -> assertEquals(1, recipe.collectedRows().size()),
                 () -> assertEquals("MyService", recipe.collectedRows().getFirst().className()),
                 () -> assertEquals("transform", recipe.collectedRows().getFirst().methodName()),
-                () -> assertEquals("s", recipe.collectedRows().getFirst().variableName())
+                () -> assertEquals("a", recipe.collectedRows().getFirst().variableName())
         );
     }
 }

@@ -14,8 +14,8 @@ import java.util.List;
 public class MissingExplanatoryVariableRecipe
         extends ScanningRecipe<MissingExplanatoryVariableRecipe.Accumulator> {
 
-    private static final int CHAIN_DEPTH_THRESHOLD = 2;
-    private static final int BINARY_OPERATOR_THRESHOLD = 3;
+    private static final int CHAIN_DEPTH_THRESHOLD = 3;
+    private static final int BINARY_OPERATOR_THRESHOLD = 4;
     private static final int PREVIEW_MAX_LENGTH = 60;
 
     public record Row(
