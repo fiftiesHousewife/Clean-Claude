@@ -154,19 +154,11 @@ public final class BuildOutputFormatter {
         if (finding.sourceFile() == null) {
             return "(project)";
         }
-        final String file = shortenPath(finding.sourceFile());
+        final String file = finding.sourceFile();
         if (finding.startLine() > 0) {
             return file + ":" + finding.startLine();
         }
         return file;
-    }
-
-    private static String shortenPath(String path) {
-        final int srcIdx = path.indexOf("src/main/java/");
-        if (srcIdx >= 0) {
-            return path.substring(srcIdx + "src/main/java/".length());
-        }
-        return path;
     }
 
     private static String severityIcon(Severity severity) {

@@ -62,6 +62,8 @@ public class OpenRewriteFindingSource implements FindingSource {
         return COVERED;
     }
 
+    private Map<String, String> classNameToSourcePath = Map.of();
+
     @Override
     public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
         final List<Path> javaFiles = collectSourceFiles(context);
@@ -70,9 +72,25 @@ public class OpenRewriteFindingSource implements FindingSource {
         }
 
         final List<SourceFile> parsed = parseSourceFiles(javaFiles);
+        classNameToSourcePath = buildSourcePathIndex(parsed);
         final List<ScanningRecipe<?>> recipes = createRecipes();
         recipes.forEach(recipe -> runRecipe(parsed, recipe));
         return extractFindings(recipes);
+    }
+
+    private Map<String, String> buildSourcePathIndex(List<SourceFile> parsed) {
+        final Map<String, String> index = new HashMap<>();
+        parsed.forEach(sf -> {
+            final String path = sf.getSourcePath().toString();
+            final String fileName = path.contains("/")
+                    ? path.substring(path.lastIndexOf('/') + 1)
+                    : path;
+            final String className = fileName.endsWith(".java")
+                    ? fileName.substring(0, fileName.length() - 5)
+                    : fileName;
+            index.put(className, path);
+        });
+        return index;
     }
 
     private List<ScanningRecipe<?>> createRecipes() {
@@ -426,12 +444,18 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private Finding finding(HeuristicCode code, String className, String message) {
-        return Finding.at(code, className + ".java", -1, -1,
+        final String sourcePath = resolveSourcePath(className);
+        return Finding.at(code, sourcePath, -1, -1,
                 message, Severity.WARNING, Confidence.HIGH, TOOL, code.name());
     }
 
     private Finding finding(HeuristicCode code, String className, int line, String message) {
-        return Finding.at(code, className + ".java", line, line,
+        final String sourcePath = resolveSourcePath(className);
+        return Finding.at(code, sourcePath, line, line,
                 message, Severity.WARNING, Confidence.HIGH, TOOL, code.name());
+    }
+
+    private String resolveSourcePath(String className) {
+        return classNameToSourcePath.getOrDefault(className, className + ".java");
     }
 }
