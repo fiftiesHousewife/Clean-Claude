@@ -15,12 +15,15 @@ public abstract class CleanCodeExtension {
 
     public abstract ListProperty<String> getDisabledRecipes();
 
+    public abstract Property<String> getSkillsDir();
+
     private final ThresholdsExtension thresholds;
 
     @Inject
     public CleanCodeExtension(ObjectFactory objects) {
         getFailOnViolation().convention(true);
         getDisabledRecipes().convention(java.util.List.of());
+        getSkillsDir().convention(".claude/skills");
         thresholds = objects.newInstance(ThresholdsExtension.class);
     }
 

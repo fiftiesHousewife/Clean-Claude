@@ -7,6 +7,7 @@ import org.gradle.api.Project;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -28,7 +29,7 @@ public class CleanCodePlugin implements Plugin<Project> {
                 .create("cleanCode", CleanCodeExtension.class);
 
         applyStaticAnalysisPlugins(project);
-        scaffoldSkillFiles(project);
+        scaffoldSkillFiles(project, ext);
 
         final TaskProvider<AnalyseTask> analyse = project.getTasks()
                 .register("analyseCleanCode", AnalyseTask.class, task -> {
@@ -71,8 +72,8 @@ public class CleanCodePlugin implements Plugin<Project> {
             "java-idioms.md",
             "project-conventions.md");
 
-    private void scaffoldSkillFiles(Project project) {
-        final Path skillsDir = project.getProjectDir().toPath().resolve(".claude/skills");
+    private void scaffoldSkillFiles(Project project, CleanCodeExtension ext) {
+        final Path skillsDir = project.getProjectDir().toPath().resolve(ext.getSkillsDir().get());
         try {
             Files.createDirectories(skillsDir);
         } catch (IOException e) {
@@ -125,7 +126,8 @@ public class CleanCodePlugin implements Plugin<Project> {
             cs.setToolVersion("10.21.4");
             final var defaultConfigFile = project.file("config/checkstyle/checkstyle.xml");
             if (!defaultConfigFile.exists()) {
-                cs.setConfig(project.getResources().getText().fromString(MINIMAL_CHECKSTYLE_CONFIG));
+                final String configContent = loadClasspathResource("/cleancode-checkstyle.xml");
+                cs.setConfig(project.getResources().getText().fromString(configContent));
             }
         });
         project.getTasks().withType(Checkstyle.class).configureEach(task ->
@@ -168,37 +170,14 @@ public class CleanCodePlugin implements Plugin<Project> {
         });
     }
 
-    private static final String MINIMAL_CHECKSTYLE_CONFIG = """
-            <?xml version="1.0"?>
-            <!DOCTYPE module PUBLIC
-                "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
-                "https://checkstyle.org/dtds/configuration_1_3.dtd">
-            <module name="Checker">
-                <property name="severity" value="warning"/>
-                <module name="TreeWalker">
-                    <module name="AvoidStarImport"/>
-                    <module name="UnusedImports"/>
-                    <module name="RedundantImport"/>
-                    <module name="NeedBraces"/>
-                    <module name="EmptyBlock"/>
-                    <module name="LeftCurly"/>
-                    <module name="RightCurly"/>
-                    <module name="SimplifyBooleanExpression"/>
-                    <module name="SimplifyBooleanReturn"/>
-                    <module name="FinalLocalVariable"/>
-                    <module name="ParameterNumber">
-                        <property name="max" value="4"/>
-                    </module>
-                    <module name="MethodLength">
-                        <property name="max" value="50"/>
-                    </module>
-                </module>
-                <module name="FileLength">
-                    <property name="max" value="150"/>
-                </module>
-                <module name="LineLength">
-                    <property name="max" value="120"/>
-                </module>
-            </module>
-            """;
+    private String loadClasspathResource(String resourcePath) {
+        try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
+            if (is == null) {
+                throw new IllegalStateException("Classpath resource not found: " + resourcePath);
+            }
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read classpath resource: " + resourcePath, e);
+        }
+    }
 }
