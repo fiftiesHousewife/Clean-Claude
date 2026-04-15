@@ -5,10 +5,12 @@ gson = "2.11.0"
 openrewrite = "8.40.2"
 versions = "0.53.0"
 
+anthropic = "2.25.0"
 spotbugs-plugin = "6.5.0"
 cpd-plugin = "3.4"
 
 [libraries]
+anthropic-java = { module = "com.anthropic:anthropic-java", version.ref = "anthropic" }
 spotbugs-gradle-plugin = { module = "com.github.spotbugs:com.github.spotbugs.gradle.plugin", version.ref = "spotbugs-plugin" }
 cpd-gradle-plugin = { module = "de.aaschmid:gradle-cpd-plugin", version.ref = "cpd-plugin" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }

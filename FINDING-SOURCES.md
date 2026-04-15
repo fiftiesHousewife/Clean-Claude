@@ -177,10 +177,54 @@ Parses JUnit XML test results from `build/test-results/test/`. Despite the name,
 
 ## OpenRewrite (Custom Recipes)
 
-37 custom [OpenRewrite](https://docs.openrewrite.org/) `ScanningRecipe` implementations that detect Clean Code patterns via AST analysis.
+40 custom [OpenRewrite](https://docs.openrewrite.org/) `ScanningRecipe` implementations that detect Clean Code patterns via AST analysis.
 
 **Tool version:** 8.40.2
 
 **Important:** Requires JDK 21. See [README.md](README.md#build) for details.
 
 See [HEURISTICS.md](HEURISTICS.md) for the full list of recipes and which heuristic each detects. Recipes are configurable via `cleanCode.thresholds` and individually disableable via `cleanCode.disabledRecipes`.
+
+---
+
+## Claude Review (LLM Assessment)
+
+Uses the [Claude API](https://docs.anthropic.com/en/docs) to assess source files for subjective Clean Code heuristics that require semantic understanding beyond what static analysis can detect. This is an **opt-in** source: it only runs when the `ANTHROPIC_API_KEY` environment variable is set.
+
+**Default model:** claude-sonnet-4-6
+
+**Confidence:** Always LOW — LLM assessments are non-deterministic and advisory.
+
+| Code | Heuristic | What Claude assesses |
+|---|---|---|
+| [C2](HEURISTICS.md#c2-obsolete-comment) | Obsolete Comment | Comments that no longer match the code they describe |
+| [G6](HEURISTICS.md#g6-code-at-wrong-level-of-abstraction) | Code at Wrong Level of Abstraction | Methods or fields that belong in a different class |
+| [G7](HEURISTICS.md#g7-base-classes-depending-on-their-derivatives) | Base Classes Depending on Derivatives | Base classes that import or reference subclasses |
+| [G13](HEURISTICS.md#g13-artificial-coupling) | Artificial Coupling | Classes coupled for no structural reason |
+| [G15](HEURISTICS.md#g15-selector-arguments) | Selector Arguments | Boolean/enum/string params that select behaviour |
+| [G20](HEURISTICS.md#g20-function-names-should-say-what-they-do) | Function Names Should Say What They Do | Methods whose names don't communicate intent |
+| [G31](HEURISTICS.md#g31-hidden-temporal-couplings) | Hidden Temporal Couplings | Operations that must be called in order but don't enforce it |
+| [N4](HEURISTICS.md#n4-unambiguous-names) | Unambiguous Names | Names that could refer to multiple things |
+
+### Configuration
+
+```kotlin
+cleanCode {
+    claudeReview {
+        enabled.set(true)                    // default: true (gated on API key)
+        model.set("claude-sonnet-4-6")       // default
+        maxFilesPerRun.set(50)               // default — caps API usage per build
+        minFileLines.set(10)                 // default — skip trivial files
+        codes.set(listOf("G6", "G7", "G13", "G15", "G20", "G31", "C2", "N4"))
+        excludePatterns.set(listOf("**/generated/**"))
+    }
+}
+```
+
+### Caching
+
+Results are cached by SHA-256 of file content + enabled codes in `build/claude-review-cache/`. Unchanged files skip the API call entirely. Run `./gradlew clean` to clear the cache.
+
+### Provenance
+
+Each finding includes `tool: "claude-review"` and `metadata.model` identifying which Claude model produced it.

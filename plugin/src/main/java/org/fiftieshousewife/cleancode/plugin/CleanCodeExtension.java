@@ -1,12 +1,16 @@
 package org.fiftieshousewife.cleancode.plugin;
 
+import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewConfig;
 import org.fiftieshousewife.cleancode.core.RecipeThresholds;
+import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("this-escape")
 public abstract class CleanCodeExtension {
@@ -18,6 +22,7 @@ public abstract class CleanCodeExtension {
     public abstract Property<String> getSkillsDir();
 
     private final ThresholdsExtension thresholds;
+    private final ClaudeReviewExtension claudeReview;
 
     @Inject
     public CleanCodeExtension(ObjectFactory objects) {
@@ -25,6 +30,7 @@ public abstract class CleanCodeExtension {
         getDisabledRecipes().convention(java.util.List.of());
         getSkillsDir().convention(".claude/skills");
         thresholds = objects.newInstance(ThresholdsExtension.class);
+        claudeReview = objects.newInstance(ClaudeReviewExtension.class);
     }
 
     public void thresholds(Action<? super ThresholdsExtension> action) {
@@ -33,6 +39,27 @@ public abstract class CleanCodeExtension {
 
     public ThresholdsExtension getThresholds() {
         return thresholds;
+    }
+
+    public void claudeReview(Action<? super ClaudeReviewExtension> action) {
+        action.execute(claudeReview);
+    }
+
+    public ClaudeReviewExtension getClaudeReview() {
+        return claudeReview;
+    }
+
+    public ClaudeReviewConfig buildClaudeReviewConfig() {
+        final Set<HeuristicCode> enabledCodes = claudeReview.getCodes().get().stream()
+                .map(HeuristicCode::valueOf)
+                .collect(Collectors.toUnmodifiableSet());
+        return new ClaudeReviewConfig(
+                claudeReview.getEnabled().get(),
+                claudeReview.getModel().get(),
+                claudeReview.getMaxFilesPerRun().get(),
+                claudeReview.getMinFileLines().get(),
+                enabledCodes,
+                claudeReview.getExcludePatterns().get());
     }
 
     public RecipeThresholds buildRecipeThresholds() {
@@ -88,6 +115,33 @@ public abstract class CleanCodeExtension {
             getStringSwitchMinCases().convention(RecipeThresholds.DEFAULT_STRING_SWITCH_MIN_CASES);
             getShortNameMinLength().convention(RecipeThresholds.DEFAULT_SHORT_NAME_MIN_LENGTH);
             getCpdMinimumTokens().convention(RecipeThresholds.DEFAULT_CPD_MINIMUM_TOKENS);
+        }
+    }
+
+    @SuppressWarnings("this-escape")
+    public abstract static class ClaudeReviewExtension {
+
+        public abstract Property<Boolean> getEnabled();
+
+        public abstract Property<String> getModel();
+
+        public abstract Property<Integer> getMaxFilesPerRun();
+
+        public abstract Property<Integer> getMinFileLines();
+
+        public abstract ListProperty<String> getCodes();
+
+        public abstract ListProperty<String> getExcludePatterns();
+
+        @Inject
+        public ClaudeReviewExtension() {
+            getEnabled().convention(true);
+            getModel().convention("claude-sonnet-4-6");
+            getMaxFilesPerRun().convention(50);
+            getMinFileLines().convention(10);
+            getCodes().convention(java.util.List.of(
+                    "G6", "G7", "G13", "G15", "G20", "G31", "C2", "N4"));
+            getExcludePatterns().convention(java.util.List.of("**/generated/**"));
         }
     }
 }

@@ -138,6 +138,12 @@ cleanCode {
         cpdMinimumTokens = 100       // default 50
     }
     disabledRecipes = listOf("G36", "G10")
+
+    claudeReview {                        // opt-in LLM assessment (requires ANTHROPIC_API_KEY)
+        model.set("claude-sonnet-4-6")    // default
+        maxFilesPerRun.set(50)            // default — caps API usage
+        codes.set(listOf("G6", "G20"))    // default: G6, G7, G13, G15, G20, G31, C2, N4
+    }
 }
 ```
 
@@ -152,6 +158,7 @@ CleanClaude/
 ├── recipes/       37 custom OpenRewrite ScanningRecipes
 ├── adapters/      8 FindingSource implementations (PMD, Checkstyle, SpotBugs,
 │                  CPD, JaCoCo, Surefire, Dependency Updates, OpenRewrite)
+├── claude-review/ Claude API FindingSource for subjective heuristics (opt-in)
 ├── plugin/        Gradle plugin, tasks, extension DSL
 └── build-logic/   Convention plugins
 ```

@@ -2,6 +2,8 @@ package org.fiftieshousewife.cleancode.plugin;
 
 import org.fiftieshousewife.cleancode.adapters.*;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
+import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewConfig;
+import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewFindingSource;
 import org.fiftieshousewife.cleancode.core.*;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
@@ -22,6 +24,7 @@ public abstract class AnalyseTask extends DefaultTask {
 
         final CleanCodeExtension ext = getProject().getExtensions().getByType(CleanCodeExtension.class);
         final RecipeThresholds thresholds = ext.buildRecipeThresholds();
+        final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig();
         final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
 
         final List<String> dependencies = getProject().getConfigurations().stream()
@@ -51,7 +54,8 @@ public abstract class AnalyseTask extends DefaultTask {
                 new JacocoFindingSource(),
                 new SurefireFindingSource(),
                 new DependencyUpdatesFindingSource(),
-                new OpenRewriteFindingSource(thresholds));
+                new OpenRewriteFindingSource(thresholds),
+                new ClaudeReviewFindingSource(claudeConfig));
 
         final AggregatedReport fullReport = FindingAggregator.aggregate(sources, context);
         final AggregatedReport report = filterDisabledRecipes(fullReport, disabledRecipes);

@@ -11,6 +11,7 @@ repositories {
 dependencies {
     implementation(project(":core"))
     implementation(project(":adapters"))
+    implementation(project(":claude-review"))
     implementation(project(":annotations"))
     implementation(libs.spotbugs.gradle.plugin)
 }
