@@ -21,6 +21,8 @@ public abstract class CleanCodeExtension {
 
     public abstract Property<String> getSkillsDir();
 
+    public abstract Property<String> getRepositoryUrl();
+
     private final ThresholdsExtension thresholds;
     private final ClaudeReviewExtension claudeReview;
 
@@ -29,6 +31,7 @@ public abstract class CleanCodeExtension {
         getFailOnViolation().convention(true);
         getDisabledRecipes().convention(java.util.List.of());
         getSkillsDir().convention(".claude/skills");
+        getRepositoryUrl().convention("");
         thresholds = objects.newInstance(ThresholdsExtension.class);
         claudeReview = objects.newInstance(ClaudeReviewExtension.class);
     }

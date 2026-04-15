@@ -61,9 +61,11 @@ public abstract class AnalyseTask extends DefaultTask {
         final AggregatedReport fullReport = FindingAggregator.aggregate(sources, context);
         final AggregatedReport report = filterDisabledRecipes(fullReport, disabledRecipes);
 
+        final String repositoryUrl = ext.getRepositoryUrl().get();
         final Path outputDir = buildDir.resolve("reports/clean-code");
+        final Path htmlReport = outputDir.resolve("findings.html");
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
-        HtmlReportWriter.write(report, outputDir.resolve("findings.html"));
+        HtmlReportWriter.write(report, htmlReport, repositoryUrl);
 
         final Path baselineFile = projectRoot.resolve("clean-code-baseline.json");
         final Map<HeuristicCode, BaselineManager.Delta> deltas = Files.exists(baselineFile)
@@ -71,6 +73,7 @@ public abstract class AnalyseTask extends DefaultTask {
                 : Map.of();
 
         getLogger().lifecycle(BuildOutputFormatter.format(report, deltas));
+        getLogger().lifecycle("\n  Report: file://" + htmlReport.toAbsolutePath());
     }
 
     private AggregatedReport filterDisabledRecipes(final AggregatedReport report,

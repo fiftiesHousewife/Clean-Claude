@@ -20,14 +20,19 @@ public final class HtmlReportWriter {
     private HtmlReportWriter() {}
 
     public static void write(AggregatedReport report, Path outputFile) throws IOException {
+        write(report, outputFile, "");
+    }
+
+    public static void write(AggregatedReport report, Path outputFile,
+                              String repositoryUrl) throws IOException {
         final Path parent = outputFile.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
-        Files.writeString(outputFile, render(report));
+        Files.writeString(outputFile, render(report, repositoryUrl));
     }
 
-    private static String render(AggregatedReport report) {
+    private static String render(AggregatedReport report, String repositoryUrl) {
         final StringBuilder html = new StringBuilder();
         appendDocumentStart(html, report);
         appendSeveritySummary(html, report);
@@ -35,7 +40,7 @@ public final class HtmlReportWriter {
         if (report.findings().isEmpty()) {
             html.append("    <p class=\"clean\">No violations found. The code is clean.</p>\n");
         } else {
-            appendFindingsByCode(html, report.findings());
+            appendFindingsByCode(html, report.findings(), repositoryUrl);
             appendToolSummary(html, report.findings());
         }
 
@@ -98,6 +103,8 @@ public final class HtmlReportWriter {
         html.append("    .sev-error { color: #c0392b; font-weight: 600; }\n");
         html.append("    .sev-warning { color: #e67e22; font-weight: 600; }\n");
         html.append("    .sev-info { color: #95a5a6; }\n");
+        html.append("    .location a { color: #2980b9; text-decoration: none; }\n");
+        html.append("    .location a:hover { text-decoration: underline; }\n");
         html.append("    .location { font-family: 'SF Mono', 'Fira Code', monospace; ");
         html.append("font-size: 0.85rem; }\n");
         html.append("    .tool-summary { background: #fff; border: 1px solid #ddd; ");
@@ -123,17 +130,18 @@ public final class HtmlReportWriter {
         html.append("    </div>\n");
     }
 
-    private static void appendFindingsByCode(StringBuilder html, List<Finding> findings) {
+    private static void appendFindingsByCode(StringBuilder html, List<Finding> findings,
+                                               String repositoryUrl) {
         final Map<HeuristicCode, List<Finding>> byCode = findings.stream()
                 .collect(Collectors.groupingBy(Finding::code));
 
         byCode.entrySet().stream()
                 .sorted(Comparator.comparing(e -> e.getKey().name()))
-                .forEach(entry -> appendCodeGroup(html, entry.getKey(), entry.getValue()));
+                .forEach(entry -> appendCodeGroup(html, entry.getKey(), entry.getValue(), repositoryUrl));
     }
 
     private static void appendCodeGroup(StringBuilder html, HeuristicCode code,
-                                         List<Finding> group) {
+                                         List<Finding> group, String repositoryUrl) {
         final String name = HeuristicDescriptions.name(code);
         final String reference = HeuristicDescriptions.reference(code);
         final String guidance = HeuristicDescriptions.guidance(code);
@@ -159,23 +167,47 @@ public final class HtmlReportWriter {
 
         group.stream()
                 .sorted(Comparator.comparing(f -> f.sourceFile() != null ? f.sourceFile() : ""))
-                .forEach(f -> appendFindingRow(html, f));
+                .forEach(f -> appendFindingRow(html, f, repositoryUrl));
 
         html.append("        </table>\n");
         html.append("      </div>\n");
         html.append("    </details>\n");
     }
 
-    private static void appendFindingRow(StringBuilder html, Finding finding) {
+    private static void appendFindingRow(StringBuilder html, Finding finding,
+                                          String repositoryUrl) {
         final String severityClass = "sev-" + finding.severity().name().toLowerCase();
         final String location = formatLocation(finding);
+        final String locationHtml = buildLocationHtml(finding, location, repositoryUrl);
 
         html.append("          <tr>");
         html.append("<td class=\"").append(severityClass).append("\">");
         html.append(finding.severity().name()).append("</td>");
-        html.append("<td class=\"location\">").append(escape(location)).append("</td>");
+        html.append("<td class=\"location\">").append(locationHtml).append("</td>");
         html.append("<td>").append(escape(finding.message())).append("</td>");
         html.append("</tr>\n");
+    }
+
+    private static String buildLocationHtml(Finding finding, String location,
+                                             String repositoryUrl) {
+        if (finding.sourceFile() == null || repositoryUrl == null || repositoryUrl.isBlank()) {
+            return escape(location);
+        }
+        final String baseUrl = repositoryUrl.endsWith("/")
+                ? repositoryUrl.substring(0, repositoryUrl.length() - 1) : repositoryUrl;
+        final String relativePath = relativiseSourceFile(finding.sourceFile());
+        final String fileUrl = baseUrl + "/blob/main/" + relativePath;
+        final String linkedUrl = finding.startLine() > 0
+                ? fileUrl + "#L" + finding.startLine() : fileUrl;
+        return "<a href=\"" + escape(linkedUrl) + "\">" + escape(location) + "</a>";
+    }
+
+    private static String relativiseSourceFile(String sourceFile) {
+        final int srcIdx = sourceFile.indexOf("src/");
+        if (srcIdx > 0) {
+            return sourceFile.substring(srcIdx);
+        }
+        return sourceFile;
     }
 
     private static void appendToolSummary(StringBuilder html, List<Finding> findings) {
