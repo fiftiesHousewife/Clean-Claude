@@ -114,9 +114,10 @@ class SurefireFindingSourceTest {
 
     @Test
     void isAvailable_returnsFalseWhenNoReportFiles(@TempDir Path tempDir) {
-        ProjectContext ctx = new ProjectContext(
+        final Path buildDir = tempDir.resolve("build");
+        final ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
-                List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
+                List.of(), List.of(), buildDir, buildDir.resolve("reports"), List.of());
 
         assertFalse(source.isAvailable(ctx));
     }
@@ -134,19 +135,19 @@ class SurefireFindingSourceTest {
     }
 
     private ProjectContext contextWithFixtures(Path tempDir) throws IOException {
-        Path reportsDir = tempDir.resolve("reports");
-        Path surefireDir = reportsDir.resolve("surefire-reports");
-        Files.createDirectories(surefireDir);
+        final Path buildDir = tempDir.resolve("build");
+        final Path testResultsDir = buildDir.resolve("test-results/test");
+        Files.createDirectories(testResultsDir);
 
         copyFixture("/surefire/TEST-com.example.FooTest.xml",
-                surefireDir.resolve("TEST-com.example.FooTest.xml"));
+                testResultsDir.resolve("TEST-com.example.FooTest.xml"));
         copyFixture("/surefire/TEST-com.example.BarTest.xml",
-                surefireDir.resolve("TEST-com.example.BarTest.xml"));
+                testResultsDir.resolve("TEST-com.example.BarTest.xml"));
 
         return new ProjectContext(
                 tempDir, "test-project", "1.0", "21",
                 List.of(), List.of(Path.of("src/test/java")),
-                tempDir.resolve("build"), reportsDir, List.of());
+                buildDir, buildDir.resolve("reports"), List.of());
     }
 
     private void copyFixture(String resourcePath, Path target) throws IOException {

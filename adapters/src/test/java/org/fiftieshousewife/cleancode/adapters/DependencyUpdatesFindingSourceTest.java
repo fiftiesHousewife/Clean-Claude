@@ -24,8 +24,8 @@ class DependencyUpdatesFindingSourceTest {
 
     @Test
     void returnsE1FindingsForOutdatedDependencies(@TempDir Path tempDir) throws Exception {
-        final Path reportsDir = tempDir.resolve("reports");
-        writeReport(reportsDir, """
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
                 {
                   "outdated": {
                     "dependencies": [
@@ -46,7 +46,7 @@ class DependencyUpdatesFindingSourceTest {
                 }
                 """);
 
-        final ProjectContext context = contextWithReportsDir(tempDir, reportsDir);
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
         final List<Finding> findings = source.collectFindings(context);
 
         assertAll(
@@ -61,8 +61,8 @@ class DependencyUpdatesFindingSourceTest {
 
     @Test
     void returnsEmptyWhenNoReportExists(@TempDir Path tempDir) throws Exception {
-        final Path reportsDir = tempDir.resolve("reports");
-        final ProjectContext context = contextWithReportsDir(tempDir, reportsDir);
+        final Path buildDir = tempDir.resolve("build");
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
 
         final List<Finding> findings = source.collectFindings(context);
 
@@ -71,15 +71,15 @@ class DependencyUpdatesFindingSourceTest {
 
     @Test
     void returnsEmptyWhenNoOutdatedDependencies(@TempDir Path tempDir) throws Exception {
-        final Path reportsDir = tempDir.resolve("reports");
-        writeReport(reportsDir, """
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
                 {
                   "outdated": { "dependencies": [] },
                   "current": { "dependencies": [] }
                 }
                 """);
 
-        final ProjectContext context = contextWithReportsDir(tempDir, reportsDir);
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
         final List<Finding> findings = source.collectFindings(context);
 
         assertTrue(findings.isEmpty());
@@ -87,28 +87,28 @@ class DependencyUpdatesFindingSourceTest {
 
     @Test
     void isNotAvailableWhenReportMissing(@TempDir Path tempDir) {
-        final Path reportsDir = tempDir.resolve("reports");
-        final ProjectContext context = contextWithReportsDir(tempDir, reportsDir);
+        final Path buildDir = tempDir.resolve("build");
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
 
         assertFalse(source.isAvailable(context));
     }
 
     @Test
     void isAvailableWhenReportExists(@TempDir Path tempDir) throws Exception {
-        final Path reportsDir = tempDir.resolve("reports");
-        writeReport(reportsDir, """
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
                 { "outdated": { "dependencies": [] } }
                 """);
 
-        final ProjectContext context = contextWithReportsDir(tempDir, reportsDir);
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
 
         assertTrue(source.isAvailable(context));
     }
 
     @Test
     void prefersMilestoneOverReleaseVersion(@TempDir Path tempDir) throws Exception {
-        final Path reportsDir = tempDir.resolve("reports");
-        writeReport(reportsDir, """
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
                 {
                   "outdated": {
                     "dependencies": [
@@ -123,22 +123,22 @@ class DependencyUpdatesFindingSourceTest {
                 }
                 """);
 
-        final ProjectContext context = contextWithReportsDir(tempDir, reportsDir);
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
         final List<Finding> findings = source.collectFindings(context);
 
         assertTrue(findings.get(0).message().contains("1.1.0"));
     }
 
-    private void writeReport(Path reportsDir, String json) throws Exception {
-        final Path reportFile = reportsDir.resolve("dependencyUpdates/report.json");
+    private void writeReport(Path buildDir, String json) throws Exception {
+        final Path reportFile = buildDir.resolve("dependencyUpdates/report.json");
         Files.createDirectories(reportFile.getParent());
         Files.writeString(reportFile, json);
     }
 
-    private ProjectContext contextWithReportsDir(Path tempDir, Path reportsDir) {
+    private ProjectContext contextWithBuildDir(Path tempDir, Path buildDir) {
         return new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(),
-                tempDir.resolve("build"), reportsDir, List.of());
+                buildDir, buildDir.resolve("reports"), List.of());
     }
 }

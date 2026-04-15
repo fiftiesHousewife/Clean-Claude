@@ -5,7 +5,7 @@
 [![Gradle](https://img.shields.io/badge/Gradle-9.0-blue)](https://gradle.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 32 custom OpenRewrite recipes, normalises all findings into Martin's taxonomy, and produces human-readable output with book references and prescriptive guidance.
+A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 37 custom OpenRewrite recipes, normalises all findings into Martin's taxonomy, and produces human-readable output with book references and prescriptive guidance.
 
 > *"Clean code reads like well-written prose."* -- Robert C. Martin, *Clean Code* (2008)
 
@@ -20,11 +20,11 @@ For the full Robert Martin text, detection details, and skill file links for eve
 | [C3](HEURISTICS.md#c3-redundant-comment)     | Redundant Comment                           | Ch.17 p.286     | MumblingCommentRecipe                                            |
 | [C5](HEURISTICS.md#c5-commented-out-code)     | Commented-Out Code                          | Ch.17 p.287     | CommentedCodeRecipe                                              |
 | [E1](HEURISTICS.md#e1-build-requires-more-than-one-step)     | Build Requires More Than One Step           | Ch.17 p.287     | DependencyUpdatesFindingSource                                   |
-| [F1](HEURISTICS.md#f1-too-many-arguments)     | Too Many Arguments                          | Ch.17 p.288     | Checkstyle ParameterNumber                                       |
+| [F1](HEURISTICS.md#f1-too-many-arguments)     | Too Many Arguments                          | Ch.17 p.288     | Checkstyle ParameterNumber, LargeConstructorRecipe               |
 | [F2](HEURISTICS.md#f2-output-arguments)     | Output Arguments                            | Ch.17 p.288     | OutputArgumentRecipe                                             |
 | [F3](HEURISTICS.md#f3-flag-arguments)     | Flag Arguments                              | Ch.17 p.288     | FlagArgumentRecipe                                               |
 | [F4](HEURISTICS.md#f4-dead-function)     | Dead Function                               | Ch.17 p.288     | PMD UnusedPrivateMethod                                          |
-| [G4](HEURISTICS.md#g4-overridden-safeties)     | Overridden Safeties                         | Ch.17 p.289     | UncheckedCastRecipe, PMD, SpotBugs                               |
+| [G4](HEURISTICS.md#g4-overridden-safeties)     | Overridden Safeties                         | Ch.17 p.289     | UncheckedCastRecipe, SystemOutRecipe, PMD, SpotBugs              |
 | [G5](HEURISTICS.md#g5-duplication)     | Duplication                                 | Ch.17 p.289     | CPD token-based detection                                        |
 | [G8](HEURISTICS.md#g8-too-much-information)     | Too Much Information                        | Ch.17 p.291     | VisibilityReductionRecipe, PMD                                   |
 | [G9](HEURISTICS.md#g9-dead-code)     | Dead Code                                   | Ch.17 p.292     | PMD, SpotBugs                                                    |
@@ -34,11 +34,11 @@ For the full Robert Martin text, detection details, and skill file links for eve
 | [G14](HEURISTICS.md#g14-feature-envy)    | Feature Envy                                | Ch.17 p.293     | FeatureEnvyRecipe                                                |
 | [G16](HEURISTICS.md#g16-obscured-intent)    | Obscured Intent                             | Ch.17 p.295     | NestedTernaryRecipe                                              |
 | [G19](HEURISTICS.md#g19-use-explanatory-variables)    | Use Explanatory Variables                   | Ch.17 p.296     | MissingExplanatoryVariableRecipe                                 |
-| [G20](HEURISTICS.md#g20-function-names-should-say-what-they-do)    | Function Names Should Say What They Do      | Ch.17 p.297     | PMD                                                              |
 | [G22](HEURISTICS.md#g22-make-logical-dependencies-physical)    | Make Logical Dependencies Physical          | Ch.17 p.298     | Checkstyle FinalLocalVariable                                    |
 | [G23](HEURISTICS.md#g23-prefer-polymorphism-to-ifelse-or-switchcase)    | Prefer Polymorphism to If/Else or Switch    | Ch.17 p.299     | SwitchOnTypeRecipe, StringSwitchRecipe                           |
 | [G24](HEURISTICS.md#g24-follow-standard-conventions)    | Follow Standard Conventions                 | Ch.17 p.299     | Checkstyle                                                       |
 | [G25](HEURISTICS.md#g25-replace-magic-numbers-with-named-constants)    | Replace Magic Numbers with Named Constants  | Ch.17 p.300     | MagicStringRecipe                                                |
+| [G26](HEURISTICS.md#g26-be-precise)    | Be Precise                                  | Ch.17 p.300     | LegacyFileApiRecipe, PMD UseLocaleWithCaseConversions            |
 | [G28](HEURISTICS.md#g28-encapsulate-conditionals)    | Encapsulate Conditionals                    | Ch.17 p.301     | EncapsulateConditionalRecipe                                     |
 | [G29](HEURISTICS.md#g29-avoid-negative-conditionals)    | Avoid Negative Conditionals                 | Ch.17 p.302     | NegativeConditionalRecipe                                        |
 | [G30](HEURISTICS.md#g30-functions-should-do-one-thing)    | Functions Should Do One Thing               | Ch.17 p.302     | WhitespaceSplitMethodRecipe, ImperativeLoopRecipe                |
@@ -48,11 +48,11 @@ For the full Robert Martin text, detection details, and skill file links for eve
 | [J1](HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards)     | Avoid Long Import Lists                     | Ch.17 p.307     | Checkstyle AvoidStarImport                                       |
 | [J2](HEURISTICS.md#j2-dont-inherit-constants)     | Don't Inherit Constants                     | Ch.17 p.307     | InheritConstantsRecipe                                           |
 | [J3](HEURISTICS.md#j3-constants-versus-enums)     | Constants versus Enums                      | Ch.17 p.308     | EnumForConstantsRecipe                                           |
-| [N1](HEURISTICS.md#n1-choose-descriptive-names)     | Choose Descriptive Names                    | Ch.17 p.309     | Checkstyle                                                       |
+| [N1](HEURISTICS.md#n1-choose-descriptive-names)     | Choose Descriptive Names                    | Ch.17 p.309     | BadClassNameRecipe, Checkstyle                                   |
 | [N5](HEURISTICS.md#n5-use-long-names-for-long-scopes)     | Use Long Names for Long Scopes             | Ch.17 p.312     | ShortVariableNameRecipe                                          |
 | [N6](HEURISTICS.md#n6-avoid-encodings)     | Avoid Encodings                             | Ch.17 p.312     | EncodingNamingRecipe                                             |
 | [N7](HEURISTICS.md#n7-names-should-describe-side-effects)     | Names Should Describe Side-Effects          | Ch.17 p.313     | SideEffectNamingRecipe                                           |
-| [T1](HEURISTICS.md#t1-insufficient-tests)     | Insufficient Tests                          | Ch.17 p.313     | JaCoCo line coverage                                             |
+| [T1](HEURISTICS.md#t1-insufficient-tests)     | Insufficient Tests                          | Ch.17 p.313     | JaCoCo line coverage, MultipleAssertRecipe                       |
 | [T2](HEURISTICS.md#t2-use-a-coverage-tool)     | Use a Coverage Tool                         | Ch.17 p.313     | JaCoCo report presence                                           |
 | [T3](HEURISTICS.md#t3-dont-skip-trivial-tests)     | Don't Skip Trivial Tests                    | Ch.17 p.313     | DisabledTestRecipe                                               |
 | [T4](HEURISTICS.md#t4-an-ignored-test-is-a-question-about-an-ambiguity)     | An Ignored Test Is a Question               | Ch.17 p.313     | DisabledTestRecipe                                               |
@@ -147,7 +147,7 @@ CleanClaude/
 ├── core/          Finding, AggregatedReport, BuildOutputFormatter,
 │                  HeuristicDescriptions, SuppressionIndex, BaselineManager,
 │                  ClaudeMdGenerator, JSON report I/O
-├── recipes/       32 custom OpenRewrite ScanningRecipes
+├── recipes/       37 custom OpenRewrite ScanningRecipes
 ├── adapters/      8 FindingSource implementations (PMD, Checkstyle, SpotBugs,
 │                  CPD, JaCoCo, Surefire, Dependency Updates, OpenRewrite)
 ├── plugin/        Gradle plugin, tasks, extension DSL
@@ -179,6 +179,33 @@ The plugin automatically applies `java`, `pmd`, `checkstyle`, `jacoco`, and `com
 ```
 
 Requires Java 21. Uses Gradle 9.0 with version catalog (`gradle/libs.versions.toml`).
+
+**Important:** The Gradle daemon must run on JDK 21. OpenRewrite 8.x uses internal `com.sun.tools.javac` APIs that were removed in JDK 25, causing `NoClassDefFoundError: com/sun/tools/javac/code/Type$UnknownType` at parse time. PMD, Checkstyle, SpotBugs, and JaCoCo still work on newer JDKs, but OpenRewrite recipe findings will be missing. Set `JAVA_HOME` to JDK 21 before running:
+
+```bash
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+./gradlew analyseCleanCode
+```
+
+## Testing
+
+```bash
+./gradlew test                  # run all unit tests
+./gradlew :plugin:test          # run plugin TestKit tests only
+./gradlew :recipes:test         # run recipe tests only
+```
+
+The plugin module includes Gradle TestKit tests (`CleanCodePluginTest`) that verify:
+
+- Plugin applies without error
+- All tasks are registered (`analyseCleanCode`, `generateClaudeMd`, `cleanCodeBaseline`, `cleanCodeExplain`)
+- CPD task accepts default and custom minimum token thresholds
+- Skill files are scaffolded with correct threshold token replacement
+- Skill files are not re-scaffolded when thresholds are unchanged
+- Skill files are re-scaffolded when thresholds change
+- Customised skill files are preserved with a warning when thresholds change
+
+Recipe tests use OpenRewrite's `RewriteTest` harness to verify detection accuracy against inline Java source fixtures.
 
 ## Dependencies
 

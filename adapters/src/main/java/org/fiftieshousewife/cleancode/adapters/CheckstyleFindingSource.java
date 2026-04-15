@@ -13,35 +13,37 @@ import java.util.*;
 
 public class CheckstyleFindingSource implements FindingSource {
 
-    private record RuleMapping(HeuristicCode code, Severity severity, Confidence confidence) {}
+    private record RuleMapping(HeuristicCode code, Severity severity, Confidence confidence, String ruleUrl) {}
+
+    private static final String CS = "https://checkstyle.org/checks/";
 
     private static final Map<String, RuleMapping> RULE_MAP = Map.ofEntries(
-            Map.entry("ParameterNumber", new RuleMapping(HeuristicCode.F1, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("MagicNumber", new RuleMapping(HeuristicCode.G25, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("LocalVariableName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("MethodLength", new RuleMapping(HeuristicCode.G30, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("AnonInnerLength", new RuleMapping(HeuristicCode.G30, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("AvoidStarImport", new RuleMapping(HeuristicCode.J1, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("IllegalImport", new RuleMapping(HeuristicCode.G12, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("InterfaceIsType", new RuleMapping(HeuristicCode.J2, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("VisibilityModifier", new RuleMapping(HeuristicCode.G8, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("HideUtilityClassConstructor", new RuleMapping(HeuristicCode.G18, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("OneTopLevelClass", new RuleMapping(HeuristicCode.G12, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("NeedBraces", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("LeftCurly", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("RightCurly", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("WhitespaceAround", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("EmptyLineSeparator", new RuleMapping(HeuristicCode.G10, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("MethodName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("TypeName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("FinalLocalVariable", new RuleMapping(HeuristicCode.G22, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("SimplifyBooleanExpression", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("SimplifyBooleanReturn", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("RedundantImport", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH)),
-            Map.entry("UnusedImports", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH)),
-            Map.entry("EmptyBlock", new RuleMapping(HeuristicCode.G4, Severity.WARNING, Confidence.HIGH)),
-            Map.entry("FileLength", new RuleMapping(HeuristicCode.Ch10_1, Severity.WARNING, Confidence.MEDIUM)),
-            Map.entry("LineLength", new RuleMapping(HeuristicCode.G24, Severity.INFO, Confidence.HIGH))
+            Map.entry("ParameterNumber", new RuleMapping(HeuristicCode.F1, Severity.WARNING, Confidence.HIGH, CS + "sizes/parameternumber.html")),
+            Map.entry("MagicNumber", new RuleMapping(HeuristicCode.G25, Severity.WARNING, Confidence.HIGH, CS + "coding/magicnumber.html")),
+            Map.entry("LocalVariableName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM, CS + "naming/localvariablename.html")),
+            Map.entry("MethodLength", new RuleMapping(HeuristicCode.G30, Severity.WARNING, Confidence.MEDIUM, CS + "sizes/methodlength.html")),
+            Map.entry("AnonInnerLength", new RuleMapping(HeuristicCode.G30, Severity.WARNING, Confidence.MEDIUM, CS + "sizes/anoninnerlength.html")),
+            Map.entry("AvoidStarImport", new RuleMapping(HeuristicCode.J1, Severity.WARNING, Confidence.HIGH, CS + "imports/avoidstarimport.html")),
+            Map.entry("IllegalImport", new RuleMapping(HeuristicCode.G12, Severity.WARNING, Confidence.HIGH, CS + "imports/illegalimport.html")),
+            Map.entry("InterfaceIsType", new RuleMapping(HeuristicCode.J2, Severity.WARNING, Confidence.HIGH, CS + "design/interfaceistype.html")),
+            Map.entry("VisibilityModifier", new RuleMapping(HeuristicCode.G8, Severity.WARNING, Confidence.MEDIUM, CS + "design/visibilitymodifier.html")),
+            Map.entry("HideUtilityClassConstructor", new RuleMapping(HeuristicCode.G18, Severity.WARNING, Confidence.HIGH, CS + "design/hideutilityclassconstructor.html")),
+            Map.entry("OneTopLevelClass", new RuleMapping(HeuristicCode.G12, Severity.WARNING, Confidence.HIGH, CS + "design/onetoplevelclass.html")),
+            Map.entry("NeedBraces", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.MEDIUM, CS + "blocks/needbraces.html")),
+            Map.entry("LeftCurly", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH, CS + "blocks/leftcurly.html")),
+            Map.entry("RightCurly", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH, CS + "blocks/rightcurly.html")),
+            Map.entry("WhitespaceAround", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH, CS + "whitespace/whitespacearound.html")),
+            Map.entry("EmptyLineSeparator", new RuleMapping(HeuristicCode.G10, Severity.WARNING, Confidence.MEDIUM, CS + "whitespace/emptylineseparator.html")),
+            Map.entry("MethodName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM, CS + "naming/methodname.html")),
+            Map.entry("TypeName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM, CS + "naming/typename.html")),
+            Map.entry("FinalLocalVariable", new RuleMapping(HeuristicCode.G22, Severity.WARNING, Confidence.HIGH, CS + "coding/finallocalvariable.html")),
+            Map.entry("SimplifyBooleanExpression", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.HIGH, CS + "coding/simplifybooleanexpression.html")),
+            Map.entry("SimplifyBooleanReturn", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.HIGH, CS + "coding/simplifybooleanreturn.html")),
+            Map.entry("RedundantImport", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH, CS + "imports/redundantimport.html")),
+            Map.entry("UnusedImports", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH, CS + "imports/unusedimports.html")),
+            Map.entry("EmptyBlock", new RuleMapping(HeuristicCode.G4, Severity.WARNING, Confidence.HIGH, CS + "blocks/emptyblock.html")),
+            Map.entry("FileLength", new RuleMapping(HeuristicCode.Ch10_1, Severity.WARNING, Confidence.MEDIUM, CS + "sizes/filelength.html")),
+            Map.entry("LineLength", new RuleMapping(HeuristicCode.G24, Severity.INFO, Confidence.HIGH, CS + "sizes/linelength.html"))
     );
 
     @Override
@@ -99,10 +101,10 @@ public class CheckstyleFindingSource implements FindingSource {
                     String message = e.getAttribute("message");
                     Severity severity = xmlSeverityOrDefault(e.getAttribute("severity"), mapping.severity());
 
-                    findings.add(Finding.at(
+                    findings.add(new Finding(
                             mapping.code(), relativePath, line, line,
                             message, severity, mapping.confidence(),
-                            "checkstyle", checkName));
+                            "checkstyle", checkName, Map.of("ruleUrl", mapping.ruleUrl())));
                 }
             }
 

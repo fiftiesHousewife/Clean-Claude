@@ -147,6 +147,6 @@ public class SurefireFindingSource implements FindingSource {
     }
 
     private Path reportsDir(ProjectContext context) {
-        return context.reportsDir().resolve("surefire-reports");
+        return context.buildDir().resolve("test-results/test");
     }
 }

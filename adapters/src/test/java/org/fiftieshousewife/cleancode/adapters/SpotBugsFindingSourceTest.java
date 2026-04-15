@@ -41,7 +41,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsCorrectnessToG4(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsNullPathToCh7_2(@TempDir Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -49,7 +49,7 @@ class SpotBugsFindingSourceTest {
                 .filter(f -> f.ruleRef().equals("NP_NULL_ON_SOME_PATH"))
                 .findFirst().orElseThrow();
 
-        assertEquals(HeuristicCode.G4, np.code());
+        assertEquals(HeuristicCode.Ch7_2, np.code());
         assertEquals(Severity.ERROR, np.severity());
         assertEquals(Confidence.HIGH, np.confidence());
     }

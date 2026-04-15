@@ -118,6 +118,6 @@ public class DependencyUpdatesFindingSource implements FindingSource {
     }
 
     private Path reportPath(ProjectContext context) {
-        return context.reportsDir().resolve(REPORT_FILE);
+        return context.buildDir().resolve(REPORT_FILE);
     }
 }

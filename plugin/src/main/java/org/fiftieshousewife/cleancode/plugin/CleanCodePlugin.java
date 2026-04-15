@@ -1,6 +1,7 @@
 package org.fiftieshousewife.cleancode.plugin;
 
 import com.github.spotbugs.snom.SpotBugsExtension;
+import com.github.spotbugs.snom.SpotBugsPlugin;
 import com.github.spotbugs.snom.SpotBugsTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -68,7 +69,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         project.getPluginManager().apply("pmd");
         project.getPluginManager().apply("checkstyle");
         project.getPluginManager().apply("jacoco");
-        project.getPluginManager().apply("com.github.spotbugs");
+        project.getPluginManager().apply(SpotBugsPlugin.class);
 
         configurePmd(project);
         configureCheckstyle(project);
