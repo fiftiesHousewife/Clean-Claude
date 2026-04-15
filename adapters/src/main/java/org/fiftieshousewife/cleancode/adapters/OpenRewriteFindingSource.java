@@ -249,8 +249,9 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapLargeRecord(List<LargeRecordRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.Ch10_2, r.className(), r.lineNumber(),
-                        "Record '%s' has %d components".formatted(r.className(), r.componentCount())))
+                .map(r -> finding(HeuristicCode.F1, r.className(), r.lineNumber(),
+                        "Record '%s' has %d components — too many constructor parameters".formatted(
+                                r.className(), r.componentCount())))
                 .toList();
     }
 

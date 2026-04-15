@@ -61,7 +61,10 @@ public abstract class AnalyseTask extends DefaultTask {
         final AggregatedReport fullReport = FindingAggregator.aggregate(sources, context);
         final AggregatedReport report = filterDisabledRecipes(fullReport, disabledRecipes);
 
-        final String repositoryUrl = ext.getRepositoryUrl().get();
+        final String baseRepoUrl = ext.getRepositoryUrl().get();
+        final String modulePath = getProject().getRootDir().toPath().relativize(projectRoot).toString();
+        final String repositoryUrl = baseRepoUrl.isBlank() ? ""
+                : baseRepoUrl + (modulePath.isEmpty() ? "" : "/" + modulePath);
         final Path outputDir = buildDir.resolve("reports/clean-code");
         final Path htmlReport = outputDir.resolve("findings.html");
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
