@@ -131,7 +131,10 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new SystemOutRecipe(),
                 new LegacyFileApiRecipe(),
                 new MultipleAssertRecipe(),
-                new LargeConstructorRecipe(thresholds.recordComponentCount()));
+                new LargeConstructorRecipe(thresholds.recordComponentCount()),
+                new InappropriateStaticRecipe(),
+                new StringlyTypedDispatchRecipe(),
+                new ConfigurableDataRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -180,6 +183,9 @@ public class OpenRewriteFindingSource implements FindingSource {
             case LegacyFileApiRecipe r -> mapLegacyFileApi(r.collectedRows());
             case MultipleAssertRecipe r -> mapMultipleAssert(r.collectedRows());
             case LargeConstructorRecipe r -> mapLargeConstructor(r.collectedRows());
+            case InappropriateStaticRecipe r -> mapInappropriateStatic(r.collectedRows());
+            case StringlyTypedDispatchRecipe r -> mapStringlyTypedDispatch(r.collectedRows());
+            case ConfigurableDataRecipe r -> mapConfigurableData(r.collectedRows());
             default -> List.of();
         };
     }
@@ -463,6 +469,30 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.F1, r.className(),
                         "Constructor has %d parameters — introduce a parameter object or builder".formatted(
                                 r.parameterCount())))
+                .toList();
+    }
+
+    private List<Finding> mapInappropriateStatic(List<InappropriateStaticRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G18, r.className(),
+                        "Method '%s' does not use instance state — consider making it static or extracting".formatted(
+                                r.methodName())))
+                .toList();
+    }
+
+    private List<Finding> mapStringlyTypedDispatch(List<StringlyTypedDispatchRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G23, r.className(),
+                        "Method '%s' dispatches on String parameter '%s' with %d branches — use an enum or split into separate methods".formatted(
+                                r.methodName(), r.parameterName(), r.branchCount())))
+                .toList();
+    }
+
+    private List<Finding> mapConfigurableData(List<ConfigurableDataRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G35, r.className(),
+                        "Magic number %s in private method '%s' — extract to a named constant".formatted(
+                                r.literalValue(), r.methodName())))
                 .toList();
     }
 

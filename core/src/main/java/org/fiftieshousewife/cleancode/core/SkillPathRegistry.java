@@ -25,6 +25,7 @@ public final class SkillPathRegistry {
             Map.entry(HeuristicCode.G5, ".claude/skills/functions.md"),
             Map.entry(HeuristicCode.G30, ".claude/skills/functions.md"),
             Map.entry(HeuristicCode.G34, ".claude/skills/functions.md"),
+            Map.entry(HeuristicCode.G35, ".claude/skills/functions.md"),
 
             // classes.md
             Map.entry(HeuristicCode.Ch10_1, ".claude/skills/classes.md"),

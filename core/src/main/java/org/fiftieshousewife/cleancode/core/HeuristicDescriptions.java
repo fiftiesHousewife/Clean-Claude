@@ -267,6 +267,11 @@ public final class HeuristicDescriptions {
                     "giveaway. Each section is at a different level of abstraction. Extract each " +
                     "section into its own well-named function. The sections become the function " +
                     "calls, and the comment headers become function names."),
+            Map.entry(HeuristicCode.G35,
+                    "If you have a constant such as a default or configuration value, it is " +
+                    "better to make it a named constant at the top of the class than to bury " +
+                    "it in some low-level function. The high-level constant is easy to find " +
+                    "and to change. A magic number deep in a private method is invisible."),
             Map.entry(HeuristicCode.G36,
                     "Write shy code — modules that don't reveal anything unnecessary and that " +
                     "don't rely on others' implementations. The Law of Demeter says a method f " +
@@ -479,6 +484,7 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.G30, "Each function should do exactly one thing."),
             Map.entry(HeuristicCode.G33, "Extract boundary arithmetic to a named variable."),
             Map.entry(HeuristicCode.G34, "Section comments mean the method mixes abstraction levels. Extract."),
+            Map.entry(HeuristicCode.G35, "Extract magic numbers from private methods to named class constants."),
             Map.entry(HeuristicCode.G36, "Don't reach through objects. Talk to immediate collaborators only."),
             Map.entry(HeuristicCode.J1, "Replace wildcard imports with explicit ones."),
             Map.entry(HeuristicCode.J2, "Use static imports instead of inheriting from a constants interface."),
