@@ -108,6 +108,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         configureCheckstyle(project);
         configureJacoco(project);
         configureSpotBugs(project);
+        registerCpdTask(project);
     }
 
     private void configurePmd(Project project) {
@@ -157,11 +158,50 @@ public class CleanCodePlugin implements Plugin<Project> {
         });
     }
 
+    private void registerCpdTask(Project project) {
+        final var cpdConfig = project.getConfigurations().create("cpd", conf -> {
+            conf.setDescription("CPD classpath");
+            conf.setVisible(false);
+            conf.setCanBeConsumed(false);
+        });
+
+        project.getDependencies().add("cpd", "net.sourceforge.pmd:pmd-cli:7.9.0");
+        project.getDependencies().add("cpd", "net.sourceforge.pmd:pmd-java:7.9.0");
+
+        project.getTasks().register("cpdMain", org.gradle.api.tasks.JavaExec.class, task -> {
+            task.setDescription("Run CPD copy-paste detection");
+            task.setGroup("verification");
+            task.classpath(cpdConfig);
+            task.getMainClass().set("net.sourceforge.pmd.cli.PmdCli");
+            task.setIgnoreExitValue(true);
+
+            final var reportFile = project.getLayout().getBuildDirectory()
+                    .file("reports/cpd/cpd.xml");
+
+            task.doFirst(t -> {
+                reportFile.get().getAsFile().getParentFile().mkdirs();
+                try {
+                    task.setStandardOutput(
+                            Files.newOutputStream(reportFile.get().getAsFile().toPath()));
+                } catch (IOException e) {
+                    throw new org.gradle.api.GradleException("Cannot open CPD report file", e);
+                }
+            });
+
+            task.args(
+                    "cpd",
+                    "--minimum-tokens", "100",
+                    "--language", "java",
+                    "--format", "xml",
+                    "--dir", project.file("src/main/java").getAbsolutePath());
+        });
+    }
+
     private void wireTaskDependencies(Project project, TaskProvider<AnalyseTask> analyse) {
         project.afterEvaluate(p -> {
             analyse.configure(task -> {
                 task.dependsOn("pmdMain", "checkstyleMain", "jacocoTestReport",
-                        "spotbugsMain");
+                        "spotbugsMain", "cpdMain");
 
                 if (p.getTasks().findByName(DEPENDENCY_UPDATES_TASK) != null) {
                     task.dependsOn(DEPENDENCY_UPDATES_TASK);
