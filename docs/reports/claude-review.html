@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clean Code Report — claude-review</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
+    header { background: #1a1a2e; color: #fff; padding: 2rem; }
+    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    header p { opacity: 0.8; font-size: 0.95rem; }
+    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
+    .badge.error { background: #c0392b; }
+    .badge.warning { background: #e67e22; }
+    .badge.info { background: #95a5a6; }
+    details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
+    summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
+    summary:hover { background: #fafafa; }
+    .code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
+    .group-body { padding: 0 1rem 1rem 1rem; }
+    .reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
+    .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; }
+    th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+    .sev-error { color: #c0392b; font-weight: 600; }
+    .sev-warning { color: #e67e22; font-weight: 600; }
+    .sev-info { color: #95a5a6; }
+    .location a { color: #2980b9; text-decoration: none; }
+    .location a:hover { text-decoration: underline; }
+    .location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+    .tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+    .tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
+    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Clean Code Analysis</h1>
+    <p>claude-review v1.0-SNAPSHOT</p>
+  </header>
+  <main>
+    <div class="summary">
+      <span class="badge error">1 errors</span>
+      <span class="badge warning">34 warnings</span>
+      <span class="badge info">0 info</span>
+    </div>
+    <details>
+      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (2)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.10 'Classes' p.136</p>
+        <p class="guidance">The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a></td><td>Class 'ClaudeReviewFindingSource' is 239 lines</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java#L1">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:1</a></td><td>File length is 276 lines (max allowed is 150).</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">Ch7_1</span>Use Exceptions Rather Than Return Codes (4)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.7 'Error Handling' p.103</p>
+        <p class="guidance">Exceptions are for exceptional circumstances. When you catch an exception and merely log it — or worse, leave the catch block empty — you've told the calling code that everything is fine when it isn't. The caller makes decisions based on a lie. Either handle the exception meaningfully, or let it propagate to someone who can.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a></td><td>Catch block in 'collectFindings' only logs or is empty</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a></td><td>Catch block in 'collectFindings' only logs or is empty</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a></td><td>Catch block in 'parseFindings' only logs or is empty</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a></td><td>Catch block in 'collectSourceFiles' only logs or is empty</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">E1</span>Build Requires More Than One Step (12)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Environment' p.287</p>
+        <p class="guidance">You should be able to build the system with a single trivial command. You should not have to search around for dependencies, scripts, or obscure commands. Outdated dependencies make that one-step build fragile — every stale library is a silent accumulation of risk, incompatibility, and unfixed vulnerabilities.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -&gt; 4.9.8]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.google.code.gson:gson [2.11.0 -&gt; 2.13.2]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -&gt; 10.26.1]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -&gt; 7.23.0]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -&gt; 7.23.0]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -&gt; 7.23.0]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -&gt; 0.8.14]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -&gt; 0.8.14]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit:junit-bom [5.10.0 -&gt; 5.14.3]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.jupiter:junit-jupiter [5.10.0 -&gt; 5.14.3]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.platform:junit-platform-launcher [1.10.0 -&gt; 1.14.3]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.slf4j:slf4j-simple [2.0.17 -&gt; 2.1.0-alpha1]</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">F1</span>Too Many Arguments (2)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Functions' p.288</p>
+        <p class="guidance">Functions should have a small number of arguments. The ideal number is zero. Next comes one, followed closely by two. Three arguments should be avoided where possible. More than three requires very special justification — and then shouldn't be used anyway.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java</a></td><td>Record 'ClaudeReviewConfig' has 7 components — too many constructor parameters</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java#L129">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:129</a></td><td>More than 4 parameters (found 5).</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">G10</span>Vertical Separation (4)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.292</p>
+        <p class="guidance">Local variables should be declared just before their first use. Vertical separation between declaration and use makes the reader hold a mental placeholder — 'what was that variable for again?' — while reading unrelated code. Declare variables at the point of need, not at the top of the method.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java#L8">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:8</a></td><td>'client' is declared in collectFindings() but not used until 33 lines later — move the declaration closer to line 41</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java#L12">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:12</a></td><td>'systemPrompt' is declared in collectFindings() but not used until 29 lines later — move the declaration closer to line 41</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java#L13">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:13</a></td><td>'codesKey' is declared in collectFindings() but not used until 20 lines later — move the declaration closer to line 33</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java#L22">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:22</a></td><td>'allFindings' is declared in collectFindings() but not used until 15 lines later — move the declaration closer to line 37</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">G12</span>Clutter (1)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.293</p>
+        <p class="guidance">Clutter is anything that adds noise without adding value: unused variables, never-called functions, redundant imports, purposeless comments. Keep your source files clean. A lean source file is easier to read, easier to understand, and easier to change.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java#L10">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:10</a></td><td>Unused import - com.google.gson.Gson.</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">G18</span>Inappropriate Static (1)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
+        <p class="guidance">In general you should prefer non-static methods to static methods. If you really want a function to be static, make sure there is no chance that you'll want it to behave polymorphically. Static methods cannot be overridden and cannot participate in dependency injection.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ReviewCache.java">org/fiftieshousewife/cleancode/claudereview/ReviewCache.java</a></td><td>Method 'save' does not use instance state — consider making it static or extracting</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">G19</span>Use Explanatory Variables (1)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
+        <p class="guidance">Complex expressions should be broken into intermediate variables with explanatory names. 'wasPressed' is better than 'event.getTarget().isButton() &amp;&amp; event.getState() == CLICKED'. The intermediate variable documents the programmer's intent and makes the code read like a well-written paragraph.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a></td><td>Complex expression in 'analyseFile' should be extracted to a named variable: TextBlockParam.builder() .text(systemPrompt) .cacheControl(C</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">G30</span>Functions Should Do One Thing (3)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
+        <p class="guidance">Functions should do one thing. They should do it well. They should do it only. A function that is too long is probably doing too many things. If you can extract another function from it with a name that is not merely a restatement of its implementation, then the original is doing more than one thing.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a></td><td>Method 'collectFindings' has 10 blank-line sections across 56 lines — each section should be its own method</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a></td><td>Method 'parseFindings' has 4 blank-line sections across 39 lines — each section should be its own method</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java#L71">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:71</a></td><td>Method collectFindings length is 56 lines (max allowed is 50).</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">G8</span>Too Much Information (4)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.291</p>
+        <p class="guidance">Well-defined modules have very small interfaces that allow you to do a lot with a little. A class with too many public methods, too many fields, or too many dependencies has exposed too much of itself. Keep interfaces tight. Fewer things to know means fewer things to go wrong.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java#L8">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a></td><td>May expose internal representation by returning reference to mutable object</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java#L8">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a></td><td>May expose internal representation by returning reference to mutable object</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java#L8">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a></td><td>May expose internal representation by incorporating reference to mutable object</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/claude-review/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java#L8">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a></td><td>May expose internal representation by incorporating reference to mutable object</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">T1</span>Insufficient Tests (1)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.313</p>
+        <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">(project)</td><td>Overall line coverage: 35.3% (60/170 lines covered)</td></tr>
+        </table>
+      </div>
+    </details>
+    <div class="tool-summary">
+      <h2>Sources</h2>
+      <table>
+        <tr><th>Tool</th><th>Findings</th></tr>
+        <tr><td>openrewrite</td><td>14</td></tr>
+        <tr><td>dependency-updates</td><td>12</td></tr>
+        <tr><td>spotbugs</td><td>4</td></tr>
+        <tr><td>checkstyle</td><td>4</td></tr>
+        <tr><td>jacoco</td><td>1</td></tr>
+      </table>
+    </div>
+  </main>
+  <footer>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-15 20:29:49 Z</p>
+    <p>35 total findings</p>
+  </footer>
+</body>
+</html>

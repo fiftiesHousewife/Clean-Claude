@@ -240,71 +240,15 @@ Robert C. Martin, *Clean Code: A Handbook of Agile Software Craftsmanship*, Pren
 
 ## This Project's Code Cleanliness Index
 
-The plugin analyses its own codebase. Results as of commit [`6f65b8d`](https://github.com/fiftiesHousewife/Clean-Claude/commit/6f65b8d) (2026-04-15):
+The plugin analyses its own codebase. Each module report includes clickable links to the source at the exact line of each finding.
 
-**82 source files** across **7 modules** &middot; **1,120 findings** (6 errors / 679 warnings / 435 info) &middot; **36 heuristic codes** detected by **8 sources**
+| Module | Report | Errors | Warnings | Info |
+|--------|--------|-------:|---------:|-----:|
+| [annotations](annotations/) | [view report](docs/reports/annotations.html) | 0 | 0 | 12 |
+| [core](core/) | [view report](docs/reports/core.html) | 2 | 155 | 19 |
+| [recipes](recipes/) | [view report](docs/reports/recipes.html) | 0 | 195 | 354 |
+| [adapters](adapters/) | [view report](docs/reports/adapters.html) | 2 | 248 | 25 |
+| [claude-review](claude-review/) | [view report](docs/reports/claude-review.html) | 1 | 22 | 12 |
+| [plugin](plugin/) | [view report](docs/reports/plugin.html) | 1 | 59 | 13 |
 
-### By module
-
-| Module | Files | Errors | Warnings | Info | Total |
-|--------|------:|-------:|---------:|-----:|------:|
-| [annotations](annotations/) | 2 | 0 | 0 | 12 | 12 |
-| [core](core/) | 17 | 2 | 155 | 19 | 176 |
-| [recipes](recipes/) | 40 | 0 | 195 | 354 | 549 |
-| [adapters](adapters/) | 10 | 2 | 248 | 25 | 275 |
-| [claude-review](claude-review/) | 3 | 1 | 22 | 12 | 35 |
-| [plugin](plugin/) | 10 | 1 | 59 | 13 | 73 |
-
-### By heuristic
-
-| Code | Name | Count | Severity |
-|------|------|------:|----------|
-| [G5](HEURISTICS.md#g5-duplication) | Duplication | 374 | 2E/19W/353I |
-| [G22](HEURISTICS.md#g22-make-logical-dependencies-physical) | Make Logical Dependencies Physical | 182 | 182W |
-| [G24](HEURISTICS.md#g24-follow-standard-conventions) | Follow Standard Conventions | 102 | 102W |
-| [G30](HEURISTICS.md#g30-functions-should-do-one-thing) | Functions Should Do One Thing | 93 | 93W |
-| [E1](HEURISTICS.md#e1-build-requires-more-than-one-step) | Outdated Dependencies | 77 | 77I |
-| [G10](HEURISTICS.md#g10-vertical-separation) | Vertical Separation | 35 | 35W |
-| [Ch10.1](HEURISTICS.md#ch101-classes-should-be-small) | Classes Should Be Small | 29 | 29W |
-| [J1](HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards) | Avoid Long Import Lists | 25 | 25W |
-| [Ch7.2](HEURISTICS.md#ch72-dont-return-null) | Don't Return Null | 22 | 22W |
-| [G28](HEURISTICS.md#g28-encapsulate-conditionals) | Encapsulate Conditionals | 18 | 18W |
-| [Ch3.1](HEURISTICS.md#ch31-small-functions) | Small Functions | 17 | 17W |
-| [G8](HEURISTICS.md#g8-too-much-information) | Too Much Information | 16 | 16W |
-| [G25](HEURISTICS.md#g25-replace-magic-numbers-with-named-constants) | Magic Numbers/Strings | 15 | 15W |
-| [G35](HEURISTICS.md#g35-keep-configurable-data-at-high-levels) | Keep Configurable Data at High Levels | 13 | 13W |
-| [Ch7.1](HEURISTICS.md#ch71-use-exceptions-rather-than-return-codes) | Use Exceptions Not Return Codes | 12 | 12W |
-| [G19](HEURISTICS.md#g19-use-explanatory-variables) | Use Explanatory Variables | 12 | 12W |
-| [G12](HEURISTICS.md#g12-clutter) | Clutter | 11 | 11W |
-| [F2](HEURISTICS.md#f2-output-arguments) | Output Arguments | 11 | 11W |
-| [G4](HEURISTICS.md#g4-overridden-safeties) | Overridden Safeties | 8 | 2E/6W |
-| [T1](HEURISTICS.md#t1-insufficient-tests) | Insufficient Tests | 6 | 2E/4I |
-| [G33](HEURISTICS.md#g33-encapsulate-boundary-conditions) | Encapsulate Boundary Conditions | 6 | 6W |
-| [F1](HEURISTICS.md#f1-too-many-arguments) | Too Many Arguments | 5 | 5W |
-| [Ch10.2](HEURISTICS.md#ch102-the-single-responsibility-principle) | Single Responsibility Principle | 5 | 5W |
-| [G18](HEURISTICS.md#g18-inappropriate-static) | Inappropriate Static | 5 | 5W |
-| [J3](HEURISTICS.md#j3-constants-versus-enums) | Constants vs Enums | 3 | 3W |
-| [G23](HEURISTICS.md#g23-prefer-polymorphism-to-ifelse-or-switchcase) | Prefer Polymorphism | 3 | 2W/1I |
-| [N5](HEURISTICS.md#n5-use-long-names-for-long-scopes) | Long Names for Long Scopes | 3 | 3W |
-| [G26](HEURISTICS.md#g26-be-precise) | Be Precise | 2 | 2W |
-| [G16](HEURISTICS.md#g16-obscured-intent) | Obscured Intent | 2 | 2W |
-| [N1](HEURISTICS.md#n1-choose-descriptive-names) | Choose Descriptive Names | 2 | 2W |
-| [G36](HEURISTICS.md#g36-avoid-transitive-navigation) | Avoid Transitive Navigation | 1 | 1W |
-| [G34](HEURISTICS.md#g34-functions-should-descend-only-one-level-of-abstraction) | Descend One Level of Abstraction | 1 | 1W |
-| [G14](HEURISTICS.md#g14-feature-envy) | Feature Envy | 1 | 1W |
-| [C3](HEURISTICS.md#c3-redundant-comment) | Redundant Comment | 1 | 1W |
-| [T8](HEURISTICS.md#t8-test-coverage-patterns-can-be-revealing) | Test Coverage Patterns | 1 | 1W |
-| [T9](HEURISTICS.md#t9-tests-should-be-fast) | Tests Should Be Fast | 1 | 1W |
-
-### By source
-
-| Source | Findings | What it detects |
-|--------|----------|-----------------|
-| [CPD](FINDING-SOURCES.md#cpd-copy-paste-detector) | 374 | Token-based duplication |
-| [Checkstyle](FINDING-SOURCES.md#checkstyle) | 288 | Coding conventions, formatting |
-| [OpenRewrite](FINDING-SOURCES.md#openrewrite-custom-recipes) | 268 | 40 custom Clean Code recipes |
-| [Dependency Updates](FINDING-SOURCES.md#dependency-updates-ben-manes) | 77 | Outdated dependencies |
-| [SpotBugs](FINDING-SOURCES.md#spotbugs) | 19 | Bug patterns, null risks |
-| [JaCoCo](FINDING-SOURCES.md#jacoco) | 7 | Test coverage |
-| [PMD](FINDING-SOURCES.md#pmd) | 4 | Dead code, complexity |
-| [Surefire](FINDING-SOURCES.md#surefire-gradle-test-results) | 1 | Test execution timing |
+To regenerate: `./gradlew analyseCleanCode`
