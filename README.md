@@ -120,13 +120,15 @@ For the full Robert Martin text, detection details, and skill file links for eve
 
 ```kotlin
 cleanCode {
+    skillsDir = ".claude/skills"      // default — where skill files are scaffolded
+
     thresholds {
         classLineCount = 200          // default 150
-        recordComponentCount = 6      // default 5
+        recordComponentCount = 8      // default 6
         nullCheckDensity = 4          // default 3
         chainDepthThreshold = 4       // default 3
-        verticalSeparationDistance = 8 // default 5
-        methodBlankLineSections = 3   // default 2
+        verticalSeparationDistance = 15 // default 10
+        methodBlankLineSections = 5   // default 4
         privateMethodMinLines = 8     // default 5
         magicStringMinOccurrences = 3 // default 2
         stringSwitchMinCases = 4      // default 3
