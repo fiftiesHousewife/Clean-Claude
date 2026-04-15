@@ -4,4 +4,4 @@ pluginManagement {
 
 rootProject.name = "CleanClaude"
 
-include("annotations", "core", "recipes", "adapters", "claude-review", "plugin")
+include("annotations", "core", "recipes", "refactoring", "adapters", "claude-review", "plugin")
