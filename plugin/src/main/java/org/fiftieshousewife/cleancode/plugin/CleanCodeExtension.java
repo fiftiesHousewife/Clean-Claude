@@ -46,7 +46,8 @@ public abstract class CleanCodeExtension {
                 thresholds.getPrivateMethodMinLines().get(),
                 thresholds.getMagicStringMinOccurrences().get(),
                 thresholds.getStringSwitchMinCases().get(),
-                thresholds.getShortNameMinLength().get());
+                thresholds.getShortNameMinLength().get(),
+                thresholds.getCpdMinimumTokens().get());
     }
 
     @SuppressWarnings("this-escape")
@@ -72,6 +73,8 @@ public abstract class CleanCodeExtension {
 
         public abstract Property<Integer> getShortNameMinLength();
 
+        public abstract Property<Integer> getCpdMinimumTokens();
+
         @Inject
         public ThresholdsExtension() {
             getClassLineCount().convention(RecipeThresholds.DEFAULT_CLASS_LINE_COUNT);
@@ -84,6 +87,7 @@ public abstract class CleanCodeExtension {
             getMagicStringMinOccurrences().convention(RecipeThresholds.DEFAULT_MAGIC_STRING_MIN_OCCURRENCES);
             getStringSwitchMinCases().convention(RecipeThresholds.DEFAULT_STRING_SWITCH_MIN_CASES);
             getShortNameMinLength().convention(RecipeThresholds.DEFAULT_SHORT_NAME_MIN_LENGTH);
+            getCpdMinimumTokens().convention(RecipeThresholds.DEFAULT_CPD_MINIMUM_TOKENS);
         }
     }
 }

@@ -2,12 +2,12 @@
 
 ## When to use this skill
 
-- When fixing an N1, N5, N6, N7, G11, or G16 finding identified by the plugin
+- When fixing an [N1](../../HEURISTICS.md#n1-choose-descriptive-names), [N5](../../HEURISTICS.md#n5-use-long-names-for-long-scopes), [N6](../../HEURISTICS.md#n6-avoid-encodings), [N7](../../HEURISTICS.md#n7-names-should-describe-side-effects), [G11](../../HEURISTICS.md#g11-inconsistency), or [G16](../../HEURISTICS.md#g16-obscured-intent) finding identified by the plugin
 - When writing any new code that introduces classes, methods, fields, or variables
 - When renaming an existing symbol as part of a refactoring task
 
 This skill does not apply to test classes, except for the nested ternary
-rule (G16) which applies everywhere.
+rule which applies everywhere.
 
 > **Note on examples:** All class names and method names in code examples
 > are illustrative only — `ProfileService`, `fetchReport`, `OrderProcessor`
@@ -45,7 +45,7 @@ rule (G16) which applies everywhere.
 ## Canonical verb table
 
 Use these verbs consistently across the codebase. Do not introduce
-synonyms — inconsistency (G11) makes the codebase harder to navigate.
+synonyms — inconsistency makes the codebase harder to navigate.
 
 | Action | Canonical verb | Do not use |
 |---|---|---|
@@ -64,7 +64,7 @@ a second verb into the same type.
 
 ---
 
-## Short name rules (N5)
+## Short name rules
 
 Name length must be proportional to the scope in which the name lives.
 
@@ -82,7 +82,7 @@ Everywhere else, use a full descriptive name.
 
 ---
 
-## Encoding removal (N6)
+## Encoding removal
 
 Strip type-encoding prefixes and suffixes that duplicate information
 the type system already provides.
@@ -112,7 +112,7 @@ List<String> columns = List.of("id", "name");
 
 ---
 
-## Side-effect naming (N7)
+## Side-effect naming
 
 A method named `getX` must not modify state. If it does, rename it to
 describe the full behaviour or split it into two methods.
@@ -153,7 +153,7 @@ this with a brief comment explaining the lazy initialisation.
 
 ---
 
-## Inconsistency (G11)
+## Inconsistency
 
 When the codebase uses one name for a concept, every new occurrence of
 that concept must use the same name. Do not introduce synonyms.
@@ -177,7 +177,7 @@ existing verb.
 
 ---
 
-## Nested ternary / obscured intent (G16)
+## Nested ternary / obscured intent
 
 Never nest ternary expressions. A single ternary is acceptable only when
 both branches are simple values or method calls with no further nesting.
@@ -237,9 +237,9 @@ calls, extract to a named method.
 - Fix multiple naming findings in a single task — one finding per task
   keeps each fix independently reviewable and revertable
 - Expand scope beyond the identified location without explicit instruction
-- Apply this skill to test classes (except G16 nested ternary, which
+- Apply this skill to test classes (except nested ternary, which
   applies everywhere)
 
 ---
 
-*Traceability: Clean Code Ch2 (Meaningful Names) — N1, N5, N6, N7; Ch17 (Smells and Heuristics) — G11, G16*
+*Traceability: Clean Code Ch2 (Meaningful Names) — [N1](../../HEURISTICS.md#n1-choose-descriptive-names), [N5](../../HEURISTICS.md#n5-use-long-names-for-long-scopes), [N6](../../HEURISTICS.md#n6-avoid-encodings), [N7](../../HEURISTICS.md#n7-names-should-describe-side-effects); Ch17 (Smells and Heuristics) — [G11](../../HEURISTICS.md#g11-inconsistency), [G16](../../HEURISTICS.md#g16-obscured-intent)*

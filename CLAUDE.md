@@ -275,6 +275,8 @@ public Mono<PetPage> listPets(String status, String pageToken) {
 
 ### No Comments in Tests
 
+> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
+
 Test method names must be self-documenting. Inline comments are noise.
 
 ```java
@@ -300,6 +302,8 @@ void fetchesAllPets() {
 
 ### No Spurious Comments in Production Code
 
+> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
+
 A comment is spurious if it restates what the code already clearly says. Comments are appropriate only when explaining *why* something non-obvious is done, or documenting a known gotcha (like the `HttpGraphQlClient.url()` behaviour above).
 
 ```java
@@ -317,6 +321,8 @@ return HttpGraphQlClient.builder(webClient).build();
 ```
 
 ### Package-Private Methods for Testing
+
+> See also: `.claude/skills/functions.md` for the full pattern catalogue.
 
 Make helper methods package-private (no access modifier) instead of `private` so they can be tested directly from the same package in the test source tree.
 
@@ -361,6 +367,8 @@ if (exports.contains("users")) {
 
 ### Prefer `forEach` Over Enhanced For-Loops
 
+> See also: `.claude/skills/functions.md` for the full pattern catalogue.
+
 When a for-each loop simply delegates to a single method call or populates a collection with no early returns, index mutation, or checked exceptions, use `forEach` with a lambda or method reference instead. This is more concise and expressive.
 
 Only use a traditional `for` loop when the body needs `continue`, `break`, `return`, index variables, or must handle checked exceptions.
@@ -391,6 +399,8 @@ for (final String prefix : MEASURE_PREFIXES) {
 ```
 
 ### Single Responsibility Principle
+
+> See also: `.claude/skills/classes.md` for the full pattern catalogue.
 
 Every class should have exactly one reason to change. The 150-line limit and 50-line target are not arbitrary thresholds — they are proxies for SRP violations. If you need the word "and" to describe what a class does, it has more than one responsibility and should be split.
 
@@ -430,6 +440,8 @@ PetPage        // REST response record with from() factory
 
 ### Favour Polymorphism Over Conditionals
 
+> See also: `.claude/skills/conditionals-and-expressions.md` for the full pattern catalogue.
+
 Replace chains of `if`/`else if` that switch on type or kind with polymorphism — enums with behaviour, strategy interfaces, or maps of functions. Long conditional chains are hard to test, extend, and read.
 
 ```java
@@ -448,6 +460,8 @@ private static final List<ClassificationRule> RULES = List.of(
 ```
 
 ### Break Down Complex Logic
+
+> See also: `.claude/skills/functions.md` for the full pattern catalogue.
 
 Prefer many small, named methods over a few large ones. Every extracted method is a candidate for a direct unit test.
 
@@ -476,6 +490,8 @@ boolean hasMore(Page<Pet> page) {
 
 ### Prefer Immutable Objects
 
+> See also: `.claude/skills/classes.md` for the full pattern catalogue.
+
 Use Java records, `final` fields, and immutable collections. Avoid setters, mutable state, and `Optional.set`.
 
 ```java
@@ -496,6 +512,8 @@ public record PetFilter(String id, String status, String type) {
 ```
 
 ### Fail Fast — No Null Checks as Control Flow
+
+> See also: `.claude/skills/null-handling.md` for the full pattern catalogue.
 
 Never use `if (x != null)` to branch logic, guard method calls, or silently provide defaults. This includes `Map.get()` followed by a null check — use `Map.getOrDefault()`, `Map.computeIfAbsent()`, or let it fail. The only acceptable uses of null checks are: (1) `Objects.requireNonNull` at API boundaries, (2) Jackson `@JsonInclude(NON_NULL)` for optional response fields.
 
@@ -528,6 +546,8 @@ Optional<ColumnConfig> findColumn(String name);
 
 ### Never Swallow Exceptions
 
+> See also: `.claude/skills/exception-handling.md` for the full pattern catalogue.
+
 Do not catch exceptions just to log and continue. If an operation fails, the caller needs to know. Catch-log-and-continue hides bugs and leaves the system in an inconsistent state. Only catch exceptions at well-defined boundaries (REST controllers, event listeners) where you can return a meaningful error response.
 
 ```java
@@ -550,6 +570,8 @@ try {
 ```
 
 ### Never Catch Generic Exceptions in Controllers
+
+> See also: `.claude/skills/exception-handling.md` for the full pattern catalogue.
 
 Do not wrap controller logic in `try { ... } catch (Exception e)` to convert exceptions to HTTP status codes. Use `@RestControllerAdvice` with specific `@ExceptionHandler` methods instead. This centralises error mapping, eliminates repeated try/catch boilerplate, and ensures consistent error responses across all endpoints.
 
@@ -619,6 +641,8 @@ import static org.example.server.PetController.buildFilter; // unclear at call s
 
 ### No Magic Hard-Coded Strings
 
+> See also: `.claude/skills/java-idioms.md` for the full pattern catalogue.
+
 Extract repeated string literals into named constants. A string that appears more than once, or whose meaning is not self-evident, must be a constant. Name constants after the value they represent — do not add type prefixes like `VAR_`, `STR_`, `KEY_`.
 
 ```java
@@ -654,6 +678,8 @@ SqlNames.validateMeasure(measure);
 ```
 
 ### Meaningful Variable Names — No Abbreviations
+
+> See also: `.claude/skills/naming.md` for the full pattern catalogue.
 
 Names must communicate intent clearly to a human reader. Abbreviations are only acceptable when they are universally understood in context (e.g. `id`, `url`, `csv`).
 
@@ -844,6 +870,8 @@ void returnsPageWithCorrectNodeCountAndCursor() {
 ```
 
 ### No Disabled Tests or Commented-Out Code
+
+> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
 
 A disabled test is a lie — it looks like coverage but provides none. Delete it or fix it. Commented-out code belongs in git history, not in source files.
 

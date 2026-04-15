@@ -2,7 +2,7 @@
 
 ## When to use this skill
 
-- When fixing a Ch7.2 (Don't Return Null) finding identified by the plugin
+- When fixing a [Ch7.2](../../HEURISTICS.md#ch72-dont-return-null) (Don't Return Null) finding identified by the plugin
 - When writing any new method that could return no result
 - When writing any method that receives a value that must not be null
 - When reviewing code that uses `if (x != null)` as control flow
@@ -55,10 +55,9 @@ Every null-related code site must satisfy exactly one of these:
 | 3 — Null object / empty collection | Caller needs a usable value, absence is not an error |
 | 4 — Type narrowing | Null check exists because the type is too broad; narrow it |
 
-**If more than one pattern could apply:** Pattern 2 takes precedence at
-API boundaries (constructors, public method parameters). Pattern 1 takes
-precedence for return values. Pattern 3 takes precedence when the caller
-iterates or delegates without checking.
+**If more than one pattern applies:** use Pattern 2 at API boundaries
+(constructors, public method parameters), Pattern 1 for return values,
+Pattern 3 when the caller iterates or delegates without checking.
 
 ---
 
@@ -234,4 +233,4 @@ changed:
 
 ---
 
-*Traceability: Clean Code Ch7 (Error Handling) — Ch7.2*
+*Traceability: Clean Code Ch7 (Error Handling) — [Ch7.2](../../HEURISTICS.md#ch72-dont-return-null)*

@@ -2,7 +2,7 @@
 
 ## When to use this skill
 
-- When fixing a Ch7.1 (catch-log-continue) finding identified by the plugin
+- When fixing a [Ch7.1](../../HEURISTICS.md#ch71-use-exceptions-rather-than-return-codes) (catch-log-continue) finding identified by the plugin
 - When writing any new code that catches, throws, or propagates exceptions
 - When adding a new service method, pipeline stage, or boundary adapter
 
@@ -131,8 +131,6 @@ for (Row row : rows) {
 }
 errors.throwIfAny(BatchQueryException::new);
 ```
-
-Logging and continuing satisfies none of these patterns.
 
 ---
 
@@ -264,9 +262,6 @@ the required constructor shape.
 | All other patterns — any layer | No logging in catch block |
 | Outermost handler (entry point, scheduler, controller) | ERROR or WARN |
 
-Internal layers wrap and propagate — they do not log. This ensures one
-log entry per failure rather than a cascade for the same root cause.
-
 ---
 
 ## Do not
@@ -281,11 +276,11 @@ log entry per failure rather than a cascade for the same root cause.
 - Close resources manually when try-with-resources applies
 - Catch `Exception` or `Throwable` — flag for human review; this is
   never correct in internal or boundary layers
-- Fix multiple Ch7.1 findings in a single task — one finding per task
-  keeps each fix independently reviewable and revertable
+- Fix multiple findings in a single task — one finding per task keeps
+  each fix independently reviewable and revertable
 - Expand scope beyond the identified location without explicit instruction
 - Apply this skill to test classes
 
 ---
 
-*Traceability: Clean Code Ch7 (Error Handling) — Ch7.1*
+*Traceability: Clean Code Ch7 (Error Handling) — [Ch7.1](../../HEURISTICS.md#ch71-use-exceptions-rather-than-return-codes)*

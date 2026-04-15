@@ -2,7 +2,7 @@
 
 ## When to use this skill
 
-- When fixing a Ch3.1, Ch3.2, Ch3.3, F1, F2, F3, G5, G30, or G34 finding
+- When fixing a [Ch3.1](../../HEURISTICS.md#ch31-small-functions), Ch3.2, Ch3.3, [F1](../../HEURISTICS.md#f1-too-many-arguments), [F2](../../HEURISTICS.md#f2-output-arguments), [F3](../../HEURISTICS.md#f3-flag-arguments), [G5](../../HEURISTICS.md#g5-duplication), [G30](../../HEURISTICS.md#g30-functions-should-do-one-thing), or [G34](../../HEURISTICS.md#g34-functions-should-descend-only-one-level-of-abstraction) finding
   identified by the plugin
 - When writing any new method, refactoring an existing method, or adding
   parameters to an existing signature
@@ -25,7 +25,7 @@ size and naming conventions — see the test standards in CLAUDE.md.
 - A method should do one thing. If you need the word "and" to describe
   what it does, it has more than one responsibility and must be split.
 - Section comments inside a method body are a smell — each commented
-  section should become its own named method (G34).
+  section should become its own named method.
 - Methods should be small enough that they need no comments to explain
   their internal flow.
 
@@ -33,10 +33,10 @@ size and naming conventions — see the test standards in CLAUDE.md.
 - Prefer zero arguments (niladic), then one (monadic), then two (dyadic).
   Three arguments (triadic) require justification. More than three is
   not permitted without a parameter object.
-- Never pass a boolean flag argument — it advertises that the method
-  does two things (F3). Split into two clearly-named methods.
+- Never pass a boolean flag argument — split into two clearly-named
+  methods.
 - Never use an output argument (a collection or object passed in to be
-  mutated). Return the result instead (F2).
+  mutated). Return the result instead.
 
 **Naming:**
 - Name methods after what they return or what they change — not after
@@ -56,8 +56,8 @@ size and naming conventions — see the test standards in CLAUDE.md.
   Extract Method — look for section comments, blank-line separations,
   or nested conditionals as split points
 - Count parameters: if the method has more than three parameters, look
-  for data clumps (Ch3.3) — groups of parameters that travel together
-  across multiple method signatures
+  for data clumps — groups of parameters that travel together across
+  multiple method signatures
 - Check for flag arguments: any `boolean` parameter that controls
   branching inside the method must be split
 - Check for output arguments: any collection or mutable object passed
@@ -85,11 +85,11 @@ Every function-level finding maps to exactly one of these:
 
 | Pattern | Use when |
 |---|---|
-| 1 — Extract Method | Long method, section comments, mixed abstraction levels (Ch3.1, G30, G34) |
-| 2 — Parameter Object | Too many arguments or data clump (Ch3.3, F1) |
-| 3 — Split Flag Argument | Boolean parameter controls branching (F3) |
-| 4 — Eliminate Output Argument | Mutable collection/object passed in and modified (F2) |
-| 5 — Extract Duplication | Same logic in 2+ places (G5) |
+| 1 — Extract Method | Long method, section comments, mixed abstraction levels |
+| 2 — Parameter Object | Too many arguments or data clump |
+| 3 — Split Flag Argument | Boolean parameter controls branching |
+| 4 — Eliminate Output Argument | Mutable collection/object passed in and modified |
+| 5 — Extract Duplication | Same logic in 2+ places |
 
 **If more than one pattern applies:** Extract Method (Pattern 1) first,
 then apply the remaining patterns to the extracted methods. Reducing
@@ -104,7 +104,7 @@ named methods. Each extracted method does one thing.
 
 ```java
 // Illustrative only — class names are theoretical
-// BEFORE — section comments signal mixed abstraction (G34)
+// BEFORE — section comments signal mixed abstraction
 void generateReport(final Report report) {
     // validate inputs
     Objects.requireNonNull(report.title(), "title");
@@ -159,7 +159,7 @@ a single record.
 
 ```java
 // Illustrative only — class names are theoretical
-// BEFORE — too many arguments (F1), data clump (Ch3.3)
+// BEFORE — too many arguments, data clump
 Mono<Page<Order>> searchOrders(
         final String customerId,
         final String status,
@@ -205,7 +205,7 @@ Replace a boolean parameter with two clearly-named methods.
 
 ```java
 // Illustrative only — class names are theoretical
-// BEFORE — flag argument (F3)
+// BEFORE — flag argument
 List<User> findUsers(final String department, final boolean includeInactive) {
     if (includeInactive) {
         return repository.findByDepartment(department);
@@ -235,7 +235,7 @@ Replace a mutated parameter with a return value.
 
 ```java
 // Illustrative only — class names are theoretical
-// BEFORE — output argument (F2)
+// BEFORE — output argument
 void collectActiveIds(final List<User> users, final List<String> result) {
     users.stream()
         .filter(User::isActive)
@@ -260,7 +260,7 @@ and the caller combines them.
 
 ## Pattern 5: Extract Duplication
 
-Same logic in two or more places must be extracted (G5). Where to
+Same logic in two or more places must be extracted. Where to
 put the extracted method depends on scope:
 
 | Scope | Placement |
@@ -300,11 +300,10 @@ public final class CsvResponse {
 
 ---
 
-## Try-catch extraction rule (Ch3.2)
+## Try-catch extraction rule
 
-A try-catch block inside a method means the method is doing two things:
-error handling and the work. Extract the body of the try block into its
-own method. The containing method becomes the error-handling wrapper.
+Extract the body of a try block into its own method. The containing
+method becomes the error-handling wrapper.
 
 ```java
 // Illustrative only — class names are theoretical
@@ -362,4 +361,4 @@ void parseValidateAndSave(final Path source) {
 
 ---
 
-*Traceability: Clean Code Ch3 (Functions) — Ch3.1, Ch3.2, Ch3.3; Heuristics F1, F2, F3, G5, G30, G34*
+*Traceability: Clean Code Ch3 (Functions) — [Ch3.1](../../HEURISTICS.md#ch31-small-functions), Ch3.2, Ch3.3; Heuristics [F1](../../HEURISTICS.md#f1-too-many-arguments), [F2](../../HEURISTICS.md#f2-output-arguments), [F3](../../HEURISTICS.md#f3-flag-arguments), [G5](../../HEURISTICS.md#g5-duplication), [G30](../../HEURISTICS.md#g30-functions-should-do-one-thing), [G34](../../HEURISTICS.md#g34-functions-should-descend-only-one-level-of-abstraction)*

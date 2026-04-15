@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.CheckstyleExtension;
 import org.gradle.api.plugins.quality.Pmd;
@@ -28,8 +27,12 @@ public class CleanCodePlugin implements Plugin<Project> {
         final CleanCodeExtension ext = project.getExtensions()
                 .create("cleanCode", CleanCodeExtension.class);
 
-        applyStaticAnalysisPlugins(project);
-        scaffoldSkillFiles(project, ext);
+        applyStaticAnalysisPlugins(project, ext);
+
+        project.afterEvaluate(p -> {
+            final Path skillsDir = p.getProjectDir().toPath().resolve(ext.getSkillsDir().get());
+            new SkillFileScaffolder(skillsDir, ext.getThresholds(), p.getLogger()).scaffold();
+        });
 
         final TaskProvider<AnalyseTask> analyse = project.getTasks()
                 .register("analyseCleanCode", AnalyseTask.class, task -> {
@@ -60,44 +63,7 @@ public class CleanCodePlugin implements Plugin<Project> {
                 });
     }
 
-    private static final List<String> SKILL_FILES = List.of(
-            "SKILLS.md",
-            "exception-handling.md",
-            "null-handling.md",
-            "functions.md",
-            "classes.md",
-            "naming.md",
-            "conditionals-and-expressions.md",
-            "comments-and-clutter.md",
-            "java-idioms.md",
-            "project-conventions.md");
-
-    private void scaffoldSkillFiles(Project project, CleanCodeExtension ext) {
-        final Path skillsDir = project.getProjectDir().toPath().resolve(ext.getSkillsDir().get());
-        try {
-            Files.createDirectories(skillsDir);
-        } catch (IOException e) {
-            project.getLogger().warn("Could not create skills directory: {}", skillsDir, e);
-            return;
-        }
-
-        SKILL_FILES.forEach(filename -> {
-            final Path target = skillsDir.resolve(filename);
-            if (Files.exists(target)) {
-                return;
-            }
-            try (InputStream is = getClass().getResourceAsStream("/skills/" + filename)) {
-                if (is != null) {
-                    Files.copy(is, target);
-                    project.getLogger().lifecycle("Scaffolded skill file: {}", target);
-                }
-            } catch (IOException e) {
-                project.getLogger().warn("Could not scaffold skill file: {}", filename, e);
-            }
-        });
-    }
-
-    private void applyStaticAnalysisPlugins(Project project) {
+    private void applyStaticAnalysisPlugins(Project project, CleanCodeExtension ext) {
         project.getPluginManager().apply("java");
         project.getPluginManager().apply("pmd");
         project.getPluginManager().apply("checkstyle");
@@ -108,7 +74,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         configureCheckstyle(project);
         configureJacoco(project);
         configureSpotBugs(project);
-        registerCpdTask(project);
+        registerCpdTask(project, ext);
     }
 
     private void configurePmd(Project project) {
@@ -158,7 +124,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         });
     }
 
-    private void registerCpdTask(Project project) {
+    private void registerCpdTask(Project project, CleanCodeExtension ext) {
         final var cpdConfig = project.getConfigurations().create("cpd", conf -> {
             conf.setDescription("CPD classpath");
             conf.setVisible(false);
@@ -167,6 +133,8 @@ public class CleanCodePlugin implements Plugin<Project> {
 
         project.getDependencies().add("cpd", "net.sourceforge.pmd:pmd-cli:7.9.0");
         project.getDependencies().add("cpd", "net.sourceforge.pmd:pmd-java:7.9.0");
+
+        final var minimumTokens = ext.getThresholds().getCpdMinimumTokens();
 
         project.getTasks().register("cpdMain", org.gradle.api.tasks.JavaExec.class, task -> {
             task.setDescription("Run CPD copy-paste detection");
@@ -190,7 +158,7 @@ public class CleanCodePlugin implements Plugin<Project> {
 
             task.args(
                     "cpd",
-                    "--minimum-tokens", "50",
+                    "--minimum-tokens", String.valueOf(minimumTokens.get()),
                     "--language", "java",
                     "--format", "xml",
                     "--dir", project.file("src/main/java").getAbsolutePath());

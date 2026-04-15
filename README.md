@@ -133,6 +133,7 @@ cleanCode {
         magicStringMinOccurrences = 3 // default 2
         stringSwitchMinCases = 4      // default 3
         shortNameMinLength = 2        // default 2
+        cpdMinimumTokens = 100       // default 50
     }
     disabledRecipes = listOf("G36", "G10")
 }

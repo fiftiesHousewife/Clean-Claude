@@ -2,7 +2,7 @@
 
 ## When to use this skill
 
-- When fixing a G23, G28, G29, G33, or G19 finding identified by the plugin
+- When fixing a [G23](../../HEURISTICS.md#g23-prefer-polymorphism-to-ifelse-or-switchcase), [G28](../../HEURISTICS.md#g28-encapsulate-conditionals), [G29](../../HEURISTICS.md#g29-avoid-negative-conditionals), [G33](../../HEURISTICS.md#g33-encapsulate-boundary-conditions), or [G19](../../HEURISTICS.md#g19-use-explanatory-variables) finding identified by the plugin
 - When writing any new code that contains conditional logic, boolean
   expressions, or boundary calculations
 - When refactoring a method that has grown complex due to inline conditions
@@ -20,8 +20,8 @@ conditionals are not subject to these rules.
 ## Before you write or fix anything
 
 **If fixing existing code:**
-- Identify the finding: determine which pattern (G23, G28, G29, G33, G19)
-  the finding maps to using the pattern table below
+- Identify the finding: determine which pattern the finding maps to
+  using the pattern table below
 - Search callers: if extracting a method or introducing a new type, search
   for all callers of the containing method; if the change would alter a
   public API signature, stop and flag for human review
@@ -46,13 +46,13 @@ conditionals are not subject to these rules.
 
 Every conditional finding must satisfy exactly one of these:
 
-| Pattern | Finding | Use when |
-|---|---|---|
-| 1 — Replace with Polymorphism | G23 | A switch or if/else chain dispatches on type or kind to select behaviour |
-| 2 — Extract Boolean Method | G28 | A compound boolean expression is used inline in an `if`, `while`, or ternary |
-| 3 — Invert Negative Conditional | G29 | A condition uses negation (`!`, `not`) and a positive equivalent exists or can be created |
-| 4 — Extract Boundary Variable | G33 | An arithmetic boundary expression (`size() - 1`, `length + offset`) is used inline |
-| 5 — Extract Explanatory Variable | G19 | A complex inline expression obscures the intent of the code around it |
+| Pattern | Use when |
+|---|---|
+| 1 — Replace with Polymorphism | A switch or if/else chain dispatches on type or kind to select behaviour |
+| 2 — Extract Boolean Method | A compound boolean expression is used inline in an `if`, `while`, or ternary |
+| 3 — Invert Negative Conditional | A condition uses negation (`!`, `not`) and a positive equivalent exists or can be created |
+| 4 — Extract Boundary Variable | An arithmetic boundary expression (`size() - 1`, `length + offset`) is used inline |
+| 5 — Extract Explanatory Variable | A complex inline expression obscures the intent of the code around it |
 
 **If more than one pattern applies:** apply them in order — Pattern 1
 takes priority over Pattern 2, and so on. A single site may require
@@ -61,7 +61,7 @@ variable, then extract a boolean method that uses it).
 
 ---
 
-## Pattern 1: Replace with Polymorphism (G23)
+## Pattern 1: Replace with Polymorphism
 
 Replace if/else or switch chains that dispatch on type with polymorphism —
 an enum with behaviour, a strategy interface, or a map of functions.
@@ -127,7 +127,7 @@ public double calculateShipping(final ShippingMethod method, final double weight
 
 ---
 
-## Pattern 2: Extract Boolean Method (G28)
+## Pattern 2: Extract Boolean Method
 
 Extract a compound boolean expression into a named method that returns
 `boolean`. The method name must describe the business condition, not the
@@ -161,7 +161,7 @@ or `validate` — those imply side effects.
 
 ---
 
-## Pattern 3: Invert Negative Conditional (G29)
+## Pattern 3: Invert Negative Conditional
 
 Replace negated conditions with their positive equivalents. Positive
 conditions are easier to read and less error-prone.
@@ -201,7 +201,7 @@ and negative references to the same concept.
 
 ---
 
-## Pattern 4: Extract Boundary Variable (G33)
+## Pattern 4: Extract Boundary Variable
 
 Extract arithmetic boundary expressions into a named `final` local
 variable at the point of use. The variable name must describe the
@@ -234,7 +234,7 @@ final String chunk = payload.substring(offset, chunkEnd);
 
 ---
 
-## Pattern 5: Extract Explanatory Variable (G19)
+## Pattern 5: Extract Explanatory Variable
 
 Extract a complex inline expression into a named `final` local variable
 declared immediately before the usage site. The variable name must
@@ -299,4 +299,4 @@ it to a package-private method (Pattern 2) instead of a local variable.
 
 ---
 
-*Traceability: Clean Code Ch17 (Smells and Heuristics) — G19, G23, G28, G29, G33*
+*Traceability: Clean Code Ch17 (Smells and Heuristics) — [G19](../../HEURISTICS.md#g19-use-explanatory-variables), [G23](../../HEURISTICS.md#g23-prefer-polymorphism-to-ifelse-or-switchcase), [G28](../../HEURISTICS.md#g28-encapsulate-conditionals), [G29](../../HEURISTICS.md#g29-avoid-negative-conditionals), [G33](../../HEURISTICS.md#g33-encapsulate-boundary-conditions)*

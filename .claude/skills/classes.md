@@ -2,11 +2,11 @@
 
 ## When to use this skill
 
-- When fixing a Ch10.1, Ch10.2, G8, G14, G17, or G18 finding
+- When fixing a [Ch10.1](../../HEURISTICS.md#ch101-classes-should-be-small), [Ch10.2](../../HEURISTICS.md#ch102-the-single-responsibility-principle), [G8](../../HEURISTICS.md#g8-too-much-information), [G14](../../HEURISTICS.md#g14-feature-envy), [G17](../../HEURISTICS.md#g17-misplaced-responsibility), or [G18](../../HEURISTICS.md#g18-inappropriate-static) finding
   identified by the plugin
 - When writing a new class, splitting an existing class, or moving
   methods between classes
-- When a class exceeds 150 lines or a record exceeds 7 fields
+- When a class exceeds {{classLineCount}} lines or a record exceeds {{recordComponentCount}} fields
 
 This skill does not apply to test classes. Test classes may exceed
 normal size limits when they contain many independent test methods.
@@ -21,15 +21,15 @@ normal size limits when they contain many independent test methods.
 ## Class rules
 
 **Size:**
-- No class should exceed 150 lines. A class approaching this limit is
+- No class should exceed {{classLineCount}} lines. A class approaching this limit is
   a signal to split it by responsibility.
-- Prefer classes of around 50 lines. A class that grows past roughly
+- Prefer classes of around {{classTargetLines}} lines. A class that grows past roughly
   100 lines is a signal to split it.
 - If you need the word "and" to describe what a class does, it has
   more than one responsibility and must be split.
 
 **Records:**
-- Records with more than 7 fields require a nested static Builder
+- Records with more than {{recordComponentCount}} fields require a nested static Builder
   class.
 - Records are the default choice for value objects, DTOs, parameter
   objects, and configuration bundles.
@@ -41,7 +41,7 @@ normal size limits when they contain many independent test methods.
   classes and methods unless they must be public.
 - Fields are always `private final` unless the class is a record.
 - Do not add public getters speculatively — add them when a caller
-  needs them (G8).
+  needs them.
 
 **Naming:**
 - Name classes after what they represent or produce, not after their
@@ -56,21 +56,20 @@ normal size limits when they contain many independent test methods.
 ## Before you write or fix anything
 
 **If fixing existing code:**
-- Count lines: if the class exceeds 150 lines, it must be split —
+- Count lines: if the class exceeds {{classLineCount}} lines, it must be split —
   identify responsibilities by looking for field clusters, method
   groups that share the same subset of fields, and section comments
 - Check SRP: describe the class in one sentence without using "and" —
   if you cannot, list the responsibilities and plan one class per
   responsibility
-- Check for feature envy (G14): if a method makes more calls to
-  another class's methods than to its own, it belongs on the other
-  class — count external vs internal calls
+- Check for feature envy: if a method makes more calls to another
+  class's methods than to its own, it belongs on the other class —
+  count external vs internal calls
 - Check field visibility: any non-private mutable field is a finding
-  (G8) — make it `private final` and add an accessor only if callers
-  exist
+  — make it `private final` and add an accessor only if callers exist
 - Check static methods: a static method that accesses no static state
   and could operate on an instance of a specific type should be an
-  instance method on that type (G18)
+  instance method on that type
 
 **If writing new code:**
 - Design the class with one responsibility from the start — write the
@@ -78,7 +77,7 @@ normal size limits when they contain many independent test methods.
   writing any code
 - If the class needs more than 5 fields, reconsider whether it has
   a single responsibility
-- If the class is a record with more than 7 fields, add a Builder
+- If the class is a record with more than {{recordComponentCount}} fields, add a Builder
   from the start
 - Do not create static utility methods — create a small class with
   instance methods that can be injected, or use a `private`
@@ -92,11 +91,11 @@ Every class-level finding maps to exactly one of these:
 
 | Pattern | Use when |
 |---|---|
-| 1 — Split by Responsibility | Class too large, multiple field clusters, needs "and" to describe (Ch10.1, G17) |
-| 2 — Add Builder | Record has more than 7 fields or complex construction (Ch10.2) |
-| 3 — Move Method | Method makes more external calls than internal (G14) |
-| 4 — Reduce Visibility | Public mutable fields or over-exposed API surface (G8) |
-| 5 — Convert Static to Instance | Static method that should be an instance method on an injectable class (G18) |
+| 1 — Split by Responsibility | Class too large, multiple field clusters, needs "and" to describe |
+| 2 — Add Builder | Record has more than {{recordComponentCount}} fields or complex construction |
+| 3 — Move Method | Method makes more external calls than internal |
+| 4 — Reduce Visibility | Public mutable fields or over-exposed API surface |
+| 5 — Convert Static to Instance | Static method that should be an instance method on an injectable class |
 
 **If more than one pattern applies:** Split by Responsibility (Pattern 1)
 first, then apply the remaining patterns to the resulting classes.
@@ -105,8 +104,6 @@ Splitting often resolves feature envy and visibility problems naturally.
 ---
 
 ## Pattern 1: Split by Responsibility
-
-Extract classes until each has a single reason to change.
 
 **How to identify responsibilities:**
 - Field clusters: groups of fields that are always used together form
@@ -178,7 +175,7 @@ class DashboardStartup {
 
 ## Pattern 2: Add Builder
 
-Records with more than 7 fields need a Builder to keep construction
+Records with more than {{recordComponentCount}} fields need a Builder to keep construction
 sites readable. Use Lombok `@Builder` — do not write builders by hand.
 
 ```java
@@ -287,7 +284,7 @@ Make fields `private final` and expose only what callers require.
 
 ```java
 // Illustrative only — class names are theoretical
-// BEFORE — public mutable field (G8)
+// BEFORE — public mutable field
 class QueryExecutor {
     public Connection connection;
     public int timeout = 30;
@@ -329,7 +326,7 @@ class QueryExecutor {
 Replace inappropriate static methods with instance methods on an
 injectable class.
 
-**When a static method is inappropriate (G18):**
+**When a static method is inappropriate:**
 - It accesses no static state and could operate on an instance
 - It would benefit from polymorphism or testing via dependency injection
 - It is a non-trivial operation (more than a simple factory or
@@ -342,7 +339,7 @@ injectable class.
 
 ```java
 // Illustrative only — class names are theoretical
-// BEFORE — static method that should be an instance method (G18)
+// BEFORE — static method that should be an instance method
 class ReportRenderer {
     static String renderHtml(final Report report,
             final TemplateEngine engine) {
@@ -374,7 +371,7 @@ renderer.renderHtml(report);
 
 ## Do not
 
-- Allow a class to exceed 150 lines — split before it reaches the limit
+- Allow a class to exceed {{classLineCount}} lines — split before it reaches the limit
 - Use the word "and" to describe what a class does — split it
 - Name a split-off class after the original: `FooHelper`, `FooPart2`,
   `FooExtra`
@@ -394,4 +391,4 @@ renderer.renderHtml(report);
 
 ---
 
-*Traceability: Clean Code Ch10 (Classes) — Ch10.1, Ch10.2; Heuristics G8, G14, G17, G18*
+*Traceability: Clean Code Ch10 (Classes) — [Ch10.1](../../HEURISTICS.md#ch101-classes-should-be-small), [Ch10.2](../../HEURISTICS.md#ch102-the-single-responsibility-principle); Heuristics [G8](../../HEURISTICS.md#g8-too-much-information), [G14](../../HEURISTICS.md#g14-feature-envy), [G17](../../HEURISTICS.md#g17-misplaced-responsibility), [G18](../../HEURISTICS.md#g18-inappropriate-static)*

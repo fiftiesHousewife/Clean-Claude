@@ -2,7 +2,7 @@
 
 ## When to use this skill
 
-- When fixing a J1, J2, J3, G4, G25, or G26 finding identified by the plugin
+- When fixing a [J1](../../HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards), [J2](../../HEURISTICS.md#j2-dont-inherit-constants), [J3](../../HEURISTICS.md#j3-constants-versus-enums), [G4](../../HEURISTICS.md#g4-overridden-safeties), [G25](../../HEURISTICS.md#g25-replace-magic-numbers-with-named-constants), or [G26](../../HEURISTICS.md#g26-be-precise) finding identified by the plugin
 - When writing new code that introduces constants, enums, imports, or
   numeric/type-sensitive values
 - When reviewing a class that implements an interface solely to inherit
@@ -24,7 +24,7 @@ extract assertion expected values to constants).
 - Identify the finding: match it to one row in the action table below
 - Check scope: each finding targets a single site — do not refactor
   surrounding code unless the finding requires it
-- Search callers: for J2 and J3, search all references to the constants
+- Search callers: for inherited constants and enum conversions, search all references to the constants
   being moved; update every call site in the same change
 
 **If writing new code:**
@@ -39,16 +39,16 @@ extract assertion expected values to constants).
 
 | Finding | Action | Notes |
 |---|---|---|
-| J1 — Wildcard import | Replace each `*` import with explicit imports for every used type | If more than 8 types are imported from a single package, keep the wildcard and flag for human review — the class may have too many dependencies |
-| J2 — Inherited constants | Remove `implements ConstantsInterface`. Add `import static` for each constant used. | If the interface defines non-constant methods too, only remove the `implements` if the class does not override any of those methods |
-| J3 — Constants vs enums | Extract related `static final` fields to an enum | See enum extraction rules below |
-| G4 — Overridden safeties | Depends on the safety being overridden — see G4 section below | Never silently delete a safety override |
-| G25 — Magic number | Extract to a named `static final` constant | Name after business meaning, not value |
-| G26 — Imprecise type | Narrow the type to the most specific correct choice | See type narrowing table below |
+| Wildcard import | Replace each `*` import with explicit imports for every used type | If more than 8 types are imported from a single package, keep the wildcard and flag for human review — the class may have too many dependencies |
+| Inherited constants | Remove `implements ConstantsInterface`. Add `import static` for each constant used. | If the interface defines non-constant methods too, only remove the `implements` if the class does not override any of those methods |
+| Constants vs enums | Extract related `static final` fields to an enum | See enum extraction rules below |
+| Overridden safeties | Depends on the safety being overridden — see Overridden safeties section below | Never silently delete a safety override |
+| Magic number | Extract to a named `static final` constant | Name after business meaning, not value |
+| Imprecise type | Narrow the type to the most specific correct choice | See type narrowing table below |
 
 ---
 
-## J1 — Wildcard imports
+## Wildcard imports
 
 Replace every wildcard import with explicit imports for the types
 actually used in the file.
@@ -70,7 +70,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 ---
 
-## J2 — Inherited constants
+## Inherited constants
 
 Replace `implements ConstantsInterface` with static imports. The class
 must not inherit an interface solely to use its constants.
@@ -99,7 +99,7 @@ public class ReportController {
 
 ---
 
-## J3 — Constants vs enums
+## Constants vs enums
 
 When two or more `static final` fields share a common prefix or
 represent values from the same domain concept, extract them to an enum.
@@ -108,8 +108,6 @@ represent values from the same domain concept, extract them to an enum.
 - Name the enum after the shared concept, not the prefix:
   `STATUS_ACTIVE`, `STATUS_INACTIVE` becomes `enum Status { ACTIVE, INACTIVE }`
 - If the constants carry values (strings, ints), add a field to the enum
-- If the constants are used in `switch` or `if`/`else if` chains, the
-  enum enables the compiler to enforce exhaustiveness
 - Move the enum to its own file
 
 ```java
@@ -143,7 +141,7 @@ public enum OrderStatus {
 
 ---
 
-## G4 — Overridden safeties
+## Overridden safeties
 
 Each overridden safety has its own fix. Do not silently delete the
 override — understand why it exists first.
@@ -188,7 +186,7 @@ remove the annotation without fixing the underlying warning.
 
 ---
 
-## G25 — Magic numbers
+## Magic numbers
 
 Extract numeric and string literals to named `static final` constants.
 Name the constant after its business meaning, not its value.
@@ -214,7 +212,7 @@ if (retryCount > MAX_RETRIES) { ... }
 
 ---
 
-## G26 — Imprecise types
+## Imprecise types
 
 Narrow types to the most specific correct choice. Using a broad type
 when a narrow one exists invites bugs.
@@ -259,9 +257,9 @@ final DashboardConfig config = loadConfig();
 - Fix multiple findings in a single task — one finding per task keeps each
   fix independently reviewable and revertable
 - Expand scope beyond the identified location without explicit instruction
-- Apply this skill to test classes except for J1 and G25 (see exemptions
+- Apply this skill to test classes except for wildcard imports and magic numbers (see exemptions
   at top)
 
 ---
 
-*Traceability: Clean Code J1, J2, J3, G4, G25, G26*
+*Traceability: Clean Code [J1](../../HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards), [J2](../../HEURISTICS.md#j2-dont-inherit-constants), [J3](../../HEURISTICS.md#j3-constants-versus-enums), [G4](../../HEURISTICS.md#g4-overridden-safeties), [G25](../../HEURISTICS.md#g25-replace-magic-numbers-with-named-constants), [G26](../../HEURISTICS.md#g26-be-precise)*

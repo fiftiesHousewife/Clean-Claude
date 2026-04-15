@@ -2,12 +2,12 @@
 
 ## When to use this skill
 
-- When fixing a C3, C5, G9, G10, G12, or G24 finding identified by the plugin
+- When fixing a [C3](../../HEURISTICS.md#c3-redundant-comment), [C5](../../HEURISTICS.md#c5-commented-out-code), [G9](../../HEURISTICS.md#g9-dead-code), [G10](../../HEURISTICS.md#g10-vertical-separation), [G12](../../HEURISTICS.md#g12-clutter), or [G24](../../HEURISTICS.md#g24-follow-standard-conventions) finding identified by the plugin
 - When reviewing any file for unnecessary noise before committing
 - When moving or reorganising declarations within a class
 
-This skill does not apply to test classes, except for G12 (unused imports)
-and G24 (formatting). Test classes are exempt from C3, C5, G9, and G10.
+This skill does not apply to test classes, except for [G12](../../HEURISTICS.md#g12-clutter) (unused
+imports) and [G24](../../HEURISTICS.md#g24-follow-standard-conventions) (formatting).
 
 > **Note on examples:** All class names in code examples are illustrative
 > only. Use the action rules below to determine the correct change for
@@ -40,16 +40,16 @@ here — these are deletions and moves, not replacements.
 
 | Finding | Action | Safety gate |
 |---|---|---|
-| C3 — Redundant comment | Delete the comment. The code must speak for itself. If removing the comment makes the code unclear, rename the variable or method instead of keeping the comment. | None |
-| C5 — Commented-out code | Delete entirely. Recover from git history if needed. | None |
-| G9 — Dead code | Delete the unused variable, field, or method. | Check annotations before deleting — see safety gates below |
-| G10 — Vertical separation | Move the declaration to the line immediately before its first use. Declare it `final`. | None |
-| G12 — Clutter | Delete unused imports and empty statements (standalone semicolons, empty blocks). | None |
-| G24 — Convention violation | Apply project formatting: always use curly braces on `if`/`else`/`for`/`while`/`do-while`, enforce consistent whitespace, enforce 120-character line width. | None |
+| Redundant comment | Delete the comment. The code must speak for itself. If removing the comment makes the code unclear, rename the variable or method instead of keeping the comment. | None |
+| Commented-out code | Delete entirely. Recover from git history if needed. | None |
+| Dead code | Delete the unused variable, field, or method. | Check annotations before deleting — see safety gates below |
+| Vertical separation | Move the declaration to the line immediately before its first use. Declare it `final`. | None |
+| Clutter | Delete unused imports and empty statements (standalone semicolons, empty blocks). | None |
+| Convention violation | Apply project formatting: always use curly braces on `if`/`else`/`for`/`while`/`do-while`, enforce consistent whitespace, enforce 120-character line width. | None |
 
 ---
 
-## C3 — Redundant comment
+## Redundant comment
 
 A comment is redundant if it restates what the code already says. Delete
 it. If the code is unclear without the comment, the fix is a better name,
@@ -85,7 +85,7 @@ return HttpGraphQlClient.builder(webClient).build();
 
 ---
 
-## C5 — Commented-out code
+## Commented-out code
 
 Delete the entire block. Do not convert it to a `@Disabled` test. Do not
 move it to a separate file. Git history preserves everything.
@@ -111,7 +111,7 @@ public void regenerate(final String dashboardId) {
 
 ---
 
-## G9 — Dead code
+## Dead code
 
 Delete the unused variable, field, or method. Before deleting a method,
 check the safety gates below.
@@ -141,7 +141,7 @@ public class ReportService {
 
 ---
 
-## G10 — Vertical separation
+## Vertical separation
 
 Move the declaration to the line immediately before its first use.
 Always declare as `final`.
@@ -170,7 +170,7 @@ public Mono<PetPage> listPets(final String status) {
 
 ---
 
-## G12 — Clutter
+## Clutter
 
 Delete unused imports, empty statements, and empty blocks.
 
@@ -194,7 +194,7 @@ public class Config {
 
 ---
 
-## G24 — Convention violations
+## Convention violations
 
 Apply project formatting rules. Always use curly braces, even for
 single-line bodies.
@@ -215,7 +215,7 @@ if (exports.contains("users")) {
 
 ## When deletion is NOT safe
 
-Before deleting a method or field for G9, check for these annotations.
+Before deleting a method or field, check for these annotations.
 If any are present, do not delete — flag for human review instead:
 
 | Annotation | Why it may appear unused |
@@ -250,12 +250,12 @@ Also do not delete:
 - Delete `@Bean`, `@EventListener`, `@Scheduled`, `@PostConstruct`, or
   `@PreDestroy` methods — flag for human review
 - Move a declaration further from its first use than it was before
-- Reorder method declarations unless required by G10 for a local variable
+- Reorder method declarations unless required for vertical separation
 - Combine multiple finding types in a single task unless they are in the
   same method
-- Apply C3, C5, G9, or G10 to test classes
+- Apply these rules to test classes (except clutter and convention violations)
 - Expand scope beyond the identified location without explicit instruction
 
 ---
 
-*Traceability: Clean Code C3, C5, G9, G10, G12, G24*
+*Traceability: Clean Code [C3](../../HEURISTICS.md#c3-redundant-comment), [C5](../../HEURISTICS.md#c5-commented-out-code), [G9](../../HEURISTICS.md#g9-dead-code), [G10](../../HEURISTICS.md#g10-vertical-separation), [G12](../../HEURISTICS.md#g12-clutter), [G24](../../HEURISTICS.md#g24-follow-standard-conventions)*
