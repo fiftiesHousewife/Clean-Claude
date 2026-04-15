@@ -256,6 +256,8 @@ final DashboardConfig config = loadConfig();
   literals are documentation
 - Introduce wildcard imports in new code
 - Use `implements` on an interface solely to access its constants
+- Fix multiple findings in a single task — one finding per task keeps each
+  fix independently reviewable and revertable
 - Expand scope beyond the identified location without explicit instruction
 - Apply this skill to test classes except for J1 and G25 (see exemptions
   at top)
