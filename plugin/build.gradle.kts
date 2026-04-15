@@ -15,6 +15,12 @@ dependencies {
     implementation(libs.spotbugs.gradle.plugin)
 }
 
+tasks.named<ProcessResources>("processResources") {
+    from(rootProject.file(".claude/skills")) {
+        into("skills")
+    }
+}
+
 gradlePlugin {
     plugins {
         create("cleanCode") {

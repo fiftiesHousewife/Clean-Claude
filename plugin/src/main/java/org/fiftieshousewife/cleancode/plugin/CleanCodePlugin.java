@@ -190,7 +190,7 @@ public class CleanCodePlugin implements Plugin<Project> {
 
             task.args(
                     "cpd",
-                    "--minimum-tokens", "100",
+                    "--minimum-tokens", "50",
                     "--language", "java",
                     "--format", "xml",
                     "--dir", project.file("src/main/java").getAbsolutePath());
