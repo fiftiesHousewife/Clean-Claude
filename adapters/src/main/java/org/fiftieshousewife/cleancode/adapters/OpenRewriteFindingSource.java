@@ -134,7 +134,8 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new LargeConstructorRecipe(thresholds.recordComponentCount()),
                 new InappropriateStaticRecipe(),
                 new StringlyTypedDispatchRecipe(),
-                new ConfigurableDataRecipe(thresholds.magicNumberMinValue()));
+                new ConfigurableDataRecipe(thresholds.magicNumberMinValue()),
+                new EmbeddedLanguageRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -186,6 +187,7 @@ public class OpenRewriteFindingSource implements FindingSource {
             case InappropriateStaticRecipe r -> mapInappropriateStatic(r.collectedRows());
             case StringlyTypedDispatchRecipe r -> mapStringlyTypedDispatch(r.collectedRows());
             case ConfigurableDataRecipe r -> mapConfigurableData(r.collectedRows());
+            case EmbeddedLanguageRecipe r -> mapEmbeddedLanguage(r.collectedRows());
             default -> List.of();
         };
     }
@@ -494,6 +496,14 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.G35, r.className(),
                         "Magic number %s in private method '%s' — extract to a named constant".formatted(
                                 r.literalValue(), r.methodName())))
+                .toList();
+    }
+
+    private List<Finding> mapEmbeddedLanguage(List<EmbeddedLanguageRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G1, r.className(),
+                        "Embedded %s in method '%s' — extract to a template or resource file".formatted(
+                                r.language().toUpperCase(), r.methodName())))
                 .toList();
     }
 

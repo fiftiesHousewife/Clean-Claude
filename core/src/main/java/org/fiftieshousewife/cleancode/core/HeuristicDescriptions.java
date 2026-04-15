@@ -148,6 +148,12 @@ public final class HeuristicDescriptions {
                     "your source control system remembers them if you ever need them back."),
 
             // General
+            Map.entry(HeuristicCode.G1,
+                    "A source file should contain one, and only one, language. A Java file " +
+                    "with embedded HTML, CSS, or SQL is harder to read, harder to search, and " +
+                    "impossible to validate with language-specific tools. Extract the other " +
+                    "language into a template file, a resource, or a separate class that " +
+                    "encapsulates the generation."),
             Map.entry(HeuristicCode.G4,
                     "Don't override safeties. Turning off warnings, ignoring failing tests, " +
                     "catching and discarding exceptions — these are all the same mistake. " +
@@ -463,6 +469,7 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.F2, "Don't mutate arguments. Return the result."),
             Map.entry(HeuristicCode.F3, "Split boolean-parameterised methods into two."),
             Map.entry(HeuristicCode.F4, "Delete uncalled methods."),
+            Map.entry(HeuristicCode.G1, "Extract embedded HTML, SQL, or CSS into templates or resource files."),
             Map.entry(HeuristicCode.G4, "Don't suppress warnings. Fix the underlying issue."),
             Map.entry(HeuristicCode.G5, "Eliminate duplication — extract the shared logic."),
             Map.entry(HeuristicCode.G8, "Reduce public surface. Keep interfaces tight."),

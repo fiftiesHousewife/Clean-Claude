@@ -5,7 +5,7 @@
 [![Gradle](https://img.shields.io/badge/Gradle-9.0-blue)](https://gradle.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 40 custom OpenRewrite recipes, normalises all findings into Martin's taxonomy, and produces human-readable output with book references and prescriptive guidance.
+A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 41 custom OpenRewrite recipes, normalises all findings into Martin's taxonomy, and produces human-readable output with book references and prescriptive guidance.
 
 > *"Clean code reads like well-written prose."* -- Robert C. Martin, *Clean Code* (2008)
 
@@ -20,6 +20,7 @@ For the full Robert Martin text, detection details, and skill file links for eve
 | [C3](HEURISTICS.md#c3-redundant-comment)     | Redundant Comment                           | Ch.17 p.286     | MumblingCommentRecipe                                            |
 | [C5](HEURISTICS.md#c5-commented-out-code)     | Commented-Out Code                          | Ch.17 p.287     | CommentedCodeRecipe                                              |
 | [E1](HEURISTICS.md#e1-build-requires-more-than-one-step)     | Build Requires More Than One Step           | Ch.17 p.287     | DependencyUpdatesFindingSource                                   |
+| [G1](HEURISTICS.md#g1-multiple-languages-in-one-source-file)     | Multiple Languages in One Source File       | Ch.17 p.288     | EmbeddedLanguageRecipe                                           |
 | [F1](HEURISTICS.md#f1-too-many-arguments)     | Too Many Arguments                          | Ch.17 p.288     | Checkstyle ParameterNumber, LargeConstructorRecipe               |
 | [F2](HEURISTICS.md#f2-output-arguments)     | Output Arguments                            | Ch.17 p.288     | OutputArgumentRecipe                                             |
 | [F3](HEURISTICS.md#f3-flag-arguments)     | Flag Arguments                              | Ch.17 p.288     | FlagArgumentRecipe                                               |
@@ -244,11 +245,11 @@ The plugin analyses its own codebase. Each module report includes clickable link
 
 | Module | Report | Errors | Warnings | Info |
 |--------|--------|-------:|---------:|-----:|
-| [annotations](annotations/) | [view report](docs/reports/annotations.html) | 0 | 0 | 12 |
-| [core](core/) | [view report](docs/reports/core.html) | 2 | 155 | 19 |
-| [recipes](recipes/) | [view report](docs/reports/recipes.html) | 0 | 195 | 354 |
-| [adapters](adapters/) | [view report](docs/reports/adapters.html) | 2 | 248 | 25 |
-| [claude-review](claude-review/) | [view report](docs/reports/claude-review.html) | 1 | 22 | 12 |
-| [plugin](plugin/) | [view report](docs/reports/plugin.html) | 1 | 59 | 13 |
+| [annotations](annotations/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/annotations.html) | 0 | 0 | 12 |
+| [core](core/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/core.html) | 2 | 155 | 19 |
+| [recipes](recipes/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/recipes.html) | 0 | 195 | 354 |
+| [adapters](adapters/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/adapters.html) | 2 | 248 | 25 |
+| [claude-review](claude-review/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/claude-review.html) | 1 | 22 | 12 |
+| [plugin](plugin/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/plugin.html) | 1 | 59 | 13 |
 
 To regenerate: `./gradlew analyseCleanCode`

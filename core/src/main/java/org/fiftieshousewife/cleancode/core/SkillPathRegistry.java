@@ -59,6 +59,7 @@ public final class SkillPathRegistry {
             Map.entry(HeuristicCode.G24, ".claude/skills/comments-and-clutter.md"),
 
             // java-idioms.md
+            Map.entry(HeuristicCode.G1, ".claude/skills/java-idioms.md"),
             Map.entry(HeuristicCode.J1, ".claude/skills/java-idioms.md"),
             Map.entry(HeuristicCode.J2, ".claude/skills/java-idioms.md"),
             Map.entry(HeuristicCode.J3, ".claude/skills/java-idioms.md"),
