@@ -11,7 +11,7 @@ class ProjectContextTest {
 
     @Test
     void projectContextFieldsAccessible() {
-        ProjectContext ctx = new ProjectContext(
+        final ProjectContext ctx = new ProjectContext(
                 Path.of("/project"),
                 "my-project",
                 "1.0.0",
@@ -19,7 +19,8 @@ class ProjectContextTest {
                 List.of(Path.of("src/main/java")),
                 List.of(Path.of("src/test/java")),
                 Path.of("build"),
-                Path.of("build/reports")
+                Path.of("build/reports"),
+                List.of()
         );
 
         assertEquals(Path.of("/project"), ctx.projectRoot());
@@ -30,5 +31,6 @@ class ProjectContextTest {
         assertEquals(List.of(Path.of("src/test/java")), ctx.testSourceRoots());
         assertEquals(Path.of("build"), ctx.buildDir());
         assertEquals(Path.of("build/reports"), ctx.reportsDir());
+        assertEquals(List.of(), ctx.dependencies());
     }
 }

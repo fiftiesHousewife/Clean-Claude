@@ -11,5 +11,6 @@ public record ProjectContext(
         List<Path> sourceRoots,
         List<Path> testSourceRoots,
         Path buildDir,
-        Path reportsDir
+        Path reportsDir,
+        List<String> dependencies
 ) {}

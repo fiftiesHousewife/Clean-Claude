@@ -139,6 +139,6 @@ class DependencyUpdatesFindingSourceTest {
         return new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(),
-                tempDir.resolve("build"), reportsDir);
+                tempDir.resolve("build"), reportsDir, List.of());
     }
 }

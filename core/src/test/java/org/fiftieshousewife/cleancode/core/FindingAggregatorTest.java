@@ -100,6 +100,6 @@ class FindingAggregatorTest {
 
     private static ProjectContext dummyContext() {
         return new ProjectContext(Path.of("/project"), "test-project", "1.0", "21",
-                List.of(), List.of(), Path.of("build"), Path.of("build/reports"));
+                List.of(), List.of(), Path.of("build"), Path.of("build/reports"), List.of());
     }
 }

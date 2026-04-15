@@ -24,6 +24,14 @@ public abstract class AnalyseTask extends DefaultTask {
         final RecipeThresholds thresholds = ext.buildRecipeThresholds();
         final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
 
+        final List<String> dependencies = getProject().getConfigurations().stream()
+                .filter(c -> "runtimeClasspath".equals(c.getName()))
+                .flatMap(c -> c.getResolvedConfiguration().getResolvedArtifacts().stream())
+                .map(a -> a.getModuleVersion().getId().getGroup()
+                        + ":" + a.getModuleVersion().getId().getName())
+                .distinct()
+                .toList();
+
         final ProjectContext context = new ProjectContext(
                 projectRoot,
                 getProject().getName(),
@@ -32,7 +40,8 @@ public abstract class AnalyseTask extends DefaultTask {
                 List.of(projectRoot.resolve("src/main/java")),
                 List.of(projectRoot.resolve("src/test/java")),
                 buildDir,
-                reportsDir);
+                reportsDir,
+                dependencies);
 
         final List<FindingSource> sources = List.of(
                 new PmdFindingSource(),

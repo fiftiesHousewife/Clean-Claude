@@ -34,6 +34,6 @@ final class TestContexts {
         return new ProjectContext(
                 projectRoot, "test-project", "1.0", "21",
                 List.of(), List.of(Path.of("src/test/java")),
-                tempDir.resolve("build"), reportsDir);
+                tempDir.resolve("build"), reportsDir, List.of());
     }
 }

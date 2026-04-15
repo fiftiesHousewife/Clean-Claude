@@ -12,24 +12,38 @@ import java.util.stream.Collectors;
 
 public final class ClaudeMdGenerator {
 
+    private static final List<HeuristicCode> NARRATIVE_STUB_CODES = List.of(
+            HeuristicCode.G2, HeuristicCode.G3, HeuristicCode.G6, HeuristicCode.G13,
+            HeuristicCode.G20, HeuristicCode.G21, HeuristicCode.G31, HeuristicCode.G32
+    );
+
     private ClaudeMdGenerator() {}
 
-    public static void generate(AggregatedReport report, Path claudeMdFile, Path baselineFile) throws IOException {
-        Map<String, String> preservedAnnotations = new LinkedHashMap<>();
+    public static void generate(final AggregatedReport report, final Path claudeMdFile,
+                                final Path baselineFile) throws IOException {
+        generate(report, claudeMdFile, baselineFile, List.of());
+    }
+
+    public static void generate(final AggregatedReport report, final Path claudeMdFile,
+                                final Path baselineFile,
+                                final List<String> dependencies) throws IOException {
+        final Map<String, String> preservedAnnotations = new LinkedHashMap<>();
         if (Files.exists(claudeMdFile)) {
             preservedAnnotations.putAll(parseAnnotateSections(Files.readString(claudeMdFile)));
         }
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         appendPreamble(sb);
+        appendFrameworksSection(sb, dependencies);
         appendDeltaTable(sb, report, baselineFile);
         appendFindingSections(sb, report, preservedAnnotations);
+        appendNarrativeStubs(sb, report, preservedAnnotations);
 
         Files.writeString(claudeMdFile, sb.toString());
     }
 
-    private static void appendPreamble(StringBuilder sb) {
+    private static void appendPreamble(final StringBuilder sb) {
         sb.append("## Before you start any work in this codebase\n\n");
         sb.append("1. Read `.claude/skills/SKILLS.md` now, before reading anything else.\n");
         sb.append("   This is mandatory, not optional.\n");
@@ -39,24 +53,56 @@ public final class ClaudeMdGenerator {
         sb.append("   for a matching skill before proceeding.\n\n");
     }
 
-    private static void appendDeltaTable(StringBuilder sb, AggregatedReport report, Path baselineFile) throws IOException {
+    private static void appendFrameworksSection(final StringBuilder sb, final List<String> dependencies) {
+        final List<String> frameworks = FrameworkRegistry.detect(dependencies);
+        if (frameworks.isEmpty()) {
+            return;
+        }
+        sb.append("## Frameworks in use\n\n");
+        frameworks.forEach(f -> sb.append(String.format("- %s%n", f)));
+        sb.append('\n');
+    }
+
+    private static void appendNarrativeStubs(final StringBuilder sb, final AggregatedReport report,
+                                              final Map<String, String> preservedAnnotations) {
+        final Set<HeuristicCode> codesWithFindings = report.byCode().keySet();
+        NARRATIVE_STUB_CODES.stream()
+                .filter(code -> !codesWithFindings.contains(code))
+                .forEach(code -> {
+                    final String codeName = code.name();
+                    final String heading = HeuristicDescriptions.name(code);
+                    sb.append(String.format("## %s: %s%n", codeName, heading));
+                    sb.append("> This heuristic requires human judgment"
+                            + " \u2014 no automated detection available.\n\n");
+                    sb.append(String.format("<!-- ANNOTATE: %s -->%n", codeName));
+                    if (preservedAnnotations.containsKey(codeName)) {
+                        sb.append(preservedAnnotations.get(codeName));
+                    } else {
+                        sb.append("<!-- Add project-specific guidance for this heuristic here -->\n");
+                    }
+                    sb.append("<!-- /ANNOTATE -->\n\n");
+                });
+    }
+
+    private static void appendDeltaTable(final StringBuilder sb, final AggregatedReport report,
+                                          final Path baselineFile) throws IOException {
         if (baselineFile == null || !Files.exists(baselineFile)) {
             return;
         }
 
-        String json = Files.readString(baselineFile);
-        Gson gson = new Gson();
-        Map<String, Object> raw = gson.fromJson(json, new TypeToken<Map<String, Object>>() {}.getType());
+        final String json = Files.readString(baselineFile);
+        final Gson gson = new Gson();
+        final Map<String, Object> raw = gson.fromJson(json, new TypeToken<Map<String, Object>>() {}.getType());
         @SuppressWarnings("unchecked")
-        Map<String, Double> baselineCounts = (Map<String, Double>) raw.get("counts");
+        final Map<String, Double> baselineCounts = (Map<String, Double>) raw.get("counts");
         if (baselineCounts == null) {
             return;
         }
 
-        Map<HeuristicCode, Long> currentCounts = report.findings().stream()
+        final Map<HeuristicCode, Long> currentCounts = report.findings().stream()
                 .collect(Collectors.groupingBy(Finding::code, Collectors.counting()));
 
-        Set<String> allCodes = new TreeSet<>();
+        final Set<String> allCodes = new TreeSet<>();
         allCodes.addAll(baselineCounts.keySet());
         currentCounts.keySet().forEach(c -> allCodes.add(c.name()));
 
@@ -64,42 +110,42 @@ public final class ClaudeMdGenerator {
         sb.append("| Category | Baseline | Current | Delta |\n");
         sb.append("|---|---|---|---|\n");
 
-        for (String codeName : allCodes) {
-            int baseline = baselineCounts.containsKey(codeName)
+        for (final String codeName : allCodes) {
+            final int baseline = baselineCounts.containsKey(codeName)
                     ? baselineCounts.get(codeName).intValue() : 0;
             long current = 0;
             try {
                 current = currentCounts.getOrDefault(HeuristicCode.valueOf(codeName), 0L);
-            } catch (IllegalArgumentException ignored) {
-                // Unknown code in baseline
+            } catch (final IllegalArgumentException ignored) {
+                // Unknown code in baseline — not a code we recognise
             }
-            long delta = current - baseline;
-            String deltaStr = delta == 0 ? "0" : (delta > 0 ? "+" + delta + " \u26A0" : delta + " \u2713");
+            final long delta = current - baseline;
+            final String deltaStr = delta == 0 ? "0"
+                    : (delta > 0 ? "+" + delta + " \u26A0" : delta + " \u2713");
             sb.append(String.format("| %s | %d | %d | %s |%n", codeName, baseline, current, deltaStr));
         }
         sb.append('\n');
     }
 
-    private static void appendFindingSections(StringBuilder sb, AggregatedReport report,
-                                               Map<String, String> preservedAnnotations) {
-        Map<HeuristicCode, List<Finding>> byCode = report.byCode();
+    private static void appendFindingSections(final StringBuilder sb, final AggregatedReport report,
+                                               final Map<String, String> preservedAnnotations) {
+        final Map<HeuristicCode, List<Finding>> byCode = report.byCode();
 
-        for (Map.Entry<HeuristicCode, List<Finding>> entry : byCode.entrySet()) {
-            HeuristicCode code = entry.getKey();
-            List<Finding> findings = entry.getValue();
+        for (final Map.Entry<HeuristicCode, List<Finding>> entry : byCode.entrySet()) {
+            final HeuristicCode code = entry.getKey();
+            final List<Finding> findings = entry.getValue();
 
             sb.append(String.format("## %s [%d finding%s]%n", code.name(),
                     findings.size(), findings.size() == 1 ? "" : "s"));
 
-            String skillPath = SkillPathRegistry.skillPathFor(code);
+            final String skillPath = SkillPathRegistry.skillPathFor(code);
             if (skillPath != null) {
                 sb.append(String.format("> Read `%s` before addressing these.%n%n", skillPath));
             } else {
                 sb.append('\n');
             }
 
-            // Preserved ANNOTATE section
-            String annotateKey = code.name();
+            final String annotateKey = code.name();
             if (preservedAnnotations.containsKey(annotateKey)) {
                 sb.append(String.format("<!-- ANNOTATE: %s -->%n", annotateKey));
                 sb.append(preservedAnnotations.get(annotateKey));
@@ -108,7 +154,7 @@ public final class ClaudeMdGenerator {
 
             sb.append(String.format("<!-- GENERATED: %s -->%n", code.name()));
             sb.append("**From analysis:**\n");
-            for (Finding f : findings) {
+            for (final Finding f : findings) {
                 if (f.sourceFile() != null) {
                     sb.append(String.format("- %s:%d%n", f.sourceFile(), f.startLine()));
                 } else {
@@ -119,9 +165,9 @@ public final class ClaudeMdGenerator {
         }
     }
 
-    private static Map<String, String> parseAnnotateSections(String content) {
-        Map<String, String> sections = new LinkedHashMap<>();
-        List<String> lines = content.lines().toList();
+    private static Map<String, String> parseAnnotateSections(final String content) {
+        final Map<String, String> sections = new LinkedHashMap<>();
+        final List<String> lines = content.lines().toList();
 
         int i = 0;
         while (i < lines.size()) {

@@ -133,7 +133,7 @@ class JacocoFindingSourceTest {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(testSrc),
-                tempDir.resolve("build"), tempDir.resolve("build/reports"));
+                tempDir.resolve("build"), tempDir.resolve("build/reports"), List.of());
 
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -149,7 +149,7 @@ class JacocoFindingSourceTest {
     void isAvailable_returnsTrueAlways(@TempDir Path tempDir) {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
-                List.of(), List.of(), tempDir, tempDir.resolve("reports"));
+                List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
 
         assertTrue(source.isAvailable(ctx));
     }
@@ -182,6 +182,6 @@ class JacocoFindingSourceTest {
         return new ProjectContext(
                 tempDir, "test-project", "1.0", "21",
                 List.of(), List.of(Path.of("src/test/java")),
-                tempDir.resolve("build"), reportsDir);
+                tempDir.resolve("build"), reportsDir, List.of());
     }
 }

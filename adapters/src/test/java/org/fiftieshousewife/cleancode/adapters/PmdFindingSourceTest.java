@@ -149,7 +149,7 @@ class PmdFindingSourceTest {
     void isAvailable_returnsFalseWhenReportMissing(@TempDir Path tempDir) {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
-                List.of(), List.of(), tempDir, tempDir.resolve("reports"));
+                List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
 
         assertFalse(source.isAvailable(ctx));
     }

@@ -52,7 +52,7 @@ class OpenRewriteFindingSourceTest {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(tempDir.resolve("src/main/java")),
-                List.of(), tempDir.resolve("build"), tempDir.resolve("build/reports"));
+                List.of(), tempDir.resolve("build"), tempDir.resolve("build/reports"), List.of());
 
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -67,7 +67,7 @@ class OpenRewriteFindingSourceTest {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(tempDir.resolve("src/main/java")),
-                List.of(), tempDir.resolve("build"), tempDir.resolve("build/reports"));
+                List.of(), tempDir.resolve("build"), tempDir.resolve("build/reports"), List.of());
 
         List<Finding> findings = source.collectFindings(ctx);
         assertTrue(findings.isEmpty());

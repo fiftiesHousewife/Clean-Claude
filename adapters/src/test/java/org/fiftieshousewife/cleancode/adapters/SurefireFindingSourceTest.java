@@ -116,7 +116,7 @@ class SurefireFindingSourceTest {
     void isAvailable_returnsFalseWhenNoReportFiles(@TempDir Path tempDir) {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
-                List.of(), List.of(), tempDir, tempDir.resolve("reports"));
+                List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
 
         assertFalse(source.isAvailable(ctx));
     }
@@ -146,7 +146,7 @@ class SurefireFindingSourceTest {
         return new ProjectContext(
                 tempDir, "test-project", "1.0", "21",
                 List.of(), List.of(Path.of("src/test/java")),
-                tempDir.resolve("build"), reportsDir);
+                tempDir.resolve("build"), reportsDir, List.of());
     }
 
     private void copyFixture(String resourcePath, Path target) throws IOException {
