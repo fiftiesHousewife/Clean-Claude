@@ -2,16 +2,20 @@ package org.fiftieshousewife.cleancode.recipes;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
+import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumulator> {
 
@@ -28,6 +32,7 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
 
     public static class Accumulator {
         final List<Row> rows = new ArrayList<>();
+        final Set<String> projectTypeNames = new HashSet<>();
     }
 
     private Accumulator lastAccumulator;
@@ -39,7 +44,7 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
 
     @Override
     public String getDescription() {
-        return "Detects methods that call more methods on another single class than on their own class.";
+        return "Detects methods that call more methods on another project class than on their own class.";
     }
 
     @Override
@@ -51,6 +56,14 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<>() {
+
+            @Override
+            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                cu.getClasses().forEach(classDecl ->
+                        collectProjectTypes(classDecl, packagePrefix(cu), acc));
+                return super.visitCompilationUnit(cu, ctx);
+            }
+
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
@@ -71,8 +84,9 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                         if (select == null || select instanceof J.Identifier id
                                 && "this".equals(id.getSimpleName())) {
                             callCounter.selfCalls++;
-                        } else if (select instanceof J.Identifier id) {
-                            callCounter.externalCalls.merge(id.getSimpleName(), 1, Integer::sum);
+                        } else if (select instanceof J.Identifier id && isProjectType(id, acc)) {
+                            final String typeName = resolveTypeName(id);
+                            callCounter.externalCalls.merge(typeName, 1, Integer::sum);
                         }
 
                         return mi;
@@ -97,6 +111,40 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                                 -1)));
 
                 return m;
+            }
+
+            private void collectProjectTypes(J.ClassDeclaration classDecl, String pkg,
+                                             Accumulator acc) {
+                final String fqn = pkg.isEmpty()
+                        ? classDecl.getSimpleName()
+                        : pkg + "." + classDecl.getSimpleName();
+                acc.projectTypeNames.add(fqn);
+                classDecl.getBody().getStatements().stream()
+                        .filter(s -> s instanceof J.ClassDeclaration)
+                        .map(s -> (J.ClassDeclaration) s)
+                        .forEach(inner -> collectProjectTypes(inner, fqn, acc));
+            }
+
+            private String packagePrefix(J.CompilationUnit cu) {
+                return cu.getPackageDeclaration() != null
+                        ? cu.getPackageDeclaration().getExpression().toString()
+                        : "";
+            }
+
+            private boolean isProjectType(J.Identifier id, Accumulator acc) {
+                final JavaType type = id.getType();
+                if (type instanceof JavaType.FullyQualified fq) {
+                    return acc.projectTypeNames.contains(fq.getFullyQualifiedName());
+                }
+                return false;
+            }
+
+            private String resolveTypeName(J.Identifier id) {
+                final JavaType type = id.getType();
+                if (type instanceof JavaType.FullyQualified fq) {
+                    return fq.getClassName();
+                }
+                return id.getSimpleName();
             }
 
             private boolean isVisitorMethod(J.MethodDeclaration method) {
