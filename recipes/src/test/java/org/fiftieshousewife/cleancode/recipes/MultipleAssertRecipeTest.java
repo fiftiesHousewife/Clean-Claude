@@ -32,7 +32,7 @@ class MultipleAssertRecipeTest {
     }
 
     @Test
-    void ignoresTwoConsecutiveAsserts() {
+    void detectsTwoConsecutiveAsserts() {
         final var recipe = new MultipleAssertRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
@@ -44,6 +44,25 @@ class MultipleAssertRecipeTest {
                         String x = "hello";
                         assertThat(x).isNotNull();
                         assertThat(x).isEqualTo("hello");
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size());
+    }
+
+    @Test
+    void ignoresSingleAssert() {
+        final var recipe = new MultipleAssertRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import org.junit.jupiter.api.Test;
+                import static org.assertj.core.api.Assertions.assertThat;
+                class FooTest {
+                    @Test
+                    void checkStuff() {
+                        String x = "hello";
+                        assertThat(x).isNotNull();
                     }
                 }
                 """);

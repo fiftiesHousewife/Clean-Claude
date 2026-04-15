@@ -134,7 +134,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new LargeConstructorRecipe(thresholds.recordComponentCount()),
                 new InappropriateStaticRecipe(),
                 new StringlyTypedDispatchRecipe(),
-                new ConfigurableDataRecipe());
+                new ConfigurableDataRecipe(thresholds.magicNumberMinValue()));
     }
 
     @SuppressWarnings("unchecked")

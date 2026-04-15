@@ -75,7 +75,8 @@ public abstract class CleanCodeExtension {
                 thresholds.getMagicStringMinOccurrences().get(),
                 thresholds.getStringSwitchMinCases().get(),
                 thresholds.getShortNameMinLength().get(),
-                thresholds.getCpdMinimumTokens().get());
+                thresholds.getCpdMinimumTokens().get(),
+                thresholds.getMagicNumberMinValue().get());
     }
 
     @SuppressWarnings("this-escape")
@@ -103,6 +104,8 @@ public abstract class CleanCodeExtension {
 
         public abstract Property<Integer> getCpdMinimumTokens();
 
+        public abstract Property<Integer> getMagicNumberMinValue();
+
         @Inject
         public ThresholdsExtension() {
             getClassLineCount().convention(RecipeThresholds.DEFAULT_CLASS_LINE_COUNT);
@@ -116,6 +119,7 @@ public abstract class CleanCodeExtension {
             getStringSwitchMinCases().convention(RecipeThresholds.DEFAULT_STRING_SWITCH_MIN_CASES);
             getShortNameMinLength().convention(RecipeThresholds.DEFAULT_SHORT_NAME_MIN_LENGTH);
             getCpdMinimumTokens().convention(RecipeThresholds.DEFAULT_CPD_MINIMUM_TOKENS);
+            getMagicNumberMinValue().convention(RecipeThresholds.DEFAULT_MAGIC_NUMBER_MIN_VALUE);
         }
     }
 
@@ -136,7 +140,7 @@ public abstract class CleanCodeExtension {
 
         @Inject
         public ClaudeReviewExtension() {
-            getEnabled().convention(true);
+            getEnabled().convention(false);
             getModel().convention("claude-sonnet-4-6");
             getMaxFilesPerRun().convention(50);
             getMinFileLines().convention(10);

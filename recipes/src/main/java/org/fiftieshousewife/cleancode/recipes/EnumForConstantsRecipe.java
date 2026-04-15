@@ -47,7 +47,7 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
                 final List<String> constantNames = c.getBody().getStatements().stream()
                         .filter(s -> s instanceof J.VariableDeclarations)
                         .map(s -> (J.VariableDeclarations) s)
-                        .filter(this::isStaticFinalPrimitive)
+                        .filter(this::isStaticFinal)
                         .flatMap(v -> v.getVariables().stream())
                         .map(J.VariableDeclarations.NamedVariable::getSimpleName)
                         .toList();
@@ -61,7 +61,7 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
                 return c;
             }
 
-            private boolean isStaticFinalPrimitive(J.VariableDeclarations varDecl) {
+            private boolean isStaticFinal(J.VariableDeclarations varDecl) {
                 final boolean isStatic = varDecl.getModifiers().stream()
                         .anyMatch(m -> m.getType() == J.Modifier.Type.Static);
                 final boolean isFinal = varDecl.getModifiers().stream()

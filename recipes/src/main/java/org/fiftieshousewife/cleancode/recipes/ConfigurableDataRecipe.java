@@ -10,11 +10,10 @@ import org.openrewrite.java.tree.JavaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecipe.Accumulator> {
 
-    private static final Set<Object> TRIVIAL_VALUES = Set.of(0, 1, -1, 0L, 1L, -1L, 0.0, 1.0, 0.0f, 1.0f);
+    private final int minValue;
 
     public record Row(String className, String methodName, String literalValue) {}
 
@@ -23,6 +22,10 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
     }
 
     private Accumulator lastAccumulator;
+
+    public ConfigurableDataRecipe(int minValue) {
+        this.minValue = minValue;
+    }
 
     @Override
     public String getDisplayName() {
@@ -96,17 +99,12 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
                 || p == JavaType.Primitive.Double || p == JavaType.Primitive.Float);
     }
 
-    private static boolean isTrivialValue(J.Literal lit) {
+    private boolean isTrivialValue(J.Literal lit) {
         if (lit.getValue() == null) {
             return true;
         }
         if (lit.getValue() instanceof Number n) {
-            return TRIVIAL_VALUES.stream().anyMatch(t -> {
-                if (t instanceof Number tn) {
-                    return tn.doubleValue() == n.doubleValue();
-                }
-                return false;
-            });
+            return Math.abs(n.doubleValue()) <= minValue;
         }
         return false;
     }

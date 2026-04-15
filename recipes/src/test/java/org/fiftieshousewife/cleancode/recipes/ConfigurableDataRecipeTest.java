@@ -8,7 +8,7 @@ class ConfigurableDataRecipeTest {
 
     @Test
     void detectsMagicNumberInPrivateMethod() {
-        final var recipe = new ConfigurableDataRecipe();
+        final var recipe = new ConfigurableDataRecipe(1);
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
@@ -28,7 +28,7 @@ class ConfigurableDataRecipeTest {
 
     @Test
     void ignoresZeroAndOneLiterals() {
-        final var recipe = new ConfigurableDataRecipe();
+        final var recipe = new ConfigurableDataRecipe(1);
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
@@ -45,7 +45,7 @@ class ConfigurableDataRecipeTest {
 
     @Test
     void ignoresLiteralsInStaticFinalFields() {
-        final var recipe = new ConfigurableDataRecipe();
+        final var recipe = new ConfigurableDataRecipe(1);
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
@@ -61,7 +61,7 @@ class ConfigurableDataRecipeTest {
 
     @Test
     void ignoresLiteralsInPublicMethods() {
-        final var recipe = new ConfigurableDataRecipe();
+        final var recipe = new ConfigurableDataRecipe(1);
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
@@ -76,7 +76,7 @@ class ConfigurableDataRecipeTest {
 
     @Test
     void ignoresLiteralsInTestClasses() {
-        final var recipe = new ConfigurableDataRecipe();
+        final var recipe = new ConfigurableDataRecipe(1);
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class FooTest {
@@ -91,7 +91,7 @@ class ConfigurableDataRecipeTest {
 
     @Test
     void detectsMultipleMagicNumbers() {
-        final var recipe = new ConfigurableDataRecipe();
+        final var recipe = new ConfigurableDataRecipe(1);
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
                 public class Foo {
@@ -104,5 +104,41 @@ class ConfigurableDataRecipeTest {
                 """);
 
         assertEquals(2, recipe.collectedRows().size());
+    }
+
+    @Test
+    void customThresholdSkipsValuesAtOrBelowThreshold() {
+        final var recipe = new ConfigurableDataRecipe(5);
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    private int method() {
+                        int a = 3;
+                        int b = 5;
+                        int c = 10;
+                        return a + b + c;
+                    }
+                }
+                """);
+
+        assertAll(
+                () -> assertEquals(1, recipe.collectedRows().size()),
+                () -> assertEquals("10", recipe.collectedRows().getFirst().literalValue())
+        );
+    }
+
+    @Test
+    void defaultThresholdSkipsNegativeOne() {
+        final var recipe = new ConfigurableDataRecipe(1);
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    private int method() {
+                        return -1;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty());
     }
 }

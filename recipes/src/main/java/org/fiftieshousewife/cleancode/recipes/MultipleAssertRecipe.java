@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class MultipleAssertRecipe extends ScanningRecipe<MultipleAssertRecipe.Accumulator> {
 
-    private static final int DEFAULT_THRESHOLD = 3;
+    private static final int DEFAULT_THRESHOLD = 2;
     private static final Set<String> ASSERT_PREFIXES = Set.of(
             "assertThat", "assertEquals", "assertTrue", "assertFalse",
             "assertNull", "assertNotNull", "assertThrows", "assertSame");
