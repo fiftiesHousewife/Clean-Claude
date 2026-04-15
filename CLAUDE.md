@@ -169,90 +169,6 @@ dependencies {
 
 ---
 
-## Architectural Decisions
-
-### HttpGraphQlClient.url() Gotcha
-
-`HttpGraphQlClient.Builder.url(String)` calls `webClientBuilder.baseUrl(url)`, which **replaces** the WebClient's base URL. Do not pass a path-only string like `/api/v1/graphql`.
-
-Correct pattern: put the full URL including path in `karat.base-url` in `application.yml`, and do not call `.url()` on the builder:
-
-```java
-// In KaratGraphQlConfig:
-WebClient webClient = WebClient.builder().baseUrl(props.baseUrl()).build(); // full URL
-return HttpGraphQlClient.builder(webClient).build();                        // no .url() call
-```
-
-### WireMock + @DynamicPropertySource Pattern
-
-Start WireMock in a static initialiser (before the Spring context), then register the full URL:
-
-```java
-static final WireMockServer wireMock;
-static {
-    wireMock = new WireMockServer(options().dynamicPort());
-    wireMock.start();
-}
-
-@DynamicPropertySource
-static void registerProperties(DynamicPropertyRegistry registry) {
-    registry.add("karat.base-url", () -> wireMock.baseUrl() + "/api/v1/graphql");
-}
-```
-
-Note: the WireMock Spring Boot integration (`org.wiremock.integrations:wiremock-spring-boot`) lives in package `org.wiremock.spring`. Its `@ConfigureWireMock` uses `baseUrlProperties`, not `property`.
-
-### REST Pagination
-
-Expose a `next` URL field (null when no more pages exist) and accept a `pageToken` query parameter. Never expose internal cursor tokens or GraphQL pagination objects to REST consumers.
-
-```java
-// Good — next is an absolute or relative URL the consumer can follow directly
-record PetPage(int totalCount, String next, List<Pet> pets) {
-
-    static PetPage from(Page<Pet> page, ServerHttpRequest request) {
-        final var pageInfo = page.pageInfo();
-        final String next = (pageInfo != null && pageInfo.hasNextPage())
-                ? UriComponentsBuilder.fromUri(request.getURI())
-                        .replaceQueryParam("pageToken", pageInfo.endCursor())
-                        .build().toUriString()
-                : null;
-        return new PetPage(page.totalCount(), next, page.nodes());
-    }
-}
-
-// Bad — exposing internal cursor tokens directly
-record BadPage(String endCursor, boolean hasNextPage, List<Pet> nodes) {}
-```
-
-### OpenAPI Annotations in `*Api` Interfaces
-
-All OpenAPI/Swagger annotations go on the `*Api` interface, not on the controller class. Controllers contain only implementation logic.
-
-```java
-// Good — PetApi.java holds all annotations
-@Tag(name = "Pets", description = "...")
-@RequestMapping("/pets")
-interface PetApi {
-
-    @Operation(summary = "List pets", ...)
-    @GetMapping(produces = V1_JSON)
-    Mono<PetPage> listPets(...);
-}
-
-// Good — PetController.java is clean implementation
-@RestController
-public class PetController implements PetApi {
-
-    @Override
-    public Mono<PetPage> listPets(...) {
-        // implementation only
-    }
-}
-```
-
----
-
 ## Code Quality Standards
 
 ### Use `final` on Local Variables and Fields
@@ -304,21 +220,7 @@ void fetchesAllPets() {
 
 > See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
 
-A comment is spurious if it restates what the code already clearly says. Comments are appropriate only when explaining *why* something non-obvious is done, or documenting a known gotcha (like the `HttpGraphQlClient.url()` behaviour above).
-
-```java
-// Bad — the comment adds nothing
-// Fetch the page from the API
-return graphQlClient.retrieve("pets").toEntity(...);
-
-// Bad — variable name already communicates this
-// cursor for the next page
-String cursor = pageInfo.endCursor();
-
-// Good — explains a non-obvious decision
-// Do NOT call .url() here; it replaces the WebClient base URL rather than appending.
-return HttpGraphQlClient.builder(webClient).build();
-```
+A comment is spurious if it restates what the code already clearly says. Comments are appropriate only when explaining *why* something non-obvious is done.
 
 ### Package-Private Methods for Testing
 
@@ -348,22 +250,15 @@ class PetControllerFilterTest {
 
 ### Line Width — 120 Characters
 
-Lines should not exceed 120 characters. This applies to Java source, Kotlin build scripts, and YAML. Wrap long method signatures, builder chains, and string literals at natural break points.
+> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
+
+Lines should not exceed 120 characters. This applies to Java source, Kotlin build scripts, and YAML.
 
 ### Always Use Curly Braces
 
-All `if`, `else`, `for`, `while`, and `do-while` statements must use curly braces, even for single-line bodies. This prevents subtle bugs when adding lines later and improves readability.
+> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
 
-```java
-// Bad
-if (exports.contains("users"))
-    tasks.add(csvExportService.exportUsers(users).flux());
-
-// Good
-if (exports.contains("users")) {
-    tasks.add(csvExportService.exportUsers(users).flux());
-}
-```
+All `if`, `else`, `for`, `while`, and `do-while` statements must use curly braces, even for single-line bodies.
 
 ### Prefer `forEach` Over Enhanced For-Loops
 
@@ -418,75 +313,21 @@ DashboardStartup       // classifies columns and regenerates dashboards on boot
 
 ### Class Size Limit — 150 Lines Maximum
 
-No class should exceed 150 lines. A class approaching this limit is a signal to split it by responsibility.
+> See also: `.claude/skills/classes.md` for the full pattern catalogue.
 
-### Small, Focused Classes (~50 Lines)
-
-Prefer classes of around 50 lines. A class that grows past roughly 100 lines is a signal to split it.
-
-```java
-// Bad — one controller doing everything
-public class PetController {
-    // filter building, pagination, CSV export,
-    // error mapping, OpenAPI annotations ... 300 lines
-}
-
-// Good — split by responsibility
-PetApi         // OpenAPI contract (interface)
-PetController  // REST wiring (implements PetApi)
-CsvResponse    // shared CSV ResponseEntity builder
-PetPage        // REST response record with from() factory
-```
+No class should exceed 150 lines. Prefer classes of around 50 lines.
 
 ### Favour Polymorphism Over Conditionals
 
 > See also: `.claude/skills/conditionals-and-expressions.md` for the full pattern catalogue.
 
-Replace chains of `if`/`else if` that switch on type or kind with polymorphism — enums with behaviour, strategy interfaces, or maps of functions. Long conditional chains are hard to test, extend, and read.
-
-```java
-// Bad — chain of conditionals
-if (type == "DOUBLE") { return MEASURE; }
-else if (isTemporalName(name)) { return TEMPORAL; }
-else if (isIdColumn(name)) { return IDENTIFIER; }
-// ... more ifs
-
-// Good — ordered list of classification rules
-private static final List<ClassificationRule> RULES = List.of(
-    (name, type, stats) -> isIdColumn(name) ? IDENTIFIER : null,
-    (name, type, stats) -> TEMPORAL_TYPES.contains(type) ? TEMPORAL : null,
-    (name, type, stats) -> FRACTIONAL_TYPES.contains(type) ? MEASURE : null
-);
-```
+Replace chains of `if`/`else if` that switch on type or kind with polymorphism — enums with behaviour, strategy interfaces, or maps of functions.
 
 ### Break Down Complex Logic
 
 > See also: `.claude/skills/functions.md` for the full pattern catalogue.
 
 Prefer many small, named methods over a few large ones. Every extracted method is a candidate for a direct unit test.
-
-```java
-// Bad — one large method
-public Mono<Page<Pet>> fetchAll(PetFilter filter, String search) {
-    // 80 lines combining pagination, filtering, error handling
-}
-
-// Good — composed from small, named methods
-public Flux<Pet> listAll(PetFilter filter, String search) {
-    return Flux.expand(page -> fetchNextPage(page, filter, search))
-               .concatMap(page -> Flux.fromIterable(page.nodes()));
-}
-
-Mono<Page<Pet>> fetchNextPage(Page<Pet> previous, PetFilter filter, String search) {
-    return hasMore(previous)
-            ? client.fetchPage(filter, search, previous.pageInfo().endCursor())
-            : Mono.empty();
-}
-
-boolean hasMore(Page<Pet> page) {
-    return page.pageInfo() != null && page.pageInfo().hasNextPage();
-}
-```
 
 ### Prefer Immutable Objects
 
@@ -515,90 +356,13 @@ public record PetFilter(String id, String status, String type) {
 
 > See also: `.claude/skills/null-handling.md` for the full pattern catalogue.
 
-Never use `if (x != null)` to branch logic, guard method calls, or silently provide defaults. This includes `Map.get()` followed by a null check — use `Map.getOrDefault()`, `Map.computeIfAbsent()`, or let it fail. The only acceptable uses of null checks are: (1) `Objects.requireNonNull` at API boundaries, (2) Jackson `@JsonInclude(NON_NULL)` for optional response fields.
-
-If a value is required, let the NullPointerException happen or use `Objects.requireNonNull`. If a value is genuinely optional, use `Optional` in the API contract — never return null from a method.
-
-```java
-// Bad — silently skips saving, caller never knows
-if (config != null && table != null && columns != null) {
-    storage.persistBundle(config, table, columns);
-}
-
-// Bad — null check as branching logic
-final String label = map.get(key);
-if (label != null) {
-    return label;
-}
-return fallback;
-
-// Good — fails immediately with a clear message
-Objects.requireNonNull(config, "config");
-Objects.requireNonNull(table, "table");
-storage.persistBundle(config, table, columns);
-
-// Good — no null check needed
-return map.getOrDefault(key, fallback);
-
-// Good — Optional for genuinely optional values
-Optional<ColumnConfig> findColumn(String name);
-```
+Never use `if (x != null)` as control flow. Use `Objects.requireNonNull` at boundaries, `Map.getOrDefault()`, or `Optional` for genuinely optional values.
 
 ### Never Swallow Exceptions
 
 > See also: `.claude/skills/exception-handling.md` for the full pattern catalogue.
 
-Do not catch exceptions just to log and continue. If an operation fails, the caller needs to know. Catch-log-and-continue hides bugs and leaves the system in an inconsistent state. Only catch exceptions at well-defined boundaries (REST controllers, event listeners) where you can return a meaningful error response.
-
-```java
-// Bad — caller thinks save succeeded
-try {
-    storage.persistBundle(config, table, columns);
-} catch (final IOException e) {
-    log.warn("Failed to persist", e);
-}
-
-// Good — let it propagate
-storage.persistBundle(config, table, columns); // throws IOException
-
-// Good — at a REST boundary, convert to an error response
-try {
-    uploadService.processUpload(title, files);
-} catch (final IOException e) {
-    throw new ResponseStatusException(INTERNAL_SERVER_ERROR, "Upload failed", e);
-}
-```
-
-### Never Catch Generic Exceptions in Controllers
-
-> See also: `.claude/skills/exception-handling.md` for the full pattern catalogue.
-
-Do not wrap controller logic in `try { ... } catch (Exception e)` to convert exceptions to HTTP status codes. Use `@RestControllerAdvice` with specific `@ExceptionHandler` methods instead. This centralises error mapping, eliminates repeated try/catch boilerplate, and ensures consistent error responses across all endpoints.
-
-```java
-// Bad — repeated in every controller method
-try {
-    final String query = queryBuilder.build(table, dimension, measure);
-    return new WidgetData("query", executor.execute(query, connection));
-} catch (final Exception e) {
-    throw new ResponseStatusException(BAD_REQUEST, e.getMessage());
-}
-
-// Good — controller method has no try/catch
-final String query = queryBuilder.build(table, dimension, measure);
-return new WidgetData("query", executor.execute(query, connection));
-
-// Good — centralised in ApiErrorHandler
-@ExceptionHandler(IllegalArgumentException.class)
-ResponseEntity<ApiError> handleBadRequest(final IllegalArgumentException exception) {
-    return ResponseEntity.badRequest().body(new ApiError(400, exception.getMessage()));
-}
-
-@ExceptionHandler(DataAccessException.class)
-ResponseEntity<ApiError> handleQueryError(final DataAccessException exception) {
-    return ResponseEntity.badRequest().body(new ApiError(400, exception.getMessage()));
-}
-```
+Do not catch exceptions just to log and continue. Only catch at well-defined boundaries where you can return a meaningful error response. Use `@RestControllerAdvice` instead of try/catch in controllers.
 
 ### Prefer Non-Static Code
 
@@ -643,23 +407,7 @@ import static org.example.server.PetController.buildFilter; // unclear at call s
 
 > See also: `.claude/skills/java-idioms.md` for the full pattern catalogue.
 
-Extract repeated string literals into named constants. A string that appears more than once, or whose meaning is not self-evident, must be a constant. Name constants after the value they represent — do not add type prefixes like `VAR_`, `STR_`, `KEY_`.
-
-```java
-// Bad — magic strings inline
-client.variable("first", 50);
-client.variable("after", cursor);
-
-// Bad — type prefix adds nothing
-private static final String VAR_FIRST = "first";
-
-// Good — name describes the value, no prefix
-public static final String FIRST = "first";
-public static final String AFTER = "after";
-
-client.variable(FIRST, props.pageSize());
-client.variable(AFTER, cursor);
-```
+Extract repeated string literals into named constants. Name constants after the value they represent — no type prefixes.
 
 ### Prefer Monadic Functions
 
@@ -681,19 +429,7 @@ SqlNames.validateMeasure(measure);
 
 > See also: `.claude/skills/naming.md` for the full pattern catalogue.
 
-Names must communicate intent clearly to a human reader. Abbreviations are only acceptable when they are universally understood in context (e.g. `id`, `url`, `csv`).
-
-```java
-// Bad
-WebClient wc = WebClient.builder().baseUrl(props.baseUrl()).build();
-ByteArrayOutputStream baos = new ByteArrayOutputStream();
-PageInfo pi = page.pageInfo();
-
-// Good
-WebClient webClient = WebClient.builder().baseUrl(props.baseUrl()).build();
-ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-PageInfo pageInfo = page.pageInfo();
-```
+Names must communicate intent clearly. No abbreviations except universally understood terms (`id`, `url`, `csv`).
 
 ### Meaningful Business Nouns in REST Responses
 
@@ -789,102 +525,33 @@ InputStream stream = Files.newInputStream(path);
 
 ### Use JUnit `@TempDir` for Temporary Files in Tests
 
-Never create temporary files or directories manually in tests. Use JUnit's `@TempDir` annotation, which handles cleanup automatically.
+> See also: `.claude/skills/test-quality.md` for the full pattern catalogue.
 
-```java
-// Bad — manual temp directory management
-Path tempDir = Files.createTempDirectory("test");
-// ... must remember to clean up
-
-// Good — JUnit manages lifecycle
-@TempDir
-Path tempDir;
-
-@Test
-void processesFile() throws IOException {
-    Files.writeString(tempDir.resolve("data.csv"), "id,name\n1,Bella\n");
-    // tempDir cleaned up automatically after test
-}
-```
+Use JUnit's `@TempDir` annotation instead of manual temp file creation.
 
 ---
 
 ## Test Standards
 
+> See also: `.claude/skills/test-quality.md` for the full pattern catalogue.
+
 ### No Underscores in Test Names, No Word "test"
 
 Test method names are plain English camelCase sentences describing the behaviour under test.
 
-```java
-// Bad
-@Test void test_fetchPage_returnsResults() {}
-@Test void testFetchPageReturnsResults() {}
-
-// Good
-@Test void fetchesPageOfPets() {}
-@Test void returnsEmptyPageWhenNoPetsMatch() {}
-@Test void propagatesErrorWhenUpstreamFails() {}
-```
-
 ### Use `assertAll` for Multiple Assertions
 
-When asserting multiple properties of the same object, wrap them in `assertAll` so all failures are reported together.
-
-```java
-// Bad — stops at first failure, hides subsequent problems
-assertThat(page.totalCount()).isEqualTo(10);
-assertThat(page.pets()).hasSize(10);
-assertThat(page.next()).isNull();
-
-// Good — all three are reported even if the first fails
-assertAll(
-    () -> assertThat(page.totalCount()).isEqualTo(10),
-    () -> assertThat(page.pets()).hasSize(10),
-    () -> assertThat(page.next()).isNull()
-);
-```
+When asserting 3+ properties of the same object, wrap them in `assertAll` so all failures are reported together.
 
 ### Tests Are Self-Documenting
 
-A reader must understand what behaviour is being tested without reading the implementation. Structure tests as: arrange, act, assert — no comments needed.
-
-```java
-// Bad — requires reading implementation to understand intent
-@Test
-void returnsPage() {
-    wireMock.stubFor(post(urlEqualTo("/api/v1/graphql")).willReturn(okJson(RESPONSE)));
-    var result = client.fetchPage(PetFilter.builder().build(), null, null).block();
-    assertThat(result).isNotNull();
-}
-
-// Good — intent is clear from names and structure alone
-@Test
-void returnsPageWithCorrectNodeCountAndCursor() {
-    wireMock.stubFor(post(urlEqualTo("/api/v1/graphql")).willReturn(okJson(petResponse(10, "cursor_abc"))));
-    final Page<Pet> page = client.fetchPage(PetFilter.builder().build(), null, null).block();
-    assertAll(
-        () -> assertThat(page.nodes()).hasSize(10),
-        () -> assertThat(page.pageInfo().endCursor()).isEqualTo("cursor_abc")
-    );
-}
-```
+A reader must understand what behaviour is being tested without reading the implementation. Structure tests as: arrange, act, assert.
 
 ### No Disabled Tests or Commented-Out Code
 
 > See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
 
-A disabled test is a lie — it looks like coverage but provides none. Delete it or fix it. Commented-out code belongs in git history, not in source files.
-
-```java
-// Bad
-@Disabled("TODO: fix this later")
-@Test void fetchesPets() { ... }
-
-// Bad
-// @Test void fetchesOrders() { ... }
-
-// Good — fix it, or delete it and recover from git history if needed
-```
+Delete disabled tests or fix them. Commented-out code belongs in git history.
 
 ---
 

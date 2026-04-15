@@ -20,6 +20,7 @@ final class SkillFileScaffolder {
             "conditionals-and-expressions.md",
             "comments-and-clutter.md",
             "java-idioms.md",
+            "test-quality.md",
             "project-conventions.md");
 
     private static final String THRESHOLDS_HASH_FILE = ".thresholds-hash";

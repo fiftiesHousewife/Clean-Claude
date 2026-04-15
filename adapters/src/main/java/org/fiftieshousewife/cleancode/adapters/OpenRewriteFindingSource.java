@@ -32,7 +32,7 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private static final Set<HeuristicCode> COVERED = Set.of(
-            HeuristicCode.F2, HeuristicCode.F3,
+            HeuristicCode.F1, HeuristicCode.F2, HeuristicCode.F3,
             HeuristicCode.C3, HeuristicCode.C5,
             HeuristicCode.Ch3_1,
             HeuristicCode.Ch7_1, HeuristicCode.Ch7_2,
@@ -40,12 +40,12 @@ public class OpenRewriteFindingSource implements FindingSource {
             HeuristicCode.G4, HeuristicCode.G8,
             HeuristicCode.G10, HeuristicCode.G11, HeuristicCode.G14,
             HeuristicCode.G16, HeuristicCode.G19,
-            HeuristicCode.G23, HeuristicCode.G25,
+            HeuristicCode.G23, HeuristicCode.G25, HeuristicCode.G26,
             HeuristicCode.G28, HeuristicCode.G29,
             HeuristicCode.G30, HeuristicCode.G33, HeuristicCode.G34, HeuristicCode.G36,
             HeuristicCode.J2, HeuristicCode.J3,
-            HeuristicCode.N5, HeuristicCode.N6, HeuristicCode.N7,
-            HeuristicCode.T3, HeuristicCode.T4);
+            HeuristicCode.N1, HeuristicCode.N5, HeuristicCode.N6, HeuristicCode.N7,
+            HeuristicCode.T1, HeuristicCode.T3, HeuristicCode.T4);
 
     @Override
     public String id() {
@@ -126,7 +126,12 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new MissingExplanatoryVariableRecipe(),
                 new BoundaryConditionRecipe(),
                 new SideEffectNamingRecipe(),
-                new InconsistentNamingRecipe());
+                new InconsistentNamingRecipe(),
+                new BadClassNameRecipe(),
+                new SystemOutRecipe(),
+                new LegacyFileApiRecipe(),
+                new MultipleAssertRecipe(),
+                new LargeConstructorRecipe(thresholds.recordComponentCount()));
     }
 
     @SuppressWarnings("unchecked")
@@ -170,6 +175,11 @@ public class OpenRewriteFindingSource implements FindingSource {
             case BoundaryConditionRecipe r -> mapBoundaryCondition(r.collectedRows());
             case SideEffectNamingRecipe r -> mapSideEffectNaming(r.collectedRows());
             case InconsistentNamingRecipe r -> mapInconsistentNaming(r.collectedRows());
+            case BadClassNameRecipe r -> mapBadClassName(r.collectedRows());
+            case SystemOutRecipe r -> mapSystemOut(r.collectedRows());
+            case LegacyFileApiRecipe r -> mapLegacyFileApi(r.collectedRows());
+            case MultipleAssertRecipe r -> mapMultipleAssert(r.collectedRows());
+            case LargeConstructorRecipe r -> mapLargeConstructor(r.collectedRows());
             default -> List.of();
         };
     }
@@ -414,6 +424,45 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.G11, r.className(), r.lineNumber(),
                         "Class uses inconsistent prefixes %s for the same concept: %s".formatted(
                                 r.conflictingPrefixes(), r.methodNames())))
+                .toList();
+    }
+
+    private List<Finding> mapBadClassName(List<BadClassNameRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.N1, r.className(),
+                        "Class '%s' uses bad suffix '%s' — name after what it represents, not its role".formatted(
+                                r.className(), r.suffix())))
+                .toList();
+    }
+
+    private List<Finding> mapSystemOut(List<SystemOutRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G4, r.className(),
+                        "'%s' bypasses structured logging — use @Slf4j instead".formatted(r.call())))
+                .toList();
+    }
+
+    private List<Finding> mapLegacyFileApi(List<LegacyFileApiRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G26, r.className(),
+                        "'%s' is a legacy API — use java.nio.file.Path and Files instead".formatted(
+                                r.legacyType())))
+                .toList();
+    }
+
+    private List<Finding> mapMultipleAssert(List<MultipleAssertRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.T1, r.className(),
+                        "Test '%s' has %d consecutive assertions — wrap in assertAll".formatted(
+                                r.methodName(), r.assertCount())))
+                .toList();
+    }
+
+    private List<Finding> mapLargeConstructor(List<LargeConstructorRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.F1, r.className(),
+                        "Constructor has %d parameters — introduce a parameter object or builder".formatted(
+                                r.parameterCount())))
                 .toList();
     }
 

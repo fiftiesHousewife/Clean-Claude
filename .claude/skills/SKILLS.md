@@ -18,6 +18,7 @@ Developers: these are also a reference for the patterns each concern requires.
 | Conditionals and expressions | `conditionals-and-expressions.md` | [G19](../../HEURISTICS.md#g19-use-explanatory-variables), [G23](../../HEURISTICS.md#g23-prefer-polymorphism-to-ifelse-or-switchcase), [G28](../../HEURISTICS.md#g28-encapsulate-conditionals), [G29](../../HEURISTICS.md#g29-avoid-negative-conditionals), [G33](../../HEURISTICS.md#g33-encapsulate-boundary-conditions) | Switch-on-type, complex conditions, boundaries |
 | Comments and clutter | `comments-and-clutter.md` | [C3](../../HEURISTICS.md#c3-redundant-comment), [C5](../../HEURISTICS.md#c5-commented-out-code), [G9](../../HEURISTICS.md#g9-dead-code), [G10](../../HEURISTICS.md#g10-vertical-separation), [G12](../../HEURISTICS.md#g12-clutter), [G24](../../HEURISTICS.md#g24-follow-standard-conventions) | Dead code, redundant comments, formatting |
 | Java idioms | `java-idioms.md` | [J1](../../HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards)–[J3](../../HEURISTICS.md#j3-constants-versus-enums), [G4](../../HEURISTICS.md#g4-overridden-safeties), [G25](../../HEURISTICS.md#g25-replace-magic-numbers-with-named-constants), [G26](../../HEURISTICS.md#g26-be-precise) | Imports, constants, enums, magic numbers |
+| Test quality | `test-quality.md` | [T1](../../HEURISTICS.md#t1-insufficient-tests), [T3](../../HEURISTICS.md#t3-dont-skip-trivial-tests), [T4](../../HEURISTICS.md#t4-an-ignored-test-is-a-question-about-an-ambiguity) | Assertions, test naming, @TempDir, self-documenting tests |
 | Project conventions | `project-conventions.md` | (team-specific) | Naming, libraries, architecture, domain rules |
 
 ## How skill files work
@@ -35,7 +36,7 @@ Developers: these are also a reference for the patterns each concern requires.
 Some heuristics require human judgment and cannot be addressed autonomously:
 
 - Narrative-only codes (G2, G3, G6, G13, G20, G21, G22, G27, G31, G32)
-- Test infrastructure (T1-T9)
+- Test infrastructure (T2, T5-T9)
 - Environment (E1, E2)
 
 These appear in CLAUDE.md as annotatable stubs for team-authored guidance.

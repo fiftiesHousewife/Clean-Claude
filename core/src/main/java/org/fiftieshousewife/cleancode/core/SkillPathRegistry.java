@@ -63,7 +63,12 @@ public final class SkillPathRegistry {
             Map.entry(HeuristicCode.J3, ".claude/skills/java-idioms.md"),
             Map.entry(HeuristicCode.G4, ".claude/skills/java-idioms.md"),
             Map.entry(HeuristicCode.G25, ".claude/skills/java-idioms.md"),
-            Map.entry(HeuristicCode.G26, ".claude/skills/java-idioms.md")
+            Map.entry(HeuristicCode.G26, ".claude/skills/java-idioms.md"),
+
+            // test-quality.md
+            Map.entry(HeuristicCode.T1, ".claude/skills/test-quality.md"),
+            Map.entry(HeuristicCode.T3, ".claude/skills/test-quality.md"),
+            Map.entry(HeuristicCode.T4, ".claude/skills/test-quality.md")
     );
 
     public static String skillPathFor(HeuristicCode code) {

@@ -184,6 +184,33 @@ remove the annotation without fixing the underlying warning.
 // TODO: G4 — requires human review: @SuppressWarnings("deprecation") on method X
 ```
 
+**`System.out.println`, `System.err.println`, `e.printStackTrace()`:**
+Console output bypasses log routing, filtering, and alerting. Replace
+with structured logging via Lombok `@Slf4j`.
+
+| Anti-pattern | Fix |
+|---|---|
+| `System.out.println(...)` | `log.info(...)` or `log.debug(...)` |
+| `System.err.println(...)` | `log.warn(...)` or `log.error(...)` |
+| `e.printStackTrace()` | `log.error("context message", e)` or wrap-and-propagate |
+
+```java
+// Illustrative only
+// BEFORE
+System.out.println("Fetching page: " + cursor);
+catch (Exception e) { e.printStackTrace(); }
+
+// AFTER
+@Slf4j
+public class PetClient {
+    log.debug("Fetching page (cursor={})", cursor);
+    log.error("GraphQL request failed", exception);
+}
+```
+
+Always use parameterised logging with `{}` placeholders — never
+concatenate strings in log calls.
+
 ---
 
 ## Magic numbers
@@ -226,6 +253,11 @@ when a narrow one exists invites bugs.
 | `Object` | The actual type | Any situation where the concrete type is known |
 | `Map<String, Object>` | A record or typed class | Structured data with known fields |
 | `List` (raw) | `List<SpecificType>` | Always parameterise collections |
+| `java.io.File` | `java.nio.file.Path` | File paths, directory references |
+| `FileInputStream` | `Files.newInputStream(path)` | Reading file bytes |
+| `FileOutputStream` | `Files.newOutputStream(path)` | Writing file bytes |
+| `FileReader` | `Files.newBufferedReader(path)` | Reading text files |
+| `FileWriter` | `Files.newBufferedWriter(path)` | Writing text files |
 
 ```java
 // Illustrative only
@@ -239,6 +271,10 @@ final BigDecimal price = new BigDecimal("19.99");
 final LocalDate createdAt = LocalDate.parse("2024-03-15");
 final DashboardConfig config = loadConfig();
 ```
+
+The `java.io.File` family returns `boolean` for failures instead of
+throwing, cannot represent non-default filesystems, and mixes path
+representation with I/O operations. Always use `java.nio.file`.
 
 ---
 
