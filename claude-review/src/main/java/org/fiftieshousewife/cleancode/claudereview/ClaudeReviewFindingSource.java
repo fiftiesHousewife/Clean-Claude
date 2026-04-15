@@ -65,18 +65,17 @@ public class ClaudeReviewFindingSource implements FindingSource {
 
     @Override
     public boolean isAvailable(ProjectContext context) {
-        return config.enabled() && System.getenv("ANTHROPIC_API_KEY") != null;
+        return config.enabled() && config.hasApiKey();
     }
 
     @Override
     public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
-        final String apiKey = System.getenv("ANTHROPIC_API_KEY");
-        if (apiKey == null) {
+        if (!config.hasApiKey()) {
             return List.of();
         }
 
         final AnthropicClient client = AnthropicOkHttpClient.builder()
-                .apiKey(apiKey)
+                .apiKey(config.apiKey())
                 .build();
 
         final String systemPrompt = loadSystemPrompt();

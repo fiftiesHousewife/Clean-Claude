@@ -49,12 +49,13 @@ public abstract class CleanCodeExtension {
         return claudeReview;
     }
 
-    public ClaudeReviewConfig buildClaudeReviewConfig() {
+    public ClaudeReviewConfig buildClaudeReviewConfig(String apiKey) {
         final Set<HeuristicCode> enabledCodes = claudeReview.getCodes().get().stream()
                 .map(HeuristicCode::valueOf)
                 .collect(Collectors.toUnmodifiableSet());
         return new ClaudeReviewConfig(
                 claudeReview.getEnabled().get(),
+                apiKey,
                 claudeReview.getModel().get(),
                 claudeReview.getMaxFilesPerRun().get(),
                 claudeReview.getMinFileLines().get(),

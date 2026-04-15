@@ -40,5 +40,11 @@ bin/
 .vscode/
 
 ### Mac OS ###
-.DS_Store.claude/settings.local.json
+.DS_Store
+.claude/settings.local.json
 .idea/
+
+### Secrets ###
+.env
+.env.local
+*.key

@@ -24,7 +24,8 @@ public abstract class AnalyseTask extends DefaultTask {
 
         final CleanCodeExtension ext = getProject().getExtensions().getByType(CleanCodeExtension.class);
         final RecipeThresholds thresholds = ext.buildRecipeThresholds();
-        final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig();
+        final String anthropicApiKey = resolveApiKey();
+        final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig(anthropicApiKey);
         final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
 
         final List<String> dependencies = getProject().getConfigurations().stream()
@@ -86,5 +87,14 @@ public abstract class AnalyseTask extends DefaultTask {
                 report.generatedAt(),
                 report.projectName(),
                 report.projectVersion());
+    }
+
+    private String resolveApiKey() {
+        final Object prop = getProject().findProperty("ANTHROPIC_API_KEY");
+        if (prop != null && !prop.toString().isBlank()) {
+            return prop.toString();
+        }
+        final String env = System.getenv("ANTHROPIC_API_KEY");
+        return env != null ? env : "";
     }
 }

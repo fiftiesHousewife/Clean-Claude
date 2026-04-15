@@ -19,7 +19,7 @@ class ClaudeReviewFindingSourceTest {
     @BeforeEach
     void setUp() {
         final ClaudeReviewConfig config = new ClaudeReviewConfig(
-                true, "claude-sonnet-4-6", 50, 10,
+                true, "", "claude-sonnet-4-6", 50, 10,
                 Set.of(HeuristicCode.G6, HeuristicCode.G20, HeuristicCode.N4),
                 List.of());
         source = new ClaudeReviewFindingSource(config);
