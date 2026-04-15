@@ -94,9 +94,10 @@ public class CpdFindingSource implements FindingSource {
     }
 
     Severity severityForTokenCount(int tokens) {
-        if (tokens >= 200) return Severity.ERROR;
-        if (tokens >= 100) return Severity.WARNING;
-        return Severity.INFO;
+        if (tokens >= 200) {
+            return Severity.ERROR;
+        }
+        return Severity.WARNING;
     }
 
     private List<Element> extractFileElements(Element duplication) {

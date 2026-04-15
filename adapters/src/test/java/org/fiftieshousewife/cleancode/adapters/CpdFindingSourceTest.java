@@ -67,7 +67,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_severityInfoForUnder100Tokens(@TempDir Path tempDir) throws Exception {
+    void collectFindings_severityWarningForUnder100Tokens(@TempDir Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -76,7 +76,7 @@ class CpdFindingSourceTest {
                 .toList();
 
         assertFalse(bazFindings.isEmpty());
-        assertEquals(Severity.INFO, bazFindings.getFirst().severity());
+        assertEquals(Severity.WARNING, bazFindings.getFirst().severity());
     }
 
     @Test

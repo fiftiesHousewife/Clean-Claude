@@ -64,7 +64,7 @@ public abstract class AnalyseTask extends DefaultTask {
         final String baseRepoUrl = ext.getRepositoryUrl().get();
         final String modulePath = getProject().getRootDir().toPath().relativize(projectRoot).toString();
         final String repositoryUrl = baseRepoUrl.isBlank() ? ""
-                : baseRepoUrl + (modulePath.isEmpty() ? "" : "/" + modulePath);
+                : baseRepoUrl + "/blob/main" + (modulePath.isEmpty() ? "" : "/" + modulePath);
         final Path outputDir = buildDir.resolve("reports/clean-code");
         final Path htmlReport = outputDir.resolve("findings.html");
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));

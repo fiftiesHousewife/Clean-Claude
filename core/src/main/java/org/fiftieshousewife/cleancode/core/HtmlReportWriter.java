@@ -196,7 +196,7 @@ public final class HtmlReportWriter {
         final String baseUrl = repositoryUrl.endsWith("/")
                 ? repositoryUrl.substring(0, repositoryUrl.length() - 1) : repositoryUrl;
         final String relativePath = relativiseSourceFile(finding.sourceFile());
-        final String fileUrl = baseUrl + "/blob/main/" + relativePath;
+        final String fileUrl = baseUrl + "/" + relativePath;
         final String linkedUrl = finding.startLine() > 0
                 ? fileUrl + "#L" + finding.startLine() : fileUrl;
         return "<a href=\"" + escape(linkedUrl) + "\">" + escape(location) + "</a>";
