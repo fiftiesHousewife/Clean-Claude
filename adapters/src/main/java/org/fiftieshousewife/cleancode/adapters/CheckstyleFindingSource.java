@@ -1,64 +1,59 @@
 package org.fiftieshousewife.cleancode.adapters;
 
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
-import org.fiftieshousewife.cleancode.core.*;
+import org.fiftieshousewife.cleancode.core.Confidence;
+import org.fiftieshousewife.cleancode.core.Finding;
+import org.fiftieshousewife.cleancode.core.FindingSource;
+import org.fiftieshousewife.cleancode.core.FindingSourceException;
+import org.fiftieshousewife.cleancode.core.ProjectContext;
+import org.fiftieshousewife.cleancode.core.Severity;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public class CheckstyleFindingSource implements FindingSource {
 
     private record RuleMapping(HeuristicCode code, Severity severity, Confidence confidence, String ruleUrl) {}
 
-    private static final String CS = "https://checkstyle.org/checks/";
+    private static final String CHECKSTYLE_DOCS_BASE = "https://checkstyle.org/checks/";
+    private static final String RULE_MAPPING_RESOURCE = "/checkstyle/rule-mapping.properties";
+    private static final String CHECK_SUFFIX = "Check";
+    private static final String TOOL_ID = "checkstyle";
+    private static final String DISPLAY_NAME = "Checkstyle";
+    private static final String REPORT_PATH = "checkstyle/main.xml";
+    private static final String RULE_URL_KEY = "ruleUrl";
+    private static final String FIELD_SEPARATOR = "\\|";
 
-    private static final Map<String, RuleMapping> RULE_MAP = Map.ofEntries(
-            Map.entry("ParameterNumber", new RuleMapping(HeuristicCode.F1, Severity.WARNING, Confidence.HIGH, CS + "sizes/parameternumber.html")),
-            Map.entry("MagicNumber", new RuleMapping(HeuristicCode.G25, Severity.WARNING, Confidence.HIGH, CS + "coding/magicnumber.html")),
-            Map.entry("LocalVariableName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM, CS + "naming/localvariablename.html")),
-            Map.entry("MethodLength", new RuleMapping(HeuristicCode.G30, Severity.WARNING, Confidence.MEDIUM, CS + "sizes/methodlength.html")),
-            Map.entry("AnonInnerLength", new RuleMapping(HeuristicCode.G30, Severity.WARNING, Confidence.MEDIUM, CS + "sizes/anoninnerlength.html")),
-            Map.entry("AvoidStarImport", new RuleMapping(HeuristicCode.J1, Severity.WARNING, Confidence.HIGH, CS + "imports/avoidstarimport.html")),
-            Map.entry("IllegalImport", new RuleMapping(HeuristicCode.G12, Severity.WARNING, Confidence.HIGH, CS + "imports/illegalimport.html")),
-            Map.entry("InterfaceIsType", new RuleMapping(HeuristicCode.J2, Severity.WARNING, Confidence.HIGH, CS + "design/interfaceistype.html")),
-            Map.entry("VisibilityModifier", new RuleMapping(HeuristicCode.G8, Severity.WARNING, Confidence.MEDIUM, CS + "design/visibilitymodifier.html")),
-            Map.entry("HideUtilityClassConstructor", new RuleMapping(HeuristicCode.G18, Severity.WARNING, Confidence.HIGH, CS + "design/hideutilityclassconstructor.html")),
-            Map.entry("OneTopLevelClass", new RuleMapping(HeuristicCode.G12, Severity.WARNING, Confidence.HIGH, CS + "design/onetoplevelclass.html")),
-            Map.entry("NeedBraces", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.MEDIUM, CS + "blocks/needbraces.html")),
-            Map.entry("LeftCurly", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH, CS + "blocks/leftcurly.html")),
-            Map.entry("RightCurly", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH, CS + "blocks/rightcurly.html")),
-            Map.entry("WhitespaceAround", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH, CS + "whitespace/whitespacearound.html")),
-            Map.entry("EmptyLineSeparator", new RuleMapping(HeuristicCode.G10, Severity.WARNING, Confidence.MEDIUM, CS + "whitespace/emptylineseparator.html")),
-            Map.entry("MethodName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM, CS + "naming/methodname.html")),
-            Map.entry("TypeName", new RuleMapping(HeuristicCode.N1, Severity.WARNING, Confidence.MEDIUM, CS + "naming/typename.html")),
-            Map.entry("FinalLocalVariable", new RuleMapping(HeuristicCode.G22, Severity.WARNING, Confidence.HIGH, CS + "coding/finallocalvariable.html")),
-            Map.entry("SimplifyBooleanExpression", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.HIGH, CS + "coding/simplifybooleanexpression.html")),
-            Map.entry("SimplifyBooleanReturn", new RuleMapping(HeuristicCode.G28, Severity.WARNING, Confidence.HIGH, CS + "coding/simplifybooleanreturn.html")),
-            Map.entry("RedundantImport", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH, CS + "imports/redundantimport.html")),
-            Map.entry("UnusedImports", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH, CS + "imports/unusedimports.html")),
-            Map.entry("EmptyBlock", new RuleMapping(HeuristicCode.G4, Severity.WARNING, Confidence.HIGH, CS + "blocks/emptyblock.html")),
-            Map.entry("FileLength", new RuleMapping(HeuristicCode.Ch10_1, Severity.WARNING, Confidence.MEDIUM, CS + "sizes/filelength.html")),
-            Map.entry("LineLength", new RuleMapping(HeuristicCode.G24, Severity.INFO, Confidence.HIGH, CS + "sizes/linelength.html"))
-    );
+    private static final Map<String, RuleMapping> RULE_MAP = loadRuleMap();
 
     @Override
     public String id() {
-        return "checkstyle";
+        return TOOL_ID;
     }
 
     @Override
     public String displayName() {
-        return "Checkstyle";
+        return DISPLAY_NAME;
     }
 
     @Override
     public Set<HeuristicCode> coveredCodes() {
-        Set<HeuristicCode> codes = EnumSet.noneOf(HeuristicCode.class);
+        final Set<HeuristicCode> codes = EnumSet.noneOf(HeuristicCode.class);
         RULE_MAP.values().forEach(m -> codes.add(m.code()));
         return Collections.unmodifiableSet(codes);
     }
@@ -70,59 +65,64 @@ public class CheckstyleFindingSource implements FindingSource {
 
     @Override
     public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
-        Path report = reportPath(context);
+        final Path report = reportPath(context);
         if (!Files.exists(report)) {
             return List.of();
         }
 
         try {
-            Document doc = XmlReportParser.parse(report);
-
-            List<Finding> findings = new ArrayList<>();
-            NodeList fileNodes = doc.getElementsByTagName("file");
-
-            for (int i = 0; i < fileNodes.getLength(); i++) {
-                Element fileElement = (Element) fileNodes.item(i);
-                String absolutePath = fileElement.getAttribute("name");
-                String relativePath = PathUtils.relativise(absolutePath, context.projectRoot());
-
-                NodeList errors = fileElement.getElementsByTagName("error");
-                for (int j = 0; j < errors.getLength(); j++) {
-                    Element e = (Element) errors.item(j);
-                    String sourceFqn = e.getAttribute("source");
-                    String checkName = extractCheckName(sourceFqn);
-
-                    RuleMapping mapping = RULE_MAP.get(checkName);
-                    if (mapping == null) {
-                        continue;
-                    }
-
-                    int line = Integer.parseInt(e.getAttribute("line"));
-                    String message = e.getAttribute("message");
-                    Severity severity = xmlSeverityOrDefault(e.getAttribute("severity"), mapping.severity());
-
-                    findings.add(new Finding(
-                            mapping.code(), relativePath, line, line,
-                            message, severity, mapping.confidence(),
-                            "checkstyle", checkName, Map.of("ruleUrl", mapping.ruleUrl())));
-                }
-            }
-
+            final Document doc = XmlReportParser.parse(report);
+            final List<Finding> findings = new ArrayList<>();
+            forEachFile(doc, (fileElement, relativePath) ->
+                    collectFileFindings(fileElement, relativePath, context, findings));
             return findings;
         } catch (Exception e) {
             throw new FindingSourceException("Failed to parse Checkstyle report: " + report, e);
         }
     }
 
-    private Path reportPath(ProjectContext context) {
-        return context.reportsDir().resolve("checkstyle/main.xml");
+    private void forEachFile(Document doc, FileVisitor visitor) {
+        final NodeList fileNodes = doc.getElementsByTagName("file");
+        for (int i = 0; i < fileNodes.getLength(); i++) {
+            final Element fileElement = (Element) fileNodes.item(i);
+            visitor.visit(fileElement, fileElement.getAttribute("name"));
+        }
     }
 
-    private String extractCheckName(String sourceFqn) {
-        int lastDot = sourceFqn.lastIndexOf('.');
-        String simpleName = lastDot >= 0 ? sourceFqn.substring(lastDot + 1) : sourceFqn;
-        if (simpleName.endsWith("Check")) {
-            simpleName = simpleName.substring(0, simpleName.length() - "Check".length());
+    private void collectFileFindings(
+            Element fileElement, String absolutePath, ProjectContext context, List<Finding> findings) {
+        final String relativePath = PathUtils.relativise(absolutePath, context.projectRoot());
+        final NodeList errors = fileElement.getElementsByTagName("error");
+        for (int j = 0; j < errors.getLength(); j++) {
+            final Element error = (Element) errors.item(j);
+            toFinding(error, relativePath).ifPresent(findings::add);
+        }
+    }
+
+    private Optional<Finding> toFinding(Element error, String relativePath) {
+        final String checkName = extractCheckName(error.getAttribute("source"));
+        final RuleMapping mapping = RULE_MAP.get(checkName);
+        if (mapping == null) {
+            return Optional.empty();
+        }
+        final int line = Integer.parseInt(error.getAttribute("line"));
+        final String message = error.getAttribute("message");
+        final Severity severity = xmlSeverityOrDefault(error.getAttribute("severity"), mapping.severity());
+        return Optional.of(new Finding(
+                mapping.code(), relativePath, line, line,
+                message, severity, mapping.confidence(),
+                TOOL_ID, checkName, Map.of(RULE_URL_KEY, mapping.ruleUrl())));
+    }
+
+    private Path reportPath(ProjectContext context) {
+        return context.reportsDir().resolve(REPORT_PATH);
+    }
+
+    String extractCheckName(String sourceFqn) {
+        final int lastDot = sourceFqn.lastIndexOf('.');
+        final String simpleName = lastDot >= 0 ? sourceFqn.substring(lastDot + 1) : sourceFqn;
+        if (simpleName.endsWith(CHECK_SUFFIX)) {
+            return simpleName.substring(0, simpleName.length() - CHECK_SUFFIX.length());
         }
         return simpleName;
     }
@@ -134,5 +134,37 @@ public class CheckstyleFindingSource implements FindingSource {
             case "warning" -> Severity.WARNING;
             default -> defaultSeverity;
         };
+    }
+
+    private static Map<String, RuleMapping> loadRuleMap() {
+        final Properties properties = new Properties();
+        try (InputStream stream = CheckstyleFindingSource.class.getResourceAsStream(RULE_MAPPING_RESOURCE)) {
+            if (stream == null) {
+                throw new IllegalStateException("Missing resource: " + RULE_MAPPING_RESOURCE);
+            }
+            properties.load(stream);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load " + RULE_MAPPING_RESOURCE, e);
+        }
+        final Map<String, RuleMapping> map = new HashMap<>();
+        properties.forEach((key, value) -> map.put(key.toString(), parseRuleMapping(value.toString())));
+        return Collections.unmodifiableMap(map);
+    }
+
+    private static RuleMapping parseRuleMapping(String value) {
+        final String[] parts = value.split(FIELD_SEPARATOR);
+        if (parts.length != 4) {
+            throw new IllegalStateException("Invalid rule mapping format: " + value);
+        }
+        return new RuleMapping(
+                HeuristicCode.valueOf(parts[0].trim()),
+                Severity.valueOf(parts[1].trim()),
+                Confidence.valueOf(parts[2].trim()),
+                CHECKSTYLE_DOCS_BASE + parts[3].trim());
+    }
+
+    @FunctionalInterface
+    private interface FileVisitor {
+        void visit(Element fileElement, String absolutePath);
     }
 }
