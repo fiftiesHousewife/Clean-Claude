@@ -96,11 +96,12 @@ public final class HtmlReportWriter {
         html.append("    .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; ");
         html.append("margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }\n");
         html.append("    .group-body { overflow-x: auto; }\n");
-        html.append("    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }\n");
+        html.append("    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }\n");
         html.append("    th, td { text-align: left; padding: 0.4rem 0.6rem; ");
-        html.append("border-bottom: 1px solid #eee; word-wrap: break-word; overflow-wrap: break-word; }\n");
-        html.append("    th:first-child, td:first-child { width: 80px; white-space: nowrap; }\n");
-        html.append("    th:nth-child(2), td:nth-child(2) { width: 35%; white-space: nowrap; }\n");
+        html.append("border-bottom: 1px solid #eee; vertical-align: top; }\n");
+        html.append("    td:first-child { white-space: nowrap; }\n");
+        html.append("    td:nth-child(2) { white-space: nowrap; font-size: 0.85rem; }\n");
+        html.append("    td:nth-child(3) { word-break: break-word; }\n");
         html.append("    th { color: #777; font-weight: 500; font-size: 0.8rem; ");
         html.append("text-transform: uppercase; }\n");
         html.append("    .sev-error { color: #c0392b; font-weight: 600; }\n");
