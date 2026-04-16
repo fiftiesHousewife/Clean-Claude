@@ -183,8 +183,8 @@ public class SuppressionIndex {
             for (MemberValuePair pair : normal.getPairs()) {
                 switch (pair.getNameAsString()) {
                     case "value" -> codes.addAll(extractCodes(pair.getValue()));
-                    case "reason" -> reason = pair.getValue().asStringLiteralExpr().getValue();
-                    case "until" -> until = pair.getValue().asStringLiteralExpr().getValue();
+                    case "reason" -> reason = extractStringValue(pair.getValue());
+                    case "until" -> until = extractStringValue(pair.getValue());
                 }
             }
         }
@@ -219,6 +219,19 @@ public class SuppressionIndex {
         }
 
         suppressions.add(new Suppression(sourceFile, startLine, endLine, codes, reason, until, packagePath));
+    }
+
+    private static String extractStringValue(Expression expr) {
+        if (expr.isStringLiteralExpr()) {
+            return expr.asStringLiteralExpr().getValue();
+        }
+        if (expr.isBinaryExpr()) {
+            final com.github.javaparser.ast.expr.BinaryExpr bin = expr.asBinaryExpr();
+            if (bin.getOperator() == com.github.javaparser.ast.expr.BinaryExpr.Operator.PLUS) {
+                return extractStringValue(bin.getLeft()) + extractStringValue(bin.getRight());
+            }
+        }
+        return expr.toString();
     }
 
     private static Set<HeuristicCode> extractCodes(Expression expr) {
