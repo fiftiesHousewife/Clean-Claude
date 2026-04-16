@@ -14,25 +14,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Accumulator> {
 
-    private static final int SECTION_COMMENT_THRESHOLD = 2;
-    private static final Pattern SECTION_PATTERN = Pattern.compile(
-            "^\\s*(step\\s*\\d|phase\\s*\\d|part\\s*\\d|section\\s*\\d|\\d+[.):]\\s|---+|===+|###|//).*",
-            Pattern.CASE_INSENSITIVE);
-    private static final Set<String> SECTION_PREFIXES = Set.of(
-            "validate", "check", "setup", "initializ", "creat", "build",
-            "transform", "convert", "process", "pars", "format",
-            "save", "persist", "write", "send", "publish",
-            "load", "read", "fetch", "get", "retriev",
-            "cleanup", "close", "finali",
-            "use ", "apply", "comput", "calculat", "determin",
-            "extract", "find", "look up", "resolv", "handl",
-            "updat", "set up", "configur", "regist", "wire",
-            "render", "generat", "append", "add ", "remov",
-            "map ", "filter", "collect", "aggregat", "merg");
+    private final int threshold;
+    private static final Set<String> ANNOTATION_PREFIXES = Set.of(
+            "todo", "fixme", "hack", "xxx", "nopmd", "nosonar",
+            "noinspection", "suppress", "@", "fall", "intentional",
+            "cpd-off", "cpd-on", "region", "endregion");
 
     public record Row(String className, String methodName, int sectionCount, int lineNumber) {}
 
@@ -42,6 +31,10 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
 
     private Accumulator lastAccumulator;
 
+    public SectionCommentRecipe(int threshold) {
+        this.threshold = threshold;
+    }
+
     @Override
     public String getDisplayName() {
         return "Section comment detection (G34)";
@@ -49,7 +42,7 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
 
     @Override
     public String getDescription() {
-        return "Detects methods using comments to separate blocks of code that should be extracted into named methods.";
+        return "Detects methods using inline comments to separate code into sections that should be extracted.";
     }
 
     @Override
@@ -69,7 +62,7 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
                 }
 
                 final int sectionCount = countSectionComments(m.getBody().getStatements());
-                if (sectionCount >= SECTION_COMMENT_THRESHOLD) {
+                if (sectionCount >= threshold) {
                     acc.rows.add(new Row(
                             findEnclosingClassName(),
                             m.getSimpleName(),
@@ -93,13 +86,12 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
             }
 
             private boolean isSectionComment(String text) {
-                final String normalised = text.trim().toLowerCase(Locale.ROOT);
-
-                if (SECTION_PATTERN.matcher(normalised).matches()) {
-                    return true;
+                final String trimmed = text.trim();
+                if (trimmed.isEmpty()) {
+                    return false;
                 }
-
-                return SECTION_PREFIXES.stream().anyMatch(normalised::startsWith);
+                final String lower = trimmed.toLowerCase(Locale.ROOT);
+                return ANNOTATION_PREFIXES.stream().noneMatch(lower::startsWith);
             }
 
             private String findEnclosingClassName() {

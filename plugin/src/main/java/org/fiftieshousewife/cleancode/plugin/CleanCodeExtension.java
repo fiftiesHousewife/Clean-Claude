@@ -79,7 +79,8 @@ public abstract class CleanCodeExtension {
                 thresholds.getStringSwitchMinCases().get(),
                 thresholds.getShortNameMinLength().get(),
                 thresholds.getCpdMinimumTokens().get(),
-                thresholds.getMagicNumberMinValue().get());
+                thresholds.getMagicNumberMinValue().get(),
+                thresholds.getSectionCommentThreshold().get());
     }
 
     @SuppressWarnings("this-escape")
@@ -109,6 +110,8 @@ public abstract class CleanCodeExtension {
 
         public abstract Property<Integer> getMagicNumberMinValue();
 
+        public abstract Property<Integer> getSectionCommentThreshold();
+
         @Inject
         public ThresholdsExtension() {
             getClassLineCount().convention(RecipeThresholds.DEFAULT_CLASS_LINE_COUNT);
@@ -123,6 +126,7 @@ public abstract class CleanCodeExtension {
             getShortNameMinLength().convention(RecipeThresholds.DEFAULT_SHORT_NAME_MIN_LENGTH);
             getCpdMinimumTokens().convention(RecipeThresholds.DEFAULT_CPD_MINIMUM_TOKENS);
             getMagicNumberMinValue().convention(RecipeThresholds.DEFAULT_MAGIC_NUMBER_MIN_VALUE);
+            getSectionCommentThreshold().convention(RecipeThresholds.DEFAULT_SECTION_COMMENT_THRESHOLD);
         }
     }
 

@@ -108,7 +108,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new SwitchOnTypeRecipe(),
                 new CommentedCodeRecipe(),
                 new MumblingCommentRecipe(),
-                new SectionCommentRecipe(),
+                new SectionCommentRecipe(thresholds.sectionCommentThreshold()),
                 new EncodingNamingRecipe(),
                 new VerticalSeparationRecipe(thresholds.verticalSeparationDistance()),
                 new InheritConstantsRecipe(),
