@@ -255,8 +255,6 @@ To regenerate: `./gradlew analyseCleanCode`
 
 The project includes token monitoring hooks and a structured experiment plan to compare the cost of fixing all findings manually vs using the refactoring recipes first.
 
-**Setup:** Token monitoring hooks in `.claude/hooks/` record every tool call and session total. Set `CLAUDE_TASK_LABEL` to tag runs.
-
 **Protocol:** 6 runs total — 3 manual fix sessions, 3 recipe-assisted sessions. Each starts from the same commit, uses a clean Claude Code session, and saves a git patch + token logs.
 
 **Metrics compared:**
@@ -265,13 +263,34 @@ The project includes token monitoring hooks and a structured experiment plan to 
 - Cache hit ratio
 - Patch size and findings remaining
 
-See the full protocol at `~/.claude/plans/fix-comparison-experiment.md`.
+### Skills
+
+Three slash-command skills automate the experiment workflow:
+
+| Skill | Usage | Purpose |
+|---|---|---|
+| `/experiment` | `/experiment manual 1` | Create branch, clear logs, print the fix prompt |
+| `/experiment-save` | `/experiment-save` | Save patch + token logs after a run |
+| `/experiment-analyse` | `/experiment-analyse` | Compare all runs and write `experiment/analysis.md` |
+
+### Running a single experiment
 
 ```bash
-# Tag a session for tracking
-export CLAUDE_TASK_LABEL="manual-fix-1"
+# 1. In a Claude Code session, set up the run:
+/experiment manual 1
 
-# After runs, compare
-jq -s 'group_by(.task) | map({task:.[0].task, runs:length, avg:(map(.total)|add/length|floor)})' \
-  experiment/*-session.jsonl
+# 2. Exit, then start a fresh session with the task label:
+CLAUDE_TASK_LABEL="manual-fix-1" claude
+
+# 3. Paste the fix prompt (printed by /experiment) and let it run
+
+# 4. When done, save outputs:
+/experiment-save
+
+# 5. Return to main and repeat for the next run
+git checkout main
 ```
+
+### Analysis
+
+After all 6 runs, invoke `/experiment-analyse` to generate a comparison report at `experiment/analysis.md`.
