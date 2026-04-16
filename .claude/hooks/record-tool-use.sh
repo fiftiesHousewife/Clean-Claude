@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# PostToolUse hook — records every tool call in full detail.
+# PostToolUse hook — records every tool call with detail and transcript size.
+# Note: Claude Code does NOT include token usage in hook payloads.
 
 set -euo pipefail
 
@@ -10,10 +11,14 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 SESSION_ID=$(echo "$INPUT"     | jq -r '.session_id             // "unknown"')
 TURN=$(echo "$INPUT"           | jq -r '.turn_number            // 0')
 TOOL=$(echo "$INPUT"           | jq -r '.tool_name              // "unknown"')
-INPUT_TOKENS=$(echo "$INPUT"   | jq -r '.usage.input_tokens     // 0')
-OUTPUT_TOKENS=$(echo "$INPUT"  | jq -r '.usage.output_tokens    // 0')
 EXIT_CODE=$(echo "$INPUT"      | jq -r '.tool_response.exit_code // null')
-TOTAL=$(( INPUT_TOKENS + OUTPUT_TOKENS ))
+
+# Transcript size as a proxy for conversation growth
+TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // ""')
+TRANSCRIPT_LINES=0
+if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
+  TRANSCRIPT_LINES=$(wc -l < "$TRANSCRIPT" 2>/dev/null || echo 0)
+fi
 
 TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}')
 
@@ -48,9 +53,7 @@ jq -nc \
   --argjson turn       "$TURN"          \
   --arg  tool          "$TOOL"          \
   --arg  detail        "$DETAIL"        \
-  --argjson input_c    "$INPUT_TOKENS"  \
-  --argjson output_c   "$OUTPUT_TOKENS" \
-  --argjson total_c    "$TOTAL"         \
+  --argjson transcript_lines "$TRANSCRIPT_LINES" \
   --argjson exit       "${EXIT_CODE:-null}" \
   --argjson tool_input "$TOOL_INPUT"    \
   '{
@@ -60,9 +63,7 @@ jq -nc \
     turn:              $turn,
     tool:              $tool,
     detail:            $detail,
-    input_cumulative:  $input_c,
-    output_cumulative: $output_c,
-    total_cumulative:  $total_c,
+    transcript_lines:  $transcript_lines,
     exit_code:         $exit,
     tool_input:        $tool_input
   }' >> "$LOG_FILE"

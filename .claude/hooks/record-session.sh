@@ -10,14 +10,19 @@ INPUT=$(cat)
 
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-SESSION_ID=$(echo "$INPUT"    | jq -r '.session_id                      // "unknown"')
-INPUT_TOKENS=$(echo "$INPUT"  | jq -r '.usage.input_tokens              // 0')
-OUTPUT_TOKENS=$(echo "$INPUT" | jq -r '.usage.output_tokens             // 0')
-CACHE_READ=$(echo "$INPUT"    | jq -r '.usage.cache_read_input_tokens   // 0')
-CACHE_WRITE=$(echo "$INPUT"   | jq -r '.usage.cache_write_input_tokens  // 0')
-TURNS=$(echo "$INPUT"         | jq -r '.turns                           // 0')
-MODEL=$(echo "$INPUT"         | jq -r '.model                           // "unknown"')
-TOTAL=$(( INPUT_TOKENS + OUTPUT_TOKENS ))
+SESSION_ID=$(echo "$INPUT"    | jq -r '.session_id  // "unknown"')
+TURNS=$(echo "$INPUT"         | jq -r '.num_turns   // .turns // 0')
+MODEL=$(echo "$INPUT"         | jq -r '.model       // "unknown"')
+
+# Token counts are NOT in hook payloads (confirmed by debug dump).
+# Track transcript size as the best available proxy.
+TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // ""')
+TRANSCRIPT_LINES=0
+TRANSCRIPT_BYTES=0
+if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
+  TRANSCRIPT_LINES=$(wc -l < "$TRANSCRIPT" 2>/dev/null || echo 0)
+  TRANSCRIPT_BYTES=$(wc -c < "$TRANSCRIPT" 2>/dev/null || echo 0)
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
@@ -31,17 +36,13 @@ jq -nc \
   --arg  session    "$SESSION_ID"    \
   --arg  task       "$TASK_LABEL"    \
   --arg  model      "$MODEL"         \
-  --argjson input   "$INPUT_TOKENS"  \
-  --argjson output  "$OUTPUT_TOKENS" \
-  --argjson cache_r "$CACHE_READ"    \
-  --argjson cache_w "$CACHE_WRITE"   \
-  --argjson total   "$TOTAL"         \
   --argjson turns   "$TURNS"         \
+  --argjson tl      "$TRANSCRIPT_LINES" \
+  --argjson tb      "$TRANSCRIPT_BYTES" \
   --argjson failed  "$FAILED"        \
   '{ts:$ts, session:$session, task:$task, model:$model,
-    input:$input, output:$output,
-    cache_read:$cache_r, cache_write:$cache_w,
-    total:$total, turns:$turns, failed:$failed}' \
+    turns:$turns, transcript_lines:$tl, transcript_bytes:$tb,
+    failed:$failed}' \
   >> "$LOG_FILE"
 
 exit 0
