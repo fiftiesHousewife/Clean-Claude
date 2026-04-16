@@ -889,7 +889,7 @@ Three things in a single pass:
 ### Structured TODO Format
 
 ```java
-// TODO Ch7.1 [autofix] (.claude/skills/exception-handling.md): catch swallows ProfilerException — wrap and propagate with context
+// TODO Ch7.1 [autofix] (.claude/skills/clean-code-exception-handling/SKILL.md): catch swallows ProfilerException — wrap and propagate with context
 ```
 
 | Field | Source |
@@ -944,13 +944,13 @@ Multiple codes mapping to the same file is expected:
 
 ```java
 Map<HeuristicCode, String> SKILL_PATHS = Map.of(
-    Ch7_1,  ".claude/skills/exception-handling.md",
-    Ch7_2,  ".claude/skills/ch7-null-handling.md",
-    Ch10_1, ".claude/skills/ch10-classes.md",
-    Ch10_2, ".claude/skills/ch10-classes.md",
-    Ch3_1,  ".claude/skills/ch3-functions.md",
-    Ch3_2,  ".claude/skills/ch3-functions.md",
-    G5,     ".claude/skills/ch3-functions.md"
+    Ch7_1,  ".claude/skills/clean-code-exception-handling/SKILL.md",
+    Ch7_2,  ".claude/skills/clean-code-null-handling/SKILL.md",
+    Ch10_1, ".claude/skills/clean-code-classes/SKILL.md",
+    Ch10_2, ".claude/skills/clean-code-classes/SKILL.md",
+    Ch3_1,  ".claude/skills/clean-code-functions/SKILL.md",
+    Ch3_2,  ".claude/skills/clean-code-functions/SKILL.md",
+    G5,     ".claude/skills/clean-code-functions/SKILL.md"
 );
 ```
 
