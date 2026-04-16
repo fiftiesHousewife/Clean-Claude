@@ -112,6 +112,41 @@ class SuppressionIndexTest {
         assertFalse(index.isSuppressed(finding));
     }
 
+    @Test
+    void packageAnnotation_suppressesFindingInSamePackageIgnoringLine() {
+        final SuppressionIndex index = buildIndex();
+
+        final Finding finding = Finding.at(HeuristicCode.G5,
+                "com/example/pkgsuppressed/SomeClass.java",
+                999, 999, "dup", Severity.WARNING, Confidence.HIGH, "cpd", "rule");
+
+        assertTrue(index.isSuppressed(finding));
+    }
+
+    @Test
+    void packageAnnotation_suppressesCpdWhenOtherFileInPackage() {
+        final SuppressionIndex index = buildIndex();
+
+        final Finding finding = new Finding(HeuristicCode.G5,
+                "core/src/main/java/com/example/other/Unrelated.java",
+                10, 10, "dup", Severity.WARNING, Confidence.HIGH, "cpd", "cpd-duplication",
+                java.util.Map.of("otherFile",
+                        "core/src/main/java/com/example/pkgsuppressed/SomeClass.java"));
+
+        assertTrue(index.isSuppressed(finding));
+    }
+
+    @Test
+    void packageAnnotation_doesNotSuppressFindingWithDifferentCode() {
+        final SuppressionIndex index = buildIndex();
+
+        final Finding finding = Finding.at(HeuristicCode.G30,
+                "com/example/pkgsuppressed/SomeClass.java",
+                10, 10, "long", Severity.WARNING, Confidence.HIGH, "openrewrite", "rule");
+
+        assertFalse(index.isSuppressed(finding));
+    }
+
     private SuppressionIndex buildIndex() {
         try {
             Path sourceRoot = Path.of(getClass().getResource("/suppression").toURI());

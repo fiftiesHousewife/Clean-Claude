@@ -28,8 +28,13 @@ public class SuppressionIndex {
             int endLine,
             Set<HeuristicCode> codes,
             String reason,
-            String until
-    ) {}
+            String until,
+            String packagePath
+    ) {
+        boolean isPackageScoped() {
+            return packagePath != null;
+        }
+    }
 
     private final List<Suppression> suppressions;
     private final List<Finding> metaFindings;
@@ -70,22 +75,39 @@ public class SuppressionIndex {
         }
 
         for (Suppression s : suppressions) {
-            if (matchesFile(finding.sourceFile(), s.sourceFile())
-                    && s.codes().contains(finding.code())
+            if (!s.codes().contains(finding.code())) {
+                continue;
+            }
+            if (isExpired(s)) {
+                continue;
+            }
+            if (s.isPackageScoped()) {
+                if (matchesPackage(finding.sourceFile(), s.packagePath())
+                        || matchesPackage(otherFile(finding), s.packagePath())) {
+                    return true;
+                }
+            } else if (matchesFile(finding.sourceFile(), s.sourceFile())
                     && finding.startLine() >= s.startLine()
                     && finding.startLine() <= s.endLine()) {
-
-                // Check expiry
-                if (!s.until().isEmpty()) {
-                    LocalDate untilDate = LocalDate.parse(s.until());
-                    if (untilDate.isBefore(LocalDate.now())) {
-                        return false; // Expired — not suppressed
-                    }
-                }
                 return true;
             }
         }
         return false;
+    }
+
+    private static boolean isExpired(Suppression s) {
+        if (s.until().isEmpty()) {
+            return false;
+        }
+        return LocalDate.parse(s.until()).isBefore(LocalDate.now());
+    }
+
+    private static boolean matchesPackage(String path, String packagePath) {
+        return path != null && path.contains(packagePath + "/");
+    }
+
+    private static String otherFile(Finding finding) {
+        return finding.metadata() == null ? null : finding.metadata().get("otherFile");
     }
 
     public List<Finding> metaFindings() {
@@ -95,17 +117,33 @@ public class SuppressionIndex {
     private static void processCompilationUnit(CompilationUnit cu, String sourceFile,
                                                 List<Suppression> suppressions,
                                                 List<Finding> metaFindings) {
+        cu.getPackageDeclaration().ifPresent(pkg ->
+                processPackageDeclaration(pkg, sourceFile, suppressions, metaFindings));
         cu.findAll(ClassOrInterfaceDeclaration.class).forEach(cls ->
-                processAnnotatedNode(cls, sourceFile, suppressions, metaFindings));
+                processAnnotatedNode(cls, sourceFile, suppressions, metaFindings, null));
         cu.findAll(MethodDeclaration.class).forEach(method ->
-                processAnnotatedNode(method, sourceFile, suppressions, metaFindings));
+                processAnnotatedNode(method, sourceFile, suppressions, metaFindings, null));
         cu.findAll(ConstructorDeclaration.class).forEach(ctor ->
-                processAnnotatedNode(ctor, sourceFile, suppressions, metaFindings));
+                processAnnotatedNode(ctor, sourceFile, suppressions, metaFindings, null));
+    }
+
+    private static void processPackageDeclaration(com.github.javaparser.ast.PackageDeclaration pkg,
+                                                   String sourceFile,
+                                                   List<Suppression> suppressions,
+                                                   List<Finding> metaFindings) {
+        String packagePath = pkg.getNameAsString().replace('.', '/');
+        int line = pkg.getBegin().map(p -> p.line).orElse(-1);
+        for (AnnotationExpr ann : pkg.getAnnotations()) {
+            if ("SuppressCleanCode".equals(ann.getNameAsString())) {
+                processSingleAnnotation(ann, sourceFile, line, line, suppressions, metaFindings, packagePath);
+            }
+        }
     }
 
     private static void processAnnotatedNode(BodyDeclaration<?> node, String sourceFile,
                                               List<Suppression> suppressions,
-                                              List<Finding> metaFindings) {
+                                              List<Finding> metaFindings,
+                                              String packagePath) {
         int startLine = node.getBegin().map(p -> p.line).orElse(-1);
         int endLine = node.getEnd().map(p -> p.line).orElse(-1);
 
@@ -113,7 +151,7 @@ public class SuppressionIndex {
             String annName = ann.getNameAsString();
 
             if ("SuppressCleanCode".equals(annName)) {
-                processSingleAnnotation(ann, sourceFile, startLine, endLine, suppressions, metaFindings);
+                processSingleAnnotation(ann, sourceFile, startLine, endLine, suppressions, metaFindings, packagePath);
             } else if ("SuppressCleanCode.List".equals(annName)) {
                 // Handle @Repeatable container
                 if (ann instanceof NormalAnnotationExpr normal) {
@@ -122,7 +160,7 @@ public class SuppressionIndex {
                             pair.getValue().toArrayInitializerExpr().ifPresent(arr ->
                                     arr.getValues().forEach(v -> {
                                         if (v instanceof AnnotationExpr inner) {
-                                            processSingleAnnotation(inner, sourceFile, startLine, endLine, suppressions, metaFindings);
+                                            processSingleAnnotation(inner, sourceFile, startLine, endLine, suppressions, metaFindings, packagePath);
                                         }
                                     }));
                         }
@@ -135,7 +173,8 @@ public class SuppressionIndex {
     private static void processSingleAnnotation(AnnotationExpr ann, String sourceFile,
                                                   int startLine, int endLine,
                                                   List<Suppression> suppressions,
-                                                  List<Finding> metaFindings) {
+                                                  List<Finding> metaFindings,
+                                                  String packagePath) {
         Set<HeuristicCode> codes = new HashSet<>();
         String reason = "";
         String until = "";
@@ -179,7 +218,7 @@ public class SuppressionIndex {
                     "suppression-index", "blank-reason"));
         }
 
-        suppressions.add(new Suppression(sourceFile, startLine, endLine, codes, reason, until));
+        suppressions.add(new Suppression(sourceFile, startLine, endLine, codes, reason, until, packagePath));
     }
 
     private static Set<HeuristicCode> extractCodes(Expression expr) {

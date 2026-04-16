@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":annotations"))
     implementation(libs.openrewrite.core)
     implementation(libs.openrewrite.java)
     testImplementation(libs.openrewrite.test)
