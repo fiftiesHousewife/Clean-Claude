@@ -1,6 +1,7 @@
 package org.fiftieshousewife.cleancode.plugin;
 
 import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewConfig;
+import org.fiftieshousewife.cleancode.core.RecipeThreshold;
 import org.fiftieshousewife.cleancode.core.RecipeThresholds;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import org.gradle.api.Action;
@@ -71,22 +72,23 @@ public abstract class CleanCodeExtension {
     }
 
     public RecipeThresholds buildRecipeThresholds() {
-        return new RecipeThresholds(
-                thresholds.getClassLineCount().get(),
-                thresholds.getRecordComponentCount().get(),
-                thresholds.getNullCheckDensity().get(),
-                thresholds.getChainDepthThreshold().get(),
-                thresholds.getVerticalSeparationDistance().get(),
-                thresholds.getMethodBlankLineSections().get(),
-                thresholds.getPrivateMethodMinLines().get(),
-                thresholds.getMagicStringMinOccurrences().get(),
-                thresholds.getStringSwitchMinCases().get(),
-                thresholds.getShortNameMinLength().get(),
-                thresholds.getCpdMinimumTokens().get(),
-                thresholds.getMagicNumberMinValue().get(),
-                thresholds.getSectionCommentThreshold().get(),
-                thresholds.getHardcodedListMinLiterals().get(),
-                thresholds.getTemporalCouplingMinCalls().get());
+        final java.util.Map<RecipeThreshold, Integer> values = new java.util.EnumMap<>(RecipeThreshold.class);
+        values.put(RecipeThreshold.CLASS_LINE_COUNT, thresholds.getClassLineCount().get());
+        values.put(RecipeThreshold.RECORD_COMPONENT_COUNT, thresholds.getRecordComponentCount().get());
+        values.put(RecipeThreshold.NULL_CHECK_DENSITY, thresholds.getNullCheckDensity().get());
+        values.put(RecipeThreshold.CHAIN_DEPTH_THRESHOLD, thresholds.getChainDepthThreshold().get());
+        values.put(RecipeThreshold.VERTICAL_SEPARATION_DISTANCE, thresholds.getVerticalSeparationDistance().get());
+        values.put(RecipeThreshold.METHOD_BLANK_LINE_SECTIONS, thresholds.getMethodBlankLineSections().get());
+        values.put(RecipeThreshold.PRIVATE_METHOD_MIN_LINES, thresholds.getPrivateMethodMinLines().get());
+        values.put(RecipeThreshold.MAGIC_STRING_MIN_OCCURRENCES, thresholds.getMagicStringMinOccurrences().get());
+        values.put(RecipeThreshold.STRING_SWITCH_MIN_CASES, thresholds.getStringSwitchMinCases().get());
+        values.put(RecipeThreshold.SHORT_NAME_MIN_LENGTH, thresholds.getShortNameMinLength().get());
+        values.put(RecipeThreshold.CPD_MINIMUM_TOKENS, thresholds.getCpdMinimumTokens().get());
+        values.put(RecipeThreshold.MAGIC_NUMBER_MIN_VALUE, thresholds.getMagicNumberMinValue().get());
+        values.put(RecipeThreshold.SECTION_COMMENT_THRESHOLD, thresholds.getSectionCommentThreshold().get());
+        values.put(RecipeThreshold.HARDCODED_LIST_MIN_LITERALS, thresholds.getHardcodedListMinLiterals().get());
+        values.put(RecipeThreshold.TEMPORAL_COUPLING_MIN_CALLS, thresholds.getTemporalCouplingMinCalls().get());
+        return RecipeThresholds.of(values);
     }
 
     @SuppressWarnings("this-escape")
@@ -124,21 +126,21 @@ public abstract class CleanCodeExtension {
 
         @Inject
         public ThresholdsExtension() {
-            getClassLineCount().convention(RecipeThresholds.DEFAULT_CLASS_LINE_COUNT);
-            getRecordComponentCount().convention(RecipeThresholds.DEFAULT_RECORD_COMPONENT_COUNT);
-            getNullCheckDensity().convention(RecipeThresholds.DEFAULT_NULL_CHECK_DENSITY);
-            getChainDepthThreshold().convention(RecipeThresholds.DEFAULT_CHAIN_DEPTH_THRESHOLD);
-            getVerticalSeparationDistance().convention(RecipeThresholds.DEFAULT_VERTICAL_SEPARATION_DISTANCE);
-            getMethodBlankLineSections().convention(RecipeThresholds.DEFAULT_METHOD_BLANK_LINE_SECTIONS);
-            getPrivateMethodMinLines().convention(RecipeThresholds.DEFAULT_PRIVATE_METHOD_MIN_LINES);
-            getMagicStringMinOccurrences().convention(RecipeThresholds.DEFAULT_MAGIC_STRING_MIN_OCCURRENCES);
-            getStringSwitchMinCases().convention(RecipeThresholds.DEFAULT_STRING_SWITCH_MIN_CASES);
-            getShortNameMinLength().convention(RecipeThresholds.DEFAULT_SHORT_NAME_MIN_LENGTH);
-            getCpdMinimumTokens().convention(RecipeThresholds.DEFAULT_CPD_MINIMUM_TOKENS);
-            getMagicNumberMinValue().convention(RecipeThresholds.DEFAULT_MAGIC_NUMBER_MIN_VALUE);
-            getSectionCommentThreshold().convention(RecipeThresholds.DEFAULT_SECTION_COMMENT_THRESHOLD);
-            getHardcodedListMinLiterals().convention(RecipeThresholds.DEFAULT_HARDCODED_LIST_MIN_LITERALS);
-            getTemporalCouplingMinCalls().convention(RecipeThresholds.DEFAULT_TEMPORAL_COUPLING_MIN_CALLS);
+            getClassLineCount().convention(RecipeThreshold.CLASS_LINE_COUNT.defaultValue());
+            getRecordComponentCount().convention(RecipeThreshold.RECORD_COMPONENT_COUNT.defaultValue());
+            getNullCheckDensity().convention(RecipeThreshold.NULL_CHECK_DENSITY.defaultValue());
+            getChainDepthThreshold().convention(RecipeThreshold.CHAIN_DEPTH_THRESHOLD.defaultValue());
+            getVerticalSeparationDistance().convention(RecipeThreshold.VERTICAL_SEPARATION_DISTANCE.defaultValue());
+            getMethodBlankLineSections().convention(RecipeThreshold.METHOD_BLANK_LINE_SECTIONS.defaultValue());
+            getPrivateMethodMinLines().convention(RecipeThreshold.PRIVATE_METHOD_MIN_LINES.defaultValue());
+            getMagicStringMinOccurrences().convention(RecipeThreshold.MAGIC_STRING_MIN_OCCURRENCES.defaultValue());
+            getStringSwitchMinCases().convention(RecipeThreshold.STRING_SWITCH_MIN_CASES.defaultValue());
+            getShortNameMinLength().convention(RecipeThreshold.SHORT_NAME_MIN_LENGTH.defaultValue());
+            getCpdMinimumTokens().convention(RecipeThreshold.CPD_MINIMUM_TOKENS.defaultValue());
+            getMagicNumberMinValue().convention(RecipeThreshold.MAGIC_NUMBER_MIN_VALUE.defaultValue());
+            getSectionCommentThreshold().convention(RecipeThreshold.SECTION_COMMENT_THRESHOLD.defaultValue());
+            getHardcodedListMinLiterals().convention(RecipeThreshold.HARDCODED_LIST_MIN_LITERALS.defaultValue());
+            getTemporalCouplingMinCalls().convention(RecipeThreshold.TEMPORAL_COUPLING_MIN_CALLS.defaultValue());
         }
     }
 
