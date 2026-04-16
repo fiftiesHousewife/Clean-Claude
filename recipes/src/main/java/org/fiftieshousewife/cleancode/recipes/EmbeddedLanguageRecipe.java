@@ -51,6 +51,8 @@ public class EmbeddedLanguageRecipe extends ScanningRecipe<EmbeddedLanguageRecip
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<>() {
+            private final java.util.Set<String> seen = new java.util.HashSet<>();
+
             @Override
             public J.Literal visitLiteral(J.Literal literal, ExecutionContext ctx) {
                 final J.Literal lit = super.visitLiteral(literal, ctx);
@@ -67,7 +69,10 @@ public class EmbeddedLanguageRecipe extends ScanningRecipe<EmbeddedLanguageRecip
                     final J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
                     final String className = classDecl != null ? classDecl.getSimpleName() : "<unknown>";
                     final String methodName = methodDecl != null ? methodDecl.getSimpleName() : "<field>";
-                    acc.rows.add(new Row(className, methodName, language));
+                    final String key = className + "." + methodName + "." + language;
+                    if (seen.add(key)) {
+                        acc.rows.add(new Row(className, methodName, language));
+                    }
                 }
                 return lit;
             }

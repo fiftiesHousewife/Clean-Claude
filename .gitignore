@@ -48,3 +48,7 @@ bin/
 .env
 .env.local
 *.key
+
+### Claude Code logs ###
+.claude/tool-log.jsonl
+.claude/session-log.jsonl

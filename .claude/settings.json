@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PROJECT_ROOT}/.claude/hooks/record-tool-use.sh",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PROJECT_ROOT}/.claude/hooks/record-session.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PROJECT_ROOT}/.claude/hooks/record-session.sh --failed",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -250,3 +250,28 @@ The plugin analyses its own codebase. Each module report includes clickable link
 | [plugin](plugin/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/plugin.html) | 1 | 81 | 0 |
 
 To regenerate: `./gradlew analyseCleanCode`
+
+## Experiment: Manual vs Recipe-Assisted Fix
+
+The project includes token monitoring hooks and a structured experiment plan to compare the cost of fixing all findings manually vs using the refactoring recipes first.
+
+**Setup:** Token monitoring hooks in `.claude/hooks/` record every tool call and session total. Set `CLAUDE_TASK_LABEL` to tag runs.
+
+**Protocol:** 6 runs total — 3 manual fix sessions, 3 recipe-assisted sessions. Each starts from the same commit, uses a clean Claude Code session, and saves a git patch + token logs.
+
+**Metrics compared:**
+- Total tokens consumed
+- Number of tool calls and turns
+- Cache hit ratio
+- Patch size and findings remaining
+
+See the full protocol at `~/.claude/plans/fix-comparison-experiment.md`.
+
+```bash
+# Tag a session for tracking
+export CLAUDE_TASK_LABEL="manual-fix-1"
+
+# After runs, compare
+jq -s 'group_by(.task) | map({task:.[0].task, runs:length, avg:(map(.total)|add/length|floor)})' \
+  experiment/*-session.jsonl
+```
