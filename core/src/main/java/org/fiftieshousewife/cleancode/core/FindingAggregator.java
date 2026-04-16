@@ -3,7 +3,11 @@ package org.fiftieshousewife.cleancode.core;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 public final class FindingAggregator {
 
@@ -11,8 +15,8 @@ public final class FindingAggregator {
 
     public static AggregatedReport aggregate(List<FindingSource> sources,
                                               ProjectContext context) throws FindingSourceException {
-        List<Finding> allFindings = new ArrayList<>();
-        Set<HeuristicCode> coveredCodes = EnumSet.noneOf(HeuristicCode.class);
+        final List<Finding> allFindings = new ArrayList<>();
+        final Set<HeuristicCode> coveredCodes = EnumSet.noneOf(HeuristicCode.class);
 
         for (FindingSource source : sources) {
             coveredCodes.addAll(source.coveredCodes());
