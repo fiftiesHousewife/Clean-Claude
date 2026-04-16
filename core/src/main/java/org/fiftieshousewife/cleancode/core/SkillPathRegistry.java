@@ -44,18 +44,25 @@ public final class SkillPathRegistry {
             Map.entry(HeuristicCode.G16, ".claude/skills/clean-code-naming/SKILL.md"),
 
             // clean-code-conditionals-and-expressions
+            Map.entry(HeuristicCode.G19, ".claude/skills/clean-code-conditionals-and-expressions/SKILL.md"),
             Map.entry(HeuristicCode.G23, ".claude/skills/clean-code-conditionals-and-expressions/SKILL.md"),
             Map.entry(HeuristicCode.G28, ".claude/skills/clean-code-conditionals-and-expressions/SKILL.md"),
             Map.entry(HeuristicCode.G29, ".claude/skills/clean-code-conditionals-and-expressions/SKILL.md"),
             Map.entry(HeuristicCode.G33, ".claude/skills/clean-code-conditionals-and-expressions/SKILL.md"),
-            Map.entry(HeuristicCode.G19, ".claude/skills/clean-code-conditionals-and-expressions/SKILL.md"),
+            Map.entry(HeuristicCode.G36, ".claude/skills/clean-code-conditionals-and-expressions/SKILL.md"),
+
+            // clean-code-dependency-updates
+            Map.entry(HeuristicCode.E1, ".claude/skills/clean-code-dependency-updates/SKILL.md"),
 
             // clean-code-comments-and-clutter
+            Map.entry(HeuristicCode.C2, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
             Map.entry(HeuristicCode.C3, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
             Map.entry(HeuristicCode.C5, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
+            Map.entry(HeuristicCode.F4, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
             Map.entry(HeuristicCode.G9, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
             Map.entry(HeuristicCode.G10, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
             Map.entry(HeuristicCode.G12, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
+            Map.entry(HeuristicCode.G22, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
             Map.entry(HeuristicCode.G24, ".claude/skills/clean-code-comments-and-clutter/SKILL.md"),
 
             // clean-code-java-idioms
