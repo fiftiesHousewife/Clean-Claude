@@ -151,8 +151,7 @@ public abstract class CleanCodeExtension {
             getModel().convention("claude-sonnet-4-6");
             getMaxFilesPerRun().convention(50);
             getMinFileLines().convention(10);
-            getCodes().convention(java.util.List.of(
-                    "G6", "G7", "G13", "G15", "G20", "G31", "C2", "N4"));
+            getCodes().convention(java.util.List.of("G6", "G20", "N4"));
             getExcludePatterns().convention(java.util.List.of("**/generated/**"));
         }
     }

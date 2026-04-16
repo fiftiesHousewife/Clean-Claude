@@ -46,7 +46,7 @@
   <main>
     <div class="summary">
       <span class="badge error">1 errors</span>
-      <span class="badge warning">71 warnings</span>
+      <span class="badge warning">79 warnings</span>
       <span class="badge info">0 info</span>
     </div>
     <details>
@@ -58,21 +58,9 @@
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Class 'CleanCodePlugin' is 173 lines</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Class 'SkillFileScaffolder' is 171 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>File length is 155 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>File length is 158 lines (max allowed is 150).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java:1</a></td><td>File length is 192 lines (max allowed is 150).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java#L1">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java:1</a></td><td>File length is 179 lines (max allowed is 150).</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">Ch3_1</span>Small Functions (2)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.3 'Functions' p.34</p>
-        <p class="guidance">The first rule of functions is that they should be small. The second rule is that they should be smaller than that. Functions should hardly ever be 20 lines long. Each function should tell a story, and each line should lead you naturally to the next in a compelling order.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Private method 'applyStaticAnalysisPlugins' (10 lines) should be package-private so it can be tested directly</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Private method 'resolveTemplateWithHash' (6 lines) should be package-private so it can be tested directly</td></tr>
         </table>
       </div>
     </details>
@@ -144,6 +132,16 @@
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java#L6">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java:6</a></td><td>'claudeMdFile' is declared in generate() but not used until 12 lines later — move the declaration closer to line 18</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java#L7">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java:7</a></td><td>'baselineFile' is declared in generate() but not used until 11 lines later — move the declaration closer to line 18</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java#L5">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java:5</a></td><td>'report' is declared in generate() but not used until 12 lines later — move the declaration closer to line 17</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">G15</span>Selector Arguments (1)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.294</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Method 'scaffoldFile' uses boolean parameter 'thresholdsChanged' to select behaviour — split into separate methods</td></tr>
         </table>
       </div>
     </details>
@@ -228,6 +226,17 @@
       </div>
     </details>
     <details>
+      <summary><span class="code-label">G29</span>Avoid Negative Conditionals (1)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
+        <p class="guidance">Negatives are slightly harder to understand than positives. So, when possible, conditionals should be expressed as positives. if (buffer.shouldCompact()) is preferable to if (!buffer.shouldNotCompact()). Double negation forces the reader to do mental gymnastics that add nothing.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Method 'resolveTemplateWithHash' has 3 guard clauses — simplify with early return or extract filter</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
       <summary><span class="code-label">G30</span>Functions Should Do One Thing (4)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
@@ -242,7 +251,21 @@
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G35</span>Keep Configurable Data at High Levels (2)</summary>
+      <summary><span class="code-label">G31</span>Hidden Temporal Couplings (5)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java</a></td><td>Method 'CleanCodeExtension' has 4 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Method 'apply' has 4 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Method 'applyStaticAnalysisPlugins' has 10 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/ClaudeReviewExtension.java">ClaudeReviewExtension.java</a></td><td>Method 'ClaudeReviewExtension' has 6 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/ThresholdsExtension.java">ThresholdsExtension.java</a></td><td>Method 'ThresholdsExtension' has 13 consecutive void calls with no data dependency — make the order explicit</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">G35</span>Keep Configurable Data at High Levels (3)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.306</p>
         <p class="guidance">If you have a constant such as a default or configuration value, it is better to make it a named constant at the top of the class than to bury it in some low-level function. The high-level constant is easy to find and to change. A magic number deep in a private method is invisible.</p>
@@ -250,6 +273,7 @@
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Magic number 2 in private method 'resolveTemplateWithHash' — extract to a named constant</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Magic number 3 in private method 'parseThresholdsHash' — extract to a named constant</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Field 'SKILL_FILES' has 11 hardcoded literals — load from configuration</td></tr>
         </table>
       </div>
     </details>
@@ -290,13 +314,15 @@
       </div>
     </details>
     <details>
-      <summary><span class="code-label">T1</span>Insufficient Tests (1)</summary>
+      <summary><span class="code-label">T1</span>Insufficient Tests (3)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.313</p>
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-error">ERROR</td><td class="location">(project)</td><td>Overall line coverage: 0.0% (0/369 lines covered)</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">(project)</td><td>Overall line coverage: 0.0% (0/371 lines covered)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Private method 'applyStaticAnalysisPlugins' (10 lines) should be package-private so it can be tested directly</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Private method 'resolveTemplateWithHash' (6 lines) should be package-private so it can be tested directly</td></tr>
         </table>
       </div>
     </details>
@@ -306,7 +332,7 @@
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.314</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>Class CleanCodeExtension$ThresholdsExtension has 0.0% line coverage (0/14 lines)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>Class CleanCodeExtension$ThresholdsExtension has 0.0% line coverage (0/15 lines)</td></tr>
         </table>
       </div>
     </details>
@@ -314,7 +340,7 @@
       <h2>Sources</h2>
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>openrewrite</td><td>42</td></tr>
+        <tr><td>openrewrite</td><td>50</td></tr>
         <tr><td>checkstyle</td><td>12</td></tr>
         <tr><td>dependency-updates</td><td>11</td></tr>
         <tr><td>cpd</td><td>2</td></tr>
@@ -325,8 +351,8 @@
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-15 20:29:47 Z</p>
-    <p>72 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-16 08:38:30 Z</p>
+    <p>80 total findings</p>
   </footer>
 </body>
 </html>

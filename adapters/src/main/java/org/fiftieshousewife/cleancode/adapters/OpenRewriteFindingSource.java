@@ -139,7 +139,10 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new GuardClauseRecipe(),
                 new BaseClassDependencyRecipe(),
                 new ArtificialCouplingRecipe(),
-                new HardcodedListRecipe(5));
+                new HardcodedListRecipe(5),
+                new SelectorArgumentRecipe(),
+                new ObsoleteCommentRecipe(),
+                new TemporalCouplingRecipe(3));
     }
 
     @SuppressWarnings("unchecked")
@@ -196,6 +199,9 @@ public class OpenRewriteFindingSource implements FindingSource {
             case BaseClassDependencyRecipe r -> mapBaseClassDependency(r.collectedRows());
             case ArtificialCouplingRecipe r -> mapArtificialCoupling(r.collectedRows());
             case HardcodedListRecipe r -> mapHardcodedList(r.collectedRows());
+            case SelectorArgumentRecipe r -> mapSelectorArgument(r.collectedRows());
+            case ObsoleteCommentRecipe r -> mapObsoleteComment(r.collectedRows());
+            case TemporalCouplingRecipe r -> mapTemporalCoupling(r.collectedRows());
             default -> List.of();
         };
     }
@@ -544,6 +550,30 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.G35, r.className(),
                         "Field '%s' has %d hardcoded literals — load from configuration".formatted(
                                 r.fieldName(), r.literalCount())))
+                .toList();
+    }
+
+    private List<Finding> mapSelectorArgument(List<SelectorArgumentRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G15, r.className(),
+                        "Method '%s' uses %s parameter '%s' to select behaviour — split into separate methods".formatted(
+                                r.methodName(), r.parameterType(), r.parameterName())))
+                .toList();
+    }
+
+    private List<Finding> mapObsoleteComment(List<ObsoleteCommentRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.C2, r.className(),
+                        "Comment references '%s' which is not in scope — update or remove".formatted(
+                                r.missingIdentifier())))
+                .toList();
+    }
+
+    private List<Finding> mapTemporalCoupling(List<TemporalCouplingRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G31, r.className(),
+                        "Method '%s' has %d consecutive void calls with no data dependency — make the order explicit".formatted(
+                                r.methodName(), r.callCount())))
                 .toList();
     }
 
