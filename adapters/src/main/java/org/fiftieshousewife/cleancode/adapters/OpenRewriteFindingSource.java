@@ -144,7 +144,10 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new ObsoleteCommentRecipe(),
                 new TemporalCouplingRecipe(thresholds.temporalCouplingMinCalls()),
                 new BroadCatchRecipe(),
-                new RawGenericRecipe());
+                new RawGenericRecipe(),
+                new SwallowedExceptionRecipe(),
+                new InconsistentReturnRecipe(),
+                new SuppressedWarningRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -206,6 +209,9 @@ public class OpenRewriteFindingSource implements FindingSource {
             case TemporalCouplingRecipe r -> mapTemporalCoupling(r.collectedRows());
             case BroadCatchRecipe r -> mapBroadCatch(r.collectedRows());
             case RawGenericRecipe r -> mapRawGeneric(r.collectedRows());
+            case SwallowedExceptionRecipe r -> mapSwallowedException(r.collectedRows());
+            case InconsistentReturnRecipe r -> mapInconsistentReturn(r.collectedRows());
+            case SuppressedWarningRecipe r -> mapSuppressedWarning(r.collectedRows());
             default -> List.of();
         };
     }
@@ -594,6 +600,30 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.G26, r.className(),
                         "'%s' in '%s' uses Object type parameter — use a typed record or specific generic".formatted(
                                 r.typeName(), r.methodName())))
+                .toList();
+    }
+
+    private List<Finding> mapSwallowedException(List<SwallowedExceptionRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G4, r.className(),
+                        "Method '%s' catches %s and silently swallows it — handle or propagate".formatted(
+                                r.methodName(), r.exceptionType())))
+                .toList();
+    }
+
+    private List<Finding> mapInconsistentReturn(List<InconsistentReturnRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.F2, r.className(),
+                        "Class has %d methods returning collections and %d void methods mutating collection params — pick one style".formatted(
+                                r.returningMethods(), r.mutatingMethods())))
+                .toList();
+    }
+
+    private List<Finding> mapSuppressedWarning(List<SuppressedWarningRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G4, r.className(),
+                        "@SuppressWarnings(\"%s\") on '%s' — redesign to avoid unsafe operations".formatted(
+                                r.warningType(), r.methodName())))
                 .toList();
     }
 
