@@ -62,14 +62,14 @@ class FindingFilterTest {
     }
 
     @Test
-    void spotBugsFindingsAreNeverFiltered() {
-        SuppressionIndex index = buildIndex();
-        Finding spotbugs = Finding.at(HeuristicCode.G8, "com/example/ClassSuppressed.java",
+    void spotBugsFindingsAreSuppressedLikeOtherTools() {
+        final SuppressionIndex index = buildIndex();
+        final Finding spotbugs = Finding.at(HeuristicCode.G8, "com/example/ClassSuppressed.java",
                 10, 10, "bug", Severity.ERROR, Confidence.HIGH, "spotbugs", "rule");
 
-        FindingFilter.Result result = FindingFilter.apply(List.of(spotbugs), index);
+        final FindingFilter.Result result = FindingFilter.apply(List.of(spotbugs), index);
 
-        assertEquals(1, result.findings().stream()
+        assertEquals(0, result.findings().stream()
                 .filter(f -> "spotbugs".equals(f.tool())).count());
     }
 

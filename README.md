@@ -167,6 +167,44 @@ plugins {
 
 The plugin automatically applies `java`, `pmd`, `checkstyle`, `jacoco`, and `com.github.spotbugs`. It provides a bundled Checkstyle configuration if the project has none, and wires `analyseCleanCode` to depend on all tool report tasks.
 
+## Apply to another project
+
+The plugin depends transitively on the SpotBugs Gradle plugin, which is published **only** to `gradlePluginPortal()` (not Maven Central). A consuming project's `pluginManagement.repositories` must therefore include both `mavenLocal()` and `gradlePluginPortal()`.
+
+One-time setup on a developer machine:
+
+```bash
+# 1. From this repo: publish the plugin to your local Maven repo
+./gradlew publishToMavenLocal
+
+# 2. Install the bundled init script so every Gradle build on this machine
+#    picks up the right repositories automatically
+mkdir -p ~/.gradle/init.d
+cp scripts/cleancode.init.gradle.kts ~/.gradle/init.d/
+```
+
+In the target project's `build.gradle.kts`:
+
+```kotlin
+plugins {
+    id("org.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
+}
+```
+
+If the init script is not installed, add the repositories to the target project's `settings.gradle.kts` instead:
+
+```kotlin
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+```
+
+The plugin performs a classpath check on apply and produces a clear error pointing at this setup if SpotBugs is missing.
+
 ## Build
 
 ```bash

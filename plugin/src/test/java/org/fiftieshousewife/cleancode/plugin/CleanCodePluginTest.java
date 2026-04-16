@@ -58,6 +58,13 @@ class CleanCodePluginTest {
     }
 
     @Test
+    void spotBugsMainTaskIsRegistered() {
+        final BuildResult result = runner("tasks", "--all").build();
+        assertTrue(result.getOutput().contains("spotbugsMain"),
+                "SpotBugs plugin should be applied and spotbugsMain task registered");
+    }
+
+    @Test
     void cpdTaskUsesDefaultMinimumTokens() {
         final BuildResult result = runner("cpdMain", "--dry-run").build();
         assertTrue(result.getOutput().contains("cpdMain"));

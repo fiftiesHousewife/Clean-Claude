@@ -9,11 +9,11 @@ public final class FindingFilter {
 
     public record Result(List<Finding> findings) {}
 
-    public static Result apply(List<Finding> findings, SuppressionIndex index) {
-        List<Finding> filtered = new ArrayList<>();
+    public static Result apply(final List<Finding> findings, final SuppressionIndex index) {
+        final List<Finding> filtered = new ArrayList<>();
 
-        for (Finding f : findings) {
-            if ("spotbugs".equals(f.tool()) || !index.isSuppressed(f)) {
+        for (final Finding f : findings) {
+            if (!index.isSuppressed(f)) {
                 filtered.add(f);
             }
         }
