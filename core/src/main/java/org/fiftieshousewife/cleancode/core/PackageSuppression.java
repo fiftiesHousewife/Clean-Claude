@@ -35,18 +35,17 @@ public final class PackageSuppression {
         if (codesByPackagePath.isEmpty()) {
             return false;
         }
-        for (final Map.Entry<String, Set<HeuristicCode>> entry : codesByPackagePath.entrySet()) {
-            if (!entry.getValue().contains(finding.code())) {
-                continue;
-            }
-            if (matchesPath(finding.sourceFile(), entry.getKey())) {
-                return true;
-            }
-            if (matchesPath(otherFile(finding), entry.getKey())) {
-                return true;
-            }
+        return codesByPackagePath.entrySet().stream()
+                .anyMatch(entry -> entryMatches(entry, finding));
+    }
+
+    private static boolean entryMatches(final Map.Entry<String, Set<HeuristicCode>> entry,
+                                        final Finding finding) {
+        if (!entry.getValue().contains(finding.code())) {
+            return false;
         }
-        return false;
+        return matchesPath(finding.sourceFile(), entry.getKey())
+                || matchesPath(otherFile(finding), entry.getKey());
     }
 
     private static String otherFile(final Finding finding) {
