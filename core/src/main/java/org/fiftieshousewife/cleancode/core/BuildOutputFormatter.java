@@ -2,7 +2,6 @@ package org.fiftieshousewife.cleancode.core;
 
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,22 +12,19 @@ public final class BuildOutputFormatter {
             "═══════════════════════════════════════════════════════════════════════════";
     private static final String DIVIDER =
             "───────────────────────────────────────────────────────────────────────────";
-    private static final int WRAP_WIDTH = 72;
 
     private BuildOutputFormatter() {}
 
-    public static String format(AggregatedReport report) {
+    public static String format(final AggregatedReport report) {
         return format(report, Map.of());
     }
 
-    public static String format(AggregatedReport report,
-                                Map<HeuristicCode, BaselineManager.Delta> deltas) {
+    public static String format(final AggregatedReport report,
+                                final Map<HeuristicCode, BaselineManager.Delta> deltas) {
         final StringBuilder out = new StringBuilder();
         final List<Finding> findings = report.findings();
 
-        out.append('\n').append(HEADER).append('\n');
-        out.append("  CLEAN CODE ANALYSIS  —  ").append(report.projectName()).append('\n');
-        out.append(HEADER).append('\n');
+        appendBanner(out, report.projectName());
 
         if (findings.isEmpty()) {
             out.append("\n  No violations found. The code is clean.\n");
@@ -39,137 +35,37 @@ public final class BuildOutputFormatter {
         appendSeveritySummary(out, report);
 
         if (!deltas.isEmpty()) {
-            appendBaselineDelta(out, deltas);
+            BaselineDeltaFormatter.append(out, deltas);
         }
 
-        appendFindingsByCode(out, findings);
+        FindingsByCodeFormatter.append(out, findings);
         appendToolSummary(out, findings);
         appendFooter(out, findings);
 
         return out.toString();
     }
 
-    private static void appendBaselineDelta(StringBuilder out,
-                                            Map<HeuristicCode, BaselineManager.Delta> deltas) {
-        final int newViolations = deltas.values().stream()
-                .mapToInt(d -> Math.max(0, d.change()))
-                .sum();
-        final int fixedViolations = deltas.values().stream()
-                .mapToInt(d -> Math.max(0, -d.change()))
-                .sum();
-
-        out.append("  vs baseline: ");
-        if (newViolations > 0) {
-            out.append("+").append(newViolations).append(" new");
-        }
-        if (newViolations > 0 && fixedViolations > 0) {
-            out.append("  ·  ");
-        }
-        if (fixedViolations > 0) {
-            out.append("-").append(fixedViolations).append(" fixed");
-        }
-        if (newViolations == 0 && fixedViolations == 0) {
-            out.append("no change");
-        }
-        out.append('\n');
+    private static void appendBanner(final StringBuilder out, final String projectName) {
+        out.append('\n').append(HEADER).append('\n');
+        out.append("  CLEAN CODE ANALYSIS  —  ").append(projectName).append('\n');
+        out.append(HEADER).append('\n');
     }
 
-    private static void appendSeveritySummary(StringBuilder out, AggregatedReport report) {
+    private static void appendSeveritySummary(final StringBuilder out, final AggregatedReport report) {
         final Map<Severity, List<Finding>> bySeverity = report.bySeverity();
-        final int errors = bySeverity.getOrDefault(Severity.ERROR, List.of()).size();
-        final int warnings = bySeverity.getOrDefault(Severity.WARNING, List.of()).size();
-        final int info = bySeverity.getOrDefault(Severity.INFO, List.of()).size();
 
         out.append('\n');
-        out.append("  ").append(errors).append(" errors");
-        out.append("  ·  ").append(warnings).append(" warnings");
-        out.append("  ·  ").append(info).append(" info\n");
+        out.append("  ").append(severityCount(bySeverity, Severity.ERROR)).append(" errors");
+        out.append("  ·  ").append(severityCount(bySeverity, Severity.WARNING)).append(" warnings");
+        out.append("  ·  ").append(severityCount(bySeverity, Severity.INFO)).append(" info\n");
     }
 
-    private static void appendFindingsByCode(StringBuilder out, List<Finding> findings) {
-        final Map<HeuristicCode, List<Finding>> byCode = findings.stream()
-                .collect(Collectors.groupingBy(Finding::code));
-
-        byCode.entrySet().stream()
-                .sorted(Comparator.comparing(e -> e.getKey().name()))
-                .forEach(entry -> appendCodeGroup(out, entry.getKey(), entry.getValue()));
+    private static int severityCount(final Map<Severity, List<Finding>> bySeverity,
+                                     final Severity severity) {
+        return bySeverity.getOrDefault(severity, List.of()).size();
     }
 
-    private static void appendCodeGroup(StringBuilder out, HeuristicCode code, List<Finding> group) {
-        out.append('\n').append(DIVIDER).append('\n');
-
-        final String name = HeuristicDescriptions.name(code);
-        out.append("  ").append(code.name()).append(": ").append(name);
-        out.append(" (").append(group.size()).append(")\n");
-
-        final String summary = HeuristicDescriptions.summary(code);
-        if (summary != null) {
-            out.append("  ").append(summary).append('\n');
-        }
-
-        final String reference = HeuristicDescriptions.reference(code);
-        if (reference != null) {
-            out.append("  ").append(reference).append('\n');
-        }
-
-        final String guidance = HeuristicDescriptions.guidance(code);
-        if (guidance != null) {
-            out.append('\n');
-            appendWrapped(out, guidance, "  ", WRAP_WIDTH);
-        }
-
-        out.append('\n');
-        group.stream()
-                .sorted(Comparator.comparing(f -> f.sourceFile() != null ? f.sourceFile() : ""))
-                .forEach(f -> appendFinding(out, f));
-    }
-
-    private static void appendFinding(StringBuilder out, Finding finding) {
-        final String location = formatLocation(finding);
-        out.append("    ").append(severityIcon(finding.severity()));
-        out.append(" ").append(location);
-        out.append("  ").append(finding.message()).append('\n');
-    }
-
-    private static void appendWrapped(StringBuilder out, String text, String indent, int width) {
-        final String[] words = text.split(" ");
-        final StringBuilder line = new StringBuilder(indent);
-        for (final String word : words) {
-            if (line.length() + word.length() + 1 > width && line.length() > indent.length()) {
-                out.append(line).append('\n');
-                line.setLength(0);
-                line.append(indent);
-            }
-            if (line.length() > indent.length()) {
-                line.append(' ');
-            }
-            line.append(word);
-        }
-        if (line.length() > indent.length()) {
-            out.append(line).append('\n');
-        }
-    }
-
-    private static String formatLocation(Finding finding) {
-        if (finding.sourceFile() == null) {
-            return "(project)";
-        }
-        final String file = finding.sourceFile();
-        if (finding.startLine() > 0) {
-            return file + ":" + finding.startLine();
-        }
-        return file;
-    }
-
-    private static String severityIcon(Severity severity) {
-        return switch (severity) {
-            case ERROR -> "!!";
-            case WARNING -> " !";
-            case INFO -> "  ";
-        };
-    }
-
-    private static void appendToolSummary(StringBuilder out, List<Finding> findings) {
+    private static void appendToolSummary(final StringBuilder out, final List<Finding> findings) {
         final Map<String, Long> byTool = findings.stream()
                 .collect(Collectors.groupingBy(Finding::tool, Collectors.counting()));
 
@@ -183,7 +79,7 @@ public final class BuildOutputFormatter {
                                 .append(": ").append(entry.getValue()).append('\n'));
     }
 
-    private static void appendFooter(StringBuilder out, List<Finding> findings) {
+    private static void appendFooter(final StringBuilder out, final List<Finding> findings) {
         out.append('\n').append(HEADER).append('\n');
         out.append("  ").append(findings.size()).append(" findings");
         out.append("  —  ./gradlew cleanCodeExplain --finding=<code>\n");
