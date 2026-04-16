@@ -124,6 +124,10 @@ cleanCode {
     }
     disabledRecipes = listOf("G36", "G10")
 
+    packageSuppressions = mapOf(
+        "org.fiftieshousewife.cleancode.recipes" to listOf("G5", "Ch7_2")
+    )
+
     claudeReview {                             // opt-in LLM assessment (requires ANTHROPIC_API_KEY)
         enabled.set(true)                      // default: false
         model.set("claude-sonnet-4-6")         // default

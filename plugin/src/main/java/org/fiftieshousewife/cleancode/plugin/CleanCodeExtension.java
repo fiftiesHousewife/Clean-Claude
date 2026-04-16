@@ -6,6 +6,7 @@ import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
@@ -19,6 +20,8 @@ public abstract class CleanCodeExtension {
 
     public abstract ListProperty<String> getDisabledRecipes();
 
+    public abstract MapProperty<String, java.util.List<String>> getPackageSuppressions();
+
     public abstract Property<String> getSkillsDir();
 
     public abstract Property<String> getRepositoryUrl();
@@ -30,6 +33,7 @@ public abstract class CleanCodeExtension {
     public CleanCodeExtension(ObjectFactory objects) {
         getFailOnViolation().convention(true);
         getDisabledRecipes().convention(java.util.List.of());
+        getPackageSuppressions().convention(java.util.Map.of());
         getSkillsDir().convention(".claude/skills");
         getRepositoryUrl().convention("");
         thresholds = objects.newInstance(ThresholdsExtension.class);

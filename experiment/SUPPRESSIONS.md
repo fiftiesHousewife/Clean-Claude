@@ -10,33 +10,44 @@ Goal: reduce noise in the next experiment run by suppressing findings we've deci
 
 | Mechanism | Granularity | Works for |
 |---|---|---|
-| `cleanCode.disabledRecipes = listOf("E1", ...)` | Heuristic code, project-wide | Any code |
+| `cleanCode.disabledRecipes = listOf(...)` | Heuristic code, project-wide | Any code |
+| `cleanCode.packageSuppressions = mapOf("pkg" to listOf("code", ...))` | Heuristic code per package prefix | Any code with a `sourceFile`; CPD also matches on `otherFile` |
 | `@SuppressCleanCode({G4}, reason=...)` on method / type / constructor | Single code block, source-anchored | Findings with `sourceFile` + line |
-| (not yet implemented) per-file or per-package exclusion | — | — |
 
 Annotations cannot suppress:
 - `E1` dependency updates — the finding has `sourceFile=null`, no source anchor
-- `G5` CPD duplication — spans two files, current matcher only checks one
 
-## Proposed: `disabledRecipes` additions
+## Applied: `packageSuppressions` for `recipes/`
 
-Add to the project's `cleanCode { disabledRecipes = ... }` block in each module's build.gradle.kts (or at root). **Total suppressed: ~559 findings.**
+After discussion, E1 stays enabled (straightforward to fix by bumping dep versions). G5 and Ch7_2 are suppressed in the `org.fiftieshousewife.cleancode.recipes` package only, using the new `packageSuppressions` mechanism.
 
-### `E1` — outdated dependencies (77 findings)
+### `G5` — CPD duplication in `recipes/` (465 of 482 total)
 
-**Every** E1 finding is a Ben-Manes "this dep has a newer version" report. These are about library versioning, not code cleanliness. They're also file-less, so they can't be annotated.
-
-**Recommendation:** disable globally for the experiment. Leave enabled on main for the normal dependency-update workflow.
-
-### `G5` — CPD duplication (482 findings)
-
-465 of these are in `recipes/` — our 53 recipes share the OpenRewrite visitor pattern by design. The alternative (a shared abstract base) would create real problems: concrete recipes become harder to read, stack traces get noisy, and each recipe diverges enough that a base class ends up leaking extension points everywhere.
+Our 53 recipes share the OpenRewrite visitor pattern by design. The alternative (a shared abstract base) would create real problems: concrete recipes become harder to read, stack traces get noisy, and each recipe diverges enough that a base class ends up leaking extension points everywhere.
 
 Samples:
 - `BroadCatchRecipe` vs `CatchLogContinueRecipe` — both walk catch blocks with similar skeletons
-- 11 CPD hits in `adapters/` — mostly XML-parsing boilerplate across SpotBugs / Checkstyle / PMD adapters, where the file-based XML source was just extracted into `AbstractFileBasedXmlFindingSource`
+- 11 CPD hits in `adapters/` (NOT suppressed) — mostly XML-parsing boilerplate; already being consolidated into `AbstractFileBasedXmlFindingSource`
 
-**Recommendation:** disable G5 globally for the experiment. Separately, follow up on the adapter duplication (arguably already in progress per the `AbstractFileBasedXmlFindingSource` refactor seen in the `manual-1.patch`).
+### `Ch7_2` — null density in `recipes/` (28 findings)
+
+OpenRewrite visitors return nulls by convention to indicate "no change" — our recipes inherit this. Null checks proliferate in scanners and visitors that walk the tree conditionally. This is API-imposed, not a design flaw in our code.
+
+### Config
+
+```kotlin
+cleanCode {
+    packageSuppressions = mapOf(
+        "org.fiftieshousewife.cleancode.recipes" to listOf("G5", "Ch7_2")
+    )
+}
+```
+
+Matcher notes: the prefix matches against the sourceFile path (converted from `org.pkg` to `org/pkg`). For CPD (G5), `otherFile` metadata is also checked so cross-file duplication with at least one leg in the package is suppressed.
+
+### E1 — kept enabled
+
+77 findings, one per outdated dependency. We'll fix these by bumping versions, not suppressing.
 
 ## Proposed: `@SuppressCleanCode` additions
 

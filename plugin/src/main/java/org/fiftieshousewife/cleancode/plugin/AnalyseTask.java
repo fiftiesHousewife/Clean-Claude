@@ -27,6 +27,7 @@ public abstract class AnalyseTask extends DefaultTask {
         final String anthropicApiKey = resolveApiKey();
         final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig(anthropicApiKey);
         final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
+        final PackageSuppression packageSuppression = PackageSuppression.of(ext.getPackageSuppressions().get());
 
         final List<String> dependencies = getProject().getConfigurations().stream()
                 .filter(c -> "runtimeClasspath".equals(c.getName()))
@@ -59,7 +60,8 @@ public abstract class AnalyseTask extends DefaultTask {
                 new ClaudeReviewFindingSource(claudeConfig));
 
         final AggregatedReport fullReport = FindingAggregator.aggregate(sources, context);
-        final AggregatedReport report = filterDisabledRecipes(fullReport, disabledRecipes);
+        final AggregatedReport filteredByCode = filterDisabledRecipes(fullReport, disabledRecipes);
+        final AggregatedReport report = filterSuppressions(filteredByCode, projectRoot, packageSuppression);
 
         final String baseRepoUrl = ext.getRepositoryUrl().get();
         final String modulePath = getProject().getRootDir().toPath().relativize(projectRoot).toString();
@@ -87,8 +89,20 @@ public abstract class AnalyseTask extends DefaultTask {
         final List<Finding> filtered = report.findings().stream()
                 .filter(f -> !disabledRecipes.contains(f.code().name()))
                 .toList();
+        return withFindings(report, filtered);
+    }
+
+    private AggregatedReport filterSuppressions(final AggregatedReport report,
+                                                final Path projectRoot,
+                                                final PackageSuppression packageSuppression) {
+        final SuppressionIndex index = SuppressionIndex.build(projectRoot.resolve("src/main/java"));
+        final FindingFilter.Result result = FindingFilter.apply(report.findings(), index, packageSuppression);
+        return withFindings(report, result.findings());
+    }
+
+    private static AggregatedReport withFindings(final AggregatedReport report, final List<Finding> findings) {
         return new AggregatedReport(
-                filtered,
+                findings,
                 report.coveredCodes(),
                 report.generatedAt(),
                 report.projectName(),
