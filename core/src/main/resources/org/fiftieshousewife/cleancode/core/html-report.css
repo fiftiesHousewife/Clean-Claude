@@ -1,0 +1,34 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
+header { background: #1a1a2e; color: #fff; padding: 2rem; }
+header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+header p { opacity: 0.8; font-size: 0.95rem; }
+main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+.summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
+.summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
+.badge.error { background: #c0392b; }
+.badge.warning { background: #e67e22; }
+.badge.info { background: #95a5a6; }
+details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
+summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
+summary:hover { background: #fafafa; }
+.code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
+.group-body { padding: 0 1rem 1rem 1rem; overflow-x: auto; }
+.reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
+.guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+td:first-child { white-space: nowrap; }
+td:nth-child(2) { white-space: nowrap; font-size: 0.85rem; }
+td:nth-child(3) { word-break: break-word; }
+th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+.sev-error { color: #c0392b; font-weight: 600; }
+.sev-warning { color: #e67e22; font-weight: 600; }
+.sev-info { color: #95a5a6; }
+.location a { color: #2980b9; text-decoration: none; }
+.location a:hover { text-decoration: underline; }
+.location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+.tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+.tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+.clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
+footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
