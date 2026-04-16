@@ -6,6 +6,9 @@ import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
+import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
 
@@ -23,7 +26,7 @@ public final class XmlReportParser {
             final DocumentBuilder builder = factory.newDocumentBuilder();
             builder.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
             return builder.parse(file.toFile());
-        } catch (Exception e) {
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             throw new FindingSourceException("Failed to parse XML report: " + file, e);
         }
     }
