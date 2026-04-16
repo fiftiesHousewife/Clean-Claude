@@ -27,7 +27,12 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
             "transform", "convert", "process", "pars", "format",
             "save", "persist", "write", "send", "publish",
             "load", "read", "fetch", "get", "retriev",
-            "cleanup", "close", "finali");
+            "cleanup", "close", "finali",
+            "use ", "apply", "comput", "calculat", "determin",
+            "extract", "find", "look up", "resolv", "handl",
+            "updat", "set up", "configur", "regist", "wire",
+            "render", "generat", "append", "add ", "remov",
+            "map ", "filter", "collect", "aggregat", "merg");
 
     public record Row(String className, String methodName, int sectionCount, int lineNumber) {}
 
