@@ -153,8 +153,8 @@ final class SuppressionParser {
         meta.recordIfBlankReason(ann, context.sourceFile(), reason);
 
         suppressions.add(new Suppression(
-                context.sourceFile(), range.start(), range.end(),
-                codes, reason, until, context.packagePath()));
+                new Suppression.Scope(context.sourceFile(), range.start(), range.end(), context.packagePath()),
+                new Suppression.Coverage(codes, reason, until)));
     }
 
     private static String deriveSourceFile(final CompilationUnit cu, final Path file) {

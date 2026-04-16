@@ -5,28 +5,27 @@ import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import java.time.LocalDate;
 import java.util.Set;
 
-record Suppression(
-        String sourceFile,
-        int startLine,
-        int endLine,
-        Set<HeuristicCode> codes,
-        String reason,
-        String until,
-        String packagePath
-) {
+record Suppression(Scope scope, Coverage coverage) {
+
+    record Scope(String sourceFile, int startLine, int endLine, String packagePath) {
+    }
+
+    record Coverage(Set<HeuristicCode> codes, String reason, String until) {
+    }
+
     boolean isPackageScoped() {
-        return packagePath != null;
+        return scope.packagePath() != null;
     }
 
     boolean isExpired() {
-        if (until.isEmpty()) {
+        if (coverage.until().isEmpty()) {
             return false;
         }
-        return LocalDate.parse(until).isBefore(LocalDate.now());
+        return LocalDate.parse(coverage.until()).isBefore(LocalDate.now());
     }
 
-    boolean covers(Finding finding) {
-        if (!codes.contains(finding.code())) {
+    boolean covers(final Finding finding) {
+        if (!coverage.codes().contains(finding.code())) {
             return false;
         }
         if (isExpired()) {
@@ -36,21 +35,21 @@ record Suppression(
             return matchesPackage(finding.sourceFile()) || matchesPackage(otherFile(finding));
         }
         return matchesFile(finding.sourceFile())
-                && finding.startLine() >= startLine
-                && finding.startLine() <= endLine;
+                && finding.startLine() >= scope.startLine()
+                && finding.startLine() <= scope.endLine();
     }
 
-    private boolean matchesPackage(String path) {
-        return path != null && path.contains(packagePath + "/");
+    private boolean matchesPackage(final String path) {
+        return path != null && path.contains(scope.packagePath() + "/");
     }
 
-    private boolean matchesFile(String findingFile) {
-        return findingFile.equals(sourceFile)
-                || findingFile.endsWith(sourceFile)
-                || sourceFile.endsWith(findingFile);
+    private boolean matchesFile(final String findingFile) {
+        return findingFile.equals(scope.sourceFile())
+                || findingFile.endsWith(scope.sourceFile())
+                || scope.sourceFile().endsWith(findingFile);
     }
 
-    private static String otherFile(Finding finding) {
+    private static String otherFile(final Finding finding) {
         return finding.metadata() == null ? null : finding.metadata().get("otherFile");
     }
 }
