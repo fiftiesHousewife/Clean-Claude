@@ -19,22 +19,29 @@ public final class FixBriefGenerator {
 
     public static List<Path> generate(final AggregatedReport report, final Path outputDir) throws IOException {
         Files.createDirectories(outputDir);
-
         final Map<String, List<Finding>> byFile = groupByFile(report.findings());
-        final List<Path> written = new ArrayList<>();
+        final List<Path> written = writeBriefs(byFile, outputDir);
+        written.add(writeIndex(report.projectName(), byFile, outputDir));
+        return written;
+    }
 
+    private static List<Path> writeBriefs(final Map<String, List<Finding>> byFile,
+                                          final Path outputDir) throws IOException {
+        final List<Path> written = new ArrayList<>();
         for (final Map.Entry<String, List<Finding>> entry : byFile.entrySet()) {
-            final String fileName = briefFileName(entry.getKey());
-            final Path brief = outputDir.resolve(fileName);
+            final Path brief = outputDir.resolve(briefFileName(entry.getKey()));
             Files.writeString(brief, renderBrief(entry.getKey(), entry.getValue()));
             written.add(brief);
         }
-
-        final Path indexFile = outputDir.resolve("_INDEX.md");
-        Files.writeString(indexFile, renderIndex(report.projectName(), byFile));
-        written.add(indexFile);
-
         return written;
+    }
+
+    private static Path writeIndex(final String projectName,
+                                   final Map<String, List<Finding>> byFile,
+                                   final Path outputDir) throws IOException {
+        final Path indexFile = outputDir.resolve("_INDEX.md");
+        Files.writeString(indexFile, renderIndex(projectName, byFile));
+        return indexFile;
     }
 
     private static Map<String, List<Finding>> groupByFile(final List<Finding> findings) {
@@ -58,74 +65,82 @@ public final class FixBriefGenerator {
         return base + ".md";
     }
 
-    private static String renderBrief(final String sourceFile, final List<Finding> findings) {
+    static String renderBrief(final String sourceFile, final List<Finding> findings) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("# Fix brief: ").append(sourceFile).append('\n');
-        sb.append('\n');
-        sb.append(findings.size()).append(" finding").append(findings.size() == 1 ? "" : "s")
-                .append(" on this file.\n");
-        sb.append('\n');
-        sb.append("## Rules\n");
-        sb.append("- Address only findings on this file. Do not modify other files except to fix compilation.\n");
-        sb.append("- Prefer deleting dead code to refactoring it.\n");
-        sb.append("- Never degrade readability to satisfy a metric. If a fix would make the code harder to "
-                + "read (e.g. cramming methods onto one line to pass a line-count check), leave the finding "
-                + "and note it in your final summary.\n");
-        sb.append("- Run `./gradlew :<module>:test` after your changes. Tests must pass.\n");
-        sb.append('\n');
+        sb.append("# Fix brief: ").append(sourceFile).append('\n')
+                .append('\n')
+                .append(findings.size()).append(" finding").append(findings.size() == 1 ? "" : "s")
+                .append(" on this file.\n")
+                .append('\n')
+                .append("## Rules\n")
+                .append("- Address only findings on this file. Do not modify other files except to fix "
+                        + "compilation.\n")
+                .append("- Prefer deleting dead code to refactoring it.\n")
+                .append("- Never degrade readability to satisfy a metric. If a fix would make the code harder "
+                        + "to read (e.g. cramming methods onto one line to pass a line-count check), leave the "
+                        + "finding and note it in your final summary.\n")
+                .append("- Run `./gradlew :<module>:test` after your changes. Tests must pass.\n")
+                .append('\n');
+        for (final Map.Entry<HeuristicCode, List<Finding>> entry : groupByCode(findings).entrySet()) {
+            sb.append(renderCodeSection(entry.getKey(), entry.getValue()));
+        }
+        sb.append("## Final self-check\n")
+                .append("Before handing back, confirm:\n")
+                .append("1. Tests pass for the affected module.\n")
+                .append("2. Each change makes the code clearer, not just shorter.\n")
+                .append("3. List any findings you intentionally did not fix and why.\n");
+        return sb.toString();
+    }
 
+    private static Map<HeuristicCode, List<Finding>> groupByCode(final List<Finding> findings) {
         final Map<HeuristicCode, List<Finding>> byCode = new LinkedHashMap<>();
         findings.stream()
                 .sorted(Comparator.comparing((Finding f) -> f.severity().ordinal())
                         .thenComparing(f -> f.code().name()))
                 .forEach(f -> byCode.computeIfAbsent(f.code(), k -> new ArrayList<>()).add(f));
-
-        for (final Map.Entry<HeuristicCode, List<Finding>> entry : byCode.entrySet()) {
-            appendCodeSection(sb, entry.getKey(), entry.getValue());
-        }
-
-        sb.append("## Final self-check\n");
-        sb.append("Before handing back, confirm:\n");
-        sb.append("1. Tests pass for the affected module.\n");
-        sb.append("2. Each change makes the code clearer, not just shorter.\n");
-        sb.append("3. List any findings you intentionally did not fix and why.\n");
-        return sb.toString();
+        return byCode;
     }
 
-    private static void appendCodeSection(final StringBuilder sb, final HeuristicCode code,
-                                          final List<Finding> findings) {
+    static String renderCodeSection(final HeuristicCode code, final List<Finding> findings) {
+        final StringBuilder sb = new StringBuilder();
         final String title = HeuristicDescriptions.name(code);
-        sb.append("## ").append(code.name()).append(": ").append(title).append('\n');
-        sb.append('\n');
+        sb.append("## ").append(code.name()).append(": ").append(title).append('\n')
+                .append('\n');
         final String skillPath = SkillPathRegistry.skillPathFor(code);
         if (skillPath != null) {
             sb.append("> Read `").append(skillPath).append("` before addressing these.\n\n");
         }
         for (final Finding f : findings) {
-            sb.append("- ");
-            if (f.startLine() > 0) {
-                sb.append("L").append(f.startLine());
-                if (f.endLine() > f.startLine()) {
-                    sb.append('-').append(f.endLine());
-                }
-                sb.append(": ");
-            }
-            sb.append(f.message()).append('\n');
+            sb.append(renderFindingLine(f));
         }
         sb.append('\n');
+        return sb.toString();
     }
 
-    private static String renderIndex(final String projectName,
-                                      final Map<String, List<Finding>> byFile) {
+    private static String renderFindingLine(final Finding f) {
+        final StringBuilder sb = new StringBuilder("- ");
+        if (f.startLine() > 0) {
+            sb.append("L").append(f.startLine());
+            if (f.endLine() > f.startLine()) {
+                sb.append('-').append(f.endLine());
+            }
+            sb.append(": ");
+        }
+        sb.append(f.message()).append('\n');
+        return sb.toString();
+    }
+
+    static String renderIndex(final String projectName,
+                              final Map<String, List<Finding>> byFile) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("# Fix briefs for ").append(projectName).append('\n');
-        sb.append('\n');
-        sb.append("One brief per file. Each brief lists every finding on that file and points at the "
-                + "relevant skill. Designed to be handed to a single agent so two agents never edit the same "
-                + "file.\n");
-        sb.append('\n');
-        sb.append("| File | Findings | Brief |\n");
-        sb.append("|---|---:|---|\n");
+        sb.append("# Fix briefs for ").append(projectName).append('\n')
+                .append('\n')
+                .append("One brief per file. Each brief lists every finding on that file and points at the "
+                        + "relevant skill. Designed to be handed to a single agent so two agents never edit "
+                        + "the same file.\n")
+                .append('\n')
+                .append("| File | Findings | Brief |\n")
+                .append("|---|---:|---|\n");
         byFile.entrySet().stream()
                 .sorted(Map.Entry.<String, List<Finding>>comparingByValue(
                         Comparator.comparingInt(List::size)).reversed())
