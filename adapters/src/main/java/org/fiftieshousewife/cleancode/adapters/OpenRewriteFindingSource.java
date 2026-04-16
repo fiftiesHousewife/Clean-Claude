@@ -135,7 +135,11 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new InappropriateStaticRecipe(),
                 new StringlyTypedDispatchRecipe(),
                 new ConfigurableDataRecipe(thresholds.magicNumberMinValue()),
-                new EmbeddedLanguageRecipe());
+                new EmbeddedLanguageRecipe(),
+                new GuardClauseRecipe(),
+                new BaseClassDependencyRecipe(),
+                new ArtificialCouplingRecipe(),
+                new HardcodedListRecipe(5));
     }
 
     @SuppressWarnings("unchecked")
@@ -188,6 +192,10 @@ public class OpenRewriteFindingSource implements FindingSource {
             case StringlyTypedDispatchRecipe r -> mapStringlyTypedDispatch(r.collectedRows());
             case ConfigurableDataRecipe r -> mapConfigurableData(r.collectedRows());
             case EmbeddedLanguageRecipe r -> mapEmbeddedLanguage(r.collectedRows());
+            case GuardClauseRecipe r -> mapGuardClause(r.collectedRows());
+            case BaseClassDependencyRecipe r -> mapBaseClassDependency(r.collectedRows());
+            case ArtificialCouplingRecipe r -> mapArtificialCoupling(r.collectedRows());
+            case HardcodedListRecipe r -> mapHardcodedList(r.collectedRows());
             default -> List.of();
         };
     }
@@ -504,6 +512,38 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.G1, r.className(),
                         "Embedded %s in method '%s' — extract to a template or resource file".formatted(
                                 r.language().toUpperCase(), r.methodName())))
+                .toList();
+    }
+
+    private List<Finding> mapGuardClause(List<GuardClauseRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G29, r.className(),
+                        "Method '%s' has %d guard clauses — simplify with early return or extract filter".formatted(
+                                r.methodName(), r.guardCount())))
+                .toList();
+    }
+
+    private List<Finding> mapBaseClassDependency(List<BaseClassDependencyRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G7, r.className(),
+                        "'%s' depends on its derivative '%s' — invert the dependency".formatted(
+                                r.className(), r.derivativeName())))
+                .toList();
+    }
+
+    private List<Finding> mapArtificialCoupling(List<ArtificialCouplingRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G13, r.declaringClass(),
+                        "Constant '%s' defined in '%s' but only used in '%s' — move it".formatted(
+                                r.constantName(), r.declaringClass(), r.usedInClass())))
+                .toList();
+    }
+
+    private List<Finding> mapHardcodedList(List<HardcodedListRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G35, r.className(),
+                        "Field '%s' has %d hardcoded literals — load from configuration".formatted(
+                                r.fieldName(), r.literalCount())))
                 .toList();
     }
 
