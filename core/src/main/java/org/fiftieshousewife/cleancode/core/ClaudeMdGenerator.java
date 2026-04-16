@@ -1,14 +1,14 @@
 package org.fiftieshousewife.cleancode.core;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class ClaudeMdGenerator {
 
@@ -29,14 +29,14 @@ public final class ClaudeMdGenerator {
                                 final List<String> dependencies) throws IOException {
         final Map<String, String> preservedAnnotations = new LinkedHashMap<>();
         if (Files.exists(claudeMdFile)) {
-            preservedAnnotations.putAll(parseAnnotateSections(Files.readString(claudeMdFile)));
+            preservedAnnotations.putAll(AnnotateSectionParser.parse(Files.readString(claudeMdFile)));
         }
 
         final StringBuilder sb = new StringBuilder();
 
         appendPreamble(sb);
         appendFrameworksSection(sb, dependencies);
-        appendDeltaTable(sb, report, baselineFile);
+        DeltaTableWriter.append(sb, report, baselineFile);
         appendFindingSections(sb, report, preservedAnnotations);
         appendNarrativeStubs(sb, report, preservedAnnotations);
 
@@ -84,49 +84,6 @@ public final class ClaudeMdGenerator {
                 });
     }
 
-    private static void appendDeltaTable(final StringBuilder sb, final AggregatedReport report,
-                                          final Path baselineFile) throws IOException {
-        if (baselineFile == null || !Files.exists(baselineFile)) {
-            return;
-        }
-
-        final String json = Files.readString(baselineFile);
-        final Gson gson = new Gson();
-        final Map<String, Object> raw = gson.fromJson(json, new TypeToken<Map<String, Object>>() {}.getType());
-        @SuppressWarnings("unchecked")
-        final Map<String, Double> baselineCounts = (Map<String, Double>) raw.get("counts");
-        if (baselineCounts == null) {
-            return;
-        }
-
-        final Map<HeuristicCode, Long> currentCounts = report.findings().stream()
-                .collect(Collectors.groupingBy(Finding::code, Collectors.counting()));
-
-        final Set<String> allCodes = new TreeSet<>();
-        allCodes.addAll(baselineCounts.keySet());
-        currentCounts.keySet().forEach(c -> allCodes.add(c.name()));
-
-        sb.append("## Current standing vs baseline\n\n");
-        sb.append("| Category | Baseline | Current | Delta |\n");
-        sb.append("|---|---|---|---|\n");
-
-        for (final String codeName : allCodes) {
-            final int baseline = baselineCounts.containsKey(codeName)
-                    ? baselineCounts.get(codeName).intValue() : 0;
-            long current = 0;
-            try {
-                current = currentCounts.getOrDefault(HeuristicCode.valueOf(codeName), 0L);
-            } catch (final IllegalArgumentException ignored) {
-                // Unknown code in baseline — not a code we recognise
-            }
-            final long delta = current - baseline;
-            final String deltaStr = delta == 0 ? "0"
-                    : (delta > 0 ? "+" + delta + " \u26A0" : delta + " \u2713");
-            sb.append(String.format("| %s | %d | %d | %s |%n", codeName, baseline, current, deltaStr));
-        }
-        sb.append('\n');
-    }
-
     private static void appendFindingSections(final StringBuilder sb, final AggregatedReport report,
                                                final Map<String, String> preservedAnnotations) {
         final Map<HeuristicCode, List<Finding>> byCode = report.byCode();
@@ -163,27 +120,5 @@ public final class ClaudeMdGenerator {
             }
             sb.append("<!-- /GENERATED -->\n\n");
         }
-    }
-
-    private static Map<String, String> parseAnnotateSections(final String content) {
-        final Map<String, String> sections = new LinkedHashMap<>();
-        final List<String> lines = content.lines().toList();
-
-        int i = 0;
-        while (i < lines.size()) {
-            String line = lines.get(i);
-            if (line.startsWith("<!-- ANNOTATE:")) {
-                String code = line.substring("<!-- ANNOTATE:".length()).replace("-->", "").trim();
-                StringBuilder body = new StringBuilder();
-                i++;
-                while (i < lines.size() && !lines.get(i).startsWith("<!-- /ANNOTATE")) {
-                    body.append(lines.get(i)).append('\n');
-                    i++;
-                }
-                sections.put(code, body.toString());
-            }
-            i++;
-        }
-        return sections;
     }
 }
