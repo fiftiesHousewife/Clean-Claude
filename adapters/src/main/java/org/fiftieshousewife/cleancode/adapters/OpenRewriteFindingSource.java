@@ -142,7 +142,9 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new HardcodedListRecipe(thresholds.hardcodedListMinLiterals()),
                 new SelectorArgumentRecipe(),
                 new ObsoleteCommentRecipe(),
-                new TemporalCouplingRecipe(thresholds.temporalCouplingMinCalls()));
+                new TemporalCouplingRecipe(thresholds.temporalCouplingMinCalls()),
+                new BroadCatchRecipe(),
+                new RawGenericRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -202,6 +204,8 @@ public class OpenRewriteFindingSource implements FindingSource {
             case SelectorArgumentRecipe r -> mapSelectorArgument(r.collectedRows());
             case ObsoleteCommentRecipe r -> mapObsoleteComment(r.collectedRows());
             case TemporalCouplingRecipe r -> mapTemporalCoupling(r.collectedRows());
+            case BroadCatchRecipe r -> mapBroadCatch(r.collectedRows());
+            case RawGenericRecipe r -> mapRawGeneric(r.collectedRows());
             default -> List.of();
         };
     }
@@ -574,6 +578,22 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .map(r -> finding(HeuristicCode.G31, r.className(),
                         "Method '%s' has %d consecutive void calls with no data dependency — make the order explicit".formatted(
                                 r.methodName(), r.callCount())))
+                .toList();
+    }
+
+    private List<Finding> mapBroadCatch(List<BroadCatchRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.Ch7_1, r.className(),
+                        "Method '%s' catches %s — catch specific exception types instead".formatted(
+                                r.methodName(), r.caughtType())))
+                .toList();
+    }
+
+    private List<Finding> mapRawGeneric(List<RawGenericRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G26, r.className(),
+                        "'%s' in '%s' uses Object type parameter — use a typed record or specific generic".formatted(
+                                r.typeName(), r.methodName())))
                 .toList();
     }
 

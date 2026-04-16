@@ -49,7 +49,7 @@
   <main>
     <div class="summary">
       <span class="badge error">2 errors</span>
-      <span class="badge warning">279 warnings</span>
+      <span class="badge warning">284 warnings</span>
       <span class="badge info">1 info</span>
     </div>
     <details>
@@ -70,8 +70,23 @@
         <p class="guidance">The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L1">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:1</a></td><td>File length is 621 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L1">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:1</a></td><td>File length is 641 lines (max allowed is 150).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java#L1">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:1</a></td><td>File length is 152 lines (max allowed is 150).</td></tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary><span class="code-label">Ch7_1</span>Use Exceptions Rather Than Return Codes (5)</summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.7 'Error Handling' p.103</p>
+        <p class="guidance">Exceptions are for exceptional circumstances. When you catch an exception and merely log it — or worse, leave the catch block empty — you've told the calling code that everything is fine when it isn't. The caller makes decisions based on a lie. Either handle the exception meaningfully, or let it propagate to someone who can.</p>
+        <table>
+          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java</a></td><td>Method 'collectFindings' catches Exception — catch specific exception types instead</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java</a></td><td>Method 'collectFindings' catches Exception — catch specific exception types instead</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java</a></td><td>Method 'collectFindings' catches Exception — catch specific exception types instead</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java</a></td><td>Method 'collectFindings' catches Exception — catch specific exception types instead</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/XmlReportParser.java">org/fiftieshousewife/cleancode/adapters/XmlReportParser.java</a></td><td>Method 'parse' catches Exception — catch specific exception types instead</td></tr>
         </table>
       </div>
     </details>
@@ -296,15 +311,15 @@
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java#L46">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:46</a></td><td>Line is longer than 120 characters (found 133).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java#L142">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:142</a></td><td>'if' construct must use '{}'s.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java#L143">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:143</a></td><td>'if' construct must use '{}'s.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L212">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:212</a></td><td>Line is longer than 120 characters (found 142).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L321">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:321</a></td><td>Line is longer than 120 characters (found 136).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L360">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:360</a></td><td>Line is longer than 120 characters (found 131).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L368">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:368</a></td><td>Line is longer than 120 characters (found 122).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L376">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:376</a></td><td>Line is longer than 120 characters (found 127).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L408">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:408</a></td><td>Line is longer than 120 characters (found 131).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L503">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:503</a></td><td>Line is longer than 120 characters (found 146).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L559">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:559</a></td><td>Line is longer than 120 characters (found 121).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L575">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:575</a></td><td>Line is longer than 120 characters (found 128).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L216">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:216</a></td><td>Line is longer than 120 characters (found 142).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L325">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:325</a></td><td>Line is longer than 120 characters (found 136).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L364">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:364</a></td><td>Line is longer than 120 characters (found 131).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L372">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:372</a></td><td>Line is longer than 120 characters (found 122).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L380">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:380</a></td><td>Line is longer than 120 characters (found 127).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L412">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:412</a></td><td>Line is longer than 120 characters (found 131).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L507">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:507</a></td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L563">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:563</a></td><td>Line is longer than 120 characters (found 121).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L579">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:579</a></td><td>Line is longer than 120 characters (found 128).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java#L24">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:24</a></td><td>Line is longer than 120 characters (found 152).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java#L25">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:25</a></td><td>Line is longer than 120 characters (found 142).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java#L26">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:26</a></td><td>Line is longer than 120 characters (found 154).</td></tr>
@@ -386,7 +401,7 @@
         <p class="guidance">Ambiguity in code is a sign of insufficient care. When you make a decision in code, make it precisely. Know why you've made it and how you will deal with any exceptions. Don't be lazy about the precision of your decisions.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L520">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:520</a></td><td>When doing a String.toLowerCase()/toUpperCase() call, use a Locale</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L524">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:524</a></td><td>When doing a String.toLowerCase()/toUpperCase() call, use a Locale</td></tr>
         </table>
       </div>
     </details>
@@ -430,8 +445,8 @@
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java</a></td><td>Method 'collectFindings' has 8 blank-line sections across 43 lines — each section should be its own method</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java</a></td><td>Method 'collectFindings' has 9 blank-line sections across 54 lines — each section should be its own method</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java</a></td><td>Method 'collectFindings' has 5 blank-line sections across 29 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L96">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:96</a></td><td>Method createRecipes length is 51 lines (max allowed is 50).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L155">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:155</a></td><td>Method mapRecipe length is 53 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L96">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:96</a></td><td>Method createRecipes length is 53 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java#L157">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:157</a></td><td>Method mapRecipe length is 55 lines (max allowed is 50).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java#L86">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:86</a></td><td>Method collectFindings length is 54 lines (max allowed is 50).</td></tr>
         </table>
       </div>
@@ -549,7 +564,7 @@
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 85.3% (677/794 lines covered)</td></tr>
+          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 85.0% (685/806 lines covered)</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java">org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java</a></td><td>Private method 'extractDependency' (7 lines) should be package-private so it can be tested directly</td></tr>
         </table>
       </div>
@@ -559,7 +574,7 @@
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
         <tr><td>checkstyle</td><td>220</td></tr>
-        <tr><td>openrewrite</td><td>34</td></tr>
+        <tr><td>openrewrite</td><td>39</td></tr>
         <tr><td>dependency-updates</td><td>15</td></tr>
         <tr><td>cpd</td><td>11</td></tr>
         <tr><td>pmd</td><td>1</td></tr>
@@ -568,8 +583,8 @@
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-16 08:51:02 Z</p>
-    <p>282 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-16 09:06:24 Z</p>
+    <p>287 total findings</p>
   </footer>
 </body>
 </html>
