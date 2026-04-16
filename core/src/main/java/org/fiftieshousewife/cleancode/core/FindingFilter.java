@@ -7,7 +7,11 @@ public final class FindingFilter {
 
     private FindingFilter() {}
 
-    public record Result(List<Finding> findings) {}
+    public record Result(List<Finding> findings) {
+        public Result {
+            findings = List.copyOf(findings);
+        }
+    }
 
     public static Result apply(final List<Finding> findings, final SuppressionIndex index) {
         return apply(findings, index, PackageSuppression.empty());
