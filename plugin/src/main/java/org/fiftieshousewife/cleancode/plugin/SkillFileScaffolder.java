@@ -12,16 +12,16 @@ final class SkillFileScaffolder {
 
     private static final List<String> SKILL_FILES = List.of(
             "SKILLS.md",
-            "exception-handling.md",
-            "null-handling.md",
-            "functions.md",
-            "classes.md",
-            "naming.md",
-            "conditionals-and-expressions.md",
-            "comments-and-clutter.md",
-            "java-idioms.md",
-            "test-quality.md",
-            "project-conventions.md");
+            "clean-code-exception-handling/SKILL.md",
+            "clean-code-null-handling/SKILL.md",
+            "clean-code-functions/SKILL.md",
+            "clean-code-classes/SKILL.md",
+            "clean-code-naming/SKILL.md",
+            "clean-code-conditionals-and-expressions/SKILL.md",
+            "clean-code-comments-and-clutter/SKILL.md",
+            "clean-code-java-idioms/SKILL.md",
+            "clean-code-test-quality/SKILL.md",
+            "clean-code-project-conventions/SKILL.md");
 
     private static final String THRESHOLDS_HASH_FILE = ".thresholds-hash";
 
@@ -128,6 +128,10 @@ final class SkillFileScaffolder {
 
     private void writeSkillFile(Path target, String content) {
         try {
+            final Path parent = target.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
             Files.writeString(target, content);
             logger.lifecycle("Scaffolded skill file: {}", target);
         } catch (IOException e) {

@@ -6,7 +6,7 @@
   identified by the plugin
 - When writing a new class, splitting an existing class, or moving
   methods between classes
-- When a class exceeds {{classLineCount}} lines or a record exceeds {{recordComponentCount}} fields
+- When a class exceeds 150 lines or a record exceeds 6 fields
 
 This skill does not apply to test classes. Test classes may exceed
 normal size limits when they contain many independent test methods.
@@ -21,15 +21,15 @@ normal size limits when they contain many independent test methods.
 ## Class rules
 
 **Size:**
-- No class should exceed {{classLineCount}} lines. A class approaching this limit is
+- No class should exceed 150 lines. A class approaching this limit is
   a signal to split it by responsibility.
-- Prefer classes of around {{classTargetLines}} lines. A class that grows past roughly
+- Prefer classes of around 50 lines. A class that grows past roughly
   100 lines is a signal to split it.
 - If you need the word "and" to describe what a class does, it has
   more than one responsibility and must be split.
 
 **Records:**
-- Records with more than {{recordComponentCount}} fields require a nested static Builder
+- Records with more than 6 fields require a nested static Builder
   class.
 - Records are the default choice for value objects, DTOs, parameter
   objects, and configuration bundles.
@@ -56,7 +56,7 @@ normal size limits when they contain many independent test methods.
 ## Before you write or fix anything
 
 **If fixing existing code:**
-- Count lines: if the class exceeds {{classLineCount}} lines, it must be split —
+- Count lines: if the class exceeds 150 lines, it must be split —
   identify responsibilities by looking for field clusters, method
   groups that share the same subset of fields, and section comments
 - Check SRP: describe the class in one sentence without using "and" —
@@ -77,7 +77,7 @@ normal size limits when they contain many independent test methods.
   writing any code
 - If the class needs more than 5 fields, reconsider whether it has
   a single responsibility
-- If the class is a record with more than {{recordComponentCount}} fields, add a Builder
+- If the class is a record with more than 6 fields, add a Builder
   from the start
 - Do not create static utility methods — create a small class with
   instance methods that can be injected, or use a `private`
@@ -92,7 +92,7 @@ Every class-level finding maps to exactly one of these:
 | Pattern | Use when |
 |---|---|
 | 1 — Split by Responsibility | Class too large, multiple field clusters, needs "and" to describe |
-| 2 — Add Builder | Record has more than {{recordComponentCount}} fields or complex construction |
+| 2 — Add Builder | Record has more than 6 fields or complex construction |
 | 3 — Move Method | Method makes more external calls than internal |
 | 4 — Reduce Visibility | Public mutable fields or over-exposed API surface |
 | 5 — Convert Static to Instance | Static method that should be an instance method on an injectable class |
@@ -175,7 +175,7 @@ class DashboardStartup {
 
 ## Pattern 2: Add Builder
 
-Records with more than {{recordComponentCount}} fields need a Builder to keep construction
+Records with more than 6 fields need a Builder to keep construction
 sites readable. Use Lombok `@Builder` — do not write builders by hand.
 
 ```java
@@ -371,7 +371,7 @@ renderer.renderHtml(report);
 
 ## Do not
 
-- Allow a class to exceed {{classLineCount}} lines — split before it reaches the limit
+- Allow a class to exceed 150 lines — split before it reaches the limit
 - Use the word "and" to describe what a class does — split it
 - Name a split-off class after the original: `FooHelper`, `FooPart2`,
   `FooExtra`

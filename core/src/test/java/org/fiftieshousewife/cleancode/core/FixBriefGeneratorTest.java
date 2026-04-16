@@ -58,8 +58,8 @@ class FixBriefGeneratorTest {
         FixBriefGenerator.generate(report, outputDir);
 
         final String content = Files.readString(outputDir.resolve("Foo.md"));
-        assertTrue(content.contains(".claude/skills/functions.md"),
-                "F1 should point at functions.md");
+        assertTrue(content.contains(".claude/skills/clean-code-functions/SKILL.md"),
+                "F1 should point at clean-code-functions/SKILL.md");
     }
 
     @Test

@@ -20,11 +20,11 @@ class SuppressCleanCodeTest {
     }
 
     @Test
-    void annotationTargetsMethodTypeConstructor() {
-        Target target = SuppressCleanCode.class.getAnnotation(Target.class);
+    void annotationTargetsMethodTypeConstructorAndPackage() {
+        final Target target = SuppressCleanCode.class.getAnnotation(Target.class);
         assertNotNull(target);
         assertArrayEquals(
-                new ElementType[]{ElementType.METHOD, ElementType.TYPE, ElementType.CONSTRUCTOR},
+                new ElementType[]{ElementType.METHOD, ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.PACKAGE},
                 target.value());
     }
 

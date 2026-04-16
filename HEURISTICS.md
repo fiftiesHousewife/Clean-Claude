@@ -30,7 +30,7 @@ A comment that has become inaccurate is worse than no comment at all. It activel
 A comment that merely restates the code is clutter. `i++ // increment i` teaches us nothing. If the code is so unclear that it needs a comment to explain what it does, the real solution is to make the code clearer — not to add a redundant comment on top of unclear code. Comments should say things the code cannot say for itself.
 
 **Detection:** [MumblingCommentRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/MumblingCommentRecipe.java) — detects comments that restate the method name or parameter names.
-**Skill file:** [comments-and-clutter.md](.claude/skills/comments-and-clutter.md)
+**Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
 
@@ -49,7 +49,7 @@ If you are going to write a comment, take the time to make sure it is the best c
 Commented-out code rots. Others who see it won't have the courage to delete it — they'll assume it's there for a reason. Over time, commented-out code accumulates like sediment, obscuring the code that actually matters. Delete it. Source control remembers everything; you don't need to.
 
 **Detection:** [CommentedCodeRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/CommentedCodeRecipe.java) — detects commented-out code blocks.
-**Skill file:** [comments-and-clutter.md](.claude/skills/comments-and-clutter.md)
+**Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
 
@@ -81,7 +81,7 @@ You should be able to run all the unit tests with a single trivial command. Bein
 Functions should have a small number of arguments. The ideal number is zero. Next comes one, followed closely by two. Three arguments should be avoided where possible. More than three requires very special justification — and then shouldn't be used anyway. Arguments are hard to understand. They take conceptual power and force you to know details that aren't important at that point.
 
 **Detection:** [LargeConstructorRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/LargeConstructorRecipe.java) — detects constructors with too many parameters. [(refactoring) RecordToLombokValueRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/RecordToLombokValueRecipe.java) — rewrites wide records as Lombok `@Value` classes with a builder. Also Checkstyle `ParameterNumber` check (threshold: 4).
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -91,7 +91,7 @@ Functions should have a small number of arguments. The ideal number is zero. Nex
 Output arguments are counterintuitive. Readers expect arguments to be inputs to a function, not things the function writes to. When you see `appendFooter(report)`, do you expect it to append something to report, or to append report to something else? If a function must transform something, let it transform the state of the owning object, or return the result.
 
 **Detection:** [OutputArgumentRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/OutputArgumentRecipe.java) — detects methods that mutate collection arguments. [InconsistentReturnRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/InconsistentReturnRecipe.java) — detects methods that sometimes return a value and sometimes mutate state.
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -101,7 +101,7 @@ Output arguments are counterintuitive. Readers expect arguments to be inputs to 
 Boolean arguments loudly declare that the function does more than one thing. It does one thing if the flag is true and another if the flag is false. The function should be split into two: one for each path. `render(true)` tells the reader nothing — `renderForSuite()` and `renderForSingleTest()` tell them everything.
 
 **Detection:** [FlagArgumentRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java) — detects boolean parameters on non-private methods.
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -111,7 +111,7 @@ Boolean arguments loudly declare that the function does more than one thing. It 
 Methods that are never called are dead code. They clog the class, confuse the reader, and add maintenance burden. Delete them without hesitation — your source control system remembers them if you ever need them back.
 
 **Detection:** PMD `UnusedPrivateMethod` rule.
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -150,7 +150,7 @@ It seems obvious to say that code should behave correctly. The devil is in the d
 Don't override safeties. Turning off warnings, ignoring failing tests, catching and discarding exceptions — these are all the same mistake. Safeties exist because someone, at some point, decided they were important enough to create. Don't silence them; fix the underlying problem.
 
 **Detection:** [UncheckedCastRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/UncheckedCastRecipe.java) — detects `@SuppressWarnings("unchecked")`. [SuppressedWarningRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/SuppressedWarningRecipe.java) — detects broad `@SuppressWarnings` usage. [SwallowedExceptionRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/SwallowedExceptionRecipe.java) — detects empty catch blocks. [SystemOutRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/SystemOutRecipe.java) — detects `System.out`/`System.err`/`printStackTrace` calls. Also PMD `EmptyCatchBlock` and SpotBugs `DE_MIGHT_IGNORE`.
-**Skill file:** [java-idioms.md](.claude/skills/java-idioms.md)
+**Skill file:** [clean-code-java-idioms](.claude/skills/clean-code-java-idioms/SKILL.md)
 
 ---
 
@@ -160,7 +160,7 @@ Don't override safeties. Turning off warnings, ignoring failing tests, catching 
 Duplication is the root of all evil in software. Every duplication represents a missed opportunity for abstraction. When you see duplicated code, it almost always means there is a concept crying out to be a subroutine or a class. Find it and eliminate the duplication.
 
 **Detection:** CPD (Copy/Paste Detector) token-based duplication detection.
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -188,7 +188,7 @@ In general, base classes should know nothing about their derivatives. There are 
 Well-defined modules have very small interfaces that allow you to do a lot with a little. A class with too many public methods, too many fields, or too many dependencies has exposed too much of itself. Keep interfaces tight. Fewer things to know means fewer things to go wrong. Hide your data. Hide your utility functions. Hide your constants and your temporaries.
 
 **Detection:** [VisibilityReductionRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/VisibilityReductionRecipe.java) — detects public mutable fields. Also PMD `ExcessivePublicCount`, `CouplingBetweenObjects`, `TooManyFields`.
-**Skill file:** [classes.md](.claude/skills/classes.md)
+**Skill file:** [clean-code-classes](.claude/skills/clean-code-classes/SKILL.md)
 
 ---
 
@@ -198,7 +198,7 @@ Well-defined modules have very small interfaces that allow you to do a lot with 
 Dead code is code that isn't executed. It's the body of an if statement that checks for a condition that can't happen. It's the catch block for an exception that is never thrown. It's the utility method that is never called. Dead code is not completely updated when designs change. It rots. Delete it.
 
 **Detection:** PMD `UnusedLocalVariable`. SpotBugs `UUF_UNUSED_FIELD`.
-**Skill file:** [comments-and-clutter.md](.claude/skills/comments-and-clutter.md)
+**Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
 
@@ -208,7 +208,7 @@ Dead code is code that isn't executed. It's the body of an if statement that che
 Local variables should be declared just before their first use. Vertical separation between declaration and use makes the reader hold a mental placeholder — 'what was that variable for again?' — while reading unrelated code. Declare variables at the point of need, not at the top of the method.
 
 **Detection:** [VerticalSeparationRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/VerticalSeparationRecipe.java) — detects declarations more than 10 lines from first use (configurable). [(refactoring) MoveDeclarationRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/MoveDeclarationRecipe.java) — moves declarations closer to their first use.
-**Skill file:** [comments-and-clutter.md](.claude/skills/comments-and-clutter.md)
+**Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
 
@@ -218,7 +218,7 @@ Local variables should be declared just before their first use. Vertical separat
 If you do something a certain way, do all similar things the same way. If you name one method `fetchUsers`, don't name a similar method `getOrders` and another `retrieveProducts`. Inconsistency breeds confusion — the reader must wonder whether the different names signify different semantics when they don't.
 
 **Detection:** [InconsistentNamingRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/InconsistentNamingRecipe.java) — detects mixed verb prefixes (get/fetch/retrieve, create/make/build, remove/delete) in the same class.
-**Skill file:** [naming.md](.claude/skills/naming.md)
+**Skill file:** [clean-code-naming](.claude/skills/clean-code-naming/SKILL.md)
 
 ---
 
@@ -228,7 +228,7 @@ If you do something a certain way, do all similar things the same way. If you na
 Clutter is anything that adds noise without adding value: unused variables, never-called functions, redundant imports, purposeless comments. Keep your source files clean. A lean source file is easier to read, easier to understand, and easier to change.
 
 **Detection:** [(refactoring) DeleteUnusedImportRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/DeleteUnusedImportRecipe.java) — removes unused import statements. Also PMD `UnusedImports`, Checkstyle `UnusedImports`, `RedundantImport`.
-**Skill file:** [comments-and-clutter.md](.claude/skills/comments-and-clutter.md)
+**Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
 
@@ -247,7 +247,7 @@ Things that don't depend upon each other should not be artificially coupled. Art
 A method that calls six methods on another object but only one on its own class has Feature Envy — it clearly wants to be over there, not here. Move the method to the class whose data it is actually manipulating. Methods should operate on the data of their own class, not reach across into another.
 
 **Detection:** [FeatureEnvyRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/FeatureEnvyRecipe.java) — detects methods where external calls exceed double the self calls.
-**Skill file:** [classes.md](.claude/skills/classes.md)
+**Skill file:** [clean-code-classes](.claude/skills/clean-code-classes/SKILL.md)
 
 ---
 
@@ -266,7 +266,7 @@ There is hardly anything more abominable than a dangling false argument at the e
 Obscured intent is the opposite of expressiveness. Code that uses nested ternaries, overly terse variable names, or magic expressions is prioritising brevity over clarity. The reader shouldn't need a debugger to understand what a line of code does. If you're impressed by how cleverly terse your code is, that's a bad sign.
 
 **Detection:** [NestedTernaryRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/NestedTernaryRecipe.java) — detects ternary expressions nested inside other ternaries. [(refactoring) RemoveNestedTernaryRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/RemoveNestedTernaryRecipe.java) — rewrites nested ternaries as if/else blocks.
-**Skill file:** [naming.md](.claude/skills/naming.md)
+**Skill file:** [clean-code-naming](.claude/skills/clean-code-naming/SKILL.md)
 
 ---
 
@@ -276,7 +276,7 @@ Obscured intent is the opposite of expressiveness. Code that uses nested ternari
 One of the most important decisions a developer makes is where to put code. A data class is a class with public fields and no real behaviour — it exposes its internals and delegates all responsibility elsewhere.
 
 **Detection:** PMD `DataClass`.
-**Skill file:** [classes.md](.claude/skills/classes.md)
+**Skill file:** [clean-code-classes](.claude/skills/clean-code-classes/SKILL.md)
 
 ---
 
@@ -286,7 +286,7 @@ One of the most important decisions a developer makes is where to put code. A da
 In general you should prefer non-static methods to static methods. If you really want a function to be static, make sure there is no chance that you'll want it to behave polymorphically. Static methods cannot be overridden and cannot participate in dependency injection.
 
 **Detection:** [InappropriateStaticRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/InappropriateStaticRecipe.java) — detects static methods that should be instance methods. Also PMD analysis mapped via adapter.
-**Skill file:** [classes.md](.claude/skills/classes.md)
+**Skill file:** [clean-code-classes](.claude/skills/clean-code-classes/SKILL.md)
 
 ---
 
@@ -296,7 +296,7 @@ In general you should prefer non-static methods to static methods. If you really
 Complex expressions should be broken into intermediate variables with explanatory names. `wasPressed` is better than `event.getTarget().isButton() && event.getState() == CLICKED`. The intermediate variable documents the programmer's intent and makes the code read like a well-written paragraph.
 
 **Detection:** [MissingExplanatoryVariableRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/MissingExplanatoryVariableRecipe.java) — detects complex inline expressions (chain depth >= 3 or 4+ binary operators). [(refactoring) ExtractExplanatoryVariableRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java) — extracts complex expressions into named local variables.
-**Skill file:** [conditionals-and-expressions.md](.claude/skills/conditionals-and-expressions.md)
+**Skill file:** [clean-code-conditionals-and-expressions](.claude/skills/clean-code-conditionals-and-expressions/SKILL.md)
 
 ---
 
@@ -324,7 +324,7 @@ Before you consider yourself to be done with a function, make sure you understan
 If something in your code can logically be constant — a variable that's never reassigned, an object that's never swapped — then declare it final. This communicates intent to every future reader: 'this value is set once and never changes.' It prevents accidental reassignment and signals a design where fewer things are moving at once.
 
 **Detection:** [(refactoring) AddFinalRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/AddFinalRecipe.java) — adds `final` to local variables and parameters that are never reassigned. Also Checkstyle `FinalLocalVariable`.
-**Skill file:** [comments-and-clutter.md](.claude/skills/comments-and-clutter.md)
+**Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
 
@@ -334,7 +334,7 @@ If something in your code can logically be constant — a variable that's never 
 When you see code that tests for a type to decide what behaviour to invoke, consider replacing it with polymorphism. 'One switch' is a reasonable rule of thumb — if you find yourself writing the same switch in multiple places, the switch is telling you that there's a class hierarchy hiding in your code, waiting to be discovered.
 
 **Detection:** [SwitchOnTypeRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/SwitchOnTypeRecipe.java) — detects `instanceof` chains. [StringSwitchRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/StringSwitchRecipe.java) — detects String switch with 3+ cases. [StringlyTypedDispatchRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/StringlyTypedDispatchRecipe.java) — detects methods that dispatch on a string label parameter.
-**Skill file:** [conditionals-and-expressions.md](.claude/skills/conditionals-and-expressions.md)
+**Skill file:** [clean-code-conditionals-and-expressions](.claude/skills/clean-code-conditionals-and-expressions/SKILL.md)
 
 ---
 
@@ -344,7 +344,7 @@ When you see code that tests for a type to decide what behaviour to invoke, cons
 Every team should follow a coding standard. The standard should specify things like where to declare instance variables, consistent naming, brace style, and so forth. The standard should not need a document to describe it because the code itself should be the exemplar.
 
 **Detection:** Checkstyle `LeftCurly`, `RightCurly`, `LineLength`.
-**Skill file:** [comments-and-clutter.md](.claude/skills/comments-and-clutter.md)
+**Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
 
@@ -354,7 +354,7 @@ Every team should follow a coding standard. The standard should specify things l
 In general it is a bad idea to have raw numbers in your code. Numbers like 42 or 86400 are magic — they have no context, no meaning, no documentation. Hide them behind well-named constants. `SECONDS_PER_DAY` is immediately clear; 86400 is not. The term 'Magic Number' does not apply only to numbers — it applies to any token that has a value that is not self-describing.
 
 **Detection:** [MagicStringRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/MagicStringRecipe.java) — detects string literals appearing 2+ times (configurable). [(refactoring) ExtractConstantRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/ExtractConstantRecipe.java) — extracts repeated literals into named constants.
-**Skill file:** [java-idioms.md](.claude/skills/java-idioms.md)
+**Skill file:** [clean-code-java-idioms](.claude/skills/clean-code-java-idioms/SKILL.md)
 
 ---
 
@@ -364,7 +364,7 @@ In general it is a bad idea to have raw numbers in your code. Numbers like 42 or
 Ambiguity in code is a sign of insufficient care. When you make a decision in code, make it precisely. Know why you've made it and how you will deal with any exceptions. Don't be lazy about the precision of your decisions. If you decide to call a function that might return null, make sure you check for null.
 
 **Detection:** [LegacyFileApiRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/LegacyFileApiRecipe.java) — detects `java.io.File`/`FileInputStream`/`FileOutputStream` usage that should migrate to `java.nio.file`. [RawGenericRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/RawGenericRecipe.java) — detects raw generic types. [(refactoring) AddLocaleRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/AddLocaleRecipe.java) — adds `Locale.ROOT` to case-conversion calls. Also SpotBugs `DM_BOXED_PRIMITIVE_FOR_COMPARE`.
-**Skill file:** [java-idioms.md](.claude/skills/java-idioms.md)
+**Skill file:** [clean-code-java-idioms](.claude/skills/clean-code-java-idioms/SKILL.md)
 
 ---
 
@@ -383,7 +383,7 @@ Enforce design decisions with structure over convention. Naming conventions are 
 Boolean logic is hard enough to understand without reading it in the context of an if or while statement. Extract functions that explain the intent of the conditional. `if (shouldBeDeleted(timer))` is vastly preferable to `if (timer.hasExpired() && !timer.isRecurrent())`.
 
 **Detection:** [EncapsulateConditionalRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/EncapsulateConditionalRecipe.java) — detects conditions with 2+ logical operators. [(refactoring) ExtractExplanatoryVariableRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java) — extracts complex boolean expressions into named variables.
-**Skill file:** [conditionals-and-expressions.md](.claude/skills/conditionals-and-expressions.md)
+**Skill file:** [clean-code-conditionals-and-expressions](.claude/skills/clean-code-conditionals-and-expressions/SKILL.md)
 
 ---
 
@@ -393,7 +393,7 @@ Boolean logic is hard enough to understand without reading it in the context of 
 Negatives are slightly harder to understand than positives. So, when possible, conditionals should be expressed as positives. `if (buffer.shouldCompact())` is preferable to `if (!buffer.shouldNotCompact())`. Double negation forces the reader to do mental gymnastics that add nothing.
 
 **Detection:** [NegativeConditionalRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/NegativeConditionalRecipe.java) — detects double negation patterns. [GuardClauseRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/GuardClauseRecipe.java) — detects negated conditions wrapping the method body that should be inverted into guard clauses.
-**Skill file:** [conditionals-and-expressions.md](.claude/skills/conditionals-and-expressions.md)
+**Skill file:** [clean-code-conditionals-and-expressions](.claude/skills/clean-code-conditionals-and-expressions/SKILL.md)
 
 ---
 
@@ -403,7 +403,7 @@ Negatives are slightly harder to understand than positives. So, when possible, c
 Functions should do one thing. They should do it well. They should do it only. A function that is too long is probably doing too many things. If you can extract another function from it with a name that is not merely a restatement of its implementation, then the original is doing more than one thing.
 
 **Detection:** [WhitespaceSplitMethodRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/WhitespaceSplitMethodRecipe.java) — detects methods with 4+ blank-line sections (configurable). [ImperativeLoopRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/ImperativeLoopRecipe.java) — detects for-loops replaceable with streams. [GuardClauseRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/GuardClauseRecipe.java) — detects deeply-nested method bodies that should be flattened with guard clauses.
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -431,7 +431,7 @@ Have a reason for the way you structure your code, and make sure that reason is 
 Boundary conditions are hard to keep track of. Put the processing for them in one place. Don't let them leak all over the code. `array.length - 1` scattered through your code is a bug waiting to happen. Extract it: `final int lastIndex = array.length - 1;` — the name documents the intent and the adjustment happens in exactly one place.
 
 **Detection:** [BoundaryConditionRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/BoundaryConditionRecipe.java) — detects raw `+1`/`-1` adjustments on method calls. [(refactoring) EncapsulateBoundaryRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/EncapsulateBoundaryRecipe.java) — extracts boundary adjustments into named local variables.
-**Skill file:** [conditionals-and-expressions.md](.claude/skills/conditionals-and-expressions.md)
+**Skill file:** [clean-code-conditionals-and-expressions](.claude/skills/clean-code-conditionals-and-expressions/SKILL.md)
 
 ---
 
@@ -441,7 +441,7 @@ Boundary conditions are hard to keep track of. Put the processing for them in on
 Mixing levels of abstraction within a function is always confusing. Section comments — `// initialisation`, `// processing`, `// cleanup` — are a dead giveaway. Each section is at a different level of abstraction. Extract each section into its own well-named function. The sections become the function calls, and the comment headers become function names.
 
 **Detection:** [SectionCommentRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/SectionCommentRecipe.java) — detects section comment banners inside methods.
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -460,7 +460,7 @@ If you have a constant such as a default or configuration value that is known an
 Write shy code — modules that don't reveal anything unnecessary and that don't rely on others' implementations. The Law of Demeter says a method `f` of class `C` should only call methods on `C` itself, objects created by `f`, objects passed as arguments to `f`, and objects held in instance variables. `a.getB().getC().doSomething()` is a train wreck — it couples you to the entire chain.
 
 **Detection:** [LawOfDemeterRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/LawOfDemeterRecipe.java) — detects method chains of depth >= 3 (configurable, fluent APIs excluded).
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -472,7 +472,7 @@ Write shy code — modules that don't reveal anything unnecessary and that don't
 Long lists of imports are daunting to the reader. If you're importing from many different packages, it's worth asking whether this class has too many responsibilities. Wildcard imports can reduce clutter, but the real fix is often to split the class.
 
 **Detection:** [(refactoring) DeleteUnusedImportRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/DeleteUnusedImportRecipe.java) — removes unused import statements. Also Checkstyle `AvoidStarImport`.
-**Skill file:** [java-idioms.md](.claude/skills/java-idioms.md)
+**Skill file:** [clean-code-java-idioms](.claude/skills/clean-code-java-idioms/SKILL.md)
 
 ---
 
@@ -482,7 +482,7 @@ Long lists of imports are daunting to the reader. If you're importing from many 
 Implementing an interface just to gain convenient access to its constants is a terrible practice. The constants become part of your class's public API, polluting the namespace. Use static imports to access constants, or place constants in a class or enum where they naturally belong.
 
 **Detection:** [InheritConstantsRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/InheritConstantsRecipe.java) — detects classes implementing constant-only interfaces.
-**Skill file:** [java-idioms.md](.claude/skills/java-idioms.md)
+**Skill file:** [clean-code-java-idioms](.claude/skills/clean-code-java-idioms/SKILL.md)
 
 ---
 
@@ -492,7 +492,7 @@ Implementing an interface just to gain convenient access to its constants is a t
 Now that Java has enums, use them. The old pattern of `public static final int` or `String` constants as an enumeration is obsolete. Enums provide type safety, can have methods and fields, and make switch statements exhaustive. Don't cling to the pre-Java 5 idiom.
 
 **Detection:** [EnumForConstantsRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/EnumForConstantsRecipe.java) — detects groups of static final fields that share a prefix.
-**Skill file:** [java-idioms.md](.claude/skills/java-idioms.md)
+**Skill file:** [clean-code-java-idioms](.claude/skills/clean-code-java-idioms/SKILL.md)
 
 ---
 
@@ -504,7 +504,7 @@ Now that Java has enums, use them. The old pattern of `public static final int` 
 Choose names that reveal intention. The name of a variable, function, or class should answer the big questions: why it exists, what it does, and how it is used. If a name requires a comment, then the name is not revealing its intent.
 
 **Detection:** [BadClassNameRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/BadClassNameRecipe.java) — detects class names with vague suffixes (Helper, Util, Manager, Processor). Also Checkstyle `LocalVariableName`, `MethodName`, `TypeName`.
-**Skill file:** [naming.md](.claude/skills/naming.md)
+**Skill file:** [clean-code-naming](.claude/skills/clean-code-naming/SKILL.md)
 
 ---
 
@@ -541,7 +541,7 @@ Choose names that make the workings of a function or variable unambiguous. If a 
 The length of a name should correspond to the size of its scope. A variable named `i` is fine in a three-line for-loop. But a variable named `s` in a fifty-line method is a riddle. If the scope is long, the name should be long enough to be found, remembered, and understood without scrolling.
 
 **Detection:** [ShortVariableNameRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/ShortVariableNameRecipe.java) — detects single-letter names outside loops and lambdas (configurable).
-**Skill file:** [naming.md](.claude/skills/naming.md)
+**Skill file:** [clean-code-naming](.claude/skills/clean-code-naming/SKILL.md)
 
 ---
 
@@ -551,7 +551,7 @@ The length of a name should correspond to the size of its scope. A variable name
 In the days of early C and Fortran, encoding type information in names was necessary. Today, with modern languages and IDEs, Hungarian notation and type prefixes (`strName`, `iCount`, `m_field`) are nothing but noise. They make names harder to read and harder to change. Let the type system do its job.
 
 **Detection:** [EncodingNamingRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/EncodingNamingRecipe.java) — detects Hungarian notation and type prefixes.
-**Skill file:** [naming.md](.claude/skills/naming.md)
+**Skill file:** [clean-code-naming](.claude/skills/clean-code-naming/SKILL.md)
 
 ---
 
@@ -561,7 +561,7 @@ In the days of early C and Fortran, encoding type information in names was neces
 If a method has side effects, the name should describe them. A method named `getPassword` that also initialises the session is lying. It should be called `getPasswordAndInitialiseSession` — or better, split into two methods. If a reader must look at the implementation to discover a side effect, the name has broken its promise.
 
 **Detection:** [SideEffectNamingRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/SideEffectNamingRecipe.java) — detects methods named get/is/has that contain assignments.
-**Skill file:** [naming.md](.claude/skills/naming.md)
+**Skill file:** [clean-code-naming](.claude/skills/clean-code-naming/SKILL.md)
 
 ---
 
@@ -656,7 +656,7 @@ A slow test is a test that won't get run. When things get tight, the slow tests 
 The first rule of functions is that they should be small. The second rule is that they should be smaller than that. Functions should hardly ever be 20 lines long. Each function should tell a story, and each line should lead you naturally to the next in a compelling order.
 
 **Detection:** [PrivateMethodTestabilityRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/PrivateMethodTestabilityRecipe.java) — detects non-trivial private methods that should be package-private for testing. [(refactoring) ReduceVisibilityRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/ReduceVisibilityRecipe.java) — reduces private methods to package-private so they can be tested directly.
-**Skill file:** [functions.md](.claude/skills/functions.md)
+**Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
 
@@ -666,7 +666,7 @@ The first rule of functions is that they should be small. The second rule is tha
 Exceptions are for exceptional circumstances. When you catch an exception and merely log it — or worse, leave the catch block empty — you've told the calling code that everything is fine when it isn't. The caller makes decisions based on a lie. Either handle the exception meaningfully, or let it propagate to someone who can.
 
 **Detection:** [CatchLogContinueRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java) — detects catch blocks that only log or are empty. [BroadCatchRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/BroadCatchRecipe.java) — detects catches of overly broad types like `Exception` or `Throwable`.
-**Skill file:** [exception-handling.md](.claude/skills/exception-handling.md)
+**Skill file:** [clean-code-exception-handling](.claude/skills/clean-code-exception-handling/SKILL.md)
 
 ---
 
@@ -676,7 +676,7 @@ Exceptions are for exceptional circumstances. When you catch an exception and me
 When you return null, you are creating work for your callers. Every caller must check for null, and if even one forgets, the application blows up with a NullPointerException at some unexpected point. Code peppered with null checks is noisy, hard to read, and fragile. Use Optional, throw an exception, or return a Special Case object instead.
 
 **Detection:** [NullDensityRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/NullDensityRecipe.java) — detects methods with 3+ null checks (configurable). Also SpotBugs redundant null check detection.
-**Skill file:** [null-handling.md](.claude/skills/null-handling.md)
+**Skill file:** [clean-code-null-handling](.claude/skills/clean-code-null-handling/SKILL.md)
 
 ---
 
@@ -686,7 +686,7 @@ When you return null, you are creating work for your callers. Every caller must 
 The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.
 
 **Detection:** [ClassLineLengthRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/ClassLineLengthRecipe.java) — detects classes exceeding 150 lines (configurable).
-**Skill file:** [classes.md](.claude/skills/classes.md)
+**Skill file:** [clean-code-classes](.claude/skills/clean-code-classes/SKILL.md)
 
 ---
 
@@ -696,4 +696,4 @@ The first rule of classes is that they should be small. The second rule is that 
 A record or data structure with many components is a signal that it's carrying too many responsibilities, or that it's a data clump — a group of fields that always travel together and should be extracted into their own meaningful type. Six is a reasonable upper bound; beyond that, ask what smaller structures are hiding inside.
 
 **Detection:** [LargeRecordRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/LargeRecordRecipe.java) — detects records with 6+ components (configurable).
-**Skill file:** [classes.md](.claude/skills/classes.md)
+**Skill file:** [clean-code-classes](.claude/skills/clean-code-classes/SKILL.md)

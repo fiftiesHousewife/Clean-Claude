@@ -89,8 +89,8 @@ class CleanCodePluginTest {
     @Test
     void scaffoldsClassesSkillFileWithDefaultThresholds() throws IOException {
         runner("tasks").build();
-        final Path classesSkill = projectDir.resolve(".claude/skills/classes.md");
-        assertTrue(Files.exists(classesSkill), "classes.md should be scaffolded");
+        final Path classesSkill = projectDir.resolve(".claude/skills/clean-code-classes/SKILL.md");
+        assertTrue(Files.exists(classesSkill), "clean-code-classes/SKILL.md should be scaffolded");
         final String content = Files.readString(classesSkill);
         assertAll(
                 () -> assertTrue(content.contains("150 lines"), "should contain default class line count"),
@@ -114,7 +114,7 @@ class CleanCodePluginTest {
                 }
                 """);
         runner("tasks").build();
-        final Path classesSkill = projectDir.resolve(".claude/skills/classes.md");
+        final Path classesSkill = projectDir.resolve(".claude/skills/clean-code-classes/SKILL.md");
         final String content = Files.readString(classesSkill);
         assertAll(
                 () -> assertTrue(content.contains("200 lines"), "should contain custom class line count"),
@@ -127,7 +127,7 @@ class CleanCodePluginTest {
     @Test
     void doesNotReScaffoldWhenThresholdsUnchanged() throws IOException {
         runner("tasks").build();
-        final Path classesSkill = projectDir.resolve(".claude/skills/classes.md");
+        final Path classesSkill = projectDir.resolve(".claude/skills/clean-code-classes/SKILL.md");
         final long firstModified = Files.getLastModifiedTime(classesSkill).toMillis();
 
         runner("tasks").build();
@@ -138,7 +138,7 @@ class CleanCodePluginTest {
     @Test
     void reScaffoldsWhenThresholdsChange() throws IOException {
         runner("tasks").build();
-        final Path classesSkill = projectDir.resolve(".claude/skills/classes.md");
+        final Path classesSkill = projectDir.resolve(".claude/skills/clean-code-classes/SKILL.md");
         final String originalContent = Files.readString(classesSkill);
         assertTrue(originalContent.contains("150 lines"));
 
@@ -163,7 +163,7 @@ class CleanCodePluginTest {
     @Test
     void warnsWhenThresholdsChangeButFileCustomised() throws IOException {
         runner("tasks").build();
-        final Path classesSkill = projectDir.resolve(".claude/skills/classes.md");
+        final Path classesSkill = projectDir.resolve(".claude/skills/clean-code-classes/SKILL.md");
         Files.writeString(classesSkill, "# My custom skill file\nCustom content here.\n");
 
         Files.writeString(projectDir.resolve("build.gradle.kts"), """
