@@ -1,0 +1,454 @@
+{
+  "projectName": "claude-review",
+  "projectVersion": "1.0-SNAPSHOT",
+  "generatedAt": "2026-04-16T09:39:58.487788Z",
+  "findings": [
+    {
+      "code": "Ch10_1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": 1,
+      "endLine": 1,
+      "message": "File length is 276 lines (max allowed is 150).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "FileLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/filelength.html"
+      }
+    },
+    {
+      "code": "G12",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": 10,
+      "endLine": 10,
+      "message": "Unused import - com.google.gson.Gson.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "UnusedImports",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/unusedimports.html"
+      }
+    },
+    {
+      "code": "G30",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": 71,
+      "endLine": 71,
+      "message": "Method collectFindings length is 56 lines (max allowed is 50).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "MethodLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/methodlength.html"
+      }
+    },
+    {
+      "code": "F1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": 129,
+      "endLine": 129,
+      "message": "More than 4 parameters (found 5).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "ParameterNumber",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/parameternumber.html"
+      }
+    },
+    {
+      "code": "G8",
+      "sourceFile": "org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java",
+      "startLine": 8,
+      "endLine": 18,
+      "message": "May expose internal representation by returning reference to mutable object",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "spotbugs",
+      "ruleRef": "EI_EXPOSE_REP",
+      "metadata": {
+        "ruleUrl": "https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html#ei-expose-rep"
+      }
+    },
+    {
+      "code": "G8",
+      "sourceFile": "org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java",
+      "startLine": 8,
+      "endLine": 18,
+      "message": "May expose internal representation by returning reference to mutable object",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "spotbugs",
+      "ruleRef": "EI_EXPOSE_REP",
+      "metadata": {
+        "ruleUrl": "https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html#ei-expose-rep"
+      }
+    },
+    {
+      "code": "G8",
+      "sourceFile": "org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java",
+      "startLine": 8,
+      "endLine": 18,
+      "message": "May expose internal representation by incorporating reference to mutable object",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "spotbugs",
+      "ruleRef": "EI_EXPOSE_REP2",
+      "metadata": {
+        "ruleUrl": "https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html#ei-expose-rep2"
+      }
+    },
+    {
+      "code": "G8",
+      "sourceFile": "org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java",
+      "startLine": 8,
+      "endLine": 18,
+      "message": "May expose internal representation by incorporating reference to mutable object",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "spotbugs",
+      "ruleRef": "EI_EXPOSE_REP2",
+      "metadata": {
+        "ruleUrl": "https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html#ei-expose-rep2"
+      }
+    },
+    {
+      "code": "T1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Overall line coverage: 35.3% (60/170 lines covered)",
+      "severity": "ERROR",
+      "confidence": "HIGH",
+      "tool": "jacoco",
+      "ruleRef": "line-coverage",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -\u003e 4.9.8]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.github.spotbugs:spotbugs",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.google.code.gson:gson [2.11.0 -\u003e 2.13.2]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.google.code.gson:gson",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -\u003e 10.26.1]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.puppycrawl.tools:checkstyle",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-ant",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-cli",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-java",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -\u003e 0.8.14]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.jacoco:org.jacoco.agent",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -\u003e 0.8.14]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.jacoco:org.jacoco.ant",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit:junit-bom [5.10.0 -\u003e 5.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit:junit-bom",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit.jupiter:junit-jupiter [5.10.0 -\u003e 5.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit.jupiter:junit-jupiter",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit.platform:junit-platform-launcher [1.10.0 -\u003e 1.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit.platform:junit-platform-launcher",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.slf4j:slf4j-simple [2.0.17 -\u003e 2.1.0-alpha1]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.slf4j:slf4j-simple",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Catch block in \u0027collectFindings\u0027 only logs or is empty",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Catch block in \u0027collectFindings\u0027 only logs or is empty",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Catch block in \u0027parseFindings\u0027 only logs or is empty",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Catch block in \u0027collectSourceFiles\u0027 only logs or is empty",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Class \u0027ClaudeReviewFindingSource\u0027 is 239 lines",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch10_1",
+      "metadata": {}
+    },
+    {
+      "code": "F1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Record \u0027ClaudeReviewConfig\u0027 has 7 components — too many constructor parameters",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "F1",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": 8,
+      "endLine": 8,
+      "message": "\u0027client\u0027 is declared in collectFindings() but not used until 33 lines later — move the declaration closer to line 41",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": 12,
+      "endLine": 12,
+      "message": "\u0027systemPrompt\u0027 is declared in collectFindings() but not used until 29 lines later — move the declaration closer to line 41",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": 13,
+      "endLine": 13,
+      "message": "\u0027codesKey\u0027 is declared in collectFindings() but not used until 20 lines later — move the declaration closer to line 33",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": 22,
+      "endLine": 22,
+      "message": "\u0027allFindings\u0027 is declared in collectFindings() but not used until 15 lines later — move the declaration closer to line 37",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 has 10 blank-line sections across 56 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027parseFindings\u0027 has 4 blank-line sections across 39 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G19",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Complex expression in \u0027analyseFile\u0027 should be extracted to a named variable: TextBlockParam.builder() .text(systemPrompt) .cacheControl(C",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G19",
+      "metadata": {}
+    },
+    {
+      "code": "G18",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ReviewCache.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027save\u0027 does not use instance state — consider making it static or extracting",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G18",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027analyseFile\u0027 catches Exception — catch specific exception types instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/claude-review/src/main/java/org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027parseFindings\u0027 catches Exception — catch specific exception types instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    }
+  ]
+}

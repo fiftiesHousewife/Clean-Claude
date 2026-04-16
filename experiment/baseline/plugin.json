@@ -1,0 +1,1015 @@
+{
+  "projectName": "plugin",
+  "projectVersion": "1.0-SNAPSHOT",
+  "generatedAt": "2026-04-16T09:39:56.074595Z",
+  "findings": [
+    {
+      "code": "G26",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/ExplainTask.java",
+      "startLine": 40,
+      "endLine": 40,
+      "message": "When doing a String.toLowerCase()/toUpperCase() call, use a Locale",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "pmd",
+      "ruleRef": "UseLocaleWithCaseConversions",
+      "metadata": {
+        "ruleUrl": "https://pmd.github.io/pmd/pmd_rules_java_errorprone.html#uselocalewithcaseconversions"
+      }
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": 1,
+      "endLine": 1,
+      "message": "File length is 179 lines (max allowed is 150).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "FileLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/filelength.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 3,
+      "endLine": 3,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.adapters.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 7,
+      "endLine": 7,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "G30",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 19,
+      "endLine": 19,
+      "message": "Method analyse length is 61 lines (max allowed is 50).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "MethodLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/methodlength.html"
+      }
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": 1,
+      "endLine": 1,
+      "message": "File length is 192 lines (max allowed is 150).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "FileLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/filelength.html"
+      }
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java",
+      "startLine": 1,
+      "endLine": 1,
+      "message": "File length is 166 lines (max allowed is 150).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "FileLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/filelength.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java",
+      "startLine": 15,
+      "endLine": 15,
+      "message": "Variable \u0027buildDir\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java",
+      "startLine": 16,
+      "endLine": 16,
+      "message": "Variable \u0027reportFile\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java",
+      "startLine": 17,
+      "endLine": 17,
+      "message": "Variable \u0027baselineFile\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java",
+      "startLine": 19,
+      "endLine": 19,
+      "message": "Variable \u0027report\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/ExplainTask.java",
+      "startLine": 24,
+      "endLine": 24,
+      "message": "Variable \u0027skillPath\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/ExplainTask.java",
+      "startLine": 30,
+      "endLine": 30,
+      "message": "Variable \u0027file\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G4",
+      "sourceFile": "org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java",
+      "startLine": 30,
+      "endLine": 85,
+      "message": "Be wary of letting constructors throw exceptions.",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "spotbugs",
+      "ruleRef": "CT_CONSTRUCTOR_THROW",
+      "metadata": {
+        "ruleUrl": "https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html#ct-constructor-throw"
+      }
+    },
+    {
+      "code": "G4",
+      "sourceFile": "org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": 22,
+      "endLine": 189,
+      "message": "Method ignores exceptional return value",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "spotbugs",
+      "ruleRef": "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
+      "metadata": {
+        "ruleUrl": "https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html#rv-return-value-ignored-bad-practice"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 29,
+      "endLine": 39,
+      "message": "Duplicated block (98 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java",
+        "tokens": "98"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java",
+      "startLine": 19,
+      "endLine": 29,
+      "message": "Duplicated block (98 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+        "tokens": "98"
+      }
+    },
+    {
+      "code": "T1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Overall line coverage: 0.0% (0/375 lines covered)",
+      "severity": "ERROR",
+      "confidence": "HIGH",
+      "tool": "jacoco",
+      "ruleRef": "line-coverage",
+      "metadata": {}
+    },
+    {
+      "code": "T8",
+      "sourceFile": "org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java",
+      "startLine": 1,
+      "endLine": -1,
+      "message": "Class CleanCodeExtension$ThresholdsExtension has 0.0% line coverage (0/17 lines)",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "jacoco",
+      "ruleRef": "class-coverage",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -\u003e 4.9.8]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.github.spotbugs:spotbugs",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -\u003e 10.26.1]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.puppycrawl.tools:checkstyle",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-ant",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-cli",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-java",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -\u003e 0.8.14]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.jacoco:org.jacoco.agent",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -\u003e 0.8.14]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.jacoco:org.jacoco.ant",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit:junit-bom [5.10.0 -\u003e 5.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit:junit-bom",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit.jupiter:junit-jupiter [5.10.0 -\u003e 5.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit.jupiter:junit-jupiter",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit.platform:junit-platform-launcher [1.10.0 -\u003e 1.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit.platform:junit-platform-launcher",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.slf4j:slf4j-simple [2.0.17 -\u003e 2.1.0-alpha1]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.slf4j:slf4j-simple",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Catch block in \u0027refreshIfUnmodified\u0027 only logs or is empty",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Catch block in \u0027writeSkillFile\u0027 only logs or is empty",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Catch block in \u0027readHashFile\u0027 only logs or is empty",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Catch block in \u0027writeHashFile\u0027 only logs or is empty",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_2",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027resolveTemplateWithHash\u0027 has 3 null checks",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_2",
+      "metadata": {}
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Class \u0027SkillFileScaffolder\u0027 is 171 lines",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch10_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Class \u0027CleanCodePlugin\u0027 is 173 lines",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch10_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Class \u0027CleanCodeExtension\u0027 is 154 lines",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch10_1",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 4,
+      "endLine": 4,
+      "message": "\u0027projectRoot\u0027 is declared in analyse() but not used until 19 lines later — move the declaration closer to line 23",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 6,
+      "endLine": 6,
+      "message": "\u0027reportsDir\u0027 is declared in analyse() but not used until 24 lines later — move the declaration closer to line 30",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 9,
+      "endLine": 9,
+      "message": "\u0027thresholds\u0027 is declared in analyse() but not used until 32 lines later — move the declaration closer to line 41",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 11,
+      "endLine": 11,
+      "message": "\u0027claudeConfig\u0027 is declared in analyse() but not used until 31 lines later — move the declaration closer to line 42",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 12,
+      "endLine": 12,
+      "message": "\u0027disabledRecipes\u0027 is declared in analyse() but not used until 33 lines later — move the declaration closer to line 45",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 14,
+      "endLine": 14,
+      "message": "\u0027dependencies\u0027 is declared in analyse() but not used until 17 lines later — move the declaration closer to line 31",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 22,
+      "endLine": 22,
+      "message": "\u0027context\u0027 is declared in analyse() but not used until 22 lines later — move the declaration closer to line 44",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 33,
+      "endLine": 33,
+      "message": "\u0027sources\u0027 is declared in analyse() but not used until 11 lines later — move the declaration closer to line 44",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": 6,
+      "endLine": 6,
+      "message": "\u0027report\u0027 is declared in analyse() but not used until 24 lines later — move the declaration closer to line 30",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java",
+      "startLine": 5,
+      "endLine": 5,
+      "message": "\u0027reportFile\u0027 is declared in generate() but not used until 12 lines later — move the declaration closer to line 17",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java",
+      "startLine": 6,
+      "endLine": 6,
+      "message": "\u0027claudeMdFile\u0027 is declared in generate() but not used until 12 lines later — move the declaration closer to line 18",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java",
+      "startLine": 7,
+      "endLine": 7,
+      "message": "\u0027baselineFile\u0027 is declared in generate() but not used until 11 lines later — move the declaration closer to line 18",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java",
+      "startLine": 5,
+      "endLine": 5,
+      "message": "\u0027report\u0027 is declared in generate() but not used until 12 lines later — move the declaration closer to line 17",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": 3,
+      "endLine": 3,
+      "message": "\u0027cpdConfig\u0027 is declared in registerCpdTask() but not used until 14 lines later — move the declaration closer to line 17",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": 12,
+      "endLine": 12,
+      "message": "\u0027minimumTokens\u0027 is declared in registerCpdTask() but not used until 24 lines later — move the declaration closer to line 36",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"{{classLineCount}}\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"{{recordComponentCount}}\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"{{classTargetLines}}\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"ANTHROPIC_API_KEY\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"cpdMain\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027analyse\u0027 has 8 blank-line sections across 61 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027apply\u0027 has 7 blank-line sections across 39 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027registerCpdTask\u0027 has 6 blank-line sections across 40 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "T1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Private method \u0027resolveTemplateWithHash\u0027 (6 lines) should be package-private so it can be tested directly",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "T1",
+      "metadata": {}
+    },
+    {
+      "code": "T1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Private method \u0027applyStaticAnalysisPlugins\u0027 (10 lines) should be package-private so it can be tested directly",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "T1",
+      "metadata": {}
+    },
+    {
+      "code": "G23",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/ExplainTask.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Switch on String \u0027concern.toLowerCase()\u0027 with 5 cases — replace with an enum that encapsulates the behaviour",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G23",
+      "metadata": {}
+    },
+    {
+      "code": "G19",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Complex expression in \u0027computeThresholdsHash\u0027 should be extracted to a named variable: classLineCount + \":\" + classTargetLines + \":\" + recordCompon",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G19",
+      "metadata": {}
+    },
+    {
+      "code": "G19",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Complex expression in \u0027configureCheckstyle\u0027 should be extracted to a named variable: project.getResources().getText().fromString(configContent)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G19",
+      "metadata": {}
+    },
+    {
+      "code": "G19",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Complex expression in \u0027configureSpotBugs\u0027 should be extracted to a named variable: project.getLayout().getBuildDirectory().file(\"reports/spotbu",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G19",
+      "metadata": {}
+    },
+    {
+      "code": "G19",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Complex expression in \u0027registerCpdTask\u0027 should be extracted to a named variable: reportFile.get().getAsFile().toPath()",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G19",
+      "metadata": {}
+    },
+    {
+      "code": "G18",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027computeThresholdsHash\u0027 does not use instance state — consider making it static or extracting",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G18",
+      "metadata": {}
+    },
+    {
+      "code": "G18",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027generate\u0027 does not use instance state — consider making it static or extracting",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G18",
+      "metadata": {}
+    },
+    {
+      "code": "G18",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027baseline\u0027 does not use instance state — consider making it static or extracting",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G18",
+      "metadata": {}
+    },
+    {
+      "code": "G35",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Magic number 2 in private method \u0027resolveTemplateWithHash\u0027 — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G35",
+      "metadata": {}
+    },
+    {
+      "code": "G35",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Magic number 3 in private method \u0027parseThresholdsHash\u0027 — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G35",
+      "metadata": {}
+    },
+    {
+      "code": "G29",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027resolveTemplateWithHash\u0027 has 3 guard clauses — simplify with early return or extract filter",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G29",
+      "metadata": {}
+    },
+    {
+      "code": "G35",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Field \u0027SKILL_FILES\u0027 has 11 hardcoded literals — load from configuration",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G35",
+      "metadata": {}
+    },
+    {
+      "code": "G15",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027scaffoldFile\u0027 uses boolean parameter \u0027thresholdsChanged\u0027 to select behaviour — split into separate methods",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G15",
+      "metadata": {}
+    },
+    {
+      "code": "G31",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027apply\u0027 has 4 consecutive void calls with no data dependency — make the order explicit",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G31",
+      "metadata": {}
+    },
+    {
+      "code": "G31",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027applyStaticAnalysisPlugins\u0027 has 10 consecutive void calls with no data dependency — make the order explicit",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G31",
+      "metadata": {}
+    },
+    {
+      "code": "G31",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027CleanCodeExtension\u0027 has 4 consecutive void calls with no data dependency — make the order explicit",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G31",
+      "metadata": {}
+    },
+    {
+      "code": "G31",
+      "sourceFile": "ThresholdsExtension.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027ThresholdsExtension\u0027 has 15 consecutive void calls with no data dependency — make the order explicit",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G31",
+      "metadata": {}
+    },
+    {
+      "code": "G31",
+      "sourceFile": "ClaudeReviewExtension.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027ClaudeReviewExtension\u0027 has 6 consecutive void calls with no data dependency — make the order explicit",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G31",
+      "metadata": {}
+    },
+    {
+      "code": "G4",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027readHashFile\u0027 catches IOException and silently swallows it — handle or propagate",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G4",
+      "metadata": {}
+    }
+  ]
+}

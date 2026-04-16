@@ -1,0 +1,3960 @@
+{
+  "projectName": "adapters",
+  "projectVersion": "1.0-SNAPSHOT",
+  "generatedAt": "2026-04-16T09:39:50.100544Z",
+  "findings": [
+    {
+      "code": "G26",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 530,
+      "endLine": 530,
+      "message": "When doing a String.toLowerCase()/toUpperCase() call, use a Locale",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "pmd",
+      "ruleRef": "UseLocaleWithCaseConversions",
+      "metadata": {
+        "ruleUrl": "https://pmd.github.io/pmd/pmd_rules_java_errorprone.html#uselocalewithcaseconversions"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java",
+      "startLine": 8,
+      "endLine": 8,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 4,
+      "endLine": 4,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 12,
+      "endLine": 12,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - java.util.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 24,
+      "endLine": 24,
+      "message": "Line is longer than 120 characters (found 152).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 25,
+      "endLine": 25,
+      "message": "Line is longer than 120 characters (found 142).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 26,
+      "endLine": 26,
+      "message": "Line is longer than 120 characters (found 154).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 27,
+      "endLine": 27,
+      "message": "Line is longer than 120 characters (found 147).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 28,
+      "endLine": 28,
+      "message": "Line is longer than 120 characters (found 144).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 29,
+      "endLine": 29,
+      "message": "Line is longer than 120 characters (found 133).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 30,
+      "endLine": 30,
+      "message": "Line is longer than 120 characters (found 149).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 31,
+      "endLine": 31,
+      "message": "Line is longer than 120 characters (found 155).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 32,
+      "endLine": 32,
+      "message": "Line is longer than 120 characters (found 155).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 33,
+      "endLine": 33,
+      "message": "Line is longer than 120 characters (found 149).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 34,
+      "endLine": 34,
+      "message": "Line is longer than 120 characters (found 137).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 35,
+      "endLine": 35,
+      "message": "Line is longer than 120 characters (found 132).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 36,
+      "endLine": 36,
+      "message": "Line is longer than 120 characters (found 165).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 37,
+      "endLine": 37,
+      "message": "Line is longer than 120 characters (found 137).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 38,
+      "endLine": 38,
+      "message": "Line is longer than 120 characters (found 139).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 39,
+      "endLine": 39,
+      "message": "Line is longer than 120 characters (found 125).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 40,
+      "endLine": 40,
+      "message": "Line is longer than 120 characters (found 124).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 41,
+      "endLine": 41,
+      "message": "Line is longer than 120 characters (found 166).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 42,
+      "endLine": 42,
+      "message": "Line is longer than 120 characters (found 137).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 43,
+      "endLine": 43,
+      "message": "Line is longer than 120 characters (found 137).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 44,
+      "endLine": 44,
+      "message": "Line is longer than 120 characters (found 161).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 59,
+      "endLine": 59,
+      "message": "Variable \u0027codes\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 71,
+      "endLine": 71,
+      "message": "Variable \u0027report\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 77,
+      "endLine": 77,
+      "message": "Variable \u0027doc\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 79,
+      "endLine": 79,
+      "message": "Variable \u0027findings\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 80,
+      "endLine": 80,
+      "message": "Variable \u0027fileNodes\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 83,
+      "endLine": 83,
+      "message": "Variable \u0027fileElement\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 84,
+      "endLine": 84,
+      "message": "Variable \u0027absolutePath\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 85,
+      "endLine": 85,
+      "message": "Variable \u0027relativePath\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 87,
+      "endLine": 87,
+      "message": "Variable \u0027violations\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 89,
+      "endLine": 89,
+      "message": "Variable \u0027v\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 90,
+      "endLine": 90,
+      "message": "Variable \u0027rule\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 92,
+      "endLine": 92,
+      "message": "Variable \u0027mapping\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 97,
+      "endLine": 97,
+      "message": "Variable \u0027startLine\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 98,
+      "endLine": 98,
+      "message": "Variable \u0027endLine\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 99,
+      "endLine": 99,
+      "message": "Variable \u0027message\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 4,
+      "endLine": 4,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 12,
+      "endLine": 12,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - java.util.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 40,
+      "endLine": 40,
+      "message": "Variable \u0027report\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 47,
+      "endLine": 47,
+      "message": "Variable \u0027doc\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 49,
+      "endLine": 49,
+      "message": "Variable \u0027findings\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 64,
+      "endLine": 64,
+      "message": "Variable \u0027hasTestSources\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 78,
+      "endLine": 78,
+      "message": "Variable \u0027reportElement\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 79,
+      "endLine": 79,
+      "message": "Variable \u0027counters\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 86,
+      "endLine": 86,
+      "message": "Variable \u0027missed\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 87,
+      "endLine": 87,
+      "message": "Variable \u0027covered\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 88,
+      "endLine": 88,
+      "message": "Variable \u0027total\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 89,
+      "endLine": 89,
+      "message": "Variable \u0027percentage\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 90,
+      "endLine": 90,
+      "message": "Variable \u0027severity\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 103,
+      "endLine": 103,
+      "message": "Variable \u0027classNodes\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 106,
+      "endLine": 106,
+      "message": "Variable \u0027classElement\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 107,
+      "endLine": 107,
+      "message": "Variable \u0027className\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 108,
+      "endLine": 108,
+      "message": "Variable \u0027sourceFile\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 110,
+      "endLine": 110,
+      "message": "Variable \u0027counters\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 112,
+      "endLine": 112,
+      "message": "Variable \u0027counter\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 114,
+      "endLine": 114,
+      "message": "Variable \u0027missed\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 115,
+      "endLine": 115,
+      "message": "Variable \u0027covered\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 116,
+      "endLine": 116,
+      "message": "Variable \u0027total\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 122,
+      "endLine": 122,
+      "message": "Variable \u0027percentage\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 124,
+      "endLine": 124,
+      "message": "Variable \u0027packagePath\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 142,
+      "endLine": 142,
+      "message": "\u0027if\u0027 construct must use \u0027{}\u0027s.",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "NeedBraces",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/blocks/needbraces.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": 143,
+      "endLine": 143,
+      "message": "\u0027if\u0027 construct must use \u0027{}\u0027s.",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "NeedBraces",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/blocks/needbraces.html"
+      }
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 1,
+      "endLine": 1,
+      "message": "File length is 671 lines (max allowed is 150).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "FileLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/filelength.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 3,
+      "endLine": 3,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.recipes.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 5,
+      "endLine": 5,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 17,
+      "endLine": 17,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - java.util.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "G30",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 96,
+      "endLine": 96,
+      "message": "Method createRecipes length is 56 lines (max allowed is 50).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "MethodLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/methodlength.html"
+      }
+    },
+    {
+      "code": "G30",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 160,
+      "endLine": 160,
+      "message": "Method mapRecipe length is 58 lines (max allowed is 50).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "MethodLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/methodlength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 222,
+      "endLine": 222,
+      "message": "Line is longer than 120 characters (found 142).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 331,
+      "endLine": 331,
+      "message": "Line is longer than 120 characters (found 136).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 370,
+      "endLine": 370,
+      "message": "Line is longer than 120 characters (found 131).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 378,
+      "endLine": 378,
+      "message": "Line is longer than 120 characters (found 122).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 386,
+      "endLine": 386,
+      "message": "Line is longer than 120 characters (found 127).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 418,
+      "endLine": 418,
+      "message": "Line is longer than 120 characters (found 131).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 513,
+      "endLine": 513,
+      "message": "Line is longer than 120 characters (found 146).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 569,
+      "endLine": 569,
+      "message": "Line is longer than 120 characters (found 121).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 585,
+      "endLine": 585,
+      "message": "Line is longer than 120 characters (found 128).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java",
+      "startLine": 617,
+      "endLine": 617,
+      "message": "Line is longer than 120 characters (found 143).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 4,
+      "endLine": 4,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 12,
+      "endLine": 12,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - java.util.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 38,
+      "endLine": 38,
+      "message": "Variable \u0027report\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 43,
+      "endLine": 43,
+      "message": "Variable \u0027doc\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 44,
+      "endLine": 44,
+      "message": "Variable \u0027findings\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 45,
+      "endLine": 45,
+      "message": "Variable \u0027duplications\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 55,
+      "endLine": 55,
+      "message": "Variable \u0027tokens\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 56,
+      "endLine": 56,
+      "message": "Variable \u0027lines\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 57,
+      "endLine": 57,
+      "message": "Variable \u0027severity\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 58,
+      "endLine": 58,
+      "message": "Variable \u0027files\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 60,
+      "endLine": 60,
+      "message": "Variable \u0027findings\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "F1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 67,
+      "endLine": 67,
+      "message": "More than 4 parameters (found 6).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "ParameterNumber",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/parameternumber.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 69,
+      "endLine": 69,
+      "message": "Variable \u0027file\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 70,
+      "endLine": 70,
+      "message": "Variable \u0027relativePath\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 71,
+      "endLine": 71,
+      "message": "Variable \u0027startLine\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 72,
+      "endLine": 72,
+      "message": "Variable \u0027endLine\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 74,
+      "endLine": 74,
+      "message": "Variable \u0027otherFiles\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 75,
+      "endLine": 75,
+      "message": "Variable \u0027metadata\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 87,
+      "endLine": 87,
+      "message": "Variable \u0027paths\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 104,
+      "endLine": 104,
+      "message": "Variable \u0027fileNodes\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 105,
+      "endLine": 105,
+      "message": "Variable \u0027files\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PathUtils.java",
+      "startLine": 10,
+      "endLine": 10,
+      "message": "Variable \u0027root\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 4,
+      "endLine": 4,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 12,
+      "endLine": 12,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - java.util.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 21,
+      "endLine": 21,
+      "message": "Line is longer than 120 characters (found 176).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 22,
+      "endLine": 22,
+      "message": "Line is longer than 120 characters (found 160).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 23,
+      "endLine": 23,
+      "message": "Line is longer than 120 characters (found 146).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 24,
+      "endLine": 24,
+      "message": "Line is longer than 120 characters (found 157).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 25,
+      "endLine": 25,
+      "message": "Line is longer than 120 characters (found 179).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 26,
+      "endLine": 26,
+      "message": "Line is longer than 120 characters (found 175).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 27,
+      "endLine": 27,
+      "message": "Line is longer than 120 characters (found 161).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 28,
+      "endLine": 28,
+      "message": "Line is longer than 120 characters (found 157).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 29,
+      "endLine": 29,
+      "message": "Line is longer than 120 characters (found 146).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 30,
+      "endLine": 30,
+      "message": "Line is longer than 120 characters (found 190).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 31,
+      "endLine": 31,
+      "message": "Line is longer than 120 characters (found 197).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 32,
+      "endLine": 32,
+      "message": "Line is longer than 120 characters (found 146).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 33,
+      "endLine": 33,
+      "message": "Line is longer than 120 characters (found 158).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 34,
+      "endLine": 34,
+      "message": "Line is longer than 120 characters (found 187).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 35,
+      "endLine": 35,
+      "message": "Line is longer than 120 characters (found 163).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 36,
+      "endLine": 36,
+      "message": "Line is longer than 120 characters (found 146).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 37,
+      "endLine": 37,
+      "message": "Line is longer than 120 characters (found 148).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 38,
+      "endLine": 38,
+      "message": "Line is longer than 120 characters (found 152).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 39,
+      "endLine": 39,
+      "message": "Line is longer than 120 characters (found 184).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 40,
+      "endLine": 40,
+      "message": "Line is longer than 120 characters (found 157).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 41,
+      "endLine": 41,
+      "message": "Line is longer than 120 characters (found 175).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 42,
+      "endLine": 42,
+      "message": "Line is longer than 120 characters (found 143).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 43,
+      "endLine": 43,
+      "message": "Line is longer than 120 characters (found 170).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 44,
+      "endLine": 44,
+      "message": "Line is longer than 120 characters (found 158).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 45,
+      "endLine": 45,
+      "message": "Line is longer than 120 characters (found 146).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 46,
+      "endLine": 46,
+      "message": "Line is longer than 120 characters (found 159).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 47,
+      "endLine": 47,
+      "message": "Line is longer than 120 characters (found 183).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 48,
+      "endLine": 48,
+      "message": "Line is longer than 120 characters (found 153).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 49,
+      "endLine": 49,
+      "message": "Line is longer than 120 characters (found 148).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 50,
+      "endLine": 50,
+      "message": "Line is longer than 120 characters (found 162).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 51,
+      "endLine": 51,
+      "message": "Line is longer than 120 characters (found 190).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 52,
+      "endLine": 52,
+      "message": "Line is longer than 120 characters (found 194).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 53,
+      "endLine": 53,
+      "message": "Line is longer than 120 characters (found 202).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 54,
+      "endLine": 54,
+      "message": "Line is longer than 120 characters (found 151).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 55,
+      "endLine": 55,
+      "message": "Line is longer than 120 characters (found 151).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 56,
+      "endLine": 56,
+      "message": "Line is longer than 120 characters (found 139).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 75,
+      "endLine": 75,
+      "message": "Variable \u0027codes\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G30",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 86,
+      "endLine": 86,
+      "message": "Method collectFindings length is 54 lines (max allowed is 50).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "MethodLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/methodlength.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 88,
+      "endLine": 88,
+      "message": "Variable \u0027report\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 93,
+      "endLine": 93,
+      "message": "Variable \u0027doc\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 95,
+      "endLine": 95,
+      "message": "Variable \u0027findings\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 96,
+      "endLine": 96,
+      "message": "Variable \u0027bugInstances\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 99,
+      "endLine": 99,
+      "message": "Variable \u0027bug\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 100,
+      "endLine": 100,
+      "message": "Variable \u0027type\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 101,
+      "endLine": 101,
+      "message": "Variable \u0027category\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 102,
+      "endLine": 102,
+      "message": "Variable \u0027rank\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 105,
+      "endLine": 105,
+      "message": "Variable \u0027typeKey\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 115,
+      "endLine": 115,
+      "message": "Variable \u0027sourceLines\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 119,
+      "endLine": 119,
+      "message": "Variable \u0027sourceLine\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 120,
+      "endLine": 120,
+      "message": "Variable \u0027startLine\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 121,
+      "endLine": 121,
+      "message": "Variable \u0027endLine\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 122,
+      "endLine": 122,
+      "message": "Variable \u0027sourcePath\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 125,
+      "endLine": 125,
+      "message": "Variable \u0027shortMessages\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 126,
+      "endLine": 126,
+      "message": "Variable \u0027message\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 131,
+      "endLine": 131,
+      "message": "Variable \u0027severity\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "Ch10_1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 1,
+      "endLine": 1,
+      "message": "File length is 152 lines (max allowed is 150).",
+      "severity": "WARNING",
+      "confidence": "MEDIUM",
+      "tool": "checkstyle",
+      "ruleRef": "FileLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/filelength.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 4,
+      "endLine": 4,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 14,
+      "endLine": 14,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - java.util.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 39,
+      "endLine": 39,
+      "message": "Variable \u0027dir\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 52,
+      "endLine": 52,
+      "message": "Variable \u0027dir\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 58,
+      "endLine": 58,
+      "message": "Variable \u0027findings\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 64,
+      "endLine": 64,
+      "message": "Variable \u0027doc\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 65,
+      "endLine": 65,
+      "message": "Variable \u0027suite\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 82,
+      "endLine": 82,
+      "message": "Variable \u0027findings\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 83,
+      "endLine": 83,
+      "message": "Variable \u0027testcases\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 86,
+      "endLine": 86,
+      "message": "Variable \u0027testcase\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 94,
+      "endLine": 94,
+      "message": "Variable \u0027testName\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 95,
+      "endLine": 95,
+      "message": "Variable \u0027className\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 96,
+      "endLine": 96,
+      "message": "Variable \u0027sourceFile\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 109,
+      "endLine": 109,
+      "message": "Variable \u0027time\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": 135,
+      "endLine": 135,
+      "message": "Variable \u0027skipPercentage\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 4,
+      "endLine": 4,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - org.fiftieshousewife.cleancode.core.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "J1",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 12,
+      "endLine": 12,
+      "message": "Using the \u0027.*\u0027 form of import should be avoided - java.util.*.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "AvoidStarImport",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/imports/avoidstarimport.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 21,
+      "endLine": 21,
+      "message": "Line is longer than 120 characters (found 146).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 22,
+      "endLine": 22,
+      "message": "Line is longer than 120 characters (found 140).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 23,
+      "endLine": 23,
+      "message": "Line is longer than 120 characters (found 153).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 24,
+      "endLine": 24,
+      "message": "Line is longer than 120 characters (found 143).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 25,
+      "endLine": 25,
+      "message": "Line is longer than 120 characters (found 149).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 26,
+      "endLine": 26,
+      "message": "Line is longer than 120 characters (found 148).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 27,
+      "endLine": 27,
+      "message": "Line is longer than 120 characters (found 145).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 28,
+      "endLine": 28,
+      "message": "Line is longer than 120 characters (found 147).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 29,
+      "endLine": 29,
+      "message": "Line is longer than 120 characters (found 155).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 30,
+      "endLine": 30,
+      "message": "Line is longer than 120 characters (found 172).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 31,
+      "endLine": 31,
+      "message": "Line is longer than 120 characters (found 150).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 32,
+      "endLine": 32,
+      "message": "Line is longer than 120 characters (found 140).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 33,
+      "endLine": 33,
+      "message": "Line is longer than 120 characters (found 136).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 34,
+      "endLine": 34,
+      "message": "Line is longer than 120 characters (found 138).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 35,
+      "endLine": 35,
+      "message": "Line is longer than 120 characters (found 154).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 36,
+      "endLine": 36,
+      "message": "Line is longer than 120 characters (found 160).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 37,
+      "endLine": 37,
+      "message": "Line is longer than 120 characters (found 139).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 38,
+      "endLine": 38,
+      "message": "Line is longer than 120 characters (found 135).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 39,
+      "endLine": 39,
+      "message": "Line is longer than 120 characters (found 154).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 40,
+      "endLine": 40,
+      "message": "Line is longer than 120 characters (found 168).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 41,
+      "endLine": 41,
+      "message": "Line is longer than 120 characters (found 160).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 42,
+      "endLine": 42,
+      "message": "Line is longer than 120 characters (found 146).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 43,
+      "endLine": 43,
+      "message": "Line is longer than 120 characters (found 142).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 44,
+      "endLine": 44,
+      "message": "Line is longer than 120 characters (found 137).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 45,
+      "endLine": 45,
+      "message": "Line is longer than 120 characters (found 142).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G24",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 46,
+      "endLine": 46,
+      "message": "Line is longer than 120 characters (found 133).",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "LineLength",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/sizes/linelength.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 61,
+      "endLine": 61,
+      "message": "Variable \u0027codes\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 73,
+      "endLine": 73,
+      "message": "Variable \u0027report\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 79,
+      "endLine": 79,
+      "message": "Variable \u0027doc\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 81,
+      "endLine": 81,
+      "message": "Variable \u0027findings\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 82,
+      "endLine": 82,
+      "message": "Variable \u0027fileNodes\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 85,
+      "endLine": 85,
+      "message": "Variable \u0027fileElement\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 86,
+      "endLine": 86,
+      "message": "Variable \u0027absolutePath\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 87,
+      "endLine": 87,
+      "message": "Variable \u0027relativePath\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 89,
+      "endLine": 89,
+      "message": "Variable \u0027errors\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 91,
+      "endLine": 91,
+      "message": "Variable \u0027e\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 92,
+      "endLine": 92,
+      "message": "Variable \u0027sourceFqn\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 93,
+      "endLine": 93,
+      "message": "Variable \u0027checkName\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 95,
+      "endLine": 95,
+      "message": "Variable \u0027mapping\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 100,
+      "endLine": 100,
+      "message": "Variable \u0027line\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 101,
+      "endLine": 101,
+      "message": "Variable \u0027message\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 102,
+      "endLine": 102,
+      "message": "Variable \u0027severity\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G22",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 122,
+      "endLine": 122,
+      "message": "Variable \u0027lastDot\u0027 should be declared final.",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "checkstyle",
+      "ruleRef": "FinalLocalVariable",
+      "metadata": {
+        "ruleUrl": "https://checkstyle.org/checks/coding/finallocalvariable.html"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 57,
+      "endLine": 89,
+      "message": "Duplicated block (202 tokens)",
+      "severity": "ERROR",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+        "tokens": "202"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 55,
+      "endLine": 87,
+      "message": "Duplicated block (202 tokens)",
+      "severity": "ERROR",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+        "tokens": "202"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 62,
+      "endLine": 76,
+      "message": "Duplicated block (89 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+        "tokens": "89"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 77,
+      "endLine": 91,
+      "message": "Duplicated block (89 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+        "tokens": "89"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 60,
+      "endLine": 74,
+      "message": "Duplicated block (89 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+        "tokens": "89"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 77,
+      "endLine": 91,
+      "message": "Duplicated block (89 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+        "tokens": "89"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 28,
+      "endLine": 45,
+      "message": "Duplicated block (85 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+        "tokens": "85"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 78,
+      "endLine": 95,
+      "message": "Duplicated block (85 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+        "tokens": "85"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": 63,
+      "endLine": 76,
+      "message": "Duplicated block (63 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java, src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+        "tokens": "63"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": 28,
+      "endLine": 41,
+      "message": "Duplicated block (63 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java, src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+        "tokens": "63"
+      }
+    },
+    {
+      "code": "G5",
+      "sourceFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": 61,
+      "endLine": 74,
+      "message": "Duplicated block (63 tokens)",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "cpd",
+      "ruleRef": "cpd-duplication",
+      "metadata": {
+        "otherFile": "src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java, src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+        "tokens": "63"
+      }
+    },
+    {
+      "code": "T1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Overall line coverage: 84.6% (697/824 lines covered)",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "tool": "jacoco",
+      "ruleRef": "line-coverage",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -\u003e 4.9.8]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.github.spotbugs:spotbugs",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.google.code.gson:gson [2.11.0 -\u003e 2.13.2]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.google.code.gson:gson",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -\u003e 10.26.1]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.puppycrawl.tools:checkstyle",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-ant",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-cli",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-java",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -\u003e 0.8.14]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.jacoco:org.jacoco.agent",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -\u003e 0.8.14]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.jacoco:org.jacoco.ant",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit:junit-bom [5.10.0 -\u003e 5.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit:junit-bom",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit.jupiter:junit-jupiter [5.10.0 -\u003e 5.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit.jupiter:junit-jupiter",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit.platform:junit-platform-launcher [1.10.0 -\u003e 1.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit.platform:junit-platform-launcher",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.openrewrite:rewrite-core [8.40.2 -\u003e 8.79.4]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.openrewrite:rewrite-core",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.openrewrite:rewrite-java [8.40.2 -\u003e 8.79.4]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.openrewrite:rewrite-java",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.openrewrite:rewrite-java-21 [8.40.2 -\u003e 8.79.4]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.openrewrite:rewrite-java-21",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.slf4j:slf4j-simple [2.0.17 -\u003e 2.1.0-alpha1]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.slf4j:slf4j-simple",
+      "metadata": {}
+    },
+    {
+      "code": "F2",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027extractDependency\u0027 mutates its argument \u0027findings\u0027 (java.util.List\u003c{undefined}\u003e) — return the result instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "F2",
+      "metadata": {}
+    },
+    {
+      "code": "F2",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027addProjectLevelCoverage\u0027 mutates its argument \u0027findings\u0027 (java.util.List\u003c{undefined}\u003e) — return the result instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "F2",
+      "metadata": {}
+    },
+    {
+      "code": "F2",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027addPerClassFindings\u0027 mutates its argument \u0027findings\u0027 (java.util.List\u003c{undefined}\u003e) — return the result instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "F2",
+      "metadata": {}
+    },
+    {
+      "code": "F2",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027addSkipPercentageFinding\u0027 mutates its argument \u0027findings\u0027 (java.util.List\u003c{undefined}\u003e) — return the result instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "F2",
+      "metadata": {}
+    },
+    {
+      "code": "G28",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Complex condition (depth 2) should be extracted",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G28",
+      "metadata": {}
+    },
+    {
+      "code": "C3",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Mumbling comment in \u0027collectFindings\u0027: Use mapping severity, with rank as fallback context",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "C3",
+      "metadata": {}
+    },
+    {
+      "code": "G34",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027addProjectLevelCoverage\u0027 has 1 section comments",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G34",
+      "metadata": {}
+    },
+    {
+      "code": "G10",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": 11,
+      "endLine": 11,
+      "message": "\u0027findings\u0027 is declared in collectFindings() but not used until 38 lines later — move the declaration closer to line 49",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G10",
+      "metadata": {}
+    },
+    {
+      "code": "J3",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "4 static final fields with prefix \u0027PMD\u0027 should be an enum",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "J3",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"LINE\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"Test \u0027%s\u0027 took %.1fs (exceeds %.0fs threshold)\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"TEST-*.xml\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G25",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "String \"Check\" appears 2 times — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G25",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 has 8 blank-line sections across 43 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 has 6 blank-line sections across 23 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027addPerClassFindings\u0027 has 4 blank-line sections across 38 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 has 9 blank-line sections across 54 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 has 5 blank-line sections across 29 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 has 8 blank-line sections across 44 lines — each section should be its own method",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "T1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Private method \u0027extractDependency\u0027 (7 lines) should be package-private so it can be tested directly",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "T1",
+      "metadata": {}
+    },
+    {
+      "code": "G23",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Switch on String \u0027xmlSeverity\u0027 with 4 cases — replace with an enum that encapsulates the behaviour",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G23",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Loop in \u0027findingsForDuplication\u0027 (for with add) can be replaced with a stream operation",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Loop in \u0027otherFilePaths\u0027 (for with filter-add) can be replaced with a stream operation",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G30",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Loop in \u0027extractFileElements\u0027 (for with add) can be replaced with a stream operation",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G30",
+      "metadata": {}
+    },
+    {
+      "code": "G33",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Boundary adjustment \u0027className.lastIndexOf(\u0027/\u0027) + 1\u0027 in \u0027addPerClassFindings\u0027 — extract to a named variable",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G33",
+      "metadata": {}
+    },
+    {
+      "code": "N1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PathUtils.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Class \u0027PathUtils\u0027 uses bad suffix \u0027Utils\u0027 — name after what it represents, not its role",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "N1",
+      "metadata": {}
+    },
+    {
+      "code": "G35",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Magic number 100.0 in private method \u0027addProjectLevelCoverage\u0027 — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G35",
+      "metadata": {}
+    },
+    {
+      "code": "G35",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Magic number 100.0 in private method \u0027addPerClassFindings\u0027 — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G35",
+      "metadata": {}
+    },
+    {
+      "code": "G35",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Magic number 50 in private method \u0027addPerClassFindings\u0027 — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G35",
+      "metadata": {}
+    },
+    {
+      "code": "G35",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Magic number 50 in private method \u0027coverageSeverity\u0027 — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G35",
+      "metadata": {}
+    },
+    {
+      "code": "G35",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Magic number 75 in private method \u0027coverageSeverity\u0027 — extract to a named constant",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G35",
+      "metadata": {}
+    },
+    {
+      "code": "G29",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027extractOutdated\u0027 has 2 guard clauses — simplify with early return or extract filter",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G29",
+      "metadata": {}
+    },
+    {
+      "code": "G29",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027coverageSeverity\u0027 has 2 guard clauses — simplify with early return or extract filter",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G29",
+      "metadata": {}
+    },
+    {
+      "code": "G29",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027findingForSlowTest\u0027 has 2 guard clauses — simplify with early return or extract filter",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "G29",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 catches Exception — catch specific exception types instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 catches Exception — catch specific exception types instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 catches Exception — catch specific exception types instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027collectFindings\u0027 catches Exception — catch specific exception types instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "Ch7_1",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/XmlReportParser.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Method \u0027parse\u0027 catches Exception — catch specific exception types instead",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "Ch7_1",
+      "metadata": {}
+    },
+    {
+      "code": "F2",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Class has 2 methods returning collections and 2 void methods mutating collection params — pick one style",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "F2",
+      "metadata": {}
+    },
+    {
+      "code": "F2",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Class has 3 methods returning collections and 2 void methods mutating collection params — pick one style",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "F2",
+      "metadata": {}
+    },
+    {
+      "code": "F2",
+      "sourceFile": "/Users/pippanewbold/CleanClaude/adapters/src/main/java/org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Class has 3 methods returning collections and 1 void methods mutating collection params — pick one style",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "openrewrite",
+      "ruleRef": "F2",
+      "metadata": {}
+    }
+  ]
+}

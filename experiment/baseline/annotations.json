@@ -1,0 +1,139 @@
+{
+  "projectName": "annotations",
+  "projectVersion": "1.0-SNAPSHOT",
+  "generatedAt": "2026-04-16T09:39:56.185491Z",
+  "findings": [
+    {
+      "code": "T1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Overall line coverage: 100.0% (17/17 lines covered)",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "tool": "jacoco",
+      "ruleRef": "line-coverage",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -\u003e 4.9.8]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.github.spotbugs:spotbugs",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -\u003e 10.26.1]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "com.puppycrawl.tools:checkstyle",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-ant",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-cli",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -\u003e 7.23.0]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "net.sourceforge.pmd:pmd-java",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -\u003e 0.8.14]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.jacoco:org.jacoco.agent",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -\u003e 0.8.14]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.jacoco:org.jacoco.ant",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit:junit-bom [5.10.0 -\u003e 5.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit:junit-bom",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit.jupiter:junit-jupiter [5.10.0 -\u003e 5.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit.jupiter:junit-jupiter",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.junit.platform:junit-platform-launcher [1.10.0 -\u003e 1.14.3]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.junit.platform:junit-platform-launcher",
+      "metadata": {}
+    },
+    {
+      "code": "E1",
+      "startLine": -1,
+      "endLine": -1,
+      "message": "Outdated dependency org.slf4j:slf4j-simple [2.0.17 -\u003e 2.1.0-alpha1]",
+      "severity": "WARNING",
+      "confidence": "HIGH",
+      "tool": "dependency-updates",
+      "ruleRef": "org.slf4j:slf4j-simple",
+      "metadata": {}
+    }
+  ]
+}
