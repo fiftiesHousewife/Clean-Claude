@@ -10,7 +10,7 @@
     header { background: #1a1a2e; color: #fff; padding: 2rem; }
     header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
     header p { opacity: 0.8; font-size: 0.95rem; }
-    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
     .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
     .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
     .badge.error { background: #c0392b; }
@@ -23,8 +23,11 @@
     .group-body { padding: 0 1rem 1rem 1rem; }
     .reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
     .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; }
+    .group-body { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; word-wrap: break-word; overflow-wrap: break-word; }
+    th:first-child, td:first-child { width: 80px; white-space: nowrap; }
+    th:nth-child(2), td:nth-child(2) { width: 35%; white-space: nowrap; }
     th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
     .sev-error { color: #c0392b; font-weight: 600; }
     .sev-warning { color: #e67e22; font-weight: 600; }
@@ -46,7 +49,7 @@
   <main>
     <div class="summary">
       <span class="badge error">2 errors</span>
-      <span class="badge warning">239 warnings</span>
+      <span class="badge warning">241 warnings</span>
       <span class="badge info">2 info</span>
     </div>
     <details>
@@ -59,12 +62,12 @@
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java">org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java</a></td><td>Class 'BuildOutputFormatter' is 185 lines</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java">org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java</a></td><td>Class 'ClaudeMdGenerator' is 179 lines</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HeuristicDescriptions.java">org/fiftieshousewife/cleancode/core/HeuristicDescriptions.java</a></td><td>Class 'HeuristicDescriptions' is 526 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Class 'HtmlReportWriter' is 260 lines</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Class 'HtmlReportWriter' is 263 lines</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/SuppressionIndex.java">org/fiftieshousewife/cleancode/core/SuppressionIndex.java</a></td><td>Class 'SuppressionIndex' is 191 lines</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java#L1">org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java:1</a></td><td>File length is 192 lines (max allowed is 150).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java#L1">org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java:1</a></td><td>File length is 189 lines (max allowed is 150).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HeuristicDescriptions.java#L1">org/fiftieshousewife/cleancode/core/HeuristicDescriptions.java:1</a></td><td>File length is 530 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java#L1">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java:1</a></td><td>File length is 272 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java#L1">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java:1</a></td><td>File length is 275 lines (max allowed is 150).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/SuppressionIndex.java#L1">org/fiftieshousewife/cleancode/core/SuppressionIndex.java:1</a></td><td>File length is 211 lines (max allowed is 150).</td></tr>
         </table>
       </div>
@@ -130,7 +133,7 @@
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/Finding.java">org/fiftieshousewife/cleancode/core/Finding.java</a></td><td>Record 'Finding' has 10 components — too many constructor parameters</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/ProjectContext.java">org/fiftieshousewife/cleancode/core/ProjectContext.java</a></td><td>Record 'ProjectContext' has 9 components — too many constructor parameters</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/RecipeThresholds.java">org/fiftieshousewife/cleancode/core/RecipeThresholds.java</a></td><td>Record 'RecipeThresholds' has 13 components — too many constructor parameters</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/RecipeThresholds.java">org/fiftieshousewife/cleancode/core/RecipeThresholds.java</a></td><td>Record 'RecipeThresholds' has 15 components — too many constructor parameters</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/JsonFinding.java">JsonFinding.java</a></td><td>Record 'JsonFinding' has 10 components — too many constructor parameters</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/Finding.java#L23">org/fiftieshousewife/cleancode/core/Finding.java:23</a></td><td>More than 4 parameters (found 9).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/Finding.java#L31">org/fiftieshousewife/cleancode/core/Finding.java:31</a></td><td>More than 4 parameters (found 6).</td></tr>
@@ -151,7 +154,7 @@
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G1</span>Multiple Languages in One Source File (40)</summary>
+      <summary><span class="code-label">G1</span>Multiple Languages in One Source File (42)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.288</p>
         <p class="guidance">A source file should contain one, and only one, language. A Java file with embedded HTML, CSS, or SQL is harder to read, harder to search, and impossible to validate with language-specific tools. Extract the other language into a template file, a resource, or a separate class that encapsulates the generation.</p>
@@ -161,6 +164,8 @@
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Embedded HTML in method 'appendDocumentStart' — extract to a template or resource file</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Embedded HTML in method 'appendDocumentStart' — extract to a template or resource file</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Embedded HTML in method 'appendDocumentStart' — extract to a template or resource file</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Embedded CSS in method 'appendStyles' — extract to a template or resource file</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Embedded CSS in method 'appendStyles' — extract to a template or resource file</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Embedded CSS in method 'appendStyles' — extract to a template or resource file</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Embedded CSS in method 'appendStyles' — extract to a template or resource file</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Embedded CSS in method 'appendStyles' — extract to a template or resource file</td></tr>
@@ -385,7 +390,7 @@
         <p class="guidance">Ambiguity in code is a sign of insufficient care. When you make a decision in code, make it precisely. Know why you've made it and how you will deal with any exceptions. Don't be lazy about the precision of your decisions.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java#L179">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java:179</a></td><td>When doing a String.toLowerCase()/toUpperCase() call, use a Locale</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java#L182">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java:182</a></td><td>When doing a String.toLowerCase()/toUpperCase() call, use a Locale</td></tr>
         </table>
       </div>
     </details>
@@ -450,7 +455,7 @@
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java">org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java</a></td><td>Method 'appendFrameworksSection' has 3 consecutive void calls with no data dependency — make the order explicit</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java">org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java</a></td><td>Method 'appendDeltaTable' has 5 consecutive void calls with no data dependency — make the order explicit</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Method 'appendDocumentStart' has 10 consecutive void calls with no data dependency — make the order explicit</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Method 'appendStyles' has 45 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Method 'appendStyles' has 48 consecutive void calls with no data dependency — make the order explicit</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Method 'appendSeveritySummary' has 6 consecutive void calls with no data dependency — make the order explicit</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Method 'appendCodeGroup' has 6 consecutive void calls with no data dependency — make the order explicit</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Method 'appendFindingRow' has 6 consecutive void calls with no data dependency — make the order explicit</td></tr>
@@ -520,8 +525,8 @@
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java#L77">org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java:77</a></td><td>Duplicated block (88 tokens)</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java#L89">org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java:89</a></td><td>Duplicated block (67 tokens)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java#L119">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java:119</a></td><td>Duplicated block (88 tokens)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java#L134">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java:134</a></td><td>Duplicated block (67 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java#L122">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java:122</a></td><td>Duplicated block (88 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java#L137">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java:137</a></td><td>Duplicated block (67 tokens)</td></tr>
         </table>
       </div>
     </details>
@@ -570,7 +575,7 @@
         <p class="guidance">Now that Java has enums, use them. The old pattern of public static final int or String constants as an enumeration is obsolete. Enums provide type safety, can have methods and fields, and make switch statements exhaustive. Don't cling to the pre-Java 5 idiom.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/RecipeThresholds.java">org/fiftieshousewife/cleancode/core/RecipeThresholds.java</a></td><td>13 static final fields with prefix 'DEFAULT' should be an enum</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/RecipeThresholds.java">org/fiftieshousewife/cleancode/core/RecipeThresholds.java</a></td><td>15 static final fields with prefix 'DEFAULT' should be an enum</td></tr>
         </table>
       </div>
     </details>
@@ -592,7 +597,7 @@
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 93.3% (905/970 lines covered)</td></tr>
+          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 93.3% (908/973 lines covered)</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java">org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java</a></td><td>Private method 'appendBaselineDelta' (8 lines) should be package-private so it can be tested directly</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java">org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java</a></td><td>Private method 'appendSeveritySummary' (8 lines) should be package-private so it can be tested directly</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java">org/fiftieshousewife/cleancode/core/BuildOutputFormatter.java</a></td><td>Private method 'appendCodeGroup' (12 lines) should be package-private so it can be tested directly</td></tr>
@@ -600,7 +605,7 @@
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java">org/fiftieshousewife/cleancode/core/ClaudeMdGenerator.java</a></td><td>Private method 'appendDeltaTable' (15 lines) should be package-private so it can be tested directly</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Private method 'render' (7 lines) should be package-private so it can be tested directly</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Private method 'appendDocumentStart' (14 lines) should be package-private so it can be tested directly</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Private method 'appendStyles' (45 lines) should be package-private so it can be tested directly</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Private method 'appendStyles' (48 lines) should be package-private so it can be tested directly</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Private method 'appendSeveritySummary' (10 lines) should be package-private so it can be tested directly</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Private method 'appendCodeGroup' (16 lines) should be package-private so it can be tested directly</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/core/src/main/java/org/fiftieshousewife/cleancode/core/HtmlReportWriter.java">org/fiftieshousewife/cleancode/core/HtmlReportWriter.java</a></td><td>Private method 'appendFindingRow' (9 lines) should be package-private so it can be tested directly</td></tr>
@@ -615,7 +620,7 @@
       <h2>Sources</h2>
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>openrewrite</td><td>132</td></tr>
+        <tr><td>openrewrite</td><td>134</td></tr>
         <tr><td>checkstyle</td><td>74</td></tr>
         <tr><td>spotbugs</td><td>16</td></tr>
         <tr><td>dependency-updates</td><td>13</td></tr>
@@ -626,8 +631,8 @@
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-16 08:38:04 Z</p>
-    <p>243 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-16 08:50:41 Z</p>
+    <p>245 total findings</p>
   </footer>
 </body>
 </html>

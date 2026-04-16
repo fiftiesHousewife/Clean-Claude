@@ -10,7 +10,7 @@
     header { background: #1a1a2e; color: #fff; padding: 2rem; }
     header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
     header p { opacity: 0.8; font-size: 0.95rem; }
-    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
     .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
     .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
     .badge.error { background: #c0392b; }
@@ -23,8 +23,11 @@
     .group-body { padding: 0 1rem 1rem 1rem; }
     .reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
     .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; }
+    .group-body { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; word-wrap: break-word; overflow-wrap: break-word; }
+    th:first-child, td:first-child { width: 80px; white-space: nowrap; }
+    th:nth-child(2), td:nth-child(2) { width: 35%; white-space: nowrap; }
     th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
     .sev-error { color: #c0392b; font-weight: 600; }
     .sev-warning { color: #e67e22; font-weight: 600; }
@@ -46,19 +49,20 @@
   <main>
     <div class="summary">
       <span class="badge error">1 errors</span>
-      <span class="badge warning">79 warnings</span>
+      <span class="badge warning">80 warnings</span>
       <span class="badge info">0 info</span>
     </div>
     <details>
-      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (5)</summary>
+      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (6)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.10 'Classes' p.136</p>
         <p class="guidance">The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java</a></td><td>Class 'CleanCodeExtension' is 154 lines</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Class 'CleanCodePlugin' is 173 lines</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Class 'SkillFileScaffolder' is 171 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>File length is 158 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>File length is 166 lines (max allowed is 150).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java:1</a></td><td>File length is 192 lines (max allowed is 150).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java#L1">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java:1</a></td><td>File length is 179 lines (max allowed is 150).</td></tr>
         </table>
@@ -260,7 +264,7 @@
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Method 'apply' has 4 consecutive void calls with no data dependency — make the order explicit</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Method 'applyStaticAnalysisPlugins' has 10 consecutive void calls with no data dependency — make the order explicit</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/ClaudeReviewExtension.java">ClaudeReviewExtension.java</a></td><td>Method 'ClaudeReviewExtension' has 6 consecutive void calls with no data dependency — make the order explicit</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/ThresholdsExtension.java">ThresholdsExtension.java</a></td><td>Method 'ThresholdsExtension' has 13 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/ThresholdsExtension.java">ThresholdsExtension.java</a></td><td>Method 'ThresholdsExtension' has 15 consecutive void calls with no data dependency — make the order explicit</td></tr>
         </table>
       </div>
     </details>
@@ -320,7 +324,7 @@
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-error">ERROR</td><td class="location">(project)</td><td>Overall line coverage: 0.0% (0/371 lines covered)</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">(project)</td><td>Overall line coverage: 0.0% (0/375 lines covered)</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Private method 'applyStaticAnalysisPlugins' (10 lines) should be package-private so it can be tested directly</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Private method 'resolveTemplateWithHash' (6 lines) should be package-private so it can be tested directly</td></tr>
         </table>
@@ -332,7 +336,7 @@
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.314</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>Class CleanCodeExtension$ThresholdsExtension has 0.0% line coverage (0/15 lines)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>Class CleanCodeExtension$ThresholdsExtension has 0.0% line coverage (0/17 lines)</td></tr>
         </table>
       </div>
     </details>
@@ -340,7 +344,7 @@
       <h2>Sources</h2>
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>openrewrite</td><td>50</td></tr>
+        <tr><td>openrewrite</td><td>51</td></tr>
         <tr><td>checkstyle</td><td>12</td></tr>
         <tr><td>dependency-updates</td><td>11</td></tr>
         <tr><td>cpd</td><td>2</td></tr>
@@ -351,8 +355,8 @@
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-16 08:38:30 Z</p>
-    <p>80 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-16 08:51:15 Z</p>
+    <p>81 total findings</p>
   </footer>
 </body>
 </html>

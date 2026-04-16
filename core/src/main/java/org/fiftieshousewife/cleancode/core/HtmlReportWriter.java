@@ -76,7 +76,7 @@ public final class HtmlReportWriter {
         html.append("    header { background: #1a1a2e; color: #fff; padding: 2rem; }\n");
         html.append("    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }\n");
         html.append("    header p { opacity: 0.8; font-size: 0.95rem; }\n");
-        html.append("    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }\n");
+        html.append("    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }\n");
         html.append("    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }\n");
         html.append("    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; ");
         html.append("font-weight: 600; font-size: 1.1rem; color: #fff; }\n");
@@ -95,9 +95,12 @@ public final class HtmlReportWriter {
         html.append("margin-bottom: 0.5rem; font-style: italic; }\n");
         html.append("    .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; ");
         html.append("margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }\n");
-        html.append("    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }\n");
+        html.append("    .group-body { overflow-x: auto; }\n");
+        html.append("    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }\n");
         html.append("    th, td { text-align: left; padding: 0.4rem 0.6rem; ");
-        html.append("border-bottom: 1px solid #eee; }\n");
+        html.append("border-bottom: 1px solid #eee; word-wrap: break-word; overflow-wrap: break-word; }\n");
+        html.append("    th:first-child, td:first-child { width: 80px; white-space: nowrap; }\n");
+        html.append("    th:nth-child(2), td:nth-child(2) { width: 35%; white-space: nowrap; }\n");
         html.append("    th { color: #777; font-weight: 500; font-size: 0.8rem; ");
         html.append("text-transform: uppercase; }\n");
         html.append("    .sev-error { color: #c0392b; font-weight: 600; }\n");

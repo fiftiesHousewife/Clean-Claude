@@ -80,7 +80,9 @@ public abstract class CleanCodeExtension {
                 thresholds.getShortNameMinLength().get(),
                 thresholds.getCpdMinimumTokens().get(),
                 thresholds.getMagicNumberMinValue().get(),
-                thresholds.getSectionCommentThreshold().get());
+                thresholds.getSectionCommentThreshold().get(),
+                thresholds.getHardcodedListMinLiterals().get(),
+                thresholds.getTemporalCouplingMinCalls().get());
     }
 
     @SuppressWarnings("this-escape")
@@ -112,6 +114,10 @@ public abstract class CleanCodeExtension {
 
         public abstract Property<Integer> getSectionCommentThreshold();
 
+        public abstract Property<Integer> getHardcodedListMinLiterals();
+
+        public abstract Property<Integer> getTemporalCouplingMinCalls();
+
         @Inject
         public ThresholdsExtension() {
             getClassLineCount().convention(RecipeThresholds.DEFAULT_CLASS_LINE_COUNT);
@@ -127,6 +133,8 @@ public abstract class CleanCodeExtension {
             getCpdMinimumTokens().convention(RecipeThresholds.DEFAULT_CPD_MINIMUM_TOKENS);
             getMagicNumberMinValue().convention(RecipeThresholds.DEFAULT_MAGIC_NUMBER_MIN_VALUE);
             getSectionCommentThreshold().convention(RecipeThresholds.DEFAULT_SECTION_COMMENT_THRESHOLD);
+            getHardcodedListMinLiterals().convention(RecipeThresholds.DEFAULT_HARDCODED_LIST_MIN_LITERALS);
+            getTemporalCouplingMinCalls().convention(RecipeThresholds.DEFAULT_TEMPORAL_COUPLING_MIN_CALLS);
         }
     }
 

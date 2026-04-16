@@ -139,10 +139,10 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new GuardClauseRecipe(),
                 new BaseClassDependencyRecipe(),
                 new ArtificialCouplingRecipe(),
-                new HardcodedListRecipe(5),
+                new HardcodedListRecipe(thresholds.hardcodedListMinLiterals()),
                 new SelectorArgumentRecipe(),
                 new ObsoleteCommentRecipe(),
-                new TemporalCouplingRecipe(3));
+                new TemporalCouplingRecipe(thresholds.temporalCouplingMinCalls()));
     }
 
     @SuppressWarnings("unchecked")
