@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(git checkout -- *)",
+      "Bash(git reset HEAD *)",
+      "Bash(wc -l *)",
+      "Bash(wc -l < *)",
+      "Bash(cat *)",
+      "Bash(python3 -c *)",
+      "Bash(python3 *)",
+      "Bash(for *)",
+      "Bash(head *)",
+      "Bash(awk *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(rm -f *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(diff *)",
+      "Bash(echo *)",
+      "Read",
+      "Edit",
+      "Write(*/src/main/java/*)",
+      "Write(*/src/test/java/*)",
+      "Glob",
+      "Grep",
+      "Agent"
+    ]
+  }
+}
