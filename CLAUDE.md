@@ -191,7 +191,7 @@ public Mono<PetPage> listPets(String status, String pageToken) {
 
 ### No Comments in Tests
 
-> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-comments-and-clutter/SKILL.md` for the full pattern catalogue.
 
 Test method names must be self-documenting. Inline comments are noise.
 
@@ -218,13 +218,13 @@ void fetchesAllPets() {
 
 ### No Spurious Comments in Production Code
 
-> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-comments-and-clutter/SKILL.md` for the full pattern catalogue.
 
 A comment is spurious if it restates what the code already clearly says. Comments are appropriate only when explaining *why* something non-obvious is done.
 
 ### Package-Private Methods for Testing
 
-> See also: `.claude/skills/functions.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-functions/SKILL.md` for the full pattern catalogue.
 
 Make helper methods package-private (no access modifier) instead of `private` so they can be tested directly from the same package in the test source tree.
 
@@ -250,19 +250,19 @@ class PetControllerFilterTest {
 
 ### Line Width — 120 Characters
 
-> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-comments-and-clutter/SKILL.md` for the full pattern catalogue.
 
 Lines should not exceed 120 characters. This applies to Java source, Kotlin build scripts, and YAML.
 
 ### Always Use Curly Braces
 
-> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-comments-and-clutter/SKILL.md` for the full pattern catalogue.
 
 All `if`, `else`, `for`, `while`, and `do-while` statements must use curly braces, even for single-line bodies.
 
 ### Prefer `forEach` Over Enhanced For-Loops
 
-> See also: `.claude/skills/functions.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-functions/SKILL.md` for the full pattern catalogue.
 
 When a for-each loop simply delegates to a single method call or populates a collection with no early returns, index mutation, or checked exceptions, use `forEach` with a lambda or method reference instead. This is more concise and expressive.
 
@@ -295,7 +295,7 @@ for (final String prefix : MEASURE_PREFIXES) {
 
 ### Single Responsibility Principle
 
-> See also: `.claude/skills/classes.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-classes/SKILL.md` for the full pattern catalogue.
 
 Every class should have exactly one reason to change. The 150-line limit and 50-line target are not arbitrary thresholds — they are proxies for SRP violations. If you need the word "and" to describe what a class does, it has more than one responsibility and should be split.
 
@@ -313,25 +313,25 @@ DashboardStartup       // classifies columns and regenerates dashboards on boot
 
 ### Class Size Limit — 150 Lines Maximum
 
-> See also: `.claude/skills/classes.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-classes/SKILL.md` for the full pattern catalogue.
 
 No class should exceed 150 lines. Prefer classes of around 50 lines.
 
 ### Favour Polymorphism Over Conditionals
 
-> See also: `.claude/skills/conditionals-and-expressions.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-conditionals-and-expressions/SKILL.md` for the full pattern catalogue.
 
 Replace chains of `if`/`else if` that switch on type or kind with polymorphism — enums with behaviour, strategy interfaces, or maps of functions.
 
 ### Break Down Complex Logic
 
-> See also: `.claude/skills/functions.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-functions/SKILL.md` for the full pattern catalogue.
 
 Prefer many small, named methods over a few large ones. Every extracted method is a candidate for a direct unit test.
 
 ### Prefer Immutable Objects
 
-> See also: `.claude/skills/classes.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-classes/SKILL.md` for the full pattern catalogue.
 
 Use Java records, `final` fields, and immutable collections. Avoid setters, mutable state, and `Optional.set`.
 
@@ -354,13 +354,13 @@ public record PetFilter(String id, String status, String type) {
 
 ### Fail Fast — No Null Checks as Control Flow
 
-> See also: `.claude/skills/null-handling.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-null-handling/SKILL.md` for the full pattern catalogue.
 
 Never use `if (x != null)` as control flow. Use `Objects.requireNonNull` at boundaries, `Map.getOrDefault()`, or `Optional` for genuinely optional values.
 
 ### Never Swallow Exceptions
 
-> See also: `.claude/skills/exception-handling.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-exception-handling/SKILL.md` for the full pattern catalogue.
 
 Do not catch exceptions just to log and continue. Only catch at well-defined boundaries where you can return a meaningful error response. Use `@RestControllerAdvice` instead of try/catch in controllers.
 
@@ -405,7 +405,7 @@ import static org.example.server.PetController.buildFilter; // unclear at call s
 
 ### No Magic Hard-Coded Strings
 
-> See also: `.claude/skills/java-idioms.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-java-idioms/SKILL.md` for the full pattern catalogue.
 
 Extract repeated string literals into named constants. Name constants after the value they represent — no type prefixes.
 
@@ -427,7 +427,7 @@ SqlNames.validateMeasure(measure);
 
 ### Meaningful Variable Names — No Abbreviations
 
-> See also: `.claude/skills/naming.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-naming/SKILL.md` for the full pattern catalogue.
 
 Names must communicate intent clearly. No abbreviations except universally understood terms (`id`, `url`, `csv`).
 
@@ -525,7 +525,7 @@ InputStream stream = Files.newInputStream(path);
 
 ### Use JUnit `@TempDir` for Temporary Files in Tests
 
-> See also: `.claude/skills/test-quality.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-test-quality/SKILL.md` for the full pattern catalogue.
 
 Use JUnit's `@TempDir` annotation instead of manual temp file creation.
 
@@ -533,7 +533,7 @@ Use JUnit's `@TempDir` annotation instead of manual temp file creation.
 
 ## Test Standards
 
-> See also: `.claude/skills/test-quality.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-test-quality/SKILL.md` for the full pattern catalogue.
 
 ### No Underscores in Test Names, No Word "test"
 
@@ -549,7 +549,7 @@ A reader must understand what behaviour is being tested without reading the impl
 
 ### No Disabled Tests or Commented-Out Code
 
-> See also: `.claude/skills/comments-and-clutter.md` for the full pattern catalogue.
+> See also: `.claude/skills/clean-code-comments-and-clutter/SKILL.md` for the full pattern catalogue.
 
 Delete disabled tests or fix them. Commented-out code belongs in git history.
 
