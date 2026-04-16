@@ -47,33 +47,50 @@ Run these steps in order:
 
    - If `manual`:
      ```
-     Fix all Clean Code findings in this project. The plugin has already been run —
-     findings are in each module's build/reports/clean-code/findings.json.
+     Fix Clean Code findings in this project. The plugin has already run — per-file
+     briefs are in each module's build/reports/clean-code/fix-briefs/ directory.
+     build/reports/clean-code/fix-briefs/_INDEX.md is the top-level list.
 
-     Rules:
-     - Fix findings in priority order: errors first, then warnings
-     - Do NOT use the refactoring module recipes — fix each finding manually
-     - Run tests after each batch of fixes to verify nothing breaks
-     - Commit after each heuristic code is fully addressed
-     - When done, run the analysis again and report the remaining count
+     Protocol:
+     - For each file with findings, spawn a general-purpose Agent whose prompt IS
+       the brief. One agent per file. Do not edit files yourself.
+     - Do NOT use refactoring module recipes — each agent fixes its findings manually.
+     - Run `./gradlew :<module>:test` after each batch of agent commits.
+     - Commit after each file is done. Message: "fix: <ClassName> (<codes>)".
+     - Stop only when `./gradlew analyseCleanCode` reports zero non-suppressed findings,
+       OR when every remaining finding is documented in a final summary as "intentionally
+       skipped because <reason>".
+
+     Anti-goal:
+     - Never make the code worse to satisfy a metric. If squeezing under a line-count
+       or blank-line threshold would hurt readability, leave the finding and document
+       it. The goal is clearer code, not a green report.
      ```
 
    - If `recipe`:
      ```
-     Fix all Clean Code findings in this project using the refactoring recipes first.
+     Fix Clean Code findings in this project using the refactoring recipes first.
 
      Step 1: Apply refactoring recipes from the refactoring module to fix mechanical
      findings (G22, G24, G10, G12/J1, G25, T1, G19/G28, G33, G16, G26).
-     Run each recipe via OpenRewrite, verify tests pass.
+     Commit after each recipe.
 
-     Step 2: Fix remaining findings manually, in priority order (errors first).
+     Step 2: For each file that still has findings after Step 1, spawn a general-purpose
+     Agent whose prompt IS the per-file brief at
+     build/reports/clean-code/fix-briefs/<ClassName>.md. One agent per file.
 
      Step 3: Run the analysis again and report the remaining count.
 
-     Rules:
-     - Commit after each recipe application
-     - Commit after each manual heuristic code batch
-     - Run tests between commits
+     Protocol:
+     - Run `./gradlew :<module>:test` after each batch.
+     - Commit after each recipe and after each file fix. Message includes the codes
+       addressed.
+     - Stop only when analyseCleanCode reports zero non-suppressed findings, OR when
+       every remaining finding is documented as intentionally skipped.
+
+     Anti-goal:
+     - Never make the code worse to satisfy a metric. If squeezing under a threshold
+       would hurt readability, leave the finding and document it.
      ```
 
 **Stop here.** Do not proceed to Phase 2 until the user invokes `/experiment-save`.

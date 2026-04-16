@@ -58,6 +58,13 @@ public class CleanCodePlugin implements Plugin<Project> {
                 });
 
         project.getTasks()
+                .register("cleanCodeFixPlan", FixPlanTask.class, task -> {
+                    task.setDescription("Group findings by file into per-class fix briefs for agent handoff");
+                    task.setGroup("verification");
+                    task.dependsOn(analyse);
+                });
+
+        project.getTasks()
                 .register("cleanCodeExplain", ExplainTask.class, task -> {
                     task.setDescription("Print skill guidance for a finding concern");
                     task.setGroup("help");

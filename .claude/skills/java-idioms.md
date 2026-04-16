@@ -2,7 +2,7 @@
 
 ## When to use this skill
 
-- When fixing a [J1](../../HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards), [J2](../../HEURISTICS.md#j2-dont-inherit-constants), [J3](../../HEURISTICS.md#j3-constants-versus-enums), [G4](../../HEURISTICS.md#g4-overridden-safeties), [G25](../../HEURISTICS.md#g25-replace-magic-numbers-with-named-constants), or [G26](../../HEURISTICS.md#g26-be-precise) finding identified by the plugin
+- When fixing a [J1](../../HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards), [J2](../../HEURISTICS.md#j2-dont-inherit-constants), [J3](../../HEURISTICS.md#j3-constants-versus-enums), [G1](../../HEURISTICS.md#g1-multiple-languages-in-one-source-file), [G4](../../HEURISTICS.md#g4-overridden-safeties), [G25](../../HEURISTICS.md#g25-replace-magic-numbers-with-named-constants), or [G26](../../HEURISTICS.md#g26-be-precise) finding identified by the plugin
 - When writing new code that introduces constants, enums, imports, or
   numeric/type-sensitive values
 - When reviewing a class that implements an interface solely to inherit
@@ -298,4 +298,74 @@ representation with I/O operations. Always use `java.nio.file`.
 
 ---
 
-*Traceability: Clean Code [J1](../../HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards), [J2](../../HEURISTICS.md#j2-dont-inherit-constants), [J3](../../HEURISTICS.md#j3-constants-versus-enums), [G4](../../HEURISTICS.md#g4-overridden-safeties), [G25](../../HEURISTICS.md#g25-replace-magic-numbers-with-named-constants), [G26](../../HEURISTICS.md#g26-be-precise)*
+## G1 — Multiple Languages in One Source File
+
+A Java file that builds HTML, CSS, or SQL by concatenating strings is hard to read, hard to
+syntax-check, and hard to edit (no IDE support inside a string). Move the other language out.
+
+### Pattern: extract to a classpath resource
+
+Before:
+
+```java
+class HtmlReportWriter {
+    void renderStyles(StringBuilder sb) {
+        sb.append("<style>\n");
+        sb.append("  body { font-family: sans-serif; }\n");
+        sb.append("  .error { color: red; }\n");
+        sb.append("</style>\n");
+    }
+}
+```
+
+After:
+
+```
+src/main/resources/html-report/styles.css          (the real CSS file, editable in any editor)
+src/main/java/.../HtmlReportWriter.java            (loads and emits it)
+```
+
+```java
+class HtmlReportWriter {
+    private static final String STYLES = loadResource("/html-report/styles.css");
+
+    void renderStyles(StringBuilder sb) {
+        sb.append("<style>\n").append(STYLES).append("</style>\n");
+    }
+
+    private static String loadResource(String path) {
+        try (InputStream in = HtmlReportWriter.class.getResourceAsStream(path)) {
+            if (in == null) {
+                throw new IllegalStateException("Missing resource: " + path);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+}
+```
+
+### Rules
+
+- Put resources under `src/main/resources/<domain>/<name>.<ext>`. The `<domain>` folder groups
+  related assets (e.g. `html-report/styles.css`, `html-report/template.html`).
+- Load once into a `private static final` field so you don't re-read on every call.
+- Fail loudly if the resource is missing — a null `InputStream` is a deployment bug, not a
+  runtime condition to tolerate.
+- For small templated sections (a `<tr>` with substitutions), `String.format` or a tiny
+  `replace("{name}", value)` helper is enough. Do not pull in Handlebars / Mustache for one
+  template.
+- For SQL specifically, use `Files.readString` / classpath resources the same way; do not
+  concatenate SQL with user values — use `PreparedStatement` parameters.
+
+### Do not
+
+- Move CSS/HTML/SQL into a constant `String STYLES = "..."` inside the same Java file. That
+  doesn't fix G1 — the other language is still embedded in Java source.
+- Split the Java into many methods (`appendFooter`, `appendHeader`, …) that each inline a
+  different slice of the other language. The finding still applies; you've just spread it around.
+
+---
+
+*Traceability: Clean Code [J1](../../HEURISTICS.md#j1-avoid-long-import-lists-by-using-wildcards), [J2](../../HEURISTICS.md#j2-dont-inherit-constants), [J3](../../HEURISTICS.md#j3-constants-versus-enums), [G1](../../HEURISTICS.md#g1-multiple-languages-in-one-source-file), [G4](../../HEURISTICS.md#g4-overridden-safeties), [G25](../../HEURISTICS.md#g25-replace-magic-numbers-with-named-constants), [G26](../../HEURISTICS.md#g26-be-precise)*
