@@ -318,10 +318,29 @@ Three slash-command skills automate the experiment workflow:
 ### Running a single experiment (scripted, one command)
 
 ```bash
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
 scripts/run-experiment.sh manual 1
 ```
 
 The script creates the branch, regenerates per-file fix briefs, invokes `claude -p` non-interactively with the fix prompt, and saves the patch + token usage JSON to `experiment/`. Suitable for `cron` or the `schedule` skill — no interactive input required.
+
+#### Live feedback
+
+The main terminal shows the gradle output and Claude's streamed responses. For a skimmable view of tool activity, open a second terminal:
+
+```bash
+tail -f .claude/tool-log.jsonl | jq -r '"\(.tool) \(.detail // "")"'
+```
+
+To track commit accumulation on the experiment branch, a third terminal:
+
+```bash
+while sleep 60; do
+  git -C /path/to/CleanClaude log --oneline experiment/manual-1 ^main | wc -l
+done
+```
+
+Stop the run with Ctrl-C in the main terminal.
 
 ### Running a single experiment (interactive)
 
