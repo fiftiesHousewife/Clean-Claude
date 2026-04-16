@@ -137,6 +137,39 @@ cleanCode {
 }
 ```
 
+## Suppressions
+
+Three complementary mechanisms, from narrowest to broadest:
+
+| Mechanism | Where it lives | Scope |
+|---|---|---|
+| `@SuppressCleanCode({...}, reason="...")` | Method, type, constructor | Exact block, source-anchored |
+| `@SuppressCleanCode({...}, reason="...")` on `package-info.java` | Package | Every file in that package (CPD cross-file pairs too) |
+| `cleanCode.packageSuppressions = mapOf(...)` | Gradle build script | Package, config-driven — fallback for findings without a source anchor |
+| `cleanCode.disabledRecipes = listOf(...)` | Gradle build script | Heuristic code, project-wide |
+
+Prefer the annotation. Reasons live next to the code, get reviewed in PRs, and can carry `until="YYYY-MM-DD"` so the suppression expires and reappears as a finding.
+
+Example — suppress CPD duplication and null-density across a whole package:
+
+```java
+@SuppressCleanCode(
+    value = { HeuristicCode.G5, HeuristicCode.Ch7_2 },
+    reason = "OpenRewrite visitor pattern produces structurally similar scanners and "
+            + "relies on null returns to signal no-change — API-imposed, not design flaws"
+)
+package org.fiftieshousewife.cleancode.recipes;
+
+import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
+import org.fiftieshousewife.cleancode.annotations.SuppressCleanCode;
+```
+
+This repo applies exactly that to `recipes/` and `refactoring/`, together with JSpecify `@NullMarked` at the package level so IDE nullability inspections match the OpenRewrite API contract.
+
+Gaps worth knowing:
+- `E1` (outdated-dependency findings) have no source anchor; `@SuppressCleanCode` cannot suppress them. Use `disabledRecipes = listOf("E1")` if noise from dependency reports is unwanted.
+- When a suppression expires (`until` date in the past), the index emits a meta-finding pointing at the annotation so it surfaces in the next report.
+
 ## Architecture
 
 ```
@@ -146,7 +179,7 @@ CleanClaude/
 │                   HeuristicDescriptions, SuppressionIndex, BaselineManager,
 │                   ClaudeMdGenerator, HtmlReportWriter, JSON report I/O
 ├── recipes/        53 custom OpenRewrite ScanningRecipes (detection)
-├── refactoring/    10 OpenRewrite Recipes (code transformation)
+├── refactoring/    11 OpenRewrite Recipes (code transformation)
 ├── adapters/       9 FindingSource implementations (PMD, Checkstyle, SpotBugs,
 │                   CPD, JaCoCo, Surefire, Dependency Updates, OpenRewrite, Claude Review)
 ├── claude-review/  Claude API FindingSource for G6/G20/N4 (opt-in)
@@ -164,6 +197,7 @@ plugins {
 
 ```bash
 ./gradlew analyseCleanCode                           # full analysis with linked HTML report
+./gradlew cleanCodeFixPlan                           # per-file fix briefs for agent handoff
 ./gradlew generateClaudeMd                           # generate CLAUDE.md
 ./gradlew cleanCodeBaseline                          # snapshot baseline
 ./gradlew cleanCodeExplain --finding=error-handling  # print skill guidance
@@ -247,10 +281,11 @@ The `refactoring` module contains OpenRewrite recipes that **transform** code, n
 | AddFinalRecipe | G22 | Adds `final` to non-reassigned local variables |
 | DeleteUnusedImportRecipe | G12/J1 | Removes unused imports, expands star imports |
 | ExtractConstantRecipe | G25 | Adds `private static final` for repeated string literals |
-| ReduceVisibilityRecipe | T1 | Changes `private` to package-private for testability |
+| ReduceVisibilityRecipe | T1/Ch3.1 | Changes `private` to package-private for testability |
 | RecordToLombokValueRecipe | F1 | Converts large records to `@Value @Builder` classes |
 | ExtractExplanatoryVariableRecipe | G19/G28 | Extracts complex if-conditions to named variables |
 | EncapsulateBoundaryRecipe | G33 | Adds named variable for `.length - 1` / `.size() - 1` |
+| MoveDeclarationRecipe | G10 | Moves local variable declarations closer to first use |
 | RemoveNestedTernaryRecipe | G16 | Converts nested ternary to if/else chains |
 | WrapAssertAllRecipe | T1 | Wraps consecutive assertions in `assertAll` |
 | AddLocaleRecipe | G26 | Adds `Locale.ROOT` to `toLowerCase()`/`toUpperCase()` |
@@ -282,6 +317,8 @@ Robert C. Martin, *Clean Code: A Handbook of Agile Software Craftsmanship*, Pren
 
 The plugin analyses its own codebase. Each module report includes clickable links to the source at the exact line of each finding.
 
+Pre-suppression counts (captured as `experiment/baseline/*.json` before package-level `@SuppressCleanCode` on `recipes/` and `refactoring/`):
+
 | Module | Report | Errors | Warnings | Info |
 |--------|--------|-------:|---------:|-----:|
 | [annotations](annotations/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/annotations.html) | 0 | 11 | 1 |
@@ -291,7 +328,12 @@ The plugin analyses its own codebase. Each module report includes clickable link
 | [claude-review](claude-review/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/claude-review.html) | 1 | 36 | 0 |
 | [plugin](plugin/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/plugin.html) | 1 | 81 | 0 |
 
-To regenerate: `./gradlew analyseCleanCode`
+The recipes G5 + Ch7.2 suppressions alone remove ~493 warnings from the recipes/ count; the next analyse run will regenerate the numbers. To regenerate locally (self-applied via init script, no changes to committed build files):
+
+```bash
+./gradlew publishToMavenLocal
+./gradlew --init-script scripts/cleancode-dogfood.init.gradle.kts analyseCleanCode
+```
 
 ## Experiment: Manual vs Recipe-Assisted Fix
 
@@ -307,13 +349,16 @@ The project includes token monitoring hooks and a structured experiment plan to 
 
 ### Skills
 
-Three slash-command skills automate the experiment workflow:
+Slash-command skills that drive the workflow:
 
 | Skill | Usage | Purpose |
 |---|---|---|
+| `/clean-code` | `/clean-code` | Apply the plugin to any project, generate briefs, delegate per-file fixes to agents |
 | `/experiment` | `/experiment manual 1` | Create branch, clear logs, print the fix prompt |
 | `/experiment-save` | `/experiment-save` | Save patch + token logs after a run |
 | `/experiment-analyse` | `/experiment-analyse` | Compare all runs and write `experiment/analysis.md` |
+
+The plugin also ships ten domain skills (`clean-code-functions`, `clean-code-classes`, `clean-code-naming`, `clean-code-comments-and-clutter`, `clean-code-conditionals-and-expressions`, `clean-code-exception-handling`, `clean-code-null-handling`, `clean-code-java-idioms`, `clean-code-test-quality`, `clean-code-project-conventions`). Claude Code auto-discovers them from `.claude/skills/` and the `cleanCodeFixPlan` briefs route findings to the correct one via `SkillPathRegistry`.
 
 ### Running a single experiment (scripted, one command)
 
