@@ -1,0 +1,17 @@
+Fix Clean Code findings in this project. The plugin has already run — per-file briefs are in each module's build/reports/clean-code/fix-briefs/ directory. The top-level list is build/reports/clean-code/fix-briefs/_INDEX.md.
+
+Protocol:
+- Read the _INDEX.md file for each module.
+- For each file with findings, spawn a general-purpose Agent whose prompt IS the brief. One agent per file. Do not edit files yourself.
+- Do NOT use refactoring module recipes — each agent fixes its findings manually.
+- Run `./gradlew :<module>:test` after each batch of agent commits.
+- Commit after each file is done. Message format: "fix: <ClassName> (<codes>)".
+- Stop only when `./gradlew analyseCleanCode` reports zero non-suppressed findings, OR when every remaining finding is documented in a final summary as "intentionally skipped because <reason>".
+
+Anti-goal:
+- Never make the code worse to satisfy a metric. If squeezing under a line-count or blank-line threshold would hurt readability, leave the finding and document it. The goal is clearer code, not a green report.
+
+When you believe you are done, print a final summary:
+- Total findings fixed
+- Total findings intentionally skipped, with reasons
+- Total tests run, passing

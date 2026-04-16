@@ -315,7 +315,15 @@ Three slash-command skills automate the experiment workflow:
 | `/experiment-save` | `/experiment-save` | Save patch + token logs after a run |
 | `/experiment-analyse` | `/experiment-analyse` | Compare all runs and write `experiment/analysis.md` |
 
-### Running a single experiment
+### Running a single experiment (scripted, one command)
+
+```bash
+scripts/run-experiment.sh manual 1
+```
+
+The script creates the branch, regenerates per-file fix briefs, invokes `claude -p` non-interactively with the fix prompt, and saves the patch + token usage JSON to `experiment/`. Suitable for `cron` or the `schedule` skill — no interactive input required.
+
+### Running a single experiment (interactive)
 
 ```bash
 # 1. In a Claude Code session, set up the run:
@@ -331,6 +339,20 @@ CLAUDE_TASK_LABEL="manual-fix-1" claude
 
 # 5. Return to main and repeat for the next run
 git checkout main
+```
+
+### Scheduling overnight runs
+
+Any scheduler that can invoke a shell command works. With the `schedule` skill inside Claude Code:
+
+```
+/schedule create --cron "30 23 * * *" --command "scripts/run-experiment.sh manual 1"
+```
+
+Or from `cron`:
+
+```
+30 23 * * * cd /path/to/CleanClaude && scripts/run-experiment.sh manual 1 > experiment/manual-1.log 2>&1
 ```
 
 ### Analysis

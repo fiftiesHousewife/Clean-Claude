@@ -1,0 +1,22 @@
+Fix Clean Code findings in this project using the refactoring recipes first.
+
+Step 1: Apply refactoring recipes from the refactoring module to fix mechanical findings (G22, G24, G10, G12/J1, G25, T1, G19/G28, G33, G16, G26). Commit after each recipe runs successfully.
+
+Step 2: Re-run `./gradlew analyseCleanCode cleanCodeFixPlan` so the per-file briefs reflect the post-recipe state.
+
+Step 3: For each remaining file with findings, spawn a general-purpose Agent whose prompt IS the per-file brief at build/reports/clean-code/fix-briefs/<ClassName>.md. One agent per file. Do not edit files yourself.
+
+Step 4: Run the analysis one last time and report the remaining count.
+
+Protocol:
+- Run `./gradlew :<module>:test` after each batch.
+- Commit after each recipe and after each file fix. Message includes the codes addressed.
+- Stop only when analyseCleanCode reports zero non-suppressed findings, OR when every remaining finding is documented as intentionally skipped.
+
+Anti-goal:
+- Never make the code worse to satisfy a metric. If squeezing under a threshold would hurt readability, leave the finding and document it.
+
+When you believe you are done, print a final summary:
+- Findings fixed by recipe vs manually
+- Findings intentionally skipped, with reasons
+- Test status per module
