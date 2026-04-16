@@ -65,8 +65,13 @@ git checkout -b "$BRANCH" "$BASELINE"
 echo "=== Clearing token logs ==="
 rm -f .claude/tool-log.jsonl .claude/session-log.jsonl
 
+echo "=== Publishing plugin + deps to mavenLocal ==="
+./gradlew --quiet publishToMavenLocal
+
 echo "=== Generating fresh per-file briefs ==="
-./gradlew --quiet analyseCleanCode cleanCodeFixPlan
+./gradlew --quiet \
+    --init-script "$REPO/scripts/cleancode-dogfood.init.gradle.kts" \
+    analyseCleanCode cleanCodeFixPlan
 
 echo "=== Launching Claude (task=$LABEL) ==="
 CLAUDE_TASK_LABEL="$LABEL" claude -p "$(<"$PROMPT_FILE")" --dangerously-skip-permissions
