@@ -2,529 +2,90 @@ package org.fiftieshousewife.cleancode.core;
 
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class HeuristicDescriptions {
 
     private HeuristicDescriptions() {}
 
-    private static final Map<HeuristicCode, String> NAMES = Map.ofEntries(
-            Map.entry(HeuristicCode.C1, "Inappropriate Information"),
-            Map.entry(HeuristicCode.C2, "Obsolete Comment"),
-            Map.entry(HeuristicCode.C3, "Redundant Comment"),
-            Map.entry(HeuristicCode.C4, "Poorly Written Comment"),
-            Map.entry(HeuristicCode.C5, "Commented-Out Code"),
-            Map.entry(HeuristicCode.E1, "Build Requires More Than One Step"),
-            Map.entry(HeuristicCode.E2, "Tests Require More Than One Step"),
-            Map.entry(HeuristicCode.F1, "Too Many Arguments"),
-            Map.entry(HeuristicCode.F2, "Output Arguments"),
-            Map.entry(HeuristicCode.F3, "Flag Arguments"),
-            Map.entry(HeuristicCode.F4, "Dead Function"),
-            Map.entry(HeuristicCode.G1, "Multiple Languages in One Source File"),
-            Map.entry(HeuristicCode.G2, "Obvious Behaviour Is Unimplemented"),
-            Map.entry(HeuristicCode.G3, "Incorrect Behaviour at the Boundaries"),
-            Map.entry(HeuristicCode.G4, "Overridden Safeties"),
-            Map.entry(HeuristicCode.G5, "Duplication"),
-            Map.entry(HeuristicCode.G6, "Code at Wrong Level of Abstraction"),
-            Map.entry(HeuristicCode.G7, "Base Classes Depending on Their Derivatives"),
-            Map.entry(HeuristicCode.G8, "Too Much Information"),
-            Map.entry(HeuristicCode.G9, "Dead Code"),
-            Map.entry(HeuristicCode.G10, "Vertical Separation"),
-            Map.entry(HeuristicCode.G11, "Inconsistency"),
-            Map.entry(HeuristicCode.G12, "Clutter"),
-            Map.entry(HeuristicCode.G13, "Artificial Coupling"),
-            Map.entry(HeuristicCode.G14, "Feature Envy"),
-            Map.entry(HeuristicCode.G15, "Selector Arguments"),
-            Map.entry(HeuristicCode.G16, "Obscured Intent"),
-            Map.entry(HeuristicCode.G17, "Misplaced Responsibility"),
-            Map.entry(HeuristicCode.G18, "Inappropriate Static"),
-            Map.entry(HeuristicCode.G19, "Use Explanatory Variables"),
-            Map.entry(HeuristicCode.G20, "Function Names Should Say What They Do"),
-            Map.entry(HeuristicCode.G21, "Understand the Algorithm"),
-            Map.entry(HeuristicCode.G22, "Make Logical Dependencies Physical"),
-            Map.entry(HeuristicCode.G23, "Prefer Polymorphism to If/Else or Switch/Case"),
-            Map.entry(HeuristicCode.G24, "Follow Standard Conventions"),
-            Map.entry(HeuristicCode.G25, "Replace Magic Numbers with Named Constants"),
-            Map.entry(HeuristicCode.G26, "Be Precise"),
-            Map.entry(HeuristicCode.G27, "Structure over Convention"),
-            Map.entry(HeuristicCode.G28, "Encapsulate Conditionals"),
-            Map.entry(HeuristicCode.G29, "Avoid Negative Conditionals"),
-            Map.entry(HeuristicCode.G30, "Functions Should Do One Thing"),
-            Map.entry(HeuristicCode.G31, "Hidden Temporal Couplings"),
-            Map.entry(HeuristicCode.G32, "Don't Be Arbitrary"),
-            Map.entry(HeuristicCode.G33, "Encapsulate Boundary Conditions"),
-            Map.entry(HeuristicCode.G34, "Functions Should Descend Only One Level of Abstraction"),
-            Map.entry(HeuristicCode.G35, "Keep Configurable Data at High Levels"),
-            Map.entry(HeuristicCode.G36, "Avoid Transitive Navigation"),
-            Map.entry(HeuristicCode.J1, "Avoid Long Import Lists by Using Wildcards"),
-            Map.entry(HeuristicCode.J2, "Don't Inherit Constants"),
-            Map.entry(HeuristicCode.J3, "Constants versus Enums"),
-            Map.entry(HeuristicCode.N1, "Choose Descriptive Names"),
-            Map.entry(HeuristicCode.N2, "Choose Names at the Appropriate Level of Abstraction"),
-            Map.entry(HeuristicCode.N3, "Use Standard Nomenclature Where Possible"),
-            Map.entry(HeuristicCode.N4, "Unambiguous Names"),
-            Map.entry(HeuristicCode.N5, "Use Long Names for Long Scopes"),
-            Map.entry(HeuristicCode.N6, "Avoid Encodings"),
-            Map.entry(HeuristicCode.N7, "Names Should Describe Side-Effects"),
-            Map.entry(HeuristicCode.T1, "Insufficient Tests"),
-            Map.entry(HeuristicCode.T2, "Use a Coverage Tool"),
-            Map.entry(HeuristicCode.T3, "Don't Skip Trivial Tests"),
-            Map.entry(HeuristicCode.T4, "An Ignored Test Is a Question about an Ambiguity"),
-            Map.entry(HeuristicCode.T5, "Test Boundary Conditions"),
-            Map.entry(HeuristicCode.T6, "Exhaustively Test Near Bugs"),
-            Map.entry(HeuristicCode.T7, "Patterns of Failure Are Revealing"),
-            Map.entry(HeuristicCode.T8, "Test Coverage Patterns Can Be Revealing"),
-            Map.entry(HeuristicCode.T9, "Tests Should Be Fast"),
-            Map.entry(HeuristicCode.Ch3_1, "Small Functions"),
-            Map.entry(HeuristicCode.Ch3_2, "Do One Thing"),
-            Map.entry(HeuristicCode.Ch3_3, "One Level of Abstraction per Function"),
-            Map.entry(HeuristicCode.Ch6_1, "Data/Object Anti-Symmetry"),
-            Map.entry(HeuristicCode.Ch7_1, "Use Exceptions Rather Than Return Codes"),
-            Map.entry(HeuristicCode.Ch7_2, "Don't Return Null"),
-            Map.entry(HeuristicCode.Ch10_1, "Classes Should Be Small"),
-            Map.entry(HeuristicCode.Ch10_2, "The Single Responsibility Principle")
+    private static final List<Map<HeuristicCode, String>> NAME_SOURCES = List.of(
+            CommentDescriptions.NAMES,
+            EnvironmentDescriptions.NAMES,
+            FunctionDescriptions.NAMES,
+            GeneralStructureDescriptions.NAMES,
+            GeneralExpressionDescriptions.NAMES,
+            GeneralControlFlowDescriptions.NAMES,
+            JavaDescriptions.NAMES,
+            NamingDescriptions.NAMES,
+            TestDescriptions.NAMES,
+            ChapterDescriptions.NAMES
     );
 
-    private static final Map<HeuristicCode, String> GUIDANCE = Map.ofEntries(
-            // Comments
-            Map.entry(HeuristicCode.C1,
-                    "Comments should be reserved for technical notes about the code and its " +
-                    "design. Anything that belongs in another system — changelogs, author " +
-                    "attributions, issue tracker references — is inappropriate information " +
-                    "that clutters the source and drifts out of date."),
-            Map.entry(HeuristicCode.C2,
-                    "A comment that has become inaccurate is worse than no comment at all. " +
-                    "It actively misleads. If the code has changed and the comment hasn't, " +
-                    "delete it or rewrite it. Floating, forgotten comments are a form of lying."),
-            Map.entry(HeuristicCode.C3,
-                    "A comment that merely restates the code is clutter. 'i++ // increment i' " +
-                    "teaches us nothing. If the code is so unclear that it needs a comment to " +
-                    "explain what it does, the real solution is to make the code clearer — not " +
-                    "to add a redundant comment on top of unclear code."),
-            Map.entry(HeuristicCode.C4,
-                    "If you are going to write a comment, take the time to make sure it is the " +
-                    "best comment you can write. Choose your words carefully. Use correct grammar " +
-                    "and punctuation. A sloppy comment is a sign that the author doesn't care — " +
-                    "and that carelessness infects the code around it."),
-            Map.entry(HeuristicCode.C5,
-                    "Commented-out code rots. Others who see it won't have the courage to delete " +
-                    "it — they'll assume it's there for a reason. Over time, commented-out code " +
-                    "accumulates like sediment, obscuring the code that actually matters. Delete " +
-                    "it. Source control remembers everything; you don't need to."),
-
-            // Environment
-            Map.entry(HeuristicCode.E1,
-                    "You should be able to build the system with a single trivial command. You " +
-                    "should not have to search around for dependencies, scripts, or obscure " +
-                    "commands. Outdated dependencies make that one-step build fragile — every " +
-                    "stale library is a silent accumulation of risk, incompatibility, and " +
-                    "unfixed vulnerabilities."),
-            Map.entry(HeuristicCode.E2,
-                    "You should be able to run all the unit tests with a single trivial command. " +
-                    "Being able to run tests quickly, easily, and without fuss is so fundamental " +
-                    "that a failure here poisons the entire development experience."),
-
-            // Functions
-            Map.entry(HeuristicCode.F1,
-                    "Functions should have a small number of arguments. The ideal number is zero. " +
-                    "Next comes one, followed closely by two. Three arguments should be avoided " +
-                    "where possible. More than three requires very special justification — and " +
-                    "then shouldn't be used anyway."),
-            Map.entry(HeuristicCode.F2,
-                    "Output arguments are counterintuitive. Readers expect arguments to be inputs " +
-                    "to a function, not things the function writes to. When you see " +
-                    "appendFooter(report), do you expect it to append something to report, or " +
-                    "to append report to something else? If a function must transform something, " +
-                    "let it transform the state of the owning object, or return the result."),
-            Map.entry(HeuristicCode.F3,
-                    "Boolean arguments loudly declare that the function does more than one thing. " +
-                    "It does one thing if the flag is true and another if the flag is false. The " +
-                    "function should be split into two: one for each path. render(true) tells the " +
-                    "reader nothing — renderForSuite() and renderForSingleTest() tell them " +
-                    "everything."),
-            Map.entry(HeuristicCode.F4,
-                    "Methods that are never called are dead code. They clog the class, confuse " +
-                    "the reader, and add maintenance burden. Delete them without hesitation — " +
-                    "your source control system remembers them if you ever need them back."),
-
-            // General
-            Map.entry(HeuristicCode.G1,
-                    "A source file should contain one, and only one, language. A Java file " +
-                    "with embedded HTML, CSS, or SQL is harder to read, harder to search, and " +
-                    "impossible to validate with language-specific tools. Extract the other " +
-                    "language into a template file, a resource, or a separate class that " +
-                    "encapsulates the generation."),
-            Map.entry(HeuristicCode.G4,
-                    "Don't override safeties. Turning off warnings, ignoring failing tests, " +
-                    "catching and discarding exceptions — these are all the same mistake. " +
-                    "Safeties exist because someone, at some point, decided they were important " +
-                    "enough to create. Don't silence them; fix the underlying problem."),
-            Map.entry(HeuristicCode.G5,
-                    "Duplication is the root of all evil in software. Every duplication represents " +
-                    "a missed opportunity for abstraction. When you see duplicated code, it almost " +
-                    "always means there is a concept crying out to be a subroutine or a class. " +
-                    "Find it and eliminate the duplication."),
-            Map.entry(HeuristicCode.G8,
-                    "Well-defined modules have very small interfaces that allow you to do a lot " +
-                    "with a little. A class with too many public methods, too many fields, or too " +
-                    "many dependencies has exposed too much of itself. Keep interfaces tight. " +
-                    "Fewer things to know means fewer things to go wrong."),
-            Map.entry(HeuristicCode.G9,
-                    "Dead code is code that isn't executed. It's the body of an if statement that " +
-                    "checks for a condition that can't happen. It's the catch block for an " +
-                    "exception that is never thrown. It's the utility method that is never called. " +
-                    "Dead code is not completely updated when designs change. It rots. Delete it."),
-            Map.entry(HeuristicCode.G10,
-                    "Local variables should be declared just before their first use. Vertical " +
-                    "separation between declaration and use makes the reader hold a mental " +
-                    "placeholder — 'what was that variable for again?' — while reading unrelated " +
-                    "code. Declare variables at the point of need, not at the top of the method."),
-            Map.entry(HeuristicCode.G11,
-                    "If you do something a certain way, do all similar things the same way. If " +
-                    "you name one method fetchUsers, don't name a similar method getOrders and " +
-                    "another retrieveProducts. Inconsistency breeds confusion — the reader must " +
-                    "wonder whether the different names signify different semantics when they don't."),
-            Map.entry(HeuristicCode.G12,
-                    "Clutter is anything that adds noise without adding value: unused variables, " +
-                    "never-called functions, redundant imports, purposeless comments. Keep your " +
-                    "source files clean. A lean source file is easier to read, easier to " +
-                    "understand, and easier to change."),
-            Map.entry(HeuristicCode.G14,
-                    "A method that calls six methods on another object but only one on its own " +
-                    "class has Feature Envy — it clearly wants to be over there, not here. Move " +
-                    "the method to the class whose data it is actually manipulating. Methods should " +
-                    "operate on the data of their own class, not reach across into another."),
-            Map.entry(HeuristicCode.G16,
-                    "Obscured intent is the opposite of expressiveness. Code that uses nested " +
-                    "ternaries, overly terse variable names, or magic expressions is prioritising " +
-                    "brevity over clarity. The reader shouldn't need a debugger to understand what " +
-                    "a line of code does. If you're impressed by how cleverly terse your code is, " +
-                    "that's a bad sign."),
-            Map.entry(HeuristicCode.G19,
-                    "Complex expressions should be broken into intermediate variables with " +
-                    "explanatory names. 'wasPressed' is better than 'event.getTarget().isButton() " +
-                    "&& event.getState() == CLICKED'. The intermediate variable documents the " +
-                    "programmer's intent and makes the code read like a well-written paragraph."),
-            Map.entry(HeuristicCode.G17,
-                    "One of the most important decisions a developer makes is where to put code. " +
-                    "A data class is a class with public fields and no real behaviour — it " +
-                    "exposes its internals and delegates all responsibility elsewhere. Ask: " +
-                    "does this behaviour belong here, or is it misplaced?"),
-            Map.entry(HeuristicCode.G18,
-                    "In general you should prefer non-static methods to static methods. If you " +
-                    "really want a function to be static, make sure there is no chance that you'll " +
-                    "want it to behave polymorphically. Static methods cannot be overridden and " +
-                    "cannot participate in dependency injection."),
-            Map.entry(HeuristicCode.G20,
-                    "If you have to look at the implementation of a function to know what it does, " +
-                    "then you should work to find a better name, or rearrange the functionality so " +
-                    "that it can be placed in a function with a better name. The name of a function " +
-                    "should tell you exactly what it does, unambiguously, without surprises."),
-            Map.entry(HeuristicCode.G22,
-                    "If something in your code can logically be constant — a variable that's never " +
-                    "reassigned, an object that's never swapped — then declare it final. This isn't " +
-                    "pedantry. It communicates intent to every future reader: 'this value is set " +
-                    "once and never changes.' It prevents accidental reassignment and signals a " +
-                    "design where fewer things are moving at once."),
-            Map.entry(HeuristicCode.G23,
-                    "When you see code that tests for a type to decide what behaviour to invoke, " +
-                    "consider replacing it with polymorphism. 'One switch' is a reasonable rule of " +
-                    "thumb — if you find yourself writing the same switch in multiple places, the " +
-                    "switch is telling you that there's a class hierarchy hiding in your code, " +
-                    "waiting to be discovered."),
-            Map.entry(HeuristicCode.G24,
-                    "Every team should follow a coding standard. The standard should specify things " +
-                    "like where to declare instance variables, consistent naming, brace style, and " +
-                    "so forth. The standard should not need a document to describe it because the " +
-                    "code itself should be the exemplar."),
-            Map.entry(HeuristicCode.G25,
-                    "In general it is a bad idea to have raw numbers in your code. Numbers like 42 " +
-                    "or 86400 are magic — they have no context, no meaning, no documentation. " +
-                    "Hide them behind well-named constants. SECONDS_PER_DAY is immediately clear; " +
-                    "86400 is not."),
-            Map.entry(HeuristicCode.G26,
-                    "Ambiguity in code is a sign of insufficient care. When you make a decision in " +
-                    "code, make it precisely. Know why you've made it and how you will deal with " +
-                    "any exceptions. Don't be lazy about the precision of your decisions."),
-            Map.entry(HeuristicCode.G28,
-                    "Boolean logic is hard enough to understand without reading it in the context " +
-                    "of an if or while statement. Extract functions that explain the intent of the " +
-                    "conditional. if (shouldBeDeleted(timer)) is vastly preferable to " +
-                    "if (timer.hasExpired() && !timer.isRecurrent())."),
-            Map.entry(HeuristicCode.G29,
-                    "Negatives are slightly harder to understand than positives. So, when " +
-                    "possible, conditionals should be expressed as positives. " +
-                    "if (buffer.shouldCompact()) is preferable to if (!buffer.shouldNotCompact()). " +
-                    "Double negation forces the reader to do mental gymnastics that add nothing."),
-            Map.entry(HeuristicCode.G30,
-                    "Functions should do one thing. They should do it well. They should do it only. " +
-                    "A function that is too long is probably doing too many things. If you can " +
-                    "extract another function from it with a name that is not merely a restatement " +
-                    "of its implementation, then the original is doing more than one thing."),
-            Map.entry(HeuristicCode.G33,
-                    "Boundary conditions are hard to keep track of. Put the processing for them " +
-                    "in one place. Don't let them leak all over the code. 'array.length - 1' " +
-                    "scattered through your code is a bug waiting to happen. Extract it: " +
-                    "'final int lastIndex = array.length - 1;' — the name documents the intent " +
-                    "and the adjustment happens in exactly one place."),
-            Map.entry(HeuristicCode.G34,
-                    "Mixing levels of abstraction within a function is always confusing. Section " +
-                    "comments — '// initialisation', '// processing', '// cleanup' — are a dead " +
-                    "giveaway. Each section is at a different level of abstraction. Extract each " +
-                    "section into its own well-named function. The sections become the function " +
-                    "calls, and the comment headers become function names."),
-            Map.entry(HeuristicCode.G35,
-                    "If you have a constant such as a default or configuration value, it is " +
-                    "better to make it a named constant at the top of the class than to bury " +
-                    "it in some low-level function. The high-level constant is easy to find " +
-                    "and to change. A magic number deep in a private method is invisible."),
-            Map.entry(HeuristicCode.G36,
-                    "Write shy code — modules that don't reveal anything unnecessary and that " +
-                    "don't rely on others' implementations. The Law of Demeter says a method f " +
-                    "of class C should only call methods on C itself, objects created by f, " +
-                    "objects passed as arguments to f, and objects held in instance variables. " +
-                    "a.getB().getC().doSomething() is a train wreck — it couples you to the " +
-                    "entire chain."),
-
-            // Java
-            Map.entry(HeuristicCode.J1,
-                    "Long lists of imports are daunting to the reader. If you're importing from " +
-                    "many different packages, it's worth asking whether this class has too many " +
-                    "responsibilities. Wildcard imports can reduce clutter, but the real fix is " +
-                    "often to split the class."),
-            Map.entry(HeuristicCode.J2,
-                    "Implementing an interface just to gain convenient access to its constants " +
-                    "is a terrible practice. The constants become part of your class's public API, " +
-                    "polluting the namespace. Use static imports to access constants, or place " +
-                    "constants in a class or enum where they naturally belong."),
-            Map.entry(HeuristicCode.J3,
-                    "Now that Java has enums, use them. The old pattern of public static final " +
-                    "int or String constants as an enumeration is obsolete. Enums provide type " +
-                    "safety, can have methods and fields, and make switch statements exhaustive. " +
-                    "Don't cling to the pre-Java 5 idiom."),
-
-            // Naming
-            Map.entry(HeuristicCode.N1,
-                    "Choose names that reveal intention. The name of a variable, function, or " +
-                    "class should answer the big questions: why it exists, what it does, and " +
-                    "how it is used. If a name requires a comment, then the name is not revealing " +
-                    "its intent."),
-            Map.entry(HeuristicCode.N5,
-                    "The length of a name should correspond to the size of its scope. A variable " +
-                    "named 'i' is fine in a three-line for-loop. But a variable named 's' in a " +
-                    "fifty-line method is a riddle. If the scope is long, the name should be long " +
-                    "enough to be found, remembered, and understood without scrolling."),
-            Map.entry(HeuristicCode.N6,
-                    "In the days of early C and Fortran, encoding type information in names was " +
-                    "necessary. Today, with modern languages and IDEs, Hungarian notation and " +
-                    "type prefixes (strName, iCount, m_field) are nothing but noise. They make " +
-                    "names harder to read and harder to change. Let the type system do its job."),
-            Map.entry(HeuristicCode.N7,
-                    "If a method has side effects, the name should describe them. A method named " +
-                    "getPassword that also initialises the session is lying. It should be called " +
-                    "getPasswordAndInitialiseSession — or better, split into two methods. If a " +
-                    "reader must look at the implementation to discover a side effect, the name " +
-                    "has broken its promise."),
-
-            // Tests
-            Map.entry(HeuristicCode.T1,
-                    "A test suite is insufficient so long as there are conditions that have not " +
-                    "been explored by tests, or calculations that have not been validated. " +
-                    "Coverage tools report gaps in your testing strategy — they tell you where " +
-                    "untested code lurks, waiting to surprise you in production."),
-            Map.entry(HeuristicCode.T2,
-                    "A coverage tool makes it easy to find modules, classes, and functions that " +
-                    "are insufficiently tested. Most IDEs give you visual coverage, making it " +
-                    "quick to find if and catch statements whose bodies haven't been tested. " +
-                    "Use this tool. It's not optional."),
-            Map.entry(HeuristicCode.T3,
-                    "A disabled test is a question about an ambiguity. The code is there, the " +
-                    "test is there, but someone decided it shouldn't run. Why? Is the test wrong, " +
-                    "or is the code wrong? Find out and fix it. Don't leave disabled tests " +
-                    "lingering — they are a form of lying about the state of your system."),
-            Map.entry(HeuristicCode.T4,
-                    "Sometimes we know that a test is failing because we also know that the " +
-                    "requirements are ambiguous. It's tempting to disable it 'until we figure it " +
-                    "out.' But that disabled test is a reminder that something is unresolved — " +
-                    "and unresolved ambiguities are bugs waiting to surface."),
-            Map.entry(HeuristicCode.T9,
-                    "A slow test is a test that won't get run. When things get tight, the slow " +
-                    "tests are the ones that get dropped from the suite. Keep your tests fast. " +
-                    "Ruthlessly refactor tests that take too long to run."),
-
-            // Chapter codes
-            Map.entry(HeuristicCode.Ch3_1,
-                    "The first rule of functions is that they should be small. The second rule " +
-                    "is that they should be smaller than that. Functions should hardly ever be " +
-                    "20 lines long. Each function should tell a story, and each line should lead " +
-                    "you naturally to the next in a compelling order."),
-            Map.entry(HeuristicCode.Ch7_1,
-                    "Exceptions are for exceptional circumstances. When you catch an exception " +
-                    "and merely log it — or worse, leave the catch block empty — you've told the " +
-                    "calling code that everything is fine when it isn't. The caller makes " +
-                    "decisions based on a lie. Either handle the exception meaningfully, or let " +
-                    "it propagate to someone who can."),
-            Map.entry(HeuristicCode.Ch7_2,
-                    "When you return null, you are creating work for your callers. Every caller " +
-                    "must check for null, and if even one forgets, the application blows up with " +
-                    "a NullPointerException at some unexpected point. Code peppered with null " +
-                    "checks is noisy, hard to read, and fragile. Use Optional, throw an exception, " +
-                    "or return a Special Case object instead."),
-            Map.entry(HeuristicCode.Ch10_1,
-                    "The first rule of classes is that they should be small. The second rule is " +
-                    "that they should be smaller than that. With functions, we measured size by " +
-                    "counting physical lines. With classes, we use a different measure: " +
-                    "responsibilities. A class should have one, and only one, reason to change. " +
-                    "If you need the word 'and' to describe what a class does, it's too big."),
-            Map.entry(HeuristicCode.Ch10_2,
-                    "A record or data structure with many components is a signal that it's carrying " +
-                    "too many responsibilities, or that it's a data clump — a group of fields that " +
-                    "always travel together and should be extracted into their own meaningful type. " +
-                    "Five is a reasonable upper bound; beyond that, ask what smaller structures " +
-                    "are hiding inside.")
+    private static final List<Map<HeuristicCode, String>> GUIDANCE_SOURCES = List.of(
+            CommentDescriptions.GUIDANCE,
+            EnvironmentDescriptions.GUIDANCE,
+            FunctionDescriptions.GUIDANCE,
+            GeneralStructureDescriptions.GUIDANCE,
+            GeneralExpressionDescriptions.GUIDANCE,
+            GeneralControlFlowDescriptions.GUIDANCE,
+            JavaDescriptions.GUIDANCE,
+            NamingDescriptions.GUIDANCE,
+            TestDescriptions.GUIDANCE,
+            ChapterDescriptions.GUIDANCE
     );
 
-    private static final Map<HeuristicCode, String> REFERENCES = Map.ofEntries(
-            Map.entry(HeuristicCode.C1, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.286"),
-            Map.entry(HeuristicCode.C2, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.286"),
-            Map.entry(HeuristicCode.C3, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.286"),
-            Map.entry(HeuristicCode.C4, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.287"),
-            Map.entry(HeuristicCode.C5, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.287"),
-            Map.entry(HeuristicCode.E1, "Clean Code Ch.17 'Smells and Heuristics — Environment' p.287"),
-            Map.entry(HeuristicCode.E2, "Clean Code Ch.17 'Smells and Heuristics — Environment' p.287"),
-            Map.entry(HeuristicCode.F1, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
-            Map.entry(HeuristicCode.F2, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
-            Map.entry(HeuristicCode.F3, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
-            Map.entry(HeuristicCode.F4, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
-            Map.entry(HeuristicCode.G1, "Clean Code Ch.17 'Smells and Heuristics — General' p.288"),
-            Map.entry(HeuristicCode.G2, "Clean Code Ch.17 'Smells and Heuristics — General' p.288"),
-            Map.entry(HeuristicCode.G3, "Clean Code Ch.17 'Smells and Heuristics — General' p.289"),
-            Map.entry(HeuristicCode.G4, "Clean Code Ch.17 'Smells and Heuristics — General' p.289"),
-            Map.entry(HeuristicCode.G5, "Clean Code Ch.17 'Smells and Heuristics — General' p.289"),
-            Map.entry(HeuristicCode.G6, "Clean Code Ch.17 'Smells and Heuristics — General' p.290"),
-            Map.entry(HeuristicCode.G7, "Clean Code Ch.17 'Smells and Heuristics — General' p.291"),
-            Map.entry(HeuristicCode.G8, "Clean Code Ch.17 'Smells and Heuristics — General' p.291"),
-            Map.entry(HeuristicCode.G9, "Clean Code Ch.17 'Smells and Heuristics — General' p.292"),
-            Map.entry(HeuristicCode.G10, "Clean Code Ch.17 'Smells and Heuristics — General' p.292"),
-            Map.entry(HeuristicCode.G11, "Clean Code Ch.17 'Smells and Heuristics — General' p.292"),
-            Map.entry(HeuristicCode.G12, "Clean Code Ch.17 'Smells and Heuristics — General' p.293"),
-            Map.entry(HeuristicCode.G13, "Clean Code Ch.17 'Smells and Heuristics — General' p.293"),
-            Map.entry(HeuristicCode.G14, "Clean Code Ch.17 'Smells and Heuristics — General' p.293"),
-            Map.entry(HeuristicCode.G15, "Clean Code Ch.17 'Smells and Heuristics — General' p.294"),
-            Map.entry(HeuristicCode.G16, "Clean Code Ch.17 'Smells and Heuristics — General' p.295"),
-            Map.entry(HeuristicCode.G17, "Clean Code Ch.17 'Smells and Heuristics — General' p.295"),
-            Map.entry(HeuristicCode.G18, "Clean Code Ch.17 'Smells and Heuristics — General' p.296"),
-            Map.entry(HeuristicCode.G19, "Clean Code Ch.17 'Smells and Heuristics — General' p.296"),
-            Map.entry(HeuristicCode.G20, "Clean Code Ch.17 'Smells and Heuristics — General' p.297"),
-            Map.entry(HeuristicCode.G21, "Clean Code Ch.17 'Smells and Heuristics — General' p.297"),
-            Map.entry(HeuristicCode.G22, "Clean Code Ch.17 'Smells and Heuristics — General' p.298"),
-            Map.entry(HeuristicCode.G23, "Clean Code Ch.17 'Smells and Heuristics — General' p.299"),
-            Map.entry(HeuristicCode.G24, "Clean Code Ch.17 'Smells and Heuristics — General' p.299"),
-            Map.entry(HeuristicCode.G25, "Clean Code Ch.17 'Smells and Heuristics — General' p.300"),
-            Map.entry(HeuristicCode.G26, "Clean Code Ch.17 'Smells and Heuristics — General' p.301"),
-            Map.entry(HeuristicCode.G27, "Clean Code Ch.17 'Smells and Heuristics — General' p.301"),
-            Map.entry(HeuristicCode.G28, "Clean Code Ch.17 'Smells and Heuristics — General' p.301"),
-            Map.entry(HeuristicCode.G29, "Clean Code Ch.17 'Smells and Heuristics — General' p.302"),
-            Map.entry(HeuristicCode.G30, "Clean Code Ch.17 'Smells and Heuristics — General' p.302"),
-            Map.entry(HeuristicCode.G31, "Clean Code Ch.17 'Smells and Heuristics — General' p.302"),
-            Map.entry(HeuristicCode.G32, "Clean Code Ch.17 'Smells and Heuristics — General' p.303"),
-            Map.entry(HeuristicCode.G33, "Clean Code Ch.17 'Smells and Heuristics — General' p.304"),
-            Map.entry(HeuristicCode.G34, "Clean Code Ch.17 'Smells and Heuristics — General' p.304"),
-            Map.entry(HeuristicCode.G35, "Clean Code Ch.17 'Smells and Heuristics — General' p.306"),
-            Map.entry(HeuristicCode.G36, "Clean Code Ch.17 'Smells and Heuristics — General' p.306"),
-            Map.entry(HeuristicCode.J1, "Clean Code Ch.17 'Smells and Heuristics — Java' p.307"),
-            Map.entry(HeuristicCode.J2, "Clean Code Ch.17 'Smells and Heuristics — Java' p.307"),
-            Map.entry(HeuristicCode.J3, "Clean Code Ch.17 'Smells and Heuristics — Java' p.308"),
-            Map.entry(HeuristicCode.N1, "Clean Code Ch.17 'Smells and Heuristics — Names' p.309"),
-            Map.entry(HeuristicCode.N2, "Clean Code Ch.17 'Smells and Heuristics — Names' p.311"),
-            Map.entry(HeuristicCode.N3, "Clean Code Ch.17 'Smells and Heuristics — Names' p.311"),
-            Map.entry(HeuristicCode.N4, "Clean Code Ch.17 'Smells and Heuristics — Names' p.312"),
-            Map.entry(HeuristicCode.N5, "Clean Code Ch.17 'Smells and Heuristics — Names' p.312"),
-            Map.entry(HeuristicCode.N6, "Clean Code Ch.17 'Smells and Heuristics — Names' p.312"),
-            Map.entry(HeuristicCode.N7, "Clean Code Ch.17 'Smells and Heuristics — Names' p.313"),
-            Map.entry(HeuristicCode.T1, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.313"),
-            Map.entry(HeuristicCode.T2, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.313"),
-            Map.entry(HeuristicCode.T3, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.313"),
-            Map.entry(HeuristicCode.T4, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.313"),
-            Map.entry(HeuristicCode.T5, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
-            Map.entry(HeuristicCode.T6, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
-            Map.entry(HeuristicCode.T7, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
-            Map.entry(HeuristicCode.T8, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
-            Map.entry(HeuristicCode.T9, "Clean Code Ch.17 'Smells and Heuristics — Tests' p.314"),
-            Map.entry(HeuristicCode.Ch3_1, "Clean Code Ch.3 'Functions' p.34"),
-            Map.entry(HeuristicCode.Ch3_2, "Clean Code Ch.3 'Functions' p.35"),
-            Map.entry(HeuristicCode.Ch3_3, "Clean Code Ch.3 'Functions' p.36"),
-            Map.entry(HeuristicCode.Ch6_1, "Clean Code Ch.6 'Objects and Data Structures' p.95"),
-            Map.entry(HeuristicCode.Ch7_1, "Clean Code Ch.7 'Error Handling' p.103"),
-            Map.entry(HeuristicCode.Ch7_2, "Clean Code Ch.7 'Error Handling' p.110"),
-            Map.entry(HeuristicCode.Ch10_1, "Clean Code Ch.10 'Classes' p.136"),
-            Map.entry(HeuristicCode.Ch10_2, "Clean Code Ch.10 'Classes' p.138")
+    private static final List<Map<HeuristicCode, String>> REFERENCE_SOURCES = List.of(
+            CommentDescriptions.REFERENCES,
+            EnvironmentDescriptions.REFERENCES,
+            FunctionDescriptions.REFERENCES,
+            GeneralStructureDescriptions.REFERENCES,
+            GeneralExpressionDescriptions.REFERENCES,
+            GeneralControlFlowDescriptions.REFERENCES,
+            JavaDescriptions.REFERENCES,
+            NamingDescriptions.REFERENCES,
+            TestDescriptions.REFERENCES,
+            ChapterDescriptions.REFERENCES
     );
 
-    private static final Map<HeuristicCode, String> SUMMARIES = Map.ofEntries(
-            Map.entry(HeuristicCode.C3, "Delete comments that restate the code."),
-            Map.entry(HeuristicCode.C5, "Delete commented-out code. Source control remembers."),
-            Map.entry(HeuristicCode.E1, "Keep dependencies up to date."),
-            Map.entry(HeuristicCode.F1, "Reduce arguments — three is the practical maximum."),
-            Map.entry(HeuristicCode.F2, "Don't mutate arguments. Return the result."),
-            Map.entry(HeuristicCode.F3, "Split boolean-parameterised methods into two."),
-            Map.entry(HeuristicCode.F4, "Delete uncalled methods."),
-            Map.entry(HeuristicCode.G1, "Extract embedded HTML, SQL, or CSS into templates or resource files."),
-            Map.entry(HeuristicCode.G4, "Don't suppress warnings. Fix the underlying issue."),
-            Map.entry(HeuristicCode.G5, "Eliminate duplication — extract the shared logic."),
-            Map.entry(HeuristicCode.G8, "Reduce public surface. Keep interfaces tight."),
-            Map.entry(HeuristicCode.G9, "Delete dead code."),
-            Map.entry(HeuristicCode.G10, "Declare variables just before their first use."),
-            Map.entry(HeuristicCode.G11, "Pick one verb for each concept and use it consistently."),
-            Map.entry(HeuristicCode.G12, "Delete unused imports, empty statements, and noise."),
-            Map.entry(HeuristicCode.G14, "Move the method to the class whose data it uses."),
-            Map.entry(HeuristicCode.G16, "Nested ternaries obscure intent. Use if/else or a named method."),
-            Map.entry(HeuristicCode.G19, "Extract complex expressions to named intermediate variables."),
-            Map.entry(HeuristicCode.G20, "If you must read the body to know what it does, rename it."),
-            Map.entry(HeuristicCode.G22, "Declare variables final when they don't change."),
-            Map.entry(HeuristicCode.G23, "Replace type-switching with polymorphism or an enum."),
-            Map.entry(HeuristicCode.G24, "Follow the project's formatting conventions."),
-            Map.entry(HeuristicCode.G25, "Extract repeated literals to named constants."),
-            Map.entry(HeuristicCode.G26, "Use precise types — BigDecimal for money, LocalDate for dates."),
-            Map.entry(HeuristicCode.G28, "Extract complex boolean logic to a well-named method."),
-            Map.entry(HeuristicCode.G29, "Rewrite double negatives as positive conditions."),
-            Map.entry(HeuristicCode.G30, "Each function should do exactly one thing."),
-            Map.entry(HeuristicCode.G33, "Extract boundary arithmetic to a named variable."),
-            Map.entry(HeuristicCode.G34, "Section comments mean the method mixes abstraction levels. Extract."),
-            Map.entry(HeuristicCode.G35, "Extract magic numbers from private methods to named class constants."),
-            Map.entry(HeuristicCode.G36, "Don't reach through objects. Talk to immediate collaborators only."),
-            Map.entry(HeuristicCode.J1, "Replace wildcard imports with explicit ones."),
-            Map.entry(HeuristicCode.J2, "Use static imports instead of inheriting from a constants interface."),
-            Map.entry(HeuristicCode.J3, "Use enums instead of static final constant groups."),
-            Map.entry(HeuristicCode.N1, "Choose names that reveal intent."),
-            Map.entry(HeuristicCode.N5, "Name length should match scope size. Single-char only in loops."),
-            Map.entry(HeuristicCode.N6, "Drop type prefixes. Modern IDEs make them obsolete."),
-            Map.entry(HeuristicCode.N7, "If a getter has side effects, the name is lying. Rename or split."),
-            Map.entry(HeuristicCode.T1, "Untested code is untrustworthy code. Increase coverage."),
-            Map.entry(HeuristicCode.T2, "Configure and run a coverage tool."),
-            Map.entry(HeuristicCode.T3, "Don't disable tests. Fix them or delete them."),
-            Map.entry(HeuristicCode.T4, "A disabled test is an unresolved question. Answer it."),
-            Map.entry(HeuristicCode.T9, "Slow tests don't get run. Keep them fast."),
-            Map.entry(HeuristicCode.Ch3_1, "Non-trivial private methods should be package-private and tested."),
-            Map.entry(HeuristicCode.Ch7_1, "Don't catch and log. Propagate with context."),
-            Map.entry(HeuristicCode.Ch7_2, "Don't return or check for null. Use Optional or fail fast."),
-            Map.entry(HeuristicCode.Ch10_1, "Classes with more than one responsibility are too big. Split."),
-            Map.entry(HeuristicCode.Ch10_2, "Large records are data clumps. Group fields into smaller types.")
+    private static final List<Map<HeuristicCode, String>> SUMMARY_SOURCES = List.of(
+            CommentDescriptions.SUMMARIES,
+            EnvironmentDescriptions.SUMMARIES,
+            FunctionDescriptions.SUMMARIES,
+            GeneralStructureDescriptions.SUMMARIES,
+            GeneralExpressionDescriptions.SUMMARIES,
+            GeneralControlFlowDescriptions.SUMMARIES,
+            JavaDescriptions.SUMMARIES,
+            NamingDescriptions.SUMMARIES,
+            TestDescriptions.SUMMARIES,
+            ChapterDescriptions.SUMMARIES
     );
 
-    public static String name(HeuristicCode code) {
+    private static final Map<HeuristicCode, String> NAMES = merge(NAME_SOURCES);
+    private static final Map<HeuristicCode, String> GUIDANCE = merge(GUIDANCE_SOURCES);
+    private static final Map<HeuristicCode, String> REFERENCES = merge(REFERENCE_SOURCES);
+    private static final Map<HeuristicCode, String> SUMMARIES = merge(SUMMARY_SOURCES);
+
+    private static Map<HeuristicCode, String> merge(final List<Map<HeuristicCode, String>> sources) {
+        final Map<HeuristicCode, String> combined = new HashMap<>();
+        sources.forEach(combined::putAll);
+        return Map.copyOf(combined);
+    }
+
+    public static String name(final HeuristicCode code) {
         return NAMES.getOrDefault(code, code.name());
     }
 
-    public static String summary(HeuristicCode code) {
+    public static String summary(final HeuristicCode code) {
         return SUMMARIES.get(code);
     }
 
-    public static String guidance(HeuristicCode code) {
+    public static String guidance(final HeuristicCode code) {
         return GUIDANCE.get(code);
     }
 
-    public static String reference(HeuristicCode code) {
+    public static String reference(final HeuristicCode code) {
         return REFERENCES.get(code);
     }
 }
