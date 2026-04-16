@@ -350,7 +350,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapPrivateMethod(List<PrivateMethodTestabilityRecipe.PrivateMethodTestabilityRow> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.Ch3_1, r.className(), r.lineNumber(),
+                .map(r -> finding(HeuristicCode.T1, r.className(), r.lineNumber(),
                         "Private method '%s' (%d lines) should be package-private so it can be tested directly".formatted(
                                 r.methodName(), r.lineCount())))
                 .toList();
