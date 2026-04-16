@@ -5,7 +5,7 @@
 [![Gradle](https://img.shields.io/badge/Gradle-9.0-blue)](https://gradle.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 53 custom OpenRewrite detection recipes and 10 refactoring recipes, normalises all findings into Martin's taxonomy, and produces linked HTML reports with book references and prescriptive guidance.
+A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 53 custom OpenRewrite detection recipes and 11 refactoring recipes, normalises all findings into Martin's taxonomy, and produces linked HTML reports with book references and prescriptive guidance.
 
 > *"Clean code reads like well-written prose."* -- Robert C. Martin, *Clean Code* (2008)
 
