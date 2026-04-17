@@ -3,6 +3,7 @@ package org.fiftieshousewife.cleancode.claudereview;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import org.fiftieshousewife.cleancode.core.Confidence;
@@ -38,7 +39,7 @@ final class FindingJsonParser {
                 toFinding(element.getAsJsonObject(), sourceFile).ifPresent(findings::add);
             }
             return findings;
-        } catch (Exception e) {
+        } catch (JsonParseException | IllegalStateException e) {
             LOG.log(Level.WARNING, "Failed to parse Claude response as JSON: " + e.getMessage());
             return List.of();
         }
@@ -64,7 +65,7 @@ final class FindingJsonParser {
         }
     }
 
-    private static String unwrapArray(final String json) {
+    static String unwrapArray(final String json) {
         final String cleaned = json.strip();
         if (cleaned.startsWith("[")) {
             return cleaned;
