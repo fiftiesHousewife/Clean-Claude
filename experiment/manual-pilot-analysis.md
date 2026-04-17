@@ -36,7 +36,24 @@ All timings below are **active** — the idle gap between the interrupted first 
 | Avg seconds per commit | ~60s |
 | Avg seconds per tool call | 3.4s overall |
 
-Session 2 runs at roughly 2× the call throughput of session 1. Most plausible cause: cache is already warm at resume — the system prompt and per-file briefs were cached in session 1 and persist across session boundaries at the Anthropic API level. Any resumed or repeated run benefits from this.
+Session 2 runs at roughly 2× the call throughput of session 1.
+
+### Why was session 2 faster?
+
+First hypothesis was Anthropic prompt-cache warmup carrying across the session boundary. That is **not** what happened — the Anthropic prompt cache has a 5-minute TTL by default (1 hour with the extended option), and the two sessions were 10 hours apart. Session 2 started with a cold Anthropic cache. Its 97% hit rate was built up within the session, the same way session 1's was.
+
+What session 2 actually inherited:
+
+1. **Warm Gradle daemon.** Session 1 left the daemon alive; session 2's `./gradlew` calls skipped the ~8-second cold-start each. Across the 291 Gradle invocations, that alone is ~4 minutes of shaved time — most of the 2× gap at the tool-call level.
+2. **Already-fixed files on disk.** Agents in session 2 saw the post-session-1 tree. Many files no longer had findings and therefore no brief and no agent spawn. The remaining work was *smaller*, not just faster.
+3. **Easier residual.** The hardest files (`HtmlReportWriter`, `SuppressionParser`, etc.) landed in session 1. What session 2 picked up was structurally simpler.
+
+### Cache-warming recommendations for future runs
+
+- **Warm Gradle before calling Claude.** Add `./gradlew --offline help` to `run-experiment.sh` right before the `claude -p` line so every Gradle call in the session hits a hot daemon.
+- **Pre-cache the system prompt and top-level skills.** At session start, read `SKILLS.md`, `CLAUDE.md`, and one representative domain skill file in a deliberate first turn. The bytes get cached and reused across every agent spawn without reprobing.
+- **Don't rely on cross-session inheritance.** If a run is likely to hit a usage limit, design it to resume within 5 minutes — not after a 10-hour gap — or accept that the resume starts cold.
+- **Measure to confirm.** Run a third cold-start session (fresh Gradle daemon, different day) on a small test project. Compare s/call to session 2. If cold session 3 ≈ session 2, we know it was Gradle-daemon-driven; if cold session 3 ≈ session 1, the model's within-session caching is what's doing the work.
 
 ## Hygiene note
 
@@ -306,6 +323,35 @@ Changes to the fix prompt and to detection/routing that the data from this run s
 7. **Baseline-aware briefs.** The fix-brief generator currently lists every finding. When there's a `clean-code-baseline.json` on disk, skip findings present at baseline but flag new ones as "regression since baseline". Avoids agents fighting over long-standing tolerated warnings.
 
 8. **Protocol-adherence linter.** A small post-run script that asserts the protocol was followed: commit message format, agent spawned per file, no refactoring recipes invoked (for manual), test ran after every batch. Would have caught the 39% direct-edit rate automatically.
+
+## Why E1 (93 dependency findings) never got fixed
+
+The briefs for E1 findings WERE generated correctly — each module's `build/reports/clean-code/fix-briefs/_project-level.md` listed every outdated dep and pointed at `.claude/skills/clean-code-dependency-updates/SKILL.md`. From `core/` module's file:
+
+```
+## E1: Build Requires More Than One Step
+> Read `.claude/skills/clean-code-dependency-updates/SKILL.md` before addressing these.
+- Outdated dependency com.github.javaparser:javaparser-core [3.26.2 -> 3.28.0]
+- Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -> 4.9.8]
+… 13 deps per module
+```
+
+The tool log confirms: **zero edits to `gradle/libs.versions.toml`** in either session, and **zero agents spawned with `_project-level.md` as their brief**. Five project-level briefs (one per module) were quietly ignored.
+
+Root cause: the `_`-prefix convention is used inside `fix-briefs/` for meta files (`_INDEX.md`, `_project-level.md`). The driver skipped files starting with `_` on the assumption that they were indexes or scaffolding, not actionable briefs.
+
+Fixes — both lined up for the next run:
+
+1. Rename `_project-level.md` → `project-level-findings.md` in `FixBriefGenerator`. Drops the underscore that triggered the skip.
+2. Make the experiment prompt explicit: *"Every file under `fix-briefs/` that is not `_INDEX.md` is an actionable brief. Do not skip any."*
+
+Both changes land on `main` before `manual-1` so that run actually tackles the 93 deps.
+
+## Protocol miss: agents skipped reading the skill file
+
+A second observation from the tool log: agents routinely started editing before reading the skill file referenced in their brief. The brief says "> Read X before addressing these." but that's a hint, not an instruction — and some agents went straight to Edit. This is the plausible root cause of several readability regressions (lines over 120 chars, blank lines removed unnecessarily) that showed up in the post-run findings.
+
+Fix for `manual-1`: the brief generator will emit a stronger line — *"Your FIRST tool call must be a Read of each skill path cited above. Do not call Edit or Write before then."*
 
 ## Actions to clear the remaining 341 findings
 
