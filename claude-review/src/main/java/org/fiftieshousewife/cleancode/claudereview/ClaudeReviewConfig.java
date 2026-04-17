@@ -14,6 +14,11 @@ public record ClaudeReviewConfig(
         Set<HeuristicCode> enabledCodes,
         List<String> excludePatterns
 ) {
+    public ClaudeReviewConfig {
+        enabledCodes = Set.copyOf(enabledCodes);
+        excludePatterns = List.copyOf(excludePatterns);
+    }
+
     public boolean hasApiKey() {
         return apiKey != null && !apiKey.isBlank();
     }

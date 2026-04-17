@@ -17,7 +17,7 @@ class ReviewCacheTest {
                 new ReviewCache.CachedFinding("G6", "Foo.java", 10, 15, "wrong level"));
 
         cache.store("abc123", findings);
-        cache.save(tempDir);
+        cache.save();
 
         final ReviewCache reloaded = ReviewCache.load(tempDir);
         final var result = reloaded.lookup("abc123");
@@ -42,7 +42,7 @@ class ReviewCacheTest {
         final ReviewCache cache = ReviewCache.load(tempDir);
         cache.store("hash1", List.of(
                 new ReviewCache.CachedFinding("G6", "Foo.java", 1, 1, "msg")));
-        cache.save(tempDir);
+        cache.save();
 
         final ReviewCache reloaded = ReviewCache.load(tempDir);
 

@@ -25,23 +25,25 @@ public final class ReviewCache {
 
     record CachedFinding(String code, String sourceFile, int startLine, int endLine, String message) {}
 
+    private final Path cacheDir;
     private final Map<String, List<CachedFinding>> entries;
 
-    private ReviewCache(Map<String, List<CachedFinding>> entries) {
+    private ReviewCache(Path cacheDir, Map<String, List<CachedFinding>> entries) {
+        this.cacheDir = cacheDir;
         this.entries = entries;
     }
 
     static ReviewCache load(Path cacheDir) {
         final Path cacheFile = cacheDir.resolve(CACHE_FILE);
         if (!Files.exists(cacheFile)) {
-            return new ReviewCache(new ConcurrentHashMap<>());
+            return new ReviewCache(cacheDir, new ConcurrentHashMap<>());
         }
         try {
             final String json = Files.readString(cacheFile, StandardCharsets.UTF_8);
             final Map<String, List<CachedFinding>> loaded = GSON.fromJson(json, CACHE_TYPE);
-            return new ReviewCache(new ConcurrentHashMap<>(loaded != null ? loaded : Map.of()));
+            return new ReviewCache(cacheDir, new ConcurrentHashMap<>(loaded != null ? loaded : Map.of()));
         } catch (IOException e) {
-            return new ReviewCache(new ConcurrentHashMap<>());
+            return new ReviewCache(cacheDir, new ConcurrentHashMap<>());
         }
     }
 
@@ -53,7 +55,7 @@ public final class ReviewCache {
         entries.put(hash, List.copyOf(findings));
     }
 
-    void save(Path cacheDir) throws IOException {
+    void save() throws IOException {
         Files.createDirectories(cacheDir);
         final Path cacheFile = cacheDir.resolve(CACHE_FILE);
         Files.writeString(cacheFile, GSON.toJson(entries, CACHE_TYPE), StandardCharsets.UTF_8);
