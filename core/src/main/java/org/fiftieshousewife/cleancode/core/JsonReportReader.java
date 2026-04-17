@@ -1,7 +1,6 @@
 package org.fiftieshousewife.cleancode.core;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
@@ -19,43 +18,65 @@ public final class JsonReportReader {
 
     private JsonReportReader() {}
 
+    private record JsonReport(
+            String projectName,
+            String projectVersion,
+            String generatedAt,
+            List<JsonFinding> findings
+    ) {}
+
+    private record JsonFinding(
+            String code,
+            String sourceFile,
+            int startLine,
+            int endLine,
+            String message,
+            String severity,
+            String confidence,
+            String tool,
+            String ruleRef,
+            Map<String, String> metadata
+    ) {}
+
     public static AggregatedReport read(final Path inputFile) throws IOException {
+        final JsonReport jsonReport = parse(inputFile);
+        final List<Finding> findings = toFindings(jsonReport.findings());
+        final Set<HeuristicCode> coveredCodes = coveredCodesOf(findings);
+        final Instant generatedAt = Instant.parse(jsonReport.generatedAt());
+        return new AggregatedReport(
+                findings, coveredCodes, generatedAt,
+                jsonReport.projectName(), jsonReport.projectVersion());
+    }
+
+    private static JsonReport parse(final Path inputFile) throws IOException {
         final String json = Files.readString(inputFile);
-        final Gson gson = new Gson();
-        final Map<String, Object> raw = gson.fromJson(json, new TypeToken<Map<String, Object>>() {}.getType());
+        return new Gson().fromJson(json, JsonReport.class);
+    }
 
-        final String projectName = (String) raw.get("projectName");
-        final String projectVersion = (String) raw.get("projectVersion");
-        final Instant generatedAt = Instant.parse((String) raw.get("generatedAt"));
+    private static List<Finding> toFindings(final List<JsonFinding> rawFindings) {
+        final List<Finding> findings = new ArrayList<>(rawFindings.size());
+        rawFindings.forEach(rf -> findings.add(toFinding(rf)));
+        return findings;
+    }
 
-        @SuppressWarnings("unchecked")
-        final List<Map<String, Object>> rawFindings = (List<Map<String, Object>>) raw.get("findings");
+    private static Finding toFinding(final JsonFinding rf) {
+        final Map<String, String> metadata = rf.metadata() != null ? rf.metadata() : Map.of();
+        return new Finding(
+                HeuristicCode.valueOf(rf.code()),
+                rf.sourceFile(),
+                rf.startLine(),
+                rf.endLine(),
+                rf.message(),
+                Severity.valueOf(rf.severity()),
+                Confidence.valueOf(rf.confidence()),
+                rf.tool(),
+                rf.ruleRef(),
+                metadata);
+    }
 
-        final List<Finding> findings = new ArrayList<>();
-        final Set<HeuristicCode> coveredCodes = EnumSet.noneOf(HeuristicCode.class);
-
-        for (final Map<String, Object> rf : rawFindings) {
-            final HeuristicCode code = HeuristicCode.valueOf((String) rf.get("code"));
-            coveredCodes.add(code);
-
-            final String sourceFile = (String) rf.get("sourceFile");
-            final int startLine = ((Double) rf.get("startLine")).intValue();
-            final int endLine = ((Double) rf.get("endLine")).intValue();
-            final String message = (String) rf.get("message");
-            final Severity severity = Severity.valueOf((String) rf.get("severity"));
-            final Confidence confidence = Confidence.valueOf((String) rf.get("confidence"));
-            final String tool = (String) rf.get("tool");
-            final String ruleRef = (String) rf.get("ruleRef");
-
-            @SuppressWarnings("unchecked")
-            final Map<String, String> metadata = rf.get("metadata") != null
-                    ? (Map<String, String>) rf.get("metadata")
-                    : Map.of();
-
-            findings.add(new Finding(code, sourceFile, startLine, endLine,
-                    message, severity, confidence, tool, ruleRef, metadata));
-        }
-
-        return new AggregatedReport(findings, coveredCodes, generatedAt, projectName, projectVersion);
+    private static Set<HeuristicCode> coveredCodesOf(final List<Finding> findings) {
+        final Set<HeuristicCode> codes = EnumSet.noneOf(HeuristicCode.class);
+        findings.forEach(f -> codes.add(f.code()));
+        return codes;
     }
 }
