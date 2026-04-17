@@ -2,6 +2,7 @@ package org.fiftieshousewife.cleancode.claudereview;
 
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
+import com.anthropic.errors.AnthropicException;
 import com.anthropic.models.messages.CacheControlEphemeral;
 import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.Message;
@@ -40,7 +41,7 @@ final class ClaudeReviewer {
                     .filter(ContentBlock::isText)
                     .map(block -> block.text().orElseThrow().text())
                     .collect(Collectors.joining());
-        } catch (Exception e) {
+        } catch (AnthropicException e) {
             LOG.log(Level.WARNING, "Claude review failed for " + relativePath + ": " + e.getMessage());
             return "";
         }
@@ -49,13 +50,14 @@ final class ClaudeReviewer {
     private MessageCreateParams buildParams(final String content, final String relativePath) {
         final String userPrompt = "Assess this Java file for violations of: %s\n\nFile: %s\n\n%s"
                 .formatted(codesKey, relativePath, addLineNumbers(content));
+        final TextBlockParam cachedSystemPrompt = TextBlockParam.builder()
+                .text(systemPrompt)
+                .cacheControl(CacheControlEphemeral.builder().build())
+                .build();
         return MessageCreateParams.builder()
                 .model(model)
                 .maxTokens(MAX_TOKENS)
-                .systemOfTextBlockParams(List.of(TextBlockParam.builder()
-                        .text(systemPrompt)
-                        .cacheControl(CacheControlEphemeral.builder().build())
-                        .build()))
+                .systemOfTextBlockParams(List.of(cachedSystemPrompt))
                 .addUserMessage(userPrompt)
                 .build();
     }
