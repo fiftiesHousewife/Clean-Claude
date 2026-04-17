@@ -4,6 +4,7 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
+import java.util.List;
 
 @SuppressWarnings("this-escape")
 public abstract class ClaudeReviewExtension {
@@ -26,7 +27,7 @@ public abstract class ClaudeReviewExtension {
         getModel().convention("claude-sonnet-4-6");
         getMaxFilesPerRun().convention(50);
         getMinFileLines().convention(10);
-        getCodes().convention(java.util.List.of("G6", "G20", "N4"));
-        getExcludePatterns().convention(java.util.List.of("**/generated/**"));
+        getCodes().convention(List.of("G6", "G20", "N4"));
+        getExcludePatterns().convention(List.of("**/generated/**"));
     }
 }
