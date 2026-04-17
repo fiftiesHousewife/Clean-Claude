@@ -12,6 +12,12 @@ import java.util.List;
 
 public class SystemOutRecipe extends ScanningRecipe<SystemOutRecipe.Accumulator> {
 
+    private static final String PRINT_STACK_TRACE = "printStackTrace";
+    private static final String SYSTEM = "System";
+    private static final String OUT = "out";
+    private static final String ERR = "err";
+    private static final String UNKNOWN_CLASS = "<unknown>";
+
     public record Row(String className, String call) {}
 
     public static class Accumulator {
@@ -38,35 +44,7 @@ public class SystemOutRecipe extends ScanningRecipe<SystemOutRecipe.Accumulator>
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                final J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                final String methodName = m.getSimpleName();
-
-                if ("printStackTrace".equals(methodName)) {
-                    acc.rows.add(new Row(findEnclosingClassName(), "printStackTrace"));
-                    return m;
-                }
-
-                if (m.getSelect() instanceof J.FieldAccess fieldAccess) {
-                    final String fieldName = fieldAccess.getSimpleName();
-                    if (("out".equals(fieldName) || "err".equals(fieldName))
-                            && fieldAccess.getTarget() instanceof J.Identifier ident
-                            && "System".equals(ident.getSimpleName())) {
-                        acc.rows.add(new Row(findEnclosingClassName(),
-                                "System." + fieldName + "." + methodName));
-                    }
-                }
-
-                return m;
-            }
-
-            private String findEnclosingClassName() {
-                final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
-            }
-        };
+        return new SystemOutScanner(acc);
     }
 
     @Override
@@ -76,5 +54,52 @@ public class SystemOutRecipe extends ScanningRecipe<SystemOutRecipe.Accumulator>
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    private static final class SystemOutScanner extends JavaIsoVisitor<ExecutionContext> {
+
+        private final Accumulator acc;
+
+        SystemOutScanner(final Accumulator acc) {
+            this.acc = acc;
+        }
+
+        @Override
+        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            final J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
+            recordIfPrintStackTrace(m);
+            recordIfSystemStreamCall(m);
+            return m;
+        }
+
+        private void recordIfPrintStackTrace(final J.MethodInvocation m) {
+            if (PRINT_STACK_TRACE.equals(m.getSimpleName())) {
+                acc.rows.add(new Row(findEnclosingClassName(), PRINT_STACK_TRACE));
+            }
+        }
+
+        private void recordIfSystemStreamCall(final J.MethodInvocation m) {
+            if (!(m.getSelect() instanceof J.FieldAccess fieldAccess)) {
+                return;
+            }
+            if (!isSystemStreamAccess(fieldAccess)) {
+                return;
+            }
+            final String fieldName = fieldAccess.getSimpleName();
+            acc.rows.add(new Row(findEnclosingClassName(), SYSTEM + "." + fieldName + "." + m.getSimpleName()));
+        }
+
+        private boolean isSystemStreamAccess(final J.FieldAccess fieldAccess) {
+            final String fieldName = fieldAccess.getSimpleName();
+            if (!OUT.equals(fieldName) && !ERR.equals(fieldName)) {
+                return false;
+            }
+            return fieldAccess.getTarget() instanceof J.Identifier ident && SYSTEM.equals(ident.getSimpleName());
+        }
+
+        private String findEnclosingClassName() {
+            final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            return classDecl != null ? classDecl.getSimpleName() : UNKNOWN_CLASS;
+        }
     }
 }
