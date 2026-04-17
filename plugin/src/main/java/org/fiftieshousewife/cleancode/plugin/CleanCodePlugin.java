@@ -71,6 +71,16 @@ public class CleanCodePlugin implements Plugin<Project> {
                     task.setDescription("Print skill guidance for a finding concern");
                     task.setGroup("help");
                 });
+
+        if (project.getRootProject().equals(project)) {
+            project.getTasks()
+                    .register("updateVersionCatalog", UpdateVersionCatalogTask.class, task -> {
+                        task.setDescription(
+                                "Rewrite gradle/libs.versions.toml with the non-major "
+                                        + "updates from the dependencyUpdates report");
+                        task.setGroup("verification");
+                    });
+        }
     }
 
     private void applyStaticAnalysisPlugins(Project project, CleanCodeExtension ext) {

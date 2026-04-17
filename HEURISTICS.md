@@ -101,6 +101,7 @@ Output arguments are counterintuitive. Readers expect arguments to be inputs to 
 Boolean arguments loudly declare that the function does more than one thing. It does one thing if the flag is true and another if the flag is false. The function should be split into two: one for each path. `render(true)` tells the reader nothing — `renderForSuite()` and `renderForSingleTest()` tell them everything.
 
 **Detection:** [FlagArgumentRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java) — detects boolean parameters on non-private methods.
+**Fix:** [SplitFlagArgumentRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/SplitFlagArgumentRecipe.java) — for a private method whose body is a single if/else on its sole boolean parameter, emits two helper methods (`<name>When<Flag>` and `<name>When<Flag>IsFalse`) alongside the original. Delete the original and rewrite call sites manually.
 **Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
 
 ---
@@ -227,7 +228,8 @@ If you do something a certain way, do all similar things the same way. If you na
 
 Clutter is anything that adds noise without adding value: unused variables, never-called functions, redundant imports, purposeless comments. Keep your source files clean. A lean source file is easier to read, easier to understand, and easier to change.
 
-**Detection:** [(refactoring) DeleteUnusedImportRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/DeleteUnusedImportRecipe.java) — removes unused import statements. Also PMD `UnusedImports`, Checkstyle `UnusedImports`, `RedundantImport`.
+**Detection:** [(refactoring) DeleteUnusedImportRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/DeleteUnusedImportRecipe.java) — removes unused import statements. Also PMD `UnusedImports`, Checkstyle `UnusedImports`, `RedundantImport`. [FullyQualifiedReferenceRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/FullyQualifiedReferenceRecipe.java) — flags inline FQN references (`java.util.List` used directly instead of imported).
+**Fix:** [ShortenFullyQualifiedReferencesRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/ShortenFullyQualifiedReferencesRecipe.java) — rewrites inline FQN references into imports + short names.
 **Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
@@ -393,6 +395,7 @@ Boolean logic is hard enough to understand without reading it in the context of 
 Negatives are slightly harder to understand than positives. So, when possible, conditionals should be expressed as positives. `if (buffer.shouldCompact())` is preferable to `if (!buffer.shouldNotCompact())`. Double negation forces the reader to do mental gymnastics that add nothing.
 
 **Detection:** [NegativeConditionalRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/NegativeConditionalRecipe.java) — detects double negation patterns. [GuardClauseRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/GuardClauseRecipe.java) — detects negated conditions wrapping the method body that should be inverted into guard clauses.
+**Fix:** [InvertNegativeConditionalRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/InvertNegativeConditionalRecipe.java) — rewrites `if (!cond) A else B` as `if (cond) B else A` when the condition is a unary `!` and an else branch exists.
 **Skill file:** [clean-code-conditionals-and-expressions](.claude/skills/clean-code-conditionals-and-expressions/SKILL.md)
 
 ---
@@ -451,6 +454,7 @@ Mixing levels of abstraction within a function is always confusing. Section comm
 If you have a constant such as a default or configuration value that is known and expected at a high level of abstraction, do not bury it in a low-level function. Expose it as a parameter of the high-level function.
 
 **Detection:** [ConfigurableDataRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/ConfigurableDataRecipe.java) — detects configuration-like constants buried in low-level classes. [HardcodedListRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/HardcodedListRecipe.java) — detects hardcoded lists of values that should be externalised.
+**Fix:** [ExtractClassConstantRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/ExtractClassConstantRecipe.java) — promotes repeated numeric literals (≥N occurrences) to `private static final` fields at class scope.
 
 ---
 
@@ -541,6 +545,7 @@ Choose names that make the workings of a function or variable unambiguous. If a 
 The length of a name should correspond to the size of its scope. A variable named `i` is fine in a three-line for-loop. But a variable named `s` in a fifty-line method is a riddle. If the scope is long, the name should be long enough to be found, remembered, and understood without scrolling.
 
 **Detection:** [ShortVariableNameRecipe](recipes/src/main/java/org/fiftieshousewife/cleancode/recipes/ShortVariableNameRecipe.java) — detects single-letter names outside loops and lambdas (configurable).
+**Fix:** [RenameShortNameRecipe](refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/RenameShortNameRecipe.java) — takes a user-supplied `Map<String, String>` of old → new names and renames variables (and their usages) outside for / for-each loop control scopes.
 **Skill file:** [clean-code-naming](.claude/skills/clean-code-naming/SKILL.md)
 
 ---

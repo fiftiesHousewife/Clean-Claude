@@ -201,6 +201,7 @@ plugins {
 ./gradlew generateClaudeMd                           # generate CLAUDE.md
 ./gradlew cleanCodeBaseline                          # snapshot baseline
 ./gradlew cleanCodeExplain --finding=error-handling  # print skill guidance
+./gradlew updateVersionCatalog                       # bump non-major deps in libs.versions.toml (root only)
 ```
 
 The plugin automatically applies `java`, `pmd`, `checkstyle`, `jacoco`, and `com.github.spotbugs`. It provides a bundled Checkstyle configuration if the project has none, and wires `analyseCleanCode` to depend on all tool report tasks.
@@ -286,6 +287,10 @@ The `refactoring` module contains OpenRewrite recipes that **transform** code, n
 | RemoveNestedTernaryRecipe | G16 | Converts nested ternary to if/else chains |
 | WrapAssertAllRecipe | T1 | Wraps consecutive assertions in `assertAll` |
 | AddLocaleRecipe | G26 | Adds `Locale.ROOT` to `toLowerCase()`/`toUpperCase()` |
+| ExtractClassConstantRecipe | G35 | Promotes repeated numeric literals to `private static final` fields |
+| InvertNegativeConditionalRecipe | G29 | Rewrites `if (!cond) A else B` as `if (cond) B else A` |
+| SplitFlagArgumentRecipe | F3 | Emits `<name>When<Flag>()` / `<name>When<Flag>IsFalse()` helpers next to a private method whose sole boolean parameter drives a single if/else |
+| RenameShortNameRecipe | N5 | Renames short non-loop variable names using a user-supplied `Map<String, String>` |
 
 ## Dependencies
 
