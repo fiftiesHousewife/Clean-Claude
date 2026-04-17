@@ -117,26 +117,19 @@ public class ExtractClassConstantRecipe extends ScanningRecipe<ExtractClassConst
     }
 
     private static boolean isStaticFinal(J.VariableDeclarations varDecl) {
-        final boolean isStatic = varDecl.getModifiers().stream()
-                .anyMatch(m -> m.getType() == J.Modifier.Type.Static);
-        final boolean isFinal = varDecl.getModifiers().stream()
-                .anyMatch(m -> m.getType() == J.Modifier.Type.Final);
-        return isStatic && isFinal;
+        final Set<J.Modifier.Type> types = varDecl.getModifiers().stream()
+                .map(J.Modifier::getType)
+                .collect(java.util.stream.Collectors.toSet());
+        return types.contains(J.Modifier.Type.Static) && types.contains(J.Modifier.Type.Final);
     }
 
     private static Statement buildConstantField(String name, Object value) {
-        final String javaType;
-        final String literal;
-        if (value instanceof Long) {
-            javaType = "long";
-            literal = value + "L";
-        } else if (value instanceof Double) {
-            javaType = "double";
-            literal = value.toString();
-        } else {
-            javaType = "int";
-            literal = value.toString();
-        }
+        final String javaType = switch (value) {
+            case Long ignored -> "long";
+            case Double ignored -> "double";
+            default -> "int";
+        };
+        final String literal = value instanceof Long ? value + "L" : value.toString();
         final String classSource = "class _Tmp { private static final %s %s = %s; }"
                 .formatted(javaType, name, literal);
         final List<SourceFile> parsed = JavaParser.fromJavaVersion()
