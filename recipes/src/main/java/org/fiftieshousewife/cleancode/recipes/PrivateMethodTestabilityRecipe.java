@@ -13,6 +13,7 @@ import java.util.List;
 public class PrivateMethodTestabilityRecipe extends ScanningRecipe<PrivateMethodTestabilityRecipe.Accumulator> {
 
     private static final int DEFAULT_MIN_BODY_LINES = 5;
+    private static final String UNKNOWN_CLASS = "<unknown>";
 
     private final int minBodyLines;
 
@@ -55,57 +56,7 @@ public class PrivateMethodTestabilityRecipe extends ScanningRecipe<PrivateMethod
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method,
-                                                              final ExecutionContext ctx) {
-                final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
-
-                if (!isPrivate(m) || isConstructor(m) || isInsideAnonymousClassOrLambda()) {
-                    return m;
-                }
-
-                final J.Block body = m.getBody();
-                if (body == null) {
-                    return m;
-                }
-
-                final int bodyLineCount = body.getStatements().size();
-                if (bodyLineCount <= minBodyLines) {
-                    return m;
-                }
-
-                final String className = findEnclosingClassName();
-
-                acc.rows.add(new PrivateMethodTestabilityRow(
-                        className,
-                        m.getSimpleName(),
-                        bodyLineCount,
-                        -1
-                ));
-
-                return m;
-            }
-
-            private boolean isPrivate(final J.MethodDeclaration method) {
-                return method.getModifiers().stream()
-                        .anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
-            }
-
-            private boolean isConstructor(final J.MethodDeclaration method) {
-                return method.getMethodType() != null && method.getMethodType().isConstructor();
-            }
-
-            private boolean isInsideAnonymousClassOrLambda() {
-                return getCursor().firstEnclosing(J.NewClass.class) != null
-                        || getCursor().firstEnclosing(J.Lambda.class) != null;
-            }
-
-            private String findEnclosingClassName() {
-                final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
-            }
-        };
+        return new PrivateMethodScanner(acc, minBodyLines);
     }
 
     @Override
@@ -115,5 +66,77 @@ public class PrivateMethodTestabilityRecipe extends ScanningRecipe<PrivateMethod
 
     public List<PrivateMethodTestabilityRow> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    private static final class PrivateMethodScanner extends JavaIsoVisitor<ExecutionContext> {
+
+        private final Accumulator acc;
+        private final int minBodyLines;
+
+        PrivateMethodScanner(final Accumulator acc, final int minBodyLines) {
+            this.acc = acc;
+            this.minBodyLines = minBodyLines;
+        }
+
+        @Override
+        public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method,
+                                                          final ExecutionContext ctx) {
+            final J.MethodDeclaration visited = super.visitMethodDeclaration(method, ctx);
+            if (shouldSkip(visited)) {
+                return visited;
+            }
+            final int bodyLineCount = bodyStatementCount(visited);
+            if (bodyLineCount <= minBodyLines) {
+                return visited;
+            }
+            acc.rows.add(toRow(visited, bodyLineCount));
+            return visited;
+        }
+
+        private boolean shouldSkip(final J.MethodDeclaration method) {
+            return !isPrivate(method)
+                    || isConstructor(method)
+                    || isInsideAnonymousClassOrLambda();
+        }
+
+        private int bodyStatementCount(final J.MethodDeclaration method) {
+            final J.Block body = method.getBody();
+            return body != null ? body.getStatements().size() : -1;
+        }
+
+        private PrivateMethodTestabilityRow toRow(final J.MethodDeclaration method, final int bodyLineCount) {
+            return new PrivateMethodTestabilityRow(
+                    findEnclosingClassName(),
+                    method.getSimpleName(),
+                    bodyLineCount,
+                    -1
+            );
+        }
+
+        private boolean isPrivate(final J.MethodDeclaration method) {
+            return method.getModifiers().stream()
+                    .anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
+        }
+
+        private boolean isConstructor(final J.MethodDeclaration method) {
+            return method.getMethodType() != null && method.getMethodType().isConstructor();
+        }
+
+        private boolean isInsideAnonymousClassOrLambda() {
+            return isInsideAnonymousClass() || isInsideLambda();
+        }
+
+        private boolean isInsideAnonymousClass() {
+            return getCursor().firstEnclosing(J.NewClass.class) != null;
+        }
+
+        private boolean isInsideLambda() {
+            return getCursor().firstEnclosing(J.Lambda.class) != null;
+        }
+
+        private String findEnclosingClassName() {
+            final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            return classDecl != null ? classDecl.getSimpleName() : UNKNOWN_CLASS;
+        }
     }
 }
