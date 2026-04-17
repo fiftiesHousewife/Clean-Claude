@@ -1,5 +1,6 @@
 package org.fiftieshousewife.cleancode.recipes;
 
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
@@ -13,6 +14,8 @@ import java.util.List;
 
 public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecipe.Accumulator> {
 
+    private static final String UNKNOWN_CLASS_NAME = "<unknown>";
+
     private final int minValue;
 
     public record Row(String className, String methodName, String literalValue) {}
@@ -23,7 +26,7 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
 
     private Accumulator lastAccumulator;
 
-    public ConfigurableDataRecipe(int minValue) {
+    public ConfigurableDataRecipe(final int minValue) {
         this.minValue = minValue;
     }
 
@@ -38,51 +41,27 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Literal visitLiteral(J.Literal literal, ExecutionContext ctx) {
+            public J.Literal visitLiteral(final J.Literal literal, final ExecutionContext ctx) {
                 final J.Literal lit = super.visitLiteral(literal, ctx);
-
-                if (!isNumericLiteral(lit)) {
-                    return lit;
+                if (isReportableMagicNumber(lit, getCursor())) {
+                    acc.rows.add(toRow(lit, getCursor()));
                 }
-
-                if (isTrivialValue(lit)) {
-                    return lit;
-                }
-
-                final J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                if (enclosingClass != null && enclosingClass.getSimpleName().endsWith("Test")) {
-                    return lit;
-                }
-
-                final J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                if (enclosingMethod == null || !isPrivate(enclosingMethod)) {
-                    return lit;
-                }
-
-                final J.VariableDeclarations varDecls = getCursor().firstEnclosing(J.VariableDeclarations.class);
-                if (varDecls != null && isConstantDeclaration(varDecls)) {
-                    return lit;
-                }
-
-                final String className = enclosingClass != null ? enclosingClass.getSimpleName() : "<unknown>";
-                acc.rows.add(new Row(className, enclosingMethod.getSimpleName(), lit.getValueSource()));
-
                 return lit;
             }
         };
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -90,30 +69,52 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean isNumericLiteral(J.Literal lit) {
-        if (lit.getType() == null) {
-            return false;
-        }
+    private boolean isReportableMagicNumber(final J.Literal lit, final Cursor cursor) {
+        return isNumericLiteral(lit)
+                && isSignificantValue(lit)
+                && isInProductionClass(cursor)
+                && isInPrivateMethod(cursor)
+                && isInExecutableStatement(cursor);
+    }
+
+    private Row toRow(final J.Literal lit, final Cursor cursor) {
+        final J.ClassDeclaration enclosingClass = cursor.firstEnclosing(J.ClassDeclaration.class);
+        final J.MethodDeclaration enclosingMethod = cursor.firstEnclosing(J.MethodDeclaration.class);
+        final String className = enclosingClass != null ? enclosingClass.getSimpleName() : UNKNOWN_CLASS_NAME;
+        return new Row(className, enclosingMethod.getSimpleName(), lit.getValueSource());
+    }
+
+    private static boolean isNumericLiteral(final J.Literal lit) {
         return lit.getType() instanceof JavaType.Primitive p
                 && (p == JavaType.Primitive.Int || p == JavaType.Primitive.Long
                 || p == JavaType.Primitive.Double || p == JavaType.Primitive.Float);
     }
 
-    private boolean isTrivialValue(J.Literal lit) {
-        if (lit.getValue() == null) {
-            return true;
-        }
-        if (lit.getValue() instanceof Number n) {
-            return Math.abs(n.doubleValue()) <= minValue;
-        }
-        return false;
+    boolean isSignificantValue(final J.Literal lit) {
+        return lit.getValue() instanceof Number n
+                && Math.abs(n.doubleValue()) > minValue;
     }
 
-    private static boolean isPrivate(J.MethodDeclaration m) {
+    private static boolean isInProductionClass(final Cursor cursor) {
+        final J.ClassDeclaration enclosingClass = cursor.firstEnclosing(J.ClassDeclaration.class);
+        return enclosingClass != null && !enclosingClass.getSimpleName().endsWith("Test");
+    }
+
+    private static boolean isInPrivateMethod(final Cursor cursor) {
+        final J.MethodDeclaration enclosingMethod = cursor.firstEnclosing(J.MethodDeclaration.class);
+        return enclosingMethod != null && isPrivate(enclosingMethod);
+    }
+
+    private static boolean isInExecutableStatement(final Cursor cursor) {
+        final J.VariableDeclarations varDecls = cursor.firstEnclosing(J.VariableDeclarations.class);
+        return varDecls == null || !isConstantDeclaration(varDecls);
+    }
+
+    private static boolean isPrivate(final J.MethodDeclaration m) {
         return m.getModifiers().stream().anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
     }
 
-    private static boolean isConstantDeclaration(J.VariableDeclarations varDecls) {
+    private static boolean isConstantDeclaration(final J.VariableDeclarations varDecls) {
         final boolean isStatic = varDecls.getModifiers().stream()
                 .anyMatch(mod -> mod.getType() == J.Modifier.Type.Static);
         final boolean isFinal = varDecls.getModifiers().stream()
