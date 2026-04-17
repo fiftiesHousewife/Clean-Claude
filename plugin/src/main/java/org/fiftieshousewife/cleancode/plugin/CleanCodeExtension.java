@@ -13,7 +13,6 @@ import javax.inject.Inject;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("this-escape")
 public abstract class CleanCodeExtension {
 
     public abstract Property<Boolean> getFailOnViolation();
@@ -32,6 +31,7 @@ public abstract class CleanCodeExtension {
     private final ClaudeReviewExtension claudeReview;
 
     @Inject
+    @SuppressWarnings("this-escape")
     public CleanCodeExtension(ObjectFactory objects) {
         getFailOnViolation().convention(true);
         getDisabledRecipes().convention(java.util.List.of());
