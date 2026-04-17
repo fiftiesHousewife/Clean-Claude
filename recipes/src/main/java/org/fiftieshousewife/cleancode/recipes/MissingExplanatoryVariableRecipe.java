@@ -55,6 +55,10 @@ public class MissingExplanatoryVariableRecipe
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 final J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
+                if (isInitializerOfVariableDeclaration(m)) {
+                    return m;
+                }
+
                 for (Expression argument : m.getArguments()) {
                     if (chainDepth(argument) >= CHAIN_DEPTH_THRESHOLD) {
                         acc.rows.add(new Row(
@@ -66,6 +70,12 @@ public class MissingExplanatoryVariableRecipe
                 }
 
                 return m;
+            }
+
+            private boolean isInitializerOfVariableDeclaration(final J.MethodInvocation invocation) {
+                final J.VariableDeclarations.NamedVariable namedVariable =
+                        getCursor().firstEnclosing(J.VariableDeclarations.NamedVariable.class);
+                return namedVariable != null && namedVariable.getInitializer() == invocation;
             }
 
             @Override

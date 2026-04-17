@@ -61,6 +61,26 @@ class MissingExplanatoryVariableRecipeTest {
     }
 
     @Test
+    void ignoresChainedArgumentWhenOuterCallIsAlreadyExtractedToVariable() {
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    Object bar;
+                    Object compute(Object x) { return x; }
+                    void use(Object x) {}
+                    void process() {
+                        final var result = compute(bar.getX().transform().serialize());
+                        use(result);
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "compute(...) is already the initializer of a var decl; do not re-flag its chained argument");
+    }
+
+    @Test
     void ignoresSimpleBinaryExpressionInReturn() {
         final var recipe = new MissingExplanatoryVariableRecipe();
         RecipeTestHelper.runAgainst(recipe, """
