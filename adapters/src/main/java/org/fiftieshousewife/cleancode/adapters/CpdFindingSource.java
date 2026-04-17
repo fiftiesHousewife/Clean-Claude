@@ -76,7 +76,7 @@ public class CpdFindingSource implements FindingSource {
 
     Finding buildFinding(Duplication duplication, int index, ProjectContext context) {
         final Element file = duplication.files().get(index);
-        final String relativePath = PathUtils.relativise(file.getAttribute("path"), context.projectRoot());
+        final String relativePath = RelativePath.of(file.getAttribute("path"), context.projectRoot());
         final int startLine = Integer.parseInt(file.getAttribute("line"));
         final int endLine = startLine + duplication.lines() - 1;
 
@@ -96,7 +96,7 @@ public class CpdFindingSource implements FindingSource {
         final List<String> paths = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             if (i != excludeIndex) {
-                paths.add(PathUtils.relativise(files.get(i).getAttribute("path"), context.projectRoot()));
+                paths.add(RelativePath.of(files.get(i).getAttribute("path"), context.projectRoot()));
             }
         }
         return paths;
