@@ -41,56 +41,70 @@ public class ExtractExplanatoryVariableRecipe extends Recipe {
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
-                final List<Statement> statements = b.getStatements();
-                final List<Statement> newStatements = new ArrayList<>();
-                boolean changed = false;
-
-                for (final Statement stmt : statements) {
-                    if (!(stmt instanceof J.If ifStmt)) {
-                        newStatements.add(stmt);
-                        continue;
-                    }
-
-                    final Expression condition = ifStmt.getIfCondition().getTree();
-                    final int depth = chainDepth(condition);
-
-                    if (depth < minChainDepth) {
-                        newStatements.add(stmt);
-                        continue;
-                    }
-
-                    final String condText = condition.toString().trim();
-                    final String varName = generateVariableName(condText);
-                    final String declSource = "class _T { void _m() { final var %s = %s; } }"
-                            .formatted(varName, condText);
-
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(declSource).toList();
-
-                    if (parsed.isEmpty()) {
-                        newStatements.add(stmt);
-                        continue;
-                    }
-
-                    final J.MethodDeclaration method = (J.MethodDeclaration) ((J.CompilationUnit) parsed.getFirst())
-                            .getClasses().getFirst().getBody().getStatements().getFirst();
-                    final Statement varDecl = method.getBody().getStatements().getFirst();
-
-                    newStatements.add(varDecl);
-
-                    final J.Identifier varRef = new J.Identifier(
-                            org.openrewrite.Tree.randomId(),
-                            org.openrewrite.java.tree.Space.EMPTY,
-                            org.openrewrite.marker.Markers.EMPTY,
-                            List.of(), varName, null, null);
-                    newStatements.add(ifStmt.withIfCondition(ifStmt.getIfCondition().withTree(varRef)));
-                    changed = true;
-                }
-
-                return changed ? b.withStatements(newStatements) : b;
+                return rewriteBlock(b);
             }
         };
+    }
+
+    J.Block rewriteBlock(final J.Block block) {
+        final List<Statement> newStatements = new ArrayList<>();
+        boolean changed = false;
+
+        for (final Statement stmt : block.getStatements()) {
+            final List<Statement> replacement = tryExtractCondition(stmt);
+            if (replacement == null) {
+                newStatements.add(stmt);
+            } else {
+                newStatements.addAll(replacement);
+                changed = true;
+            }
+        }
+
+        return changed ? block.withStatements(newStatements) : block;
+    }
+
+    List<Statement> tryExtractCondition(final Statement stmt) {
+        if (!(stmt instanceof J.If ifStmt)) {
+            return null;
+        }
+
+        final Expression condition = ifStmt.getIfCondition().getTree();
+        if (chainDepth(condition) < minChainDepth) {
+            return null;
+        }
+
+        final String condText = condition.toString().trim();
+        final String varName = generateVariableName(condText);
+        final Statement varDecl = parseVariableDeclaration(varName, condText);
+        if (varDecl == null) {
+            return null;
+        }
+
+        final J.If rewrittenIf = ifStmt.withIfCondition(
+                ifStmt.getIfCondition().withTree(newIdentifier(varName)));
+        return List.of(varDecl, rewrittenIf);
+    }
+
+    private static Statement parseVariableDeclaration(final String varName, final String condText) {
+        final String declSource = "class _T { void _m() { final var %s = %s; } }"
+                .formatted(varName, condText);
+        final List<SourceFile> parsed = JavaParser.fromJavaVersion()
+                .logCompilationWarningsAndErrors(false)
+                .build().parse(declSource).toList();
+        if (parsed.isEmpty()) {
+            return null;
+        }
+        final J.MethodDeclaration method = (J.MethodDeclaration) ((J.CompilationUnit) parsed.getFirst())
+                .getClasses().getFirst().getBody().getStatements().getFirst();
+        return method.getBody().getStatements().getFirst();
+    }
+
+    private static J.Identifier newIdentifier(final String varName) {
+        return new J.Identifier(
+                org.openrewrite.Tree.randomId(),
+                org.openrewrite.java.tree.Space.EMPTY,
+                org.openrewrite.marker.Markers.EMPTY,
+                List.of(), varName, null, null);
     }
 
     static int chainDepth(Expression expr) {
