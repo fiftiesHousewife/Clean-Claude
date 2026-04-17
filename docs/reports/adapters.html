@@ -5,40 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clean Code Report — adapters</title>
   <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
-header { background: #1a1a2e; color: #fff; padding: 2rem; }
-header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-header p { opacity: 0.8; font-size: 0.95rem; }
-main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
-.summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
-.summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
-.badge.error { background: #c0392b; }
-.badge.warning { background: #e67e22; }
-.badge.info { background: #95a5a6; }
-details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
-summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
-summary:hover { background: #fafafa; }
-.code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
-.group-body { padding: 0 1rem 1rem 1rem; overflow-x: auto; }
-.reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
-.guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
-td:first-child { white-space: nowrap; }
-td:nth-child(2) { white-space: nowrap; font-size: 0.85rem; }
-td:nth-child(3) { word-break: break-word; }
-th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
-.sev-error { color: #c0392b; font-weight: 600; }
-.sev-warning { color: #e67e22; font-weight: 600; }
-.sev-info { color: #95a5a6; }
-.location a { color: #2980b9; text-decoration: none; }
-.location a:hover { text-decoration: underline; }
-.location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
-.tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
-.tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
-.clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
-footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
+    header { background: #1a1a2e; color: #fff; padding: 2rem; }
+    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    header p { opacity: 0.8; font-size: 0.95rem; }
+    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
+    .badge.error { background: #c0392b; }
+    .badge.warning { background: #e67e22; }
+    .badge.info { background: #95a5a6; }
+    details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
+    summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
+    summary:hover { background: #fafafa; }
+    .code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
+    .group-body { padding: 0 1rem 1rem 1rem; }
+    .reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
+    .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
+    .group-body { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+    col.severity { width: 6rem; }
+    col.location { width: 30%; }
+    col.message { width: auto; }
+    td:first-child { white-space: nowrap; }
+    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; }
+    td:nth-child(3) { overflow-wrap: anywhere; }
+    th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+    .sev-error { color: #c0392b; font-weight: 600; }
+    .sev-warning { color: #e67e22; font-weight: 600; }
+    .sev-info { color: #95a5a6; }
+    .location a { color: #2980b9; text-decoration: none; }
+    .location a:hover { text-decoration: underline; }
+    .location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+    .tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+    .tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
+    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   </style>
 </head>
 <body>
@@ -48,108 +52,267 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   </header>
   <main>
     <div class="summary">
-      <span class="badge error">0 errors</span>
-      <span class="badge warning">53 warnings</span>
+      <span class="badge error">45 errors</span>
+      <span class="badge warning">190 warnings</span>
       <span class="badge info">1 info</span>
     </div>
     <details>
-      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (7)</summary>
+      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (4)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.10 'Classes' p.136</p>
         <p class="guidance">The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java</td><td>Class 'SurefireFindingSource' is 158 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:1</td><td>File length is 169 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteBehaviouralMapper.java:1</td><td>File length is 205 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteCommentNamingMapper.java:1</td><td>File length is 210 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:1</td><td>File length is 159 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteStructuralMapper.java:1</td><td>File length is 188 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:1</td><td>File length is 178 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:1</td><td>File length is 165 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java:1</td><td>File length is 158 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:1</td><td>File length is 692 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:1</td><td>File length is 152 lines (max allowed is 150).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">Ch7_1</span>Use Exceptions Rather Than Return Codes (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.7 'Error Handling' p.103</p>
-        <p class="guidance">Exceptions are for exceptional circumstances. When you catch an exception and merely log it — or worse, leave the catch block empty — you've told the calling code that everything is fine when it isn't. The caller makes decisions based on a lie. Either handle the exception meaningfully, or let it propagate to someone who can.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java</td><td>Method 'collectFindings' catches Exception — catch specific exception types instead</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">E1</span>Build Requires More Than One Step (15)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Environment' p.287</p>
-        <p class="guidance">You should be able to build the system with a single trivial command. You should not have to search around for dependencies, scripts, or obscure commands. Outdated dependencies make that one-step build fragile — every stale library is a silent accumulation of risk, incompatibility, and unfixed vulnerabilities.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -&gt; 4.9.8]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.google.code.gson:gson [2.11.0 -&gt; 2.13.2]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -&gt; 10.26.1]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -&gt; 0.8.14]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -&gt; 0.8.14]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit:junit-bom [5.10.0 -&gt; 5.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.jupiter:junit-jupiter [5.10.0 -&gt; 5.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.platform:junit-platform-launcher [1.10.0 -&gt; 1.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-core [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-java [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-java-21 [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.slf4j:slf4j-simple [2.0.17 -&gt; 2.1.0-alpha1]</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">F2</span>Output Arguments (2)</summary>
+      <summary><span class="code-label">F1</span>Too Many Arguments (1)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Functions' p.288</p>
-        <p class="guidance">Output arguments are counterintuitive. Readers expect arguments to be inputs to a function, not things the function writes to. When you see appendFooter(report), do you expect it to append something to report, or to append report to something else? If a function must transform something, let it transform the state of the owning object, or return the result.</p>
+        <p class="guidance">Functions should have a small number of arguments. The ideal number is zero. Next comes one, followed closely by two. Three arguments should be avoided where possible. More than three requires very special justification — and then shouldn't be used anyway.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java</td><td>Class has 6 methods returning collections and 1 void methods mutating collection params — pick one style</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java</td><td>Class has 2 methods returning collections and 1 void methods mutating collection params — pick one style</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:67</td><td>More than 4 parameters (found 6).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G14</span>Feature Envy (2)</summary>
+      <summary><span class="code-label">G22</span>Make Logical Dependencies Physical (103)</summary>
       <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.293</p>
-        <p class="guidance">A method that calls six methods on another object but only one on its own class has Feature Envy — it clearly wants to be over there, not here. Move the method to the class whose data it is actually manipulating. Methods should operate on the data of their own class, not reach across into another.</p>
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.298</p>
+        <p class="guidance">If something in your code can logically be constant — a variable that's never reassigned, an object that's never swapped — then declare it final. This isn't pedantry. It communicates intent to every future reader: 'this value is set once and never changes.' It prevents accidental reassignment and signals a design where fewer things are moving at once.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java</td><td>Method 'projectCoverageFinding' calls 5 methods on 'LineCoverage' but only 1 on its own class — it wants to live elsewhere</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java</td><td>Method 'classCoverageFinding' calls 3 methods on 'LineCoverage' but only 0 on its own class — it wants to live elsewhere</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:75</td><td>Variable 'codes' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:87</td><td>Variable 'report' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:93</td><td>Variable 'doc' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:95</td><td>Variable 'findings' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:96</td><td>Variable 'fileNodes' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:99</td><td>Variable 'fileElement' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:100</td><td>Variable 'absolutePath' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:101</td><td>Variable 'relativePath' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:103</td><td>Variable 'errors' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:105</td><td>Variable 'e' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:106</td><td>Variable 'sourceFqn' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:107</td><td>Variable 'checkName' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:109</td><td>Variable 'mapping' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:114</td><td>Variable 'line' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:115</td><td>Variable 'message' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:137</td><td>Variable 'lastDot' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:38</td><td>Variable 'report' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:43</td><td>Variable 'doc' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:44</td><td>Variable 'findings' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:45</td><td>Variable 'duplications' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:55</td><td>Variable 'tokens' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:56</td><td>Variable 'lines' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:57</td><td>Variable 'severity' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:58</td><td>Variable 'files' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:60</td><td>Variable 'findings' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:69</td><td>Variable 'file' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:70</td><td>Variable 'relativePath' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:71</td><td>Variable 'startLine' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:72</td><td>Variable 'endLine' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:74</td><td>Variable 'otherFiles' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:75</td><td>Variable 'metadata' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:87</td><td>Variable 'paths' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:104</td><td>Variable 'fileNodes' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:105</td><td>Variable 'files' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:40</td><td>Variable 'report' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:47</td><td>Variable 'doc' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:49</td><td>Variable 'findings' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:64</td><td>Variable 'hasTestSources' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:78</td><td>Variable 'reportElement' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:79</td><td>Variable 'counters' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:86</td><td>Variable 'missed' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:87</td><td>Variable 'covered' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:88</td><td>Variable 'total' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:89</td><td>Variable 'percentage' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:90</td><td>Variable 'severity' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:103</td><td>Variable 'classNodes' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:106</td><td>Variable 'classElement' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:107</td><td>Variable 'className' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:108</td><td>Variable 'sourceFile' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:110</td><td>Variable 'counters' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:112</td><td>Variable 'counter' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:114</td><td>Variable 'missed' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:115</td><td>Variable 'covered' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:116</td><td>Variable 'total' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:122</td><td>Variable 'percentage' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:124</td><td>Variable 'packagePath' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PathUtils.java:10</td><td>Variable 'root' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:59</td><td>Variable 'codes' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:71</td><td>Variable 'report' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:77</td><td>Variable 'doc' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:79</td><td>Variable 'findings' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:80</td><td>Variable 'fileNodes' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:83</td><td>Variable 'fileElement' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:84</td><td>Variable 'absolutePath' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:85</td><td>Variable 'relativePath' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:87</td><td>Variable 'violations' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:89</td><td>Variable 'v' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:90</td><td>Variable 'rule' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:92</td><td>Variable 'mapping' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:97</td><td>Variable 'startLine' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:98</td><td>Variable 'endLine' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:99</td><td>Variable 'message' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:75</td><td>Variable 'codes' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:88</td><td>Variable 'report' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:93</td><td>Variable 'doc' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:95</td><td>Variable 'findings' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:96</td><td>Variable 'bugInstances' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:99</td><td>Variable 'bug' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:100</td><td>Variable 'type' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:101</td><td>Variable 'category' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:102</td><td>Variable 'rank' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:105</td><td>Variable 'typeKey' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:115</td><td>Variable 'sourceLines' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:119</td><td>Variable 'sourceLine' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:120</td><td>Variable 'startLine' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:121</td><td>Variable 'endLine' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:122</td><td>Variable 'sourcePath' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:125</td><td>Variable 'shortMessages' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:126</td><td>Variable 'message' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:131</td><td>Variable 'severity' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:39</td><td>Variable 'dir' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:52</td><td>Variable 'dir' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:58</td><td>Variable 'findings' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:64</td><td>Variable 'doc' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:65</td><td>Variable 'suite' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:82</td><td>Variable 'findings' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:83</td><td>Variable 'testcases' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:86</td><td>Variable 'testcase' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:94</td><td>Variable 'testName' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:95</td><td>Variable 'className' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:96</td><td>Variable 'sourceFile' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:109</td><td>Variable 'time' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:135</td><td>Variable 'skipPercentage' should be declared final.</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G18</span>Inappropriate Static (1)</summary>
+      <summary><span class="code-label">G24</span>Follow Standard Conventions (96)</summary>
       <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
-        <p class="guidance">In general you should prefer non-static methods to static methods. If you really want a function to be static, make sure there is no chance that you'll want it to behave polymorphically. Static methods cannot be overridden and cannot participate in dependency injection.</p>
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.299</p>
+        <p class="guidance">Every team should follow a coding standard. The standard should specify things like where to declare instance variables, consistent naming, brace style, and so forth. The standard should not need a document to describe it because the code itself should be the exemplar.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingMapper.java</td><td>Method 'mapRecipe' does not use instance state — consider making it static or extracting</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:35</td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:36</td><td>Line is longer than 120 characters (found 140).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:37</td><td>Line is longer than 120 characters (found 153).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:38</td><td>Line is longer than 120 characters (found 143).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:39</td><td>Line is longer than 120 characters (found 149).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:40</td><td>Line is longer than 120 characters (found 148).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:41</td><td>Line is longer than 120 characters (found 145).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:42</td><td>Line is longer than 120 characters (found 147).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:43</td><td>Line is longer than 120 characters (found 155).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:44</td><td>Line is longer than 120 characters (found 172).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:45</td><td>Line is longer than 120 characters (found 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:46</td><td>Line is longer than 120 characters (found 140).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:47</td><td>Line is longer than 120 characters (found 136).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:48</td><td>Line is longer than 120 characters (found 138).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:49</td><td>Line is longer than 120 characters (found 154).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:50</td><td>Line is longer than 120 characters (found 160).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:51</td><td>Line is longer than 120 characters (found 139).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:52</td><td>Line is longer than 120 characters (found 135).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:53</td><td>Line is longer than 120 characters (found 154).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:54</td><td>Line is longer than 120 characters (found 168).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:55</td><td>Line is longer than 120 characters (found 160).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:56</td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:57</td><td>Line is longer than 120 characters (found 142).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:58</td><td>Line is longer than 120 characters (found 137).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:59</td><td>Line is longer than 120 characters (found 142).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:60</td><td>Line is longer than 120 characters (found 136).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:142</td><td>'if' construct must use '{}'s.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:143</td><td>'if' construct must use '{}'s.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:234</td><td>Line is longer than 120 characters (found 124).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:243</td><td>Line is longer than 120 characters (found 142).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:352</td><td>Line is longer than 120 characters (found 136).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:391</td><td>Line is longer than 120 characters (found 131).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:399</td><td>Line is longer than 120 characters (found 122).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:407</td><td>Line is longer than 120 characters (found 127).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:439</td><td>Line is longer than 120 characters (found 131).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:534</td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:590</td><td>Line is longer than 120 characters (found 121).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:606</td><td>Line is longer than 120 characters (found 128).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:638</td><td>Line is longer than 120 characters (found 143).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:24</td><td>Line is longer than 120 characters (found 152).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:25</td><td>Line is longer than 120 characters (found 142).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:26</td><td>Line is longer than 120 characters (found 154).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:27</td><td>Line is longer than 120 characters (found 147).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:28</td><td>Line is longer than 120 characters (found 144).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:29</td><td>Line is longer than 120 characters (found 133).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:30</td><td>Line is longer than 120 characters (found 149).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:31</td><td>Line is longer than 120 characters (found 155).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:32</td><td>Line is longer than 120 characters (found 155).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:33</td><td>Line is longer than 120 characters (found 149).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:34</td><td>Line is longer than 120 characters (found 137).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:35</td><td>Line is longer than 120 characters (found 132).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:36</td><td>Line is longer than 120 characters (found 165).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:37</td><td>Line is longer than 120 characters (found 137).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:38</td><td>Line is longer than 120 characters (found 139).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:39</td><td>Line is longer than 120 characters (found 125).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:40</td><td>Line is longer than 120 characters (found 124).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:41</td><td>Line is longer than 120 characters (found 166).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:42</td><td>Line is longer than 120 characters (found 137).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:43</td><td>Line is longer than 120 characters (found 137).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:44</td><td>Line is longer than 120 characters (found 161).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:21</td><td>Line is longer than 120 characters (found 176).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:22</td><td>Line is longer than 120 characters (found 160).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:23</td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:24</td><td>Line is longer than 120 characters (found 157).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:25</td><td>Line is longer than 120 characters (found 179).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:26</td><td>Line is longer than 120 characters (found 175).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:27</td><td>Line is longer than 120 characters (found 161).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:28</td><td>Line is longer than 120 characters (found 157).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:29</td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:30</td><td>Line is longer than 120 characters (found 190).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:31</td><td>Line is longer than 120 characters (found 197).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:32</td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:33</td><td>Line is longer than 120 characters (found 158).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:34</td><td>Line is longer than 120 characters (found 187).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:35</td><td>Line is longer than 120 characters (found 163).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:36</td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:37</td><td>Line is longer than 120 characters (found 148).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:38</td><td>Line is longer than 120 characters (found 152).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:39</td><td>Line is longer than 120 characters (found 184).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:40</td><td>Line is longer than 120 characters (found 157).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:41</td><td>Line is longer than 120 characters (found 175).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:42</td><td>Line is longer than 120 characters (found 143).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:43</td><td>Line is longer than 120 characters (found 170).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:44</td><td>Line is longer than 120 characters (found 158).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:45</td><td>Line is longer than 120 characters (found 146).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:46</td><td>Line is longer than 120 characters (found 159).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:47</td><td>Line is longer than 120 characters (found 183).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:48</td><td>Line is longer than 120 characters (found 153).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:49</td><td>Line is longer than 120 characters (found 148).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:50</td><td>Line is longer than 120 characters (found 162).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:51</td><td>Line is longer than 120 characters (found 190).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:52</td><td>Line is longer than 120 characters (found 194).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:53</td><td>Line is longer than 120 characters (found 202).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:54</td><td>Line is longer than 120 characters (found 151).</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:55</td><td>Line is longer than 120 characters (found 151).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:56</td><td>Line is longer than 120 characters (found 139).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G29</span>Avoid Negative Conditionals (3)</summary>
+      <summary><span class="code-label">G26</span>Be Precise (1)</summary>
       <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
-        <p class="guidance">Negatives are slightly harder to understand than positives. So, when possible, conditionals should be expressed as positives. if (buffer.shouldCompact()) is preferable to if (!buffer.shouldNotCompact()). Double negation forces the reader to do mental gymnastics that add nothing.</p>
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.301</p>
+        <p class="guidance">Ambiguity in code is a sign of insufficient care. When you make a decision in code, make it precisely. Know why you've made it and how you will deal with any exceptions. Don't be lazy about the precision of your decisions.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingMapper.java</td><td>Method 'mapRecipe' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java</td><td>Method 'slowTestThreshold' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java</td><td>Method 'skipPercentageFinding' has 2 guard clauses — simplify with early return or extract filter</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:551</td><td>When doing a String.toLowerCase()/toUpperCase() call, use a Locale</td></tr>
         </table>
       </div>
     </details>
@@ -159,109 +322,72 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
         <p class="guidance">Functions should do one thing. They should do it well. They should do it only. A function that is too long is probably doing too many things. If you can extract another function from it with a name that is not merely a restatement of its implementation, then the original is doing more than one thing.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java</td><td>Loop in 'findingsForDuplication' (for with add) can be replaced with a stream operation</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java</td><td>Loop in 'otherFilePaths' (for with filter-add) can be replaced with a stream operation</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java</td><td>Loop in 'extractFileElements' (for with add) can be replaced with a stream operation</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:106</td><td>Method createRecipes length is 57 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:171</td><td>Method mapRecipe length is 59 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:86</td><td>Method collectFindings length is 54 lines (max allowed is 50).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G31</span>Hidden Temporal Couplings (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteRecipeFactory.java</td><td>Method 'createRecipes' has 3 consecutive void calls with no data dependency — make the order explicit</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G33</span>Encapsulate Boundary Conditions (2)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.304</p>
-        <p class="guidance">Boundary conditions are hard to keep track of. Put the processing for them in one place. Don't let them leak all over the code. 'array.length - 1' scattered through your code is a bug waiting to happen. Extract it: 'final int lastIndex = array.length - 1;' — the name documents the intent and the adjustment happens in exactly one place.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java</td><td>Boundary adjustment 'className.lastIndexOf('/') + 1' in 'classCoverageFinding' — extract to a named variable</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java</td><td>Boundary adjustment 'path.lastIndexOf(PATH_SEPARATOR) + 1' in 'extractFileName' — extract to a named variable</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G35</span>Keep Configurable Data at High Levels (4)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.306</p>
-        <p class="guidance">If you have a constant such as a default or configuration value, it is better to make it a named constant at the top of the class than to bury it in some low-level function. The high-level constant is easy to find and to change. A magic number deep in a private method is invisible.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdRuleMap.java</td><td>Field 'CATEGORY_URLS' has 8 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java</td><td>Magic number 4 in private method 'parseMapping' — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java</td><td>Magic number 2 in private method 'parseMapping' — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java</td><td>Magic number 3 in private method 'parseMapping' — extract to a named constant</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G5</span>Duplication (3)</summary>
+      <summary><span class="code-label">G5</span>Duplication (11)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.289</p>
         <p class="guidance">Duplication is the root of all evil in software. Every duplication represents a missed opportunity for abstraction. When you see duplicated code, it almost always means there is a concept crying out to be a subroutine or a class. Find it and eliminate the duplication.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:75</td><td>Duplicated block (120 tokens)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:36</td><td>Duplicated block (120 tokens)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:49</td><td>Duplicated block (120 tokens)</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:71</td><td>Duplicated block (202 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:76</td><td>Duplicated block (89 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:77</td><td>Duplicated block (63 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:28</td><td>Duplicated block (85 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:28</td><td>Duplicated block (63 tokens)</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:55</td><td>Duplicated block (202 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:60</td><td>Duplicated block (89 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:61</td><td>Duplicated block (63 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:77</td><td>Duplicated block (89 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:77</td><td>Duplicated block (89 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:78</td><td>Duplicated block (85 tokens)</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">J1</span>Avoid Long Import Lists by Using Wildcards (4)</summary>
+      <summary><span class="code-label">J1</span>Avoid Long Import Lists by Using Wildcards (16)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Java' p.307</p>
         <p class="guidance">Long lists of imports are daunting to the reader. If you're importing from many different packages, it's worth asking whether this class has too many responsibilities. Wildcard imports can reduce clutter, but the real fix is often to split the class.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteBehaviouralMapper.java:5</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.recipes.*.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteCommentNamingMapper.java:7</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.recipes.*.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteRecipeFactory.java:5</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.recipes.*.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteStructuralMapper.java:7</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.recipes.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:4</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java:12</td><td>Using the '.*' form of import should be avoided - java.util.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:4</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CpdFindingSource.java:12</td><td>Using the '.*' form of import should be avoided - java.util.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java:8</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:4</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java:12</td><td>Using the '.*' form of import should be avoided - java.util.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:3</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.recipes.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:5</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/OpenRewriteFindingSource.java:17</td><td>Using the '.*' form of import should be avoided - java.util.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:4</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java:12</td><td>Using the '.*' form of import should be avoided - java.util.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:4</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java:12</td><td>Using the '.*' form of import should be avoided - java.util.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:4</td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SurefireFindingSource.java:14</td><td>Using the '.*' form of import should be avoided - java.util.*.</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">J3</span>Constants versus Enums (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Java' p.308</p>
-        <p class="guidance">Now that Java has enums, use them. The old pattern of public static final int or String constants as an enumeration is obsolete. Enums provide type safety, can have methods and fields, and make switch statements exhaustive. Don't cling to the pre-Java 5 idiom.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/CheckstyleFindingSource.java</td><td>7 static final fields with prefix 'RULE' should be an enum</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">N1</span>Choose Descriptive Names (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Names' p.309</p>
-        <p class="guidance">Choose names that reveal intention. The name of a variable, function, or class should answer the big questions: why it exists, what it does, and how it is used. If a name requires a comment, then the name is not revealing its intent.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PathUtils.java</td><td>Class 'PathUtils' uses bad suffix 'Utils' — name after what it represents, not its role</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">T1</span>Insufficient Tests (4)</summary>
+      <summary><span class="code-label">T1</span>Insufficient Tests (1)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.313</p>
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 85.1% (731/859 lines covered)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/JacocoFindingSource.java</td><td>Private method 'classCoverageFinding' (6 lines) should be package-private so it can be tested directly</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/PmdFindingSource.java</td><td>Private method 'toFinding' (7 lines) should be package-private so it can be tested directly</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/adapters/SpotBugsFindingSource.java</td><td>Private method 'parseMapping' (7 lines) should be package-private so it can be tested directly</td></tr>
+          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 85.0% (736/866 lines covered)</td></tr>
         </table>
       </div>
     </details>
@@ -269,17 +395,16 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
       <h2>Sources</h2>
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>openrewrite</td><td>25</td></tr>
-        <tr><td>dependency-updates</td><td>15</td></tr>
-        <tr><td>checkstyle</td><td>10</td></tr>
-        <tr><td>cpd</td><td>3</td></tr>
+        <tr><td>checkstyle</td><td>223</td></tr>
+        <tr><td>cpd</td><td>11</td></tr>
+        <tr><td>pmd</td><td>1</td></tr>
         <tr><td>jacoco</td><td>1</td></tr>
       </table>
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 08:47:54 Z</p>
-    <p>54 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 16:30:19 Z</p>
+    <p>236 total findings</p>
   </footer>
 </body>
 </html>

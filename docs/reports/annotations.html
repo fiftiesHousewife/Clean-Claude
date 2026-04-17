@@ -5,40 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clean Code Report — annotations</title>
   <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
-header { background: #1a1a2e; color: #fff; padding: 2rem; }
-header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-header p { opacity: 0.8; font-size: 0.95rem; }
-main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
-.summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
-.summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
-.badge.error { background: #c0392b; }
-.badge.warning { background: #e67e22; }
-.badge.info { background: #95a5a6; }
-details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
-summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
-summary:hover { background: #fafafa; }
-.code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
-.group-body { padding: 0 1rem 1rem 1rem; overflow-x: auto; }
-.reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
-.guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
-td:first-child { white-space: nowrap; }
-td:nth-child(2) { white-space: nowrap; font-size: 0.85rem; }
-td:nth-child(3) { word-break: break-word; }
-th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
-.sev-error { color: #c0392b; font-weight: 600; }
-.sev-warning { color: #e67e22; font-weight: 600; }
-.sev-info { color: #95a5a6; }
-.location a { color: #2980b9; text-decoration: none; }
-.location a:hover { text-decoration: underline; }
-.location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
-.tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
-.tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
-.clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
-footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
+    header { background: #1a1a2e; color: #fff; padding: 2rem; }
+    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    header p { opacity: 0.8; font-size: 0.95rem; }
+    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
+    .badge.error { background: #c0392b; }
+    .badge.warning { background: #e67e22; }
+    .badge.info { background: #95a5a6; }
+    details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
+    summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
+    summary:hover { background: #fafafa; }
+    .code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
+    .group-body { padding: 0 1rem 1rem 1rem; }
+    .reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
+    .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
+    .group-body { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+    col.severity { width: 6rem; }
+    col.location { width: 30%; }
+    col.message { width: auto; }
+    td:first-child { white-space: nowrap; }
+    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; }
+    td:nth-child(3) { overflow-wrap: anywhere; }
+    th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+    .sev-error { color: #c0392b; font-weight: 600; }
+    .sev-warning { color: #e67e22; font-weight: 600; }
+    .sev-info { color: #95a5a6; }
+    .location a { color: #2980b9; text-decoration: none; }
+    .location a:hover { text-decoration: underline; }
+    .location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+    .tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+    .tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
+    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   </style>
 </head>
 <body>
@@ -49,36 +53,16 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   <main>
     <div class="summary">
       <span class="badge error">0 errors</span>
-      <span class="badge warning">11 warnings</span>
+      <span class="badge warning">0 warnings</span>
       <span class="badge info">1 info</span>
     </div>
-    <details>
-      <summary><span class="code-label">E1</span>Build Requires More Than One Step (11)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Environment' p.287</p>
-        <p class="guidance">You should be able to build the system with a single trivial command. You should not have to search around for dependencies, scripts, or obscure commands. Outdated dependencies make that one-step build fragile — every stale library is a silent accumulation of risk, incompatibility, and unfixed vulnerabilities.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -&gt; 4.9.8]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -&gt; 10.26.1]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -&gt; 0.8.14]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -&gt; 0.8.14]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit:junit-bom [5.10.0 -&gt; 5.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.jupiter:junit-jupiter [5.10.0 -&gt; 5.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.platform:junit-platform-launcher [1.10.0 -&gt; 1.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.slf4j:slf4j-simple [2.0.17 -&gt; 2.1.0-alpha1]</td></tr>
-        </table>
-      </div>
-    </details>
     <details>
       <summary><span class="code-label">T1</span>Insufficient Tests (1)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.313</p>
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
           <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 100.0% (17/17 lines covered)</td></tr>
         </table>
@@ -88,14 +72,13 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
       <h2>Sources</h2>
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>dependency-updates</td><td>11</td></tr>
         <tr><td>jacoco</td><td>1</td></tr>
       </table>
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 08:47:51 Z</p>
-    <p>12 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 16:30:19 Z</p>
+    <p>1 total findings</p>
   </footer>
 </body>
 </html>

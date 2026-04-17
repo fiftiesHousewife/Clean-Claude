@@ -5,40 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clean Code Report — recipes</title>
   <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
-header { background: #1a1a2e; color: #fff; padding: 2rem; }
-header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-header p { opacity: 0.8; font-size: 0.95rem; }
-main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
-.summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
-.summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
-.badge.error { background: #c0392b; }
-.badge.warning { background: #e67e22; }
-.badge.info { background: #95a5a6; }
-details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
-summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
-summary:hover { background: #fafafa; }
-.code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
-.group-body { padding: 0 1rem 1rem 1rem; overflow-x: auto; }
-.reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
-.guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
-td:first-child { white-space: nowrap; }
-td:nth-child(2) { white-space: nowrap; font-size: 0.85rem; }
-td:nth-child(3) { word-break: break-word; }
-th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
-.sev-error { color: #c0392b; font-weight: 600; }
-.sev-warning { color: #e67e22; font-weight: 600; }
-.sev-info { color: #95a5a6; }
-.location a { color: #2980b9; text-decoration: none; }
-.location a:hover { text-decoration: underline; }
-.location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
-.tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
-.tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
-.clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
-footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
+    header { background: #1a1a2e; color: #fff; padding: 2rem; }
+    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    header p { opacity: 0.8; font-size: 0.95rem; }
+    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
+    .badge.error { background: #c0392b; }
+    .badge.warning { background: #e67e22; }
+    .badge.info { background: #95a5a6; }
+    details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
+    summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
+    summary:hover { background: #fafafa; }
+    .code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
+    .group-body { padding: 0 1rem 1rem 1rem; }
+    .reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
+    .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
+    .group-body { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+    col.severity { width: 6rem; }
+    col.location { width: 30%; }
+    col.message { width: auto; }
+    td:first-child { white-space: nowrap; }
+    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; }
+    td:nth-child(3) { overflow-wrap: anywhere; }
+    th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+    .sev-error { color: #c0392b; font-weight: 600; }
+    .sev-warning { color: #e67e22; font-weight: 600; }
+    .sev-info { color: #95a5a6; }
+    .location a { color: #2980b9; text-decoration: none; }
+    .location a:hover { text-decoration: underline; }
+    .location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+    .tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+    .tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
+    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   </style>
 </head>
 <body>
@@ -49,293 +53,124 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   <main>
     <div class="summary">
       <span class="badge error">0 errors</span>
-      <span class="badge warning">131 warnings</span>
+      <span class="badge warning">64 warnings</span>
       <span class="badge info">1 info</span>
     </div>
     <details>
-      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (9)</summary>
+      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (6)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.10 'Classes' p.136</p>
         <p class="guidance">The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InappropriateStaticRecipe.java</td><td>Class 'InappropriateStaticRecipe' is 152 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MagicStringRecipe.java</td><td>Class 'MagicStringRecipe' is 151 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SelectorArgumentRecipe.java</td><td>Class 'SelectorArgumentRecipe' is 155 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ShortVariableNameRecipe.java</td><td>Class 'ShortVariableNameRecipe' is 160 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FeatureEnvyRecipe.java:1</td><td>File length is 180 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InappropriateStaticRecipe.java:1</td><td>File length is 163 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MagicStringRecipe.java:1</td><td>File length is 165 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SelectorArgumentRecipe.java:1</td><td>File length is 169 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ShortVariableNameRecipe.java:1</td><td>File length is 170 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FeatureEnvyRecipe.java:1</td><td>File length is 188 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/GuardClauseRecipe.java:1</td><td>File length is 152 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ImperativeLoopRecipe.java:1</td><td>File length is 163 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LawOfDemeterRecipe.java:1</td><td>File length is 216 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MumblingCommentRecipe.java:1</td><td>File length is 205 lines (max allowed is 150).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/StringlyTypedDispatchRecipe.java:1</td><td>File length is 164 lines (max allowed is 150).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">E1</span>Build Requires More Than One Step (15)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Environment' p.287</p>
-        <p class="guidance">You should be able to build the system with a single trivial command. You should not have to search around for dependencies, scripts, or obscure commands. Outdated dependencies make that one-step build fragile — every stale library is a silent accumulation of risk, incompatibility, and unfixed vulnerabilities.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -&gt; 4.9.8]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -&gt; 10.26.1]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -&gt; 0.8.14]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -&gt; 0.8.14]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit:junit-bom [5.11.3 -&gt; 5.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.jupiter:junit-jupiter [5.11.3 -&gt; 5.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.platform:junit-platform-launcher [1.11.3 -&gt; 1.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-core [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-java [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-java-21 [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-test [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.slf4j:slf4j-simple [2.0.17 -&gt; 2.1.0-alpha1]</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">F2</span>Output Arguments (3)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Functions' p.288</p>
-        <p class="guidance">Output arguments are counterintuitive. Readers expect arguments to be inputs to a function, not things the function writes to. When you see appendFooter(report), do you expect it to append something to report, or to append report to something else? If a function must transform something, let it transform the state of the owning object, or return the result.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/DispatchBranchCounter.java</td><td>Method 'visitSwitch' mutates its argument 'out' (java.util.List&lt;java.lang.Integer&gt;) — return the result instead</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/DispatchBranchCounter.java</td><td>Method 'visitIf' mutates its argument 'out' (java.util.List&lt;java.lang.Integer&gt;) — return the result instead</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MumblingCommentScanner.java</td><td>Class has 1 methods returning collections and 1 void methods mutating collection params — pick one style</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G1</span>Multiple Languages in One Source File (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.288</p>
-        <p class="guidance">A source file should contain one, and only one, language. A Java file with embedded HTML, CSS, or SQL is harder to read, harder to search, and impossible to validate with language-specific tools. Extract the other language into a template file, a resource, or a separate class that encapsulates the generation.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EmbeddedLanguageRecipe.java</td><td>Embedded SQL in method '&lt;field&gt;' — extract to a template or resource file</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G10</span>Vertical Separation (2)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.292</p>
-        <p class="guidance">Local variables should be declared just before their first use. Vertical separation between declaration and use makes the reader hold a mental placeholder — 'what was that variable for again?' — while reading unrelated code. Declare variables at the point of need, not at the top of the method.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LineCommentExtractor.java:3</td><td>'result' is declared in stripStringLiterals() but not used until 13 lines later — move the declaration closer to line 16</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/VerticalSeparationRecipe.java:4</td><td>'className' is declared in visitMethodDeclaration() but not used until 15 lines later — move the declaration closer to line 19</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G12</span>Clutter (7)</summary>
+      <summary><span class="code-label">G12</span>Clutter (14)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.293</p>
         <p class="guidance">Clutter is anything that adds noise without adding value: unused variables, never-called functions, redundant imports, purposeless comments. Keep your source files clean. A lean source file is easier to read, easier to understand, and easier to change.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/BaseClassDependencyRecipe.java:8</td><td>Unused import - org.openrewrite.java.tree.JavaType.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/BaseClassDependencyRecipe.java:9</td><td>Unused import - org.openrewrite.java.tree.TypeTree.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/DisabledTestRecipe.java:8</td><td>Unused import - org.openrewrite.java.tree.Expression.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FeatureEnvyRecipe.java:5</td><td>Unused import - org.openrewrite.SourceFile.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InappropriateStaticRecipe.java:8</td><td>Unused import - org.openrewrite.java.tree.Statement.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InconsistentReturnRecipe.java:8</td><td>Unused import - org.openrewrite.java.tree.JavaType.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LargeConstructorRecipe.java:8</td><td>Unused import - org.openrewrite.java.tree.Statement.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LargeRecordRecipe.java:8</td><td>Unused import - org.openrewrite.java.tree.Statement.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ObsoleteCommentRecipe.java:7</td><td>Unused import - org.openrewrite.java.tree.Comment.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ObsoleteCommentRecipe.java:16</td><td>Unused import - java.util.Locale.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/OutputArgumentRecipe.java:8</td><td>Unused import - org.openrewrite.java.tree.JavaType.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/OutputArgumentRecipe.java:9</td><td>Unused import - org.openrewrite.java.tree.Statement.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SelectorArgumentRecipe.java:10</td><td>Unused import - org.openrewrite.java.tree.Statement.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SwallowedExceptionRecipe.java:8</td><td>Unused import - org.openrewrite.java.tree.Statement.</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G18</span>Inappropriate Static (7)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
-        <p class="guidance">In general you should prefer non-static methods to static methods. If you really want a function to be static, make sure there is no chance that you'll want it to behave polymorphically. Static methods cannot be overridden and cannot participate in dependency injection.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ArtificialCouplingRecipe.java</td><td>Method 'collectedRows' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MumblingCommentScanner.java</td><td>Method 'restatesNextLine' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">Scanner.java</td><td>Method 'chainDepth' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">Scanner.java</td><td>Method 'countOperators' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">Scanner.java</td><td>Method 'truncate' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">UncheckedCastScanner.java</td><td>Method 'findEnclosingVariableName' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">WhitespaceSplitMethodScanner.java</td><td>Method 'countInternalBlankLines' does not use instance state — consider making it static or extracting</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G19</span>Use Explanatory Variables (4)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
-        <p class="guidance">Complex expressions should be broken into intermediate variables with explanatory names. 'wasPressed' is better than 'event.getTarget().isButton() &amp;&amp; event.getState() == CLICKED'. The intermediate variable documents the programmer's intent and makes the code read like a well-written paragraph.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ConfigurableDataRecipe.java</td><td>Complex expression in 'isReportableMagicNumber' should be extracted to a named variable: isNumericLiteral(lit) &amp;&amp; isSignificantValue(lit) &amp;&amp; isInProd</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InappropriateStaticRecipe.java</td><td>Complex expression in 'shouldSkip' should be extracted to a named variable: isStatic(m) || isPrivate(m) || isConstructor(m) || isOverrid</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MagicStringRecipe.java</td><td>Complex expression in 'isCandidate' should be extracted to a named variable: value.length() &gt;= MIN_LENGTH &amp;&amp; !value.isBlank() &amp;&amp; !IGNORED</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">InstanceStateDetector.java</td><td>Complex expression in 'isUnqualifiedInstanceCall' should be extracted to a named variable: mi.getSelect() == null &amp;&amp; mi.getMethodType() != null &amp;&amp; !mi.</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G22</span>Make Logical Dependencies Physical (2)</summary>
+      <summary><span class="code-label">G22</span>Make Logical Dependencies Physical (14)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.298</p>
         <p class="guidance">If something in your code can logically be constant — a variable that's never reassigned, an object that's never swapped — then declare it final. This isn't pedantry. It communicates intent to every future reader: 'this value is set once and never changes.' It prevents accidental reassignment and signals a design where fewer things are moving at once.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:50</td><td>Variable 't' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:54</td><td>Variable 'className' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:55</td><td>Variable 'methodName' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:56</td><td>Variable 'exceptionType' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:71</td><td>Variable 'statements' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:96</td><td>Variable 'methodName' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:101</td><td>Variable 'classDecl' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:106</td><td>Variable 'methodDecl' should be declared final.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EncapsulateConditionalRecipe.java:70</td><td>Variable 'left' should be declared final.</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EncapsulateConditionalRecipe.java:71</td><td>Variable 'right' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java:51</td><td>Variable 'm' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java:57</td><td>Variable 'className' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java:61</td><td>Variable 'type' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java:88</td><td>Variable 'classDecl' should be declared final.</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G24</span>Follow Standard Conventions (12)</summary>
+      <summary><span class="code-label">G24</span>Follow Standard Conventions (11)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.299</p>
         <p class="guidance">Every team should follow a coding standard. The standard should specify things like where to declare instance variables, consistent naming, brace style, and so forth. The standard should not need a document to describe it because the code itself should be the exemplar.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ArtificialCouplingRecipe.java:50</td><td>Line is longer than 120 characters (found 123).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/BoundaryConditionRecipe.java:35</td><td>Line is longer than 120 characters (found 123).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EncodingNamingRecipe.java:16</td><td>Line is longer than 120 characters (found 121).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/HardcodedListRecipe.java:39</td><td>Line is longer than 120 characters (found 124).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/HardcodedListRecipe.java:53</td><td>Line is longer than 120 characters (found 123).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InappropriateStaticRecipe.java:67</td><td>Line is longer than 120 characters (found 121).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MagicStringRecipe.java:76</td><td>Line is longer than 120 characters (found 125).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MagicStringRecipe.java:56</td><td>Line is longer than 120 characters (found 130).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NullDensityRecipe.java:98</td><td>Line is longer than 120 characters (found 131).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/OutputArgumentRecipe.java:18</td><td>Line is longer than 120 characters (found 123).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/RawGenericRecipe.java:49</td><td>Line is longer than 120 characters (found 123).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SelectorArgumentRecipe.java:67</td><td>Line is longer than 120 characters (found 121).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SelectorArgumentRecipe.java:81</td><td>Line is longer than 120 characters (found 123).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/WhitespaceSplitMethodRecipe.java:79</td><td>Line is longer than 120 characters (found 121).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/WhitespaceSplitMethodRecipe.java:87</td><td>Line is longer than 120 characters (found 123).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ShortVariableNameRecipe.java:61</td><td>Line is longer than 120 characters (found 124).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/StringlyTypedDispatchRecipe.java:159</td><td>Line is longer than 120 characters (found 122).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G28</span>Encapsulate Conditionals (2)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.301</p>
-        <p class="guidance">Boolean logic is hard enough to understand without reading it in the context of an if or while statement. Extract functions that explain the intent of the conditional. if (shouldBeDeleted(timer)) is vastly preferable to if (timer.hasExpired() &amp;&amp; !timer.isRecurrent()).</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LineCommentExtractor.java</td><td>Complex condition (depth 2) should be extracted</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">BoundaryScanner.java</td><td>Complex condition (depth 2) should be extracted</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G29</span>Avoid Negative Conditionals (19)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
-        <p class="guidance">Negatives are slightly harder to understand than positives. So, when possible, conditionals should be expressed as positives. if (buffer.shouldCompact()) is preferable to if (!buffer.shouldNotCompact()). Double negation forces the reader to do mental gymnastics that add nothing.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/DispatchScanner.java</td><td>Method 'visitMethodDeclaration' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EmbeddedLanguageRecipe.java</td><td>Method 'visitLiteral' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EmbeddedLanguageRecipe.java</td><td>Method 'detectLanguage' has 3 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ImperativeLoopScanner.java</td><td>Method 'recordIfClassifiable' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InconsistentReturnRecipe.java</td><td>Method 'mutatesCollectionParam' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LoopBodies.java</td><td>Method 'extractSingleStatement' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LoopBodies.java</td><td>Method 'classifyBody' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LoopBodies.java</td><td>Method 'classifyFilterAdd' has 3 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MumblingCommentScanner.java</td><td>Method 'isMumbling' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/RawGenericRecipe.java</td><td>Method 'checkTypeExpression' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SideEffectNamingRecipe.java</td><td>Method 'startsWithQueryPrefix' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/StringlyTypedDispatchRecipe.java</td><td>Method 'isStringType' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/UncheckedCastRecipe.java</td><td>Method 'expressionMentionsUnchecked' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">CatchLogContinueVisitor.java</td><td>Method 'resolveExceptionType' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">CatchLogContinueVisitor.java</td><td>Method 'isCatchLogContinue' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">FeatureEnvyScanner.java</td><td>Method 'visitMethodDeclaration' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">MethodDeclarationScanner.java</td><td>Method 'visitMethodDeclaration' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">PrivateMethodScanner.java</td><td>Method 'visitMethodDeclaration' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">SystemOutScanner.java</td><td>Method 'recordIfSystemStreamCall' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G30</span>Functions Should Do One Thing (26)</summary>
+      <summary><span class="code-label">G30</span>Functions Should Do One Thing (18)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
         <p class="guidance">Functions should do one thing. They should do it well. They should do it only. A function that is too long is probably doing too many things. If you can extract another function from it with a name that is not merely a restatement of its implementation, then the original is doing more than one thing.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ArtificialCouplingRecipe.java</td><td>Method 'getScanner' has 6 blank-line sections across 47 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CommentedCodeRecipe.java</td><td>Method 'getScanner' has 4 blank-line sections across 35 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/DisabledTestRecipe.java</td><td>Method 'getScanner' has 6 blank-line sections across 48 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EncapsulateConditionalRecipe.java</td><td>Method 'getScanner' has 5 blank-line sections across 42 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EncodingNamingRecipe.java</td><td>Method 'getScanner' has 6 blank-line sections across 35 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EnumForConstantsRecipe.java</td><td>Method 'getScanner' has 5 blank-line sections across 39 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java</td><td>Loop in 'visitMethodDeclaration' (for-each with add) can be replaced with a stream operation</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java</td><td>Method 'visitMethodDeclaration' has 4 blank-line sections across 27 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FlagArgumentRecipe.java</td><td>Method 'getScanner' has 7 blank-line sections across 46 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InconsistentNamingRecipe.java</td><td>Method 'visitClassDeclaration' has 4 blank-line sections across 37 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InconsistentNamingRecipe.java</td><td>Method 'getScanner' has 4 blank-line sections across 42 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InconsistentReturnRecipe.java</td><td>Method 'visitClassDeclaration' has 4 blank-line sections across 24 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/InconsistentReturnRecipe.java</td><td>Method 'getScanner' has 4 blank-line sections across 29 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LargeRecordRecipe.java</td><td>Method 'getScanner' has 5 blank-line sections across 35 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NegativeConditionalRecipe.java</td><td>Method 'getScanner' has 6 blank-line sections across 39 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NestedTernaryRecipe.java</td><td>Method 'getScanner' has 8 blank-line sections across 65 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NullDensityRecipe.java</td><td>Method 'getScanner' has 8 blank-line sections across 60 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ObsoleteCommentRecipe.java</td><td>Method 'getScanner' has 5 blank-line sections across 45 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/OutputArgumentRecipe.java</td><td>Method 'getScanner' has 4 blank-line sections across 35 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SectionCommentRecipe.java</td><td>Method 'getScanner' has 5 blank-line sections across 48 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SwitchOnTypeRecipe.java</td><td>Method 'getScanner' has 8 blank-line sections across 53 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/VerticalSeparationRecipe.java</td><td>Method 'getScanner' has 6 blank-line sections across 53 lines — each section should be its own method</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/BoundaryConditionRecipe.java:44</td><td>Method getScanner length is 52 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java:45</td><td>Method getScanner length is 65 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FeatureEnvyRecipe.java:56</td><td>Method getScanner length is 117 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FullyQualifiedReferenceRecipe.java:43</td><td>Method getScanner length is 52 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ImperativeLoopRecipe.java:40</td><td>Method getScanner length is 113 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LawOfDemeterRecipe.java:76</td><td>Method getScanner length is 130 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MissingExplanatoryVariableRecipe.java:51</td><td>Method getScanner length is 82 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MultipleAssertRecipe.java:56</td><td>Method getScanner length is 58 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MumblingCommentRecipe.java:44</td><td>Method getScanner length is 140 lines (max allowed is 50).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NestedTernaryRecipe.java:46</td><td>Method getScanner length is 65 lines (max allowed is 50).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NullDensityRecipe.java:51</td><td>Method getScanner length is 60 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/PrivateMethodTestabilityRecipe.java:56</td><td>Method getScanner length is 53 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ShortVariableNameRecipe.java:57</td><td>Method getScanner length is 79 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SideEffectNamingRecipe.java:42</td><td>Method getScanner length is 64 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/StringSwitchRecipe.java:60</td><td>Method getScanner length is 53 lines (max allowed is 50).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SwitchOnTypeRecipe.java:41</td><td>Method getScanner length is 53 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/UncheckedCastRecipe.java:39</td><td>Method getScanner length is 85 lines (max allowed is 50).</td></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/VerticalSeparationRecipe.java:52</td><td>Method getScanner length is 53 lines (max allowed is 50).</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G33</span>Encapsulate Boundary Conditions (3)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.304</p>
-        <p class="guidance">Boundary conditions are hard to keep track of. Put the processing for them in one place. Don't let them leak all over the code. 'array.length - 1' scattered through your code is a bug waiting to happen. Extract it: 'final int lastIndex = array.length - 1;' — the name documents the intent and the adjustment happens in exactly one place.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EncapsulateConditionalRecipe.java</td><td>Boundary adjustment '1 + Math.max(left, right)' in 'logicalDepth' — extract to a named variable</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NestedTernaryRecipe.java</td><td>Boundary adjustment '1 + Math.max(trueBranchDepth, falseBranchDepth)' in 'maxNestingDepth' — extract to a named variable</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">WhitespaceSplitMethodScanner.java</td><td>Boundary adjustment 'lines.size() - 1' in 'countInternalBlankLines' — extract to a named variable</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G35</span>Keep Configurable Data at High Levels (12)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.306</p>
-        <p class="guidance">If you have a constant such as a default or configuration value, it is better to make it a named constant at the top of the class than to bury it in some low-level function. The high-level constant is easy to find and to change. A magic number deep in a private method is invisible.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/BadClassNameRecipe.java</td><td>Field 'BAD_SUFFIXES' has 6 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CatchLogContinueRecipe.java</td><td>Field 'LOGGER_METHOD_NAMES' has 9 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CommentedCodeRecipe.java</td><td>Magic number 60 in private method 'checkComment' — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/CommentedCodeRecipe.java</td><td>Field 'CODE_INDICATORS' has 7 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/DisabledTestRecipe.java</td><td>Field 'PLACEHOLDER_REASONS' has 5 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/LegacyFileApiRecipe.java</td><td>Field 'LEGACY_TYPES' has 5 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MagicStringRecipe.java</td><td>Field 'IGNORED_VALUES' has 8 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/ObsoleteCommentRecipe.java</td><td>Magic number 60 in private method 'checkCommentsOnStatement' — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/OutputArgumentRecipe.java</td><td>Field 'MUTATING_METHODS' has 7 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/RawGenericRecipe.java</td><td>Field 'COLLECTION_TYPES' has 10 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SectionCommentRecipe.java</td><td>Field 'ANNOTATION_PREFIXES' has 15 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/SideEffectNamingRecipe.java</td><td>Field 'QUERY_PREFIXES' has 5 hardcoded literals — load from configuration</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G4</span>Overridden Safeties (3)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.289</p>
-        <p class="guidance">Don't override safeties. Turning off warnings, ignoring failing tests, catching and discarding exceptions — these are all the same mistake. Safeties exist because someone, at some point, decided they were important enough to create. Don't silence them; fix the underlying problem.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/AllowedShortNames.java:27</td><td>Ensure that resources like this InputStream object are closed after use</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/AssertPrefixes.java:27</td><td>Ensure that resources like this InputStream object are closed after use</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/FluentMethodNames.java:27</td><td>Ensure that resources like this InputStream object are closed after use</td></tr>
         </table>
       </div>
     </details>
@@ -345,31 +180,9 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Java' p.307</p>
         <p class="guidance">Long lists of imports are daunting to the reader. If you're importing from many different packages, it's worth asking whether this class has too many responsibilities. Wildcard imports can reduce clutter, but the real fix is often to split the class.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
           <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/EnumForConstantsRecipe.java:9</td><td>Using the '.*' form of import should be avoided - java.util.*.</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">J3</span>Constants versus Enums (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Java' p.308</p>
-        <p class="guidance">Now that Java has enums, use them. The old pattern of public static final int or String constants as an enumeration is obsolete. Enums provide type safety, can have methods and fields, and make switch statements exhaustive. Don't cling to the pre-Java 5 idiom.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/MumblingThresholds.java</td><td>3 static final fields with prefix 'MIN' should be an enum</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">N5</span>Use Long Names for Long Scopes (2)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Names' p.312</p>
-        <p class="guidance">The length of a name should correspond to the size of its scope. A variable named 'i' is fine in a three-line for-loop. But a variable named 's' in a fifty-line method is a riddle. If the scope is long, the name should be long enough to be found, remembered, and understood without scrolling.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NegativeConditionalRecipe.java</td><td>'u' in visitUnary() is not a meaningful name — rename to reveal intent (local variable of type Unknown)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/recipes/NullDensityRecipe.java</td><td>'b' in visitBinary() is not a meaningful name — rename to reveal intent (local variable of type Unknown)</td></tr>
         </table>
       </div>
     </details>
@@ -379,8 +192,9 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.313</p>
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 88.2% (2035/2306 lines covered)</td></tr>
+          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 86.8% (1964/2262 lines covered)</td></tr>
         </table>
       </div>
     </details>
@@ -388,17 +202,14 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
       <h2>Sources</h2>
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>openrewrite</td><td>82</td></tr>
-        <tr><td>checkstyle</td><td>31</td></tr>
-        <tr><td>dependency-updates</td><td>15</td></tr>
-        <tr><td>pmd</td><td>3</td></tr>
+        <tr><td>checkstyle</td><td>64</td></tr>
         <tr><td>jacoco</td><td>1</td></tr>
       </table>
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 08:48:33 Z</p>
-    <p>132 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 16:30:23 Z</p>
+    <p>65 total findings</p>
   </footer>
 </body>
 </html>

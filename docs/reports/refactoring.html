@@ -5,40 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clean Code Report — refactoring</title>
   <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
-header { background: #1a1a2e; color: #fff; padding: 2rem; }
-header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-header p { opacity: 0.8; font-size: 0.95rem; }
-main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
-.summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
-.summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
-.badge.error { background: #c0392b; }
-.badge.warning { background: #e67e22; }
-.badge.info { background: #95a5a6; }
-details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
-summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
-summary:hover { background: #fafafa; }
-.code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
-.group-body { padding: 0 1rem 1rem 1rem; overflow-x: auto; }
-.reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
-.guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
-td:first-child { white-space: nowrap; }
-td:nth-child(2) { white-space: nowrap; font-size: 0.85rem; }
-td:nth-child(3) { word-break: break-word; }
-th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
-.sev-error { color: #c0392b; font-weight: 600; }
-.sev-warning { color: #e67e22; font-weight: 600; }
-.sev-info { color: #95a5a6; }
-.location a { color: #2980b9; text-decoration: none; }
-.location a:hover { text-decoration: underline; }
-.location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
-.tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
-.tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
-.clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
-footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
+    header { background: #1a1a2e; color: #fff; padding: 2rem; }
+    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    header p { opacity: 0.8; font-size: 0.95rem; }
+    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
+    .badge.error { background: #c0392b; }
+    .badge.warning { background: #e67e22; }
+    .badge.info { background: #95a5a6; }
+    details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
+    summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
+    summary:hover { background: #fafafa; }
+    .code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
+    .group-body { padding: 0 1rem 1rem 1rem; }
+    .reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
+    .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
+    .group-body { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+    col.severity { width: 6rem; }
+    col.location { width: 30%; }
+    col.message { width: auto; }
+    td:first-child { white-space: nowrap; }
+    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; }
+    td:nth-child(3) { overflow-wrap: anywhere; }
+    th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+    .sev-error { color: #c0392b; font-weight: 600; }
+    .sev-warning { color: #e67e22; font-weight: 600; }
+    .sev-info { color: #95a5a6; }
+    .location a { color: #2980b9; text-decoration: none; }
+    .location a:hover { text-decoration: underline; }
+    .location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+    .tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+    .tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
+    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   </style>
 </head>
 <body>
@@ -49,54 +53,30 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   <main>
     <div class="summary">
       <span class="badge error">0 errors</span>
-      <span class="badge warning">32 warnings</span>
+      <span class="badge warning">8 warnings</span>
       <span class="badge info">1 info</span>
     </div>
     <details>
-      <summary><span class="code-label">E1</span>Build Requires More Than One Step (15)</summary>
+      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (1)</summary>
       <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Environment' p.287</p>
-        <p class="guidance">You should be able to build the system with a single trivial command. You should not have to search around for dependencies, scripts, or obscure commands. Outdated dependencies make that one-step build fragile — every stale library is a silent accumulation of risk, incompatibility, and unfixed vulnerabilities.</p>
+        <p class="reference">Clean Code Ch.10 'Classes' p.136</p>
+        <p class="guidance">The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.github.spotbugs:spotbugs [4.9.3 -&gt; 4.9.8]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency com.puppycrawl.tools:checkstyle [10.21.4 -&gt; 10.26.1]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-ant [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-cli [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency net.sourceforge.pmd:pmd-java [7.9.0 -&gt; 7.23.0]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.agent [0.8.12 -&gt; 0.8.14]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.jacoco:org.jacoco.ant [0.8.12 -&gt; 0.8.14]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit:junit-bom [5.11.3 -&gt; 5.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.jupiter:junit-jupiter [5.11.3 -&gt; 5.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.junit.platform:junit-platform-launcher [1.11.3 -&gt; 1.14.3]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-core [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-java [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-java-21 [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.openrewrite:rewrite-test [8.40.2 -&gt; 8.79.5]</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">(project)</td><td>Outdated dependency org.slf4j:slf4j-simple [2.0.17 -&gt; 2.1.0-alpha1]</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractClassConstantRecipe.java:1</td><td>File length is 156 lines (max allowed is 150).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">F2</span>Output Arguments (1)</summary>
+      <summary><span class="code-label">G12</span>Clutter (1)</summary>
       <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Functions' p.288</p>
-        <p class="guidance">Output arguments are counterintuitive. Readers expect arguments to be inputs to a function, not things the function writes to. When you see appendFooter(report), do you expect it to append something to report, or to append report to something else? If a function must transform something, let it transform the state of the owning object, or return the result.</p>
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.293</p>
+        <p class="guidance">Clutter is anything that adds noise without adding value: unused variables, never-called functions, redundant imports, purposeless comments. Keep your source files clean. A lean source file is easier to read, easier to understand, and easier to change.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">MoveDeclarationVisitor.java</td><td>Method 'tryMoveDeclarationAt' mutates its argument 'reordered' (java.util.List&lt;{undefined}&gt;) — return the result instead</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G18</span>Inappropriate Static (2)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
-        <p class="guidance">In general you should prefer non-static methods to static methods. If you really want a function to be static, make sure there is no chance that you'll want it to behave polymorphically. Static methods cannot be overridden and cannot participate in dependency injection.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/WrapAssertAllRecipe.java</td><td>Method 'buildAssertAllStatement' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/WrapAssertAllRecipe.java</td><td>Method 'findAssertRuns' does not use instance state — consider making it static or extracting</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/EncapsulateBoundaryRecipe.java:16</td><td>Unused import - java.util.concurrent.atomic.AtomicBoolean.</td></tr>
         </table>
       </div>
     </details>
@@ -106,72 +86,37 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.299</p>
         <p class="guidance">Every team should follow a coding standard. The standard should specify things like where to declare instance variables, consistent naming, brace style, and so forth. The standard should not need a document to describe it because the code itself should be the exemplar.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/RecordToLombokValueRecipe.java:53</td><td>Line is longer than 120 characters (found 121).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/WrapAssertAllRecipe.java:74</td><td>Line is longer than 120 characters (found 122).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G25</span>Replace Magic Numbers with Named Constants (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.300</p>
-        <p class="guidance">In general it is a bad idea to have raw numbers in your code. Numbers like 42 or 86400 are magic — they have no context, no meaning, no documentation. Hide them behind well-named constants. SECONDS_PER_DAY is immediately clear; 86400 is not.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/AddLocaleRecipe.java</td><td>String &quot;java.util.Locale&quot; appears 3 times — extract to a named constant</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G29</span>Avoid Negative Conditionals (5)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
-        <p class="guidance">Negatives are slightly harder to understand than positives. So, when possible, conditionals should be expressed as positives. if (buffer.shouldCompact()) is preferable to if (!buffer.shouldNotCompact()). Double negation forces the reader to do mental gymnastics that add nothing.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java</td><td>Method 'tryExtract' has 3 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java</td><td>Method 'chainDepth' has 4 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/RemoveNestedTernaryRecipe.java</td><td>Method 'isNestedTernaryReturn' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/WrapAssertAllRecipe.java</td><td>Method 'visitBlock' has 2 guard clauses — simplify with early return or extract filter</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">MoveDeclarationVisitor.java</td><td>Method 'tryMoveDeclarationAt' has 3 guard clauses — simplify with early return or extract filter</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G30</span>Functions Should Do One Thing (2)</summary>
+      <summary><span class="code-label">G30</span>Functions Should Do One Thing (5)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
         <p class="guidance">Functions should do one thing. They should do it well. They should do it only. A function that is too long is probably doing too many things. If you can extract another function from it with a name that is not merely a restatement of its implementation, then the original is doing more than one thing.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/AddLocaleRecipe.java</td><td>Method 'getVisitor' has 5 blank-line sections across 29 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractConstantRecipe.java</td><td>Method 'getVisitor' has 5 blank-line sections across 24 lines — each section should be its own method</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java:38</td><td>Method getVisitor length is 56 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java:41</td><td>Method visitBlock length is 51 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/SplitFlagArgumentRecipe.java:30</td><td>Method getVisitor length is 92 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/WrapAssertAllRecipe.java:44</td><td>Method getVisitor length is 59 lines (max allowed is 50).</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/WrapAssertAllRecipe.java:47</td><td>Method visitBlock length is 54 lines (max allowed is 50).</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G35</span>Keep Configurable Data at High Levels (2)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.306</p>
-        <p class="guidance">If you have a constant such as a default or configuration value, it is better to make it a named constant at the top of the class than to bury it in some low-level function. The high-level constant is easy to find and to change. A magic number deep in a private method is invisible.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java</td><td>Field 'NAME_BY_KEYWORD' has 6 hardcoded literals — load from configuration</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/WrapAssertAllRecipe.java</td><td>Field 'ASSERT_PREFIXES' has 11 hardcoded literals — load from configuration</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">T1</span>Insufficient Tests (4)</summary>
+      <summary><span class="code-label">T1</span>Insufficient Tests (1)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.313</p>
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
+          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 92.7% (447/482 lines covered)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java</td><td>Private method 'tryExtract' (10 lines) should be package-private so it can be tested directly</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/refactoring/ExtractExplanatoryVariableRecipe.java</td><td>Private method 'parseVariableDeclaration' (6 lines) should be package-private so it can be tested directly</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">MoveDeclarationVisitor.java</td><td>Private method 'tryMoveDeclarationAt' (8 lines) should be package-private so it can be tested directly</td></tr>
+          <tr><td class="sev-info">INFO</td><td class="location">(project)</td><td>Overall line coverage: 91.0% (558/613 lines covered)</td></tr>
         </table>
       </div>
     </details>
@@ -179,16 +124,14 @@ footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
       <h2>Sources</h2>
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>openrewrite</td><td>16</td></tr>
-        <tr><td>dependency-updates</td><td>15</td></tr>
+        <tr><td>checkstyle</td><td>8</td></tr>
         <tr><td>jacoco</td><td>1</td></tr>
-        <tr><td>checkstyle</td><td>1</td></tr>
       </table>
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 08:48:36 Z</p>
-    <p>33 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 16:30:24 Z</p>
+    <p>9 total findings</p>
   </footer>
 </body>
 </html>
