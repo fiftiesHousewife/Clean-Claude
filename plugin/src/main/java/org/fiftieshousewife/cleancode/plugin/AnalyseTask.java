@@ -1,9 +1,18 @@
 package org.fiftieshousewife.cleancode.plugin;
 
-import org.fiftieshousewife.cleancode.adapters.*;
+import org.fiftieshousewife.cleancode.adapters.CheckstyleFindingSource;
+import org.fiftieshousewife.cleancode.adapters.CpdFindingSource;
+import org.fiftieshousewife.cleancode.adapters.DependencyUpdatesFindingSource;
+import org.fiftieshousewife.cleancode.adapters.JacocoFindingSource;
+import org.fiftieshousewife.cleancode.adapters.OpenRewriteFindingSource;
+import org.fiftieshousewife.cleancode.adapters.PmdFindingSource;
+import org.fiftieshousewife.cleancode.adapters.SpotBugsFindingSource;
+import org.fiftieshousewife.cleancode.adapters.SurefireFindingSource;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewConfig;
 import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewFindingSource;
+// TODO: J1 — requires human review: core package exposes more than 8 types used here;
+// the wildcard signals this task depends on too many core concerns.
 import org.fiftieshousewife.cleancode.core.*;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
@@ -16,39 +25,51 @@ import java.util.Set;
 
 public abstract class AnalyseTask extends DefaultTask {
 
+    private static final String REPORTS_SUBDIR = "reports";
+    private static final String CLEAN_CODE_REPORTS_SUBDIR = "reports/clean-code";
+    private static final String FINDINGS_JSON = "findings.json";
+    private static final String FINDINGS_HTML = "findings.html";
+    private static final String MAIN_SOURCES = "src/main/java";
+    private static final String TEST_SOURCES = "src/test/java";
+    private static final String BASELINE_FILE = "clean-code-baseline.json";
+    private static final String JAVA_VERSION = "21";
+
     @TaskAction
     public void analyse() throws Exception {
         final Path projectRoot = getProject().getProjectDir().toPath();
         final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
-        final Path reportsDir = buildDir.resolve("reports");
 
         final CleanCodeExtension ext = getProject().getExtensions().getByType(CleanCodeExtension.class);
-        final RecipeThresholds thresholds = ext.buildRecipeThresholds();
-        final String anthropicApiKey = resolveApiKey();
-        final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig(anthropicApiKey);
-        final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
-        final PackageSuppression packageSuppression = PackageSuppression.of(ext.getPackageSuppressions().get());
+        final ProjectContext context = buildProjectContext(projectRoot, buildDir);
+        final List<FindingSource> sources = buildFindingSources(ext);
 
-        final List<String> dependencies = getProject().getConfigurations().stream()
-                .filter(c -> "runtimeClasspath".equals(c.getName()))
-                .flatMap(c -> c.getResolvedConfiguration().getResolvedArtifacts().stream())
-                .map(a -> a.getModuleVersion().getId().getGroup()
-                        + ":" + a.getModuleVersion().getId().getName())
-                .distinct()
-                .toList();
+        final AggregatedReport rawReport = FindingAggregator.aggregate(sources, context);
+        final AggregatedReport report = applyFilters(rawReport, ext, projectRoot);
 
-        final ProjectContext context = new ProjectContext(
+        final Path outputDir = buildDir.resolve(CLEAN_CODE_REPORTS_SUBDIR);
+        final Path htmlReport = outputDir.resolve(FINDINGS_HTML);
+        writeReports(report, outputDir, htmlReport, ext, projectRoot);
+
+        logReport(report, projectRoot.resolve(BASELINE_FILE), htmlReport);
+    }
+
+    private ProjectContext buildProjectContext(final Path projectRoot, final Path buildDir) {
+        return new ProjectContext(
                 projectRoot,
                 getProject().getName(),
                 getProject().getVersion().toString(),
-                "21",
-                List.of(projectRoot.resolve("src/main/java")),
-                List.of(projectRoot.resolve("src/test/java")),
+                JAVA_VERSION,
+                List.of(projectRoot.resolve(MAIN_SOURCES)),
+                List.of(projectRoot.resolve(TEST_SOURCES)),
                 buildDir,
-                reportsDir,
-                dependencies);
+                buildDir.resolve(REPORTS_SUBDIR),
+                RuntimeDependencies.groupAndName(getProject()));
+    }
 
-        final List<FindingSource> sources = List.of(
+    private List<FindingSource> buildFindingSources(final CleanCodeExtension ext) {
+        final RecipeThresholds thresholds = ext.buildRecipeThresholds();
+        final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig(resolveApiKey());
+        return List.of(
                 new PmdFindingSource(),
                 new CheckstyleFindingSource(thresholds),
                 new SpotBugsFindingSource(),
@@ -58,25 +79,41 @@ public abstract class AnalyseTask extends DefaultTask {
                 new DependencyUpdatesFindingSource(),
                 new OpenRewriteFindingSource(thresholds),
                 new ClaudeReviewFindingSource(claudeConfig));
+    }
 
-        final AggregatedReport fullReport = FindingAggregator.aggregate(sources, context);
-        final AggregatedReport filteredByCode = filterDisabledRecipes(fullReport, disabledRecipes);
-        final AggregatedReport report = filterSuppressions(filteredByCode, projectRoot, packageSuppression);
+    private AggregatedReport applyFilters(final AggregatedReport report,
+                                          final CleanCodeExtension ext,
+                                          final Path projectRoot) {
+        final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
+        final PackageSuppression packageSuppression = PackageSuppression.of(ext.getPackageSuppressions().get());
+        final AggregatedReport filteredByCode = filterDisabledRecipes(report, disabledRecipes);
+        return filterSuppressions(filteredByCode, projectRoot, packageSuppression);
+    }
 
-        final String baseRepoUrl = ext.getRepositoryUrl().get();
-        final String modulePath = getProject().getRootDir().toPath().relativize(projectRoot).toString();
-        final String repositoryUrl = baseRepoUrl.isBlank() ? ""
-                : baseRepoUrl + "/blob/main" + (modulePath.isEmpty() ? "" : "/" + modulePath);
-        final Path outputDir = buildDir.resolve("reports/clean-code");
-        final Path htmlReport = outputDir.resolve("findings.html");
-        JsonReportWriter.write(report, outputDir.resolve("findings.json"));
+    private void writeReports(final AggregatedReport report,
+                              final Path outputDir,
+                              final Path htmlReport,
+                              final CleanCodeExtension ext,
+                              final Path projectRoot) throws Exception {
+        final String repositoryUrl = buildRepositoryUrl(ext, projectRoot);
+        JsonReportWriter.write(report, outputDir.resolve(FINDINGS_JSON));
         HtmlReportWriter.write(report, htmlReport, repositoryUrl);
+    }
 
-        final Path baselineFile = projectRoot.resolve("clean-code-baseline.json");
+    private String buildRepositoryUrl(final CleanCodeExtension ext, final Path projectRoot) {
+        final String baseRepoUrl = ext.getRepositoryUrl().get();
+        if (baseRepoUrl.isBlank()) {
+            return "";
+        }
+        final String modulePath = getProject().getRootDir().toPath().relativize(projectRoot).toString();
+        return baseRepoUrl + "/blob/main" + (modulePath.isEmpty() ? "" : "/" + modulePath);
+    }
+
+    private void logReport(final AggregatedReport report, final Path baselineFile, final Path htmlReport)
+            throws Exception {
         final Map<HeuristicCode, BaselineManager.Delta> deltas = Files.exists(baselineFile)
                 ? BaselineManager.computeDeltas(report, baselineFile)
                 : Map.of();
-
         getLogger().lifecycle(BuildOutputFormatter.format(report, deltas));
         getLogger().lifecycle("\n  Report: file://" + htmlReport.toAbsolutePath());
     }
@@ -95,7 +132,7 @@ public abstract class AnalyseTask extends DefaultTask {
     private AggregatedReport filterSuppressions(final AggregatedReport report,
                                                 final Path projectRoot,
                                                 final PackageSuppression packageSuppression) {
-        final SuppressionIndex index = SuppressionIndex.build(projectRoot.resolve("src/main/java"));
+        final SuppressionIndex index = SuppressionIndex.build(projectRoot.resolve(MAIN_SOURCES));
         final FindingFilter.Result result = FindingFilter.apply(report.findings(), index, packageSuppression);
         return withFindings(report, result.findings());
     }
