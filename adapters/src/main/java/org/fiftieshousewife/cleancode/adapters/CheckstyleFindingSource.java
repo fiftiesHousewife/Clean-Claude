@@ -9,13 +9,11 @@ import org.fiftieshousewife.cleancode.core.ProjectContext;
 import org.fiftieshousewife.cleancode.core.RecipeThresholds;
 import org.fiftieshousewife.cleancode.core.Severity;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -76,23 +74,14 @@ public class CheckstyleFindingSource implements FindingSource {
 
     private List<Finding> parseFindings(final Path report, final ProjectContext context)
             throws FindingSourceException {
-        final Document doc = XmlReportParser.parse(report);
-        final List<Finding> findings = new ArrayList<>();
-        final NodeList fileNodes = doc.getElementsByTagName("file");
-        for (int i = 0; i < fileNodes.getLength(); i++) {
-            final Element fileElement = (Element) fileNodes.item(i);
-            final String relativePath = PathUtils.relativise(
-                    fileElement.getAttribute("name"), context.projectRoot());
-            addFileFindings(fileElement, relativePath, findings);
-        }
-        return findings;
+        return XmlFileFindings.collect(report, context, this::addFileFindings);
     }
 
     private void addFileFindings(
-            final Element fileElement, final String relativePath, final List<Finding> findings) {
-        final NodeList errors = fileElement.getElementsByTagName("error");
+            final XmlFileFindings.FileContext fileContext, final List<Finding> findings) {
+        final NodeList errors = fileContext.fileElement().getElementsByTagName("error");
         for (int j = 0; j < errors.getLength(); j++) {
-            toFinding((Element) errors.item(j), relativePath).ifPresent(findings::add);
+            toFinding((Element) errors.item(j), fileContext.relativePath()).ifPresent(findings::add);
         }
     }
 
