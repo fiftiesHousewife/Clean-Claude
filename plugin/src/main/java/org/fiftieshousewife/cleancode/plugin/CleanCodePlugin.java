@@ -80,6 +80,14 @@ public class CleanCodePlugin implements Plugin<Project> {
                                         + "updates from the dependencyUpdates report");
                         task.setGroup("verification");
                     });
+
+            project.getTasks()
+                    .register("cleanCodeSummary", SummaryReportTask.class, task -> {
+                        task.setDescription(
+                                "Aggregate every module's findings.json into "
+                                        + "docs/reports/index.html with totals and links");
+                        task.setGroup("verification");
+                    });
         }
     }
 
