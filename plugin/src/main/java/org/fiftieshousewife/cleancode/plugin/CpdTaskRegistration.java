@@ -43,10 +43,10 @@ final class CpdTaskRegistration {
                     .file("reports/cpd/cpd.xml");
 
             task.doFirst(t -> {
-                reportFile.get().getAsFile().getParentFile().mkdirs();
+                final var reportPath = reportFile.get().getAsFile().toPath();
                 try {
-                    task.setStandardOutput(
-                            Files.newOutputStream(reportFile.get().getAsFile().toPath()));
+                    Files.createDirectories(reportPath.getParent());
+                    task.setStandardOutput(Files.newOutputStream(reportPath));
                 } catch (IOException e) {
                     throw new GradleException("Cannot open CPD report file", e);
                 }
