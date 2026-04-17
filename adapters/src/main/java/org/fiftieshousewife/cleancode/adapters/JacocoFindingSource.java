@@ -7,7 +7,6 @@ import org.fiftieshousewife.cleancode.core.FindingSource;
 import org.fiftieshousewife.cleancode.core.FindingSourceException;
 import org.fiftieshousewife.cleancode.core.ProjectContext;
 import org.fiftieshousewife.cleancode.core.Severity;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -16,11 +15,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class JacocoFindingSource implements FindingSource {
 
     private static final int MIN_CLASS_LINES = 10;
+    private static final String LINE_COUNTER_TYPE = "LINE";
+    private static final String COUNTER_TAG = "counter";
+    private static final double CLASS_COVERAGE_WARNING_THRESHOLD = 50.0;
+    private static final double COVERAGE_ERROR_THRESHOLD = 50.0;
+    private static final double COVERAGE_WARNING_THRESHOLD = 75.0;
 
     @Override
     public String id() {
@@ -38,124 +43,108 @@ public class JacocoFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
-        return true; // Always available — absence produces T2
+    public boolean isAvailable(final ProjectContext context) {
+        return true;
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         final Path report = reportPath(context);
-
         if (!Files.exists(report)) {
-            return handleMissingReport(context);
+            return missingReportFindings(context);
         }
-
-        try {
-            final Document doc = XmlReportParser.parse(report);
-
-            final List<Finding> findings = new ArrayList<>();
-
-            // Project-level T1 finding
-            addProjectLevelCoverage(doc, findings);
-
-            // Per-class T8 findings
-            addPerClassFindings(doc, findings);
-
-            return findings;
-        } catch (Exception e) {
-            throw new FindingSourceException("Failed to parse JaCoCo report: " + report, e);
-        }
+        final Document doc = XmlReportParser.parse(report);
+        final List<Finding> findings = new ArrayList<>(projectLevelCoverage(doc));
+        findings.addAll(perClassFindings(doc));
+        return findings;
     }
 
-    private List<Finding> handleMissingReport(ProjectContext context) {
-        final boolean hasTestSources = context.testSourceRoots().stream()
-                .anyMatch(Files::exists);
-
-        if (hasTestSources) {
-            return List.of(Finding.projectLevel(
-                    HeuristicCode.T2,
-                    "JaCoCo report not found — coverage tool not configured",
-                    Severity.ERROR, Confidence.HIGH, "jacoco", "missing-report"));
+    private List<Finding> missingReportFindings(final ProjectContext context) {
+        final boolean hasTestSources = context.testSourceRoots().stream().anyMatch(Files::exists);
+        if (!hasTestSources) {
+            return List.of();
         }
-        return List.of();
+        return List.of(Finding.projectLevel(HeuristicCode.T2,
+                "JaCoCo report not found — coverage tool not configured",
+                Severity.ERROR, Confidence.HIGH, "jacoco", "missing-report"));
     }
 
-    private void addProjectLevelCoverage(Document doc, List<Finding> findings) {
-        // Find the report-level LINE counter (direct child of <report>)
-        final Element reportElement = doc.getDocumentElement();
-        final NodeList counters = reportElement.getChildNodes();
+    private List<Finding> projectLevelCoverage(final Document doc) {
+        return reportLineCounter(doc).map(this::projectCoverageFinding).map(List::of).orElseGet(List::of);
+    }
 
+    private Optional<Element> reportLineCounter(final Document doc) {
+        final NodeList counters = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < counters.getLength(); i++) {
-            if (counters.item(i) instanceof Element el
-                    && "counter".equals(el.getTagName())
-                    && "LINE".equals(el.getAttribute("type"))) {
-
-                final int missed = Integer.parseInt(el.getAttribute("missed"));
-                final int covered = Integer.parseInt(el.getAttribute("covered"));
-                final int total = missed + covered;
-                final double percentage = total > 0 ? (covered * 100.0) / total : 0;
-                final Severity severity = coverageSeverity(percentage);
-
-                findings.add(Finding.projectLevel(
-                        HeuristicCode.T1,
-                        String.format("Overall line coverage: %.1f%% (%d/%d lines covered)",
-                                percentage, covered, total),
-                        severity, Confidence.HIGH, "jacoco", "line-coverage"));
-                break;
+            if (isLineCounter(counters.item(i))) {
+                return Optional.of((Element) counters.item(i));
             }
         }
+        return Optional.empty();
     }
 
-    private void addPerClassFindings(Document doc, List<Finding> findings) {
+    private boolean isLineCounter(final Object node) {
+        return node instanceof Element el
+                && COUNTER_TAG.equals(el.getTagName())
+                && LINE_COUNTER_TYPE.equals(el.getAttribute("type"));
+    }
+
+    private Finding projectCoverageFinding(final Element counter) {
+        final LineCoverage coverage = LineCoverage.from(counter);
+        return Finding.projectLevel(HeuristicCode.T1,
+                String.format("Overall line coverage: %.1f%% (%d/%d lines covered)",
+                        coverage.percentage(), coverage.covered(), coverage.total()),
+                coverageSeverity(coverage.percentage()), Confidence.HIGH, "jacoco", "line-coverage");
+    }
+
+    private List<Finding> perClassFindings(final Document doc) {
         final NodeList classNodes = doc.getElementsByTagName("class");
-
+        final List<Finding> findings = new ArrayList<>();
         for (int i = 0; i < classNodes.getLength(); i++) {
-            final Element classElement = (Element) classNodes.item(i);
-            final String className = classElement.getAttribute("name");
-            final String sourceFile = classElement.getAttribute("sourcefilename");
-
-            final NodeList counters = classElement.getElementsByTagName("counter");
-            for (int j = 0; j < counters.getLength(); j++) {
-                final Element counter = (Element) counters.item(j);
-                if ("LINE".equals(counter.getAttribute("type"))) {
-                    final int missed = Integer.parseInt(counter.getAttribute("missed"));
-                    final int covered = Integer.parseInt(counter.getAttribute("covered"));
-                    final int total = missed + covered;
-
-                    if (total < MIN_CLASS_LINES) {
-                        break;
-                    }
-
-                    final double percentage = (covered * 100.0) / total;
-                    if (percentage < 50) {
-                        final String packagePath = className.substring(0, className.lastIndexOf('/'));
-                        findings.add(Finding.at(
-                                HeuristicCode.T8,
-                                packagePath + "/" + sourceFile,
-                                1, -1,
-                                String.format("Class %s has %.1f%% line coverage (%d/%d lines)",
-                                        className.substring(className.lastIndexOf('/') + 1),
-                                        percentage, covered, total),
-                                Severity.WARNING, Confidence.MEDIUM,
-                                "jacoco", "class-coverage"));
-                    }
-                    break;
-                }
-            }
+            classFinding((Element) classNodes.item(i)).ifPresent(findings::add);
         }
+        return findings;
     }
 
-    private Severity coverageSeverity(double percentage) {
-        if (percentage < 50) {
+    private Optional<Finding> classFinding(final Element classElement) {
+        return classLineCounter(classElement)
+                .map(LineCoverage::from)
+                .filter(c -> c.total() >= MIN_CLASS_LINES)
+                .filter(c -> c.percentage() < CLASS_COVERAGE_WARNING_THRESHOLD)
+                .map(c -> classCoverageFinding(classElement, c));
+    }
+
+    private Optional<Element> classLineCounter(final Element classElement) {
+        final NodeList counters = classElement.getElementsByTagName(COUNTER_TAG);
+        for (int j = 0; j < counters.getLength(); j++) {
+            final Element counter = (Element) counters.item(j);
+            if (LINE_COUNTER_TYPE.equals(counter.getAttribute("type"))) {
+                return Optional.of(counter);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Finding classCoverageFinding(final Element classElement, final LineCoverage coverage) {
+        final String className = classElement.getAttribute("name");
+        final int simpleNameStart = className.lastIndexOf('/') + 1;
+        final String packagePath = className.substring(0, simpleNameStart - 1);
+        final String simpleName = className.substring(simpleNameStart);
+        final String sourcePath = packagePath + "/" + classElement.getAttribute("sourcefilename");
+        return Finding.at(HeuristicCode.T8, sourcePath, 1, -1,
+                String.format("Class %s has %.1f%% line coverage (%d/%d lines)",
+                        simpleName, coverage.percentage(), coverage.covered(), coverage.total()),
+                Severity.WARNING, Confidence.MEDIUM, "jacoco", "class-coverage");
+    }
+
+    private Severity coverageSeverity(final double percentage) {
+        if (percentage < COVERAGE_ERROR_THRESHOLD) {
             return Severity.ERROR;
         }
-        if (percentage < 75) {
-            return Severity.WARNING;
-        }
-        return Severity.INFO;
+        return percentage < COVERAGE_WARNING_THRESHOLD ? Severity.WARNING : Severity.INFO;
     }
 
-    private Path reportPath(ProjectContext context) {
+    private Path reportPath(final ProjectContext context) {
         return context.reportsDir().resolve("jacoco/test/jacocoTestReport.xml");
     }
 }
