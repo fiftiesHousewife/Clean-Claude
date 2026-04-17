@@ -9,10 +9,6 @@ import java.util.Map;
 
 final class ClaudeMdAnnotationParser {
 
-    private static final String ANNOTATE_OPEN_PREFIX = "<!-- ANNOTATE:";
-    private static final String ANNOTATE_CLOSE_PREFIX = "<!-- /ANNOTATE";
-    private static final String ANNOTATE_OPEN_SUFFIX = "-->";
-
     private ClaudeMdAnnotationParser() {}
 
     static Map<String, String> parseFromFile(final Path claudeMdFile) throws IOException {
@@ -23,18 +19,17 @@ final class ClaudeMdAnnotationParser {
     }
 
     static Map<String, String> parse(final String content) {
-        final Map<String, String> sections = new LinkedHashMap<>();
         final List<String> lines = content.lines().toList();
-
+        final Map<String, String> sections = new LinkedHashMap<>();
         int i = 0;
         while (i < lines.size()) {
             final String line = lines.get(i);
-            if (line.startsWith(ANNOTATE_OPEN_PREFIX)) {
-                final String code = line.substring(ANNOTATE_OPEN_PREFIX.length())
-                        .replace(ANNOTATE_OPEN_SUFFIX, "").trim();
+            if (line.startsWith(AnnotateMarker.OPEN_PREFIX.token())) {
+                final String code = line.substring(AnnotateMarker.OPEN_PREFIX.length())
+                        .replace(AnnotateMarker.OPEN_SUFFIX.token(), "").trim();
                 final StringBuilder body = new StringBuilder();
                 i++;
-                while (i < lines.size() && !lines.get(i).startsWith(ANNOTATE_CLOSE_PREFIX)) {
+                while (i < lines.size() && !lines.get(i).startsWith(AnnotateMarker.CLOSE_PREFIX.token())) {
                     body.append(lines.get(i)).append('\n');
                     i++;
                 }
