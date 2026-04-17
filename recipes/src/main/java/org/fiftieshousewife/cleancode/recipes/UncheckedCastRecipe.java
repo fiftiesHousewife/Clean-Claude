@@ -4,6 +4,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.util.ArrayList;
@@ -11,6 +12,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class UncheckedCastRecipe extends ScanningRecipe<UncheckedCastRecipe.Accumulator> {
+
+    private static final String UNCHECKED = "unchecked";
+    private static final String SUPPRESS_WARNINGS = "SuppressWarnings";
+    private static final String UNKNOWN_CLASS = "<unknown>";
+    private static final String CLASS_LEVEL_MEMBER = "<class-level>";
 
     public record Row(String className, String memberName, int lineNumber) {}
 
@@ -38,89 +44,7 @@ public class UncheckedCastRecipe extends ScanningRecipe<UncheckedCastRecipe.Accu
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-                final J.Annotation ann = super.visitAnnotation(annotation, ctx);
-
-                if (!isSuppressWarnings(ann)) {
-                    return ann;
-                }
-
-                if (!containsUnchecked(ann)) {
-                    return ann;
-                }
-
-                final String className = findEnclosingClassName();
-                final String memberName = findEnclosingMemberName();
-                acc.rows.add(new Row(className, memberName, -1));
-
-                return ann;
-            }
-
-            private boolean isSuppressWarnings(J.Annotation annotation) {
-                final J.Identifier annotationType = annotation.getAnnotationType() instanceof J.Identifier id
-                        ? id : null;
-                return annotationType != null && "SuppressWarnings".equals(annotationType.getSimpleName());
-            }
-
-            private boolean containsUnchecked(J.Annotation annotation) {
-                if (annotation.getArguments() == null) {
-                    return false;
-                }
-                for (org.openrewrite.java.tree.Expression arg : annotation.getArguments()) {
-                    if (arg instanceof J.Literal literal && literal.getValue() instanceof String value) {
-                        if (value.contains("unchecked")) {
-                            return true;
-                        }
-                    }
-                    if (arg instanceof J.NewArray newArray && newArray.getInitializer() != null) {
-                        for (org.openrewrite.java.tree.Expression element : newArray.getInitializer()) {
-                            if (element instanceof J.Literal literal
-                                    && literal.getValue() instanceof String value
-                                    && value.contains("unchecked")) {
-                                return true;
-                            }
-                        }
-                    }
-                    if (arg instanceof J.Assignment assignment) {
-                        final org.openrewrite.java.tree.Expression value = assignment.getAssignment();
-                        if (value instanceof J.Literal literal
-                                && literal.getValue() instanceof String strVal
-                                && strVal.contains("unchecked")) {
-                            return true;
-                        }
-                        if (value instanceof J.NewArray newArray && newArray.getInitializer() != null) {
-                            for (org.openrewrite.java.tree.Expression element : newArray.getInitializer()) {
-                                if (element instanceof J.Literal literal
-                                        && literal.getValue() instanceof String strVal
-                                        && strVal.contains("unchecked")) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-
-            private String findEnclosingClassName() {
-                final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
-            }
-
-            private String findEnclosingMemberName() {
-                final J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                if (methodDecl != null) {
-                    return methodDecl.getSimpleName();
-                }
-                final J.VariableDeclarations varDecls = getCursor().firstEnclosing(J.VariableDeclarations.class);
-                if (varDecls != null && !varDecls.getVariables().isEmpty()) {
-                    return varDecls.getVariables().getFirst().getSimpleName();
-                }
-                return "<class-level>";
-            }
-        };
+        return new UncheckedCastScanner(acc);
     }
 
     @Override
@@ -130,5 +54,93 @@ public class UncheckedCastRecipe extends ScanningRecipe<UncheckedCastRecipe.Accu
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    static boolean isSuppressUnchecked(final J.Annotation annotation) {
+        return isSuppressWarnings(annotation) && containsUnchecked(annotation);
+    }
+
+    static boolean isSuppressWarnings(final J.Annotation annotation) {
+        return annotation.getAnnotationType() instanceof J.Identifier id
+                && SUPPRESS_WARNINGS.equals(id.getSimpleName());
+    }
+
+    static boolean containsUnchecked(final J.Annotation annotation) {
+        final List<Expression> arguments = annotation.getArguments();
+        if (arguments == null) {
+            return false;
+        }
+        return arguments.stream().anyMatch(UncheckedCastRecipe::argumentMentionsUnchecked);
+    }
+
+    static boolean argumentMentionsUnchecked(final Expression argument) {
+        if (argument instanceof J.Assignment assignment) {
+            return expressionMentionsUnchecked(assignment.getAssignment());
+        }
+        return expressionMentionsUnchecked(argument);
+    }
+
+    static boolean expressionMentionsUnchecked(final Expression expression) {
+        if (expression instanceof J.Literal literal) {
+            return isUncheckedLiteral(literal);
+        }
+        if (expression instanceof J.NewArray newArray) {
+            return arrayMentionsUnchecked(newArray);
+        }
+        return false;
+    }
+
+    static boolean arrayMentionsUnchecked(final J.NewArray newArray) {
+        final List<Expression> initializer = newArray.getInitializer();
+        if (initializer == null) {
+            return false;
+        }
+        return initializer.stream()
+                .filter(J.Literal.class::isInstance)
+                .map(J.Literal.class::cast)
+                .anyMatch(UncheckedCastRecipe::isUncheckedLiteral);
+    }
+
+    static boolean isUncheckedLiteral(final J.Literal literal) {
+        return literal.getValue() instanceof String value && value.contains(UNCHECKED);
+    }
+
+    static final class UncheckedCastScanner extends JavaIsoVisitor<ExecutionContext> {
+
+        private final Accumulator acc;
+
+        UncheckedCastScanner(final Accumulator acc) {
+            this.acc = acc;
+        }
+
+        @Override
+        public J.Annotation visitAnnotation(final J.Annotation annotation, final ExecutionContext ctx) {
+            final J.Annotation ann = super.visitAnnotation(annotation, ctx);
+            if (isSuppressUnchecked(ann)) {
+                acc.rows.add(new Row(findEnclosingClassName(), findEnclosingMemberName(), -1));
+            }
+            return ann;
+        }
+
+        String findEnclosingClassName() {
+            final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            return classDecl != null ? classDecl.getSimpleName() : UNKNOWN_CLASS;
+        }
+
+        String findEnclosingMemberName() {
+            final J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
+            if (methodDecl != null) {
+                return methodDecl.getSimpleName();
+            }
+            return findEnclosingVariableName();
+        }
+
+        String findEnclosingVariableName() {
+            final J.VariableDeclarations varDecls = getCursor().firstEnclosing(J.VariableDeclarations.class);
+            if (varDecls == null || varDecls.getVariables().isEmpty()) {
+                return CLASS_LEVEL_MEMBER;
+            }
+            return varDecls.getVariables().getFirst().getSimpleName();
+        }
     }
 }
