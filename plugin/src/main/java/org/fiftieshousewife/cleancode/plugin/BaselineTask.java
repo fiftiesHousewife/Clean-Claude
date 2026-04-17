@@ -12,11 +12,11 @@ public abstract class BaselineTask extends DefaultTask {
 
     @TaskAction
     public void baseline() throws Exception {
-        Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
-        Path reportFile = buildDir.resolve("reports/clean-code/findings.json");
-        Path baselineFile = getProject().getProjectDir().toPath().resolve("clean-code-baseline.json");
+        final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
+        final Path reportFile = buildDir.resolve("reports/clean-code/findings.json");
+        final Path baselineFile = getProject().getProjectDir().toPath().resolve("clean-code-baseline.json");
 
-        AggregatedReport report = JsonReportReader.read(reportFile);
+        final AggregatedReport report = JsonReportReader.read(reportFile);
         BaselineManager.writeBaseline(report, baselineFile);
 
         getLogger().lifecycle("Baseline written with {} findings", report.findings().size());
