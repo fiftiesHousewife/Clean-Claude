@@ -3,19 +3,17 @@ package org.fiftieshousewife.cleancode.recipes;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDispatchRecipe.Accumulator> {
 
-    private static final Set<String> SKIP_METHODS = Set.of("equals", "hashCode", "toString", "main");
+    private static final String JAVA_LANG_STRING = "java.lang.String";
+    private static final String STRING_SIMPLE_NAME = "String";
 
     public record Row(String className, String methodName, String parameterName, int branchCount) {}
 
@@ -43,46 +41,7 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
-
-                if (SKIP_METHODS.contains(m.getSimpleName()) || m.getBody() == null) {
-                    return m;
-                }
-
-                final Set<String> stringParamNames = m.getParameters().stream()
-                        .filter(J.VariableDeclarations.class::isInstance)
-                        .map(J.VariableDeclarations.class::cast)
-                        .filter(StringlyTypedDispatchRecipe::isStringType)
-                        .flatMap(v -> v.getVariables().stream())
-                        .map(v -> v.getSimpleName())
-                        .collect(Collectors.toSet());
-
-                if (stringParamNames.isEmpty()) {
-                    return m;
-                }
-
-                final J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                final String className = enclosingClass != null ? enclosingClass.getSimpleName() : "<unknown>";
-
-                stringParamNames.forEach(paramName -> {
-                    final int switchBranches = countSwitchBranches(m.getBody(), paramName);
-                    if (switchBranches >= 2) {
-                        acc.rows.add(new Row(className, m.getSimpleName(), paramName, switchBranches));
-                        return;
-                    }
-
-                    final int ifBranches = countIfElseBranches(m.getBody(), paramName);
-                    if (ifBranches >= 2) {
-                        acc.rows.add(new Row(className, m.getSimpleName(), paramName, ifBranches));
-                    }
-                });
-
-                return m;
-            }
-        };
+        return new DispatchScanner(acc);
     }
 
     @Override
@@ -94,71 +53,14 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean isStringType(J.VariableDeclarations varDecls) {
+    static boolean isStringType(J.VariableDeclarations varDecls) {
         if (varDecls.getType() instanceof JavaType.FullyQualified fq) {
-            return "java.lang.String".equals(fq.getFullyQualifiedName());
+            return JAVA_LANG_STRING.equals(fq.getFullyQualifiedName());
         }
-        return varDecls.getTypeExpression() != null
-                && "String".equals(varDecls.getTypeExpression().toString().trim());
-    }
-
-    private static int countSwitchBranches(J.Block body, String paramName) {
-        final List<Integer> counts = new ArrayList<>();
-        new JavaIsoVisitor<List<Integer>>() {
-            @Override
-            public J.Switch visitSwitch(J.Switch sw, List<Integer> out) {
-                if (selectorReferencesParam(sw.getSelector(), paramName)) {
-                    final int caseCount = (int) sw.getCases().getStatements().stream()
-                            .filter(J.Case.class::isInstance)
-                            .count();
-                    out.add(caseCount);
-                }
-                return super.visitSwitch(sw, out);
-            }
-        }.visit(body, counts);
-        return counts.stream().mapToInt(Integer::intValue).max().orElse(0);
-    }
-
-    private static boolean selectorReferencesParam(
-            J.ControlParentheses<org.openrewrite.java.tree.Expression> selector, String paramName) {
-        final String selectorText = selector.getTree().toString().trim();
-        return selectorText.equals(paramName);
-    }
-
-    private static int countIfElseBranches(J.Block body, String paramName) {
-        final List<Integer> counts = new ArrayList<>();
-        new JavaIsoVisitor<List<Integer>>() {
-            @Override
-            public J.If visitIf(J.If iff, List<Integer> out) {
-                final int branches = countChainedEquals(iff, paramName);
-                if (branches >= 2) {
-                    out.add(branches);
-                }
-                return super.visitIf(iff, out);
-            }
-        }.visit(body, counts);
-        return counts.stream().mapToInt(Integer::intValue).max().orElse(0);
-    }
-
-    private static int countChainedEquals(J.If iff, String paramName) {
-        int count = 0;
-        J.If current = iff;
-        while (current != null) {
-            if (conditionReferencesParamEquals(current.getIfCondition(), paramName)) {
-                count++;
-            }
-            if (current.getElsePart() != null && current.getElsePart().getBody() instanceof J.If nextIf) {
-                current = nextIf;
-            } else {
-                break;
-            }
+        if (varDecls.getTypeExpression() == null) {
+            return false;
         }
-        return count;
-    }
-
-    private static boolean conditionReferencesParamEquals(J.ControlParentheses<org.openrewrite.java.tree.Expression> cond,
-                                                          String paramName) {
-        final String condStr = cond.toString().trim();
-        return condStr.contains(paramName + ".equals(") || condStr.contains(".equals(" + paramName + ")");
+        final String typeExpressionText = varDecls.getTypeExpression().toString().trim();
+        return STRING_SIMPLE_NAME.equals(typeExpressionText);
     }
 }
