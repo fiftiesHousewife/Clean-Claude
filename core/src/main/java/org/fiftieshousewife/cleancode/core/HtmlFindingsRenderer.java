@@ -2,15 +2,28 @@ package org.fiftieshousewife.cleancode.core;
 
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static org.fiftieshousewife.cleancode.core.HtmlEscaping.escape;
 
 final class HtmlFindingsRenderer {
+
+    private static final String TEMPLATES_RESOURCE =
+            "/org/fiftieshousewife/cleancode/core/html-findings-templates.properties";
+    private static final Properties TEMPLATES = loadTemplates();
+
+    private static final String SRC_JAVA_PREFIX = "src/main/java/";
+    private static final String SRC_PREFIX = "src/";
+    private static final char URL_SEPARATOR = '/';
+    private static final String PROJECT_LOCATION = "(project)";
 
     private HtmlFindingsRenderer() {}
 
@@ -20,118 +33,126 @@ final class HtmlFindingsRenderer {
                 .collect(Collectors.groupingBy(Finding::code));
 
         byCode.entrySet().stream()
-                .sorted(Comparator.comparing(e -> e.getKey().name()))
-                .forEach(entry -> appendCodeGroup(html, entry.getKey(), entry.getValue(), repositoryUrl));
+                .sorted(Comparator.comparing(entry -> entry.getKey().name()))
+                .forEach(entry -> html.append(renderCodeGroup(entry.getKey(), entry.getValue(), repositoryUrl)));
     }
 
     static void appendToolSummary(final StringBuilder html, final List<Finding> findings) {
         final Map<String, Long> byTool = findings.stream()
                 .collect(Collectors.groupingBy(Finding::tool, Collectors.counting()));
 
-        html.append("    <div class=\"tool-summary\">\n");
-        html.append("      <h2>Sources</h2>\n");
-        html.append("      <table>\n");
-        html.append("        <tr><th>Tool</th><th>Findings</th></tr>\n");
-
-        byTool.entrySet().stream()
+        final String toolRows = byTool.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .forEach(entry -> appendToolRow(html, entry.getKey(), entry.getValue()));
+                .map(entry -> renderToolRow(entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining());
 
-        html.append("      </table>\n");
-        html.append("    </div>\n");
+        html.append(template("tool-summary").replace("{toolRows}", toolRows));
     }
 
-    private static void appendCodeGroup(final StringBuilder html, final HeuristicCode code,
-                                         final List<Finding> group, final String repositoryUrl) {
-        final String name = HeuristicDescriptions.name(code);
+    static String renderCodeGroup(final HeuristicCode code, final List<Finding> group,
+                                   final String repositoryUrl) {
+        final String findingRows = group.stream()
+                .sorted(Comparator.comparing(finding -> finding.sourceFile() != null ? finding.sourceFile() : ""))
+                .map(finding -> renderFindingRow(finding, repositoryUrl))
+                .collect(Collectors.joining());
 
-        html.append("    <details>\n");
-        html.append("      <summary><span class=\"code-label\">").append(escape(code.name()));
-        html.append("</span>").append(escape(name));
-        html.append(" (").append(group.size()).append(")</summary>\n");
-        html.append("      <div class=\"group-body\">\n");
-
-        appendOptionalParagraph(html, "reference", HeuristicDescriptions.reference(code));
-        appendOptionalParagraph(html, "guidance", HeuristicDescriptions.guidance(code));
-
-        html.append("        <table>\n");
-        html.append("          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>\n");
-
-        group.stream()
-                .sorted(Comparator.comparing(f -> f.sourceFile() != null ? f.sourceFile() : ""))
-                .forEach(f -> appendFindingRow(html, f, repositoryUrl));
-
-        html.append("        </table>\n");
-        html.append("      </div>\n");
-        html.append("    </details>\n");
+        return template("code-group")
+                .replace("{codeName}", escape(code.name()))
+                .replace("{heuristicName}", escape(HeuristicDescriptions.name(code)))
+                .replace("{count}", Integer.toString(group.size()))
+                .replace("{reference}", renderOptionalParagraph("reference", HeuristicDescriptions.reference(code)))
+                .replace("{guidance}", renderOptionalParagraph("guidance", HeuristicDescriptions.guidance(code)))
+                .replace("{findingRows}", findingRows);
     }
 
-    private static void appendOptionalParagraph(final StringBuilder html, final String cssClass,
-                                                  final String text) {
-        if (text == null) {
-            return;
-        }
-        html.append("        <p class=\"").append(cssClass).append("\">");
-        html.append(escape(text)).append("</p>\n");
-    }
-
-    private static void appendFindingRow(final StringBuilder html, final Finding finding,
-                                          final String repositoryUrl) {
+    static String renderFindingRow(final Finding finding, final String repositoryUrl) {
         final String severityClass = "sev-" + finding.severity().name().toLowerCase(Locale.ROOT);
         final String location = formatLocation(finding);
         final String locationHtml = buildLocationHtml(finding, location, repositoryUrl);
 
-        html.append("          <tr>");
-        html.append("<td class=\"").append(severityClass).append("\">");
-        html.append(finding.severity().name()).append("</td>");
-        html.append("<td class=\"location\">").append(locationHtml).append("</td>");
-        html.append("<td>").append(escape(finding.message())).append("</td>");
-        html.append("</tr>\n");
+        return template("finding-row")
+                .replace("{severityClass}", severityClass)
+                .replace("{severityName}", finding.severity().name())
+                .replace("{locationHtml}", locationHtml)
+                .replace("{message}", escape(finding.message()));
     }
 
-    private static String buildLocationHtml(final Finding finding, final String location,
-                                             final String repositoryUrl) {
-        if (finding.sourceFile() == null || repositoryUrl == null || repositoryUrl.isBlank()) {
+    static String buildLocationHtml(final Finding finding, final String location, final String repositoryUrl) {
+        if (cannotLinkToRepository(finding, repositoryUrl)) {
             return escape(location);
         }
-        final String baseUrl = repositoryUrl.endsWith("/")
-                ? repositoryUrl.substring(0, repositoryUrl.length() - 1) : repositoryUrl;
-        final String relativePath = relativiseSourceFile(finding.sourceFile());
-        final String fileUrl = baseUrl + "/" + relativePath;
-        final String linkedUrl = finding.startLine() > 0
-                ? fileUrl + "#L" + finding.startLine() : fileUrl;
-        return "<a href=\"" + escape(linkedUrl) + "\">" + escape(location) + "</a>";
+        final String baseUrl = stripTrailingSlash(repositoryUrl);
+        final String relativePath = substringFrom(finding.sourceFile(), SRC_PREFIX);
+        final String fileUrl = baseUrl + URL_SEPARATOR + relativePath;
+        final String linkedUrl = finding.startLine() > 0 ? fileUrl + "#L" + finding.startLine() : fileUrl;
+        return template("location-link")
+                .replace("{url}", escape(linkedUrl))
+                .replace("{label}", escape(location));
     }
 
-    private static String relativiseSourceFile(final String sourceFile) {
-        final int srcIdx = sourceFile.indexOf("src/");
-        if (srcIdx > 0) {
-            return sourceFile.substring(srcIdx);
-        }
-        return sourceFile;
-    }
-
-    private static void appendToolRow(final StringBuilder html, final String tool, final Long count) {
-        html.append("        <tr><td>").append(escape(tool));
-        html.append("</td><td>").append(count).append("</td></tr>\n");
-    }
-
-    private static String formatLocation(final Finding finding) {
+    static String formatLocation(final Finding finding) {
         if (finding.sourceFile() == null) {
-            return "(project)";
+            return PROJECT_LOCATION;
         }
-        final String file = shortenPath(finding.sourceFile());
-        if (finding.startLine() > 0) {
-            return file + ":" + finding.startLine();
-        }
-        return file;
+        final String file = substringAfter(finding.sourceFile(), SRC_JAVA_PREFIX);
+        return finding.startLine() > 0 ? file + ":" + finding.startLine() : file;
     }
 
-    private static String shortenPath(final String path) {
-        final int srcIdx = path.indexOf("src/main/java/");
-        if (srcIdx >= 0) {
-            return path.substring(srcIdx + "src/main/java/".length());
+    private static boolean cannotLinkToRepository(final Finding finding, final String repositoryUrl) {
+        return finding.sourceFile() == null || repositoryUrl == null || repositoryUrl.isBlank();
+    }
+
+    private static String stripTrailingSlash(final String url) {
+        if (!url.endsWith("/")) {
+            return url;
         }
-        return path;
+        final int lastCharIndex = url.length() - 1;
+        return url.substring(0, lastCharIndex);
+    }
+
+    private static String substringFrom(final String text, final String marker) {
+        final int markerIndex = text.indexOf(marker);
+        return markerIndex < 0 ? text : text.substring(markerIndex);
+    }
+
+    private static String substringAfter(final String text, final String marker) {
+        final int markerIndex = text.indexOf(marker);
+        return markerIndex < 0 ? text : text.substring(markerIndex + marker.length());
+    }
+
+    private static String renderOptionalParagraph(final String cssClass, final String text) {
+        if (text == null) {
+            return "";
+        }
+        return template("optional-paragraph")
+                .replace("{cssClass}", cssClass)
+                .replace("{text}", escape(text));
+    }
+
+    private static String renderToolRow(final String tool, final Long count) {
+        return template("tool-row")
+                .replace("{tool}", escape(tool))
+                .replace("{count}", Long.toString(count));
+    }
+
+    private static String template(final String key) {
+        final String value = TEMPLATES.getProperty(key);
+        if (value == null) {
+            throw new IllegalStateException("Missing HTML template fragment: " + key);
+        }
+        return value;
+    }
+
+    private static Properties loadTemplates() {
+        final Properties properties = new Properties();
+        try (InputStream stream = HtmlFindingsRenderer.class.getResourceAsStream(TEMPLATES_RESOURCE)) {
+            if (stream == null) {
+                throw new IllegalStateException("Missing HTML templates resource: " + TEMPLATES_RESOURCE);
+            }
+            properties.load(stream);
+            return properties;
+        } catch (final IOException exception) {
+            throw new UncheckedIOException("Failed to load HTML templates: " + TEMPLATES_RESOURCE, exception);
+        }
     }
 }
