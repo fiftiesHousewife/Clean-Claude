@@ -65,6 +65,12 @@ public final class FixBriefGenerator {
         sb.append(findings.size()).append(" finding").append(findings.size() == 1 ? "" : "s")
                 .append(" on this file.\n");
         sb.append('\n');
+        sb.append("## Before you touch any code\n");
+        sb.append("Your first tool calls MUST be Reads of every skill path cited in the sections below. ")
+                .append("Do not call Edit or Write before every skill file has been read in full. ")
+                .append("These skills contain the worked examples, false-positive patterns, and rewrite ")
+                .append("templates you need to make the correct fix.\n");
+        sb.append('\n');
         sb.append("## Rules\n");
         sb.append("- Address only findings on this file. Do not modify other files except to fix compilation.\n");
         sb.append("- Prefer deleting dead code to refactoring it.\n");
@@ -99,7 +105,8 @@ public final class FixBriefGenerator {
         sb.append('\n');
         final String skillPath = SkillPathRegistry.skillPathFor(code);
         if (skillPath != null) {
-            sb.append("> Read `").append(skillPath).append("` before addressing these.\n\n");
+            sb.append("> **You MUST Read this file first — before any Edit or Write tool call:** `")
+                    .append(skillPath).append("`\n\n");
         }
         for (final Finding f : findings) {
             sb.append("- ");

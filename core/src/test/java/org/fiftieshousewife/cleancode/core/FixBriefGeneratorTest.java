@@ -58,8 +58,13 @@ class FixBriefGeneratorTest {
         FixBriefGenerator.generate(report, outputDir);
 
         final String content = Files.readString(outputDir.resolve("Foo.md"));
-        assertTrue(content.contains(".claude/skills/clean-code-functions/SKILL.md"),
-                "F1 should point at clean-code-functions/SKILL.md");
+        assertAll(
+                () -> assertTrue(content.contains(".claude/skills/clean-code-functions/SKILL.md"),
+                        "F1 should point at clean-code-functions/SKILL.md"),
+                () -> assertTrue(content.contains("You MUST Read this file first"),
+                        "brief must order the agent to read the skill before editing"),
+                () -> assertTrue(content.contains("Your first tool calls MUST be Reads"),
+                        "top-of-brief preamble must tell the agent to read every cited skill first"));
     }
 
     @Test
