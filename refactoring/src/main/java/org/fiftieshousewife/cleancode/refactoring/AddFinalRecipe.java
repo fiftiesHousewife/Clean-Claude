@@ -2,12 +2,16 @@ package org.fiftieshousewife.cleancode.refactoring;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.marker.Markers;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class AddFinalRecipe extends Recipe {
@@ -31,64 +35,23 @@ public class AddFinalRecipe extends Recipe {
                 if (m.getBody() == null) {
                     return m;
                 }
-
-                final Set<String> reassigned = collectReassignedVariables(m);
-
-                return (J.MethodDeclaration) new JavaIsoVisitor<Set<String>>() {
-                    @Override
-                    public J.VariableDeclarations visitVariableDeclarations(
-                            J.VariableDeclarations varDecls, Set<String> reassignedNames) {
-                        final J.VariableDeclarations v = super.visitVariableDeclarations(varDecls, reassignedNames);
-
-                        if (isField(v) || isAlreadyFinal(v)) {
-                            return v;
-                        }
-
-                        final boolean anyReassigned = v.getVariables().stream()
-                                .anyMatch(named -> reassignedNames.contains(named.getSimpleName()));
-                        if (anyReassigned) {
-                            return v;
-                        }
-
-                        return addFinalModifier(v);
-                    }
-                }.visit(m, reassigned);
+                return applyFinalModifiers(m);
             }
         };
     }
 
+    private static J.MethodDeclaration applyFinalModifiers(J.MethodDeclaration method) {
+        final Set<String> reassigned = collectReassignedVariables(method);
+        return (J.MethodDeclaration) new AddFinalToLocalsVisitor().visit(method, reassigned);
+    }
+
     private static Set<String> collectReassignedVariables(J.MethodDeclaration method) {
         final Set<String> reassigned = new HashSet<>();
-        new JavaIsoVisitor<Set<String>>() {
-            @Override
-            public J.Assignment visitAssignment(J.Assignment assignment, Set<String> names) {
-                if (assignment.getVariable() instanceof J.Identifier ident) {
-                    names.add(ident.getSimpleName());
-                }
-                return super.visitAssignment(assignment, names);
-            }
-
-            @Override
-            public J.AssignmentOperation visitAssignmentOperation(
-                    J.AssignmentOperation assignOp, Set<String> names) {
-                if (assignOp.getVariable() instanceof J.Identifier ident) {
-                    names.add(ident.getSimpleName());
-                }
-                return super.visitAssignmentOperation(assignOp, names);
-            }
-
-            @Override
-            public J.Unary visitUnary(J.Unary unary, Set<String> names) {
-                if (isIncrementOrDecrement(unary) && unary.getExpression() instanceof J.Identifier ident) {
-                    names.add(ident.getSimpleName());
-                }
-                return super.visitUnary(unary, names);
-            }
-        }.visit(method.getBody(), reassigned);
+        new ReassignedNameCollector().visit(method.getBody(), reassigned);
         return reassigned;
     }
 
-    private static boolean isField(J.VariableDeclarations varDecls) {
+    static boolean isField(J.VariableDeclarations varDecls) {
         return varDecls.getModifiers().stream()
                 .anyMatch(m -> m.getType() == J.Modifier.Type.Static
                         || m.getType() == J.Modifier.Type.Private
@@ -96,28 +59,37 @@ public class AddFinalRecipe extends Recipe {
                         || m.getType() == J.Modifier.Type.Public);
     }
 
-    private static boolean isAlreadyFinal(J.VariableDeclarations varDecls) {
+    static boolean isAlreadyFinal(J.VariableDeclarations varDecls) {
         return varDecls.getModifiers().stream()
                 .anyMatch(m -> m.getType() == J.Modifier.Type.Final);
     }
 
-    private static boolean isIncrementOrDecrement(J.Unary unary) {
-        return unary.getOperator() == J.Unary.Type.PreIncrement
-                || unary.getOperator() == J.Unary.Type.PreDecrement
-                || unary.getOperator() == J.Unary.Type.PostIncrement
-                || unary.getOperator() == J.Unary.Type.PostDecrement;
+    static boolean isIncrementOrDecrement(J.Unary unary) {
+        final J.Unary.Type op = unary.getOperator();
+        return op == J.Unary.Type.PreIncrement
+                || op == J.Unary.Type.PreDecrement
+                || op == J.Unary.Type.PostIncrement
+                || op == J.Unary.Type.PostDecrement;
     }
 
-    private static J.VariableDeclarations addFinalModifier(J.VariableDeclarations varDecls) {
-        final var finalMod = new J.Modifier(
-                org.openrewrite.Tree.randomId(),
+    static boolean isFinalCandidate(J.VariableDeclarations varDecls, Set<String> reassignedNames) {
+        if (isField(varDecls) || isAlreadyFinal(varDecls)) {
+            return false;
+        }
+        return varDecls.getVariables().stream()
+                .noneMatch(named -> reassignedNames.contains(named.getSimpleName()));
+    }
+
+    static J.VariableDeclarations addFinalModifier(J.VariableDeclarations varDecls) {
+        final J.Modifier finalMod = new J.Modifier(
+                Tree.randomId(),
                 Space.EMPTY,
-                org.openrewrite.marker.Markers.EMPTY,
+                Markers.EMPTY,
                 null,
                 J.Modifier.Type.Final,
-                java.util.List.of());
+                List.of());
 
-        final var newModifiers = new java.util.ArrayList<>(varDecls.getModifiers());
+        final List<J.Modifier> newModifiers = new ArrayList<>(varDecls.getModifiers());
         newModifiers.add(finalMod);
 
         final J.VariableDeclarations withMod = varDecls.withModifiers(newModifiers);
@@ -128,5 +100,44 @@ public class AddFinalRecipe extends Recipe {
                     varDecls.getTypeExpression().withPrefix(Space.SINGLE_SPACE));
         }
         return withMod;
+    }
+
+    private static final class AddFinalToLocalsVisitor extends JavaIsoVisitor<Set<String>> {
+        @Override
+        public J.VariableDeclarations visitVariableDeclarations(
+                J.VariableDeclarations varDecls, Set<String> reassignedNames) {
+            final J.VariableDeclarations v = super.visitVariableDeclarations(varDecls, reassignedNames);
+            if (isFinalCandidate(v, reassignedNames)) {
+                return addFinalModifier(v);
+            }
+            return v;
+        }
+    }
+
+    private static final class ReassignedNameCollector extends JavaIsoVisitor<Set<String>> {
+        @Override
+        public J.Assignment visitAssignment(J.Assignment assignment, Set<String> names) {
+            if (assignment.getVariable() instanceof J.Identifier ident) {
+                names.add(ident.getSimpleName());
+            }
+            return super.visitAssignment(assignment, names);
+        }
+
+        @Override
+        public J.AssignmentOperation visitAssignmentOperation(
+                J.AssignmentOperation assignOp, Set<String> names) {
+            if (assignOp.getVariable() instanceof J.Identifier ident) {
+                names.add(ident.getSimpleName());
+            }
+            return super.visitAssignmentOperation(assignOp, names);
+        }
+
+        @Override
+        public J.Unary visitUnary(J.Unary unary, Set<String> names) {
+            if (isIncrementOrDecrement(unary) && unary.getExpression() instanceof J.Identifier ident) {
+                names.add(ident.getSimpleName());
+            }
+            return super.visitUnary(unary, names);
+        }
     }
 }
