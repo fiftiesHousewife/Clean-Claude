@@ -7,7 +7,6 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +15,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecipe.Accumulator> {
+
+    private static final String UNKNOWN = "unknown";
 
     public record Row(String className, String methodName, String parameterName, String parameterType) {}
 
@@ -43,39 +44,7 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
-                if (m.getBody() == null) {
-                    return m;
-                }
-
-                final Set<String> selectorParams = m.getParameters().stream()
-                        .filter(J.VariableDeclarations.class::isInstance)
-                        .map(J.VariableDeclarations.class::cast)
-                        .filter(v -> isBooleanOrEnum(v))
-                        .flatMap(v -> v.getVariables().stream())
-                        .map(J.VariableDeclarations.NamedVariable::getSimpleName)
-                        .collect(Collectors.toSet());
-
-                if (selectorParams.isEmpty()) {
-                    return m;
-                }
-
-                final J.ClassDeclaration enclosing = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                final String className = enclosing != null ? enclosing.getSimpleName() : "<unknown>";
-
-                selectorParams.forEach(param -> {
-                    if (isUsedAsSelector(m.getBody(), param)) {
-                        final String paramType = findParamType(m, param);
-                        acc.rows.add(new Row(className, m.getSimpleName(), param, paramType));
-                    }
-                });
-
-                return m;
-            }
-        };
+        return new SelectorScanner(acc);
     }
 
     @Override
@@ -87,7 +56,51 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean isBooleanOrEnum(J.VariableDeclarations varDecl) {
+    private final class SelectorScanner extends JavaIsoVisitor<ExecutionContext> {
+        private final Accumulator acc;
+
+        SelectorScanner(final Accumulator acc) {
+            this.acc = acc;
+        }
+
+        @Override
+        public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
+            final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+            final Set<String> selectorParams = findSelectorParams(m);
+            if (selectorParams.isEmpty()) {
+                return m;
+            }
+            recordSelectorUsages(m, selectorParams);
+            return m;
+        }
+
+        private void recordSelectorUsages(final J.MethodDeclaration m, final Set<String> selectorParams) {
+            final String className = enclosingClassName();
+            selectorParams.stream()
+                    .filter(param -> isUsedAsSelector(m.getBody(), param))
+                    .forEach(param -> acc.rows.add(new Row(className, m.getSimpleName(), param, findParamType(m, param))));
+        }
+
+        private String enclosingClassName() {
+            final J.ClassDeclaration enclosing = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            return enclosing != null ? enclosing.getSimpleName() : "<unknown>";
+        }
+    }
+
+    private static Set<String> findSelectorParams(final J.MethodDeclaration m) {
+        if (m.getBody() == null) {
+            return Set.of();
+        }
+        return m.getParameters().stream()
+                .filter(J.VariableDeclarations.class::isInstance)
+                .map(J.VariableDeclarations.class::cast)
+                .filter(SelectorArgumentRecipe::isBooleanOrEnum)
+                .flatMap(v -> v.getVariables().stream())
+                .map(J.VariableDeclarations.NamedVariable::getSimpleName)
+                .collect(Collectors.toSet());
+    }
+
+    private static boolean isBooleanOrEnum(final J.VariableDeclarations varDecl) {
         if (varDecl.getType() instanceof JavaType.Primitive p) {
             return p == JavaType.Primitive.Boolean;
         }
@@ -96,52 +109,61 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
         return "boolean".equals(typeText) || isLikelyEnum(varDecl);
     }
 
-    private static boolean isLikelyEnum(J.VariableDeclarations varDecl) {
+    private static boolean isLikelyEnum(final J.VariableDeclarations varDecl) {
         if (varDecl.getType() instanceof JavaType.FullyQualified fq) {
             return fq.getKind() == JavaType.FullyQualified.Kind.Enum;
         }
         return false;
     }
 
-    private static boolean isUsedAsSelector(J.Block body, String paramName) {
-        final List<Boolean> found = new ArrayList<>();
-        new JavaIsoVisitor<List<Boolean>>() {
-            @Override
-            public J.If visitIf(J.If iff, List<Boolean> out) {
-                if (conditionReferencesParam(iff.getIfCondition().getTree(), paramName)) {
-                    out.add(true);
-                }
-                return super.visitIf(iff, out);
-            }
-
-            @Override
-            public J.Switch visitSwitch(J.Switch sw, List<Boolean> out) {
-                if (selectorReferencesParam(sw.getSelector().getTree(), paramName)) {
-                    out.add(true);
-                }
-                return super.visitSwitch(sw, out);
-            }
-        }.visit(body, found);
-        return !found.isEmpty();
+    private static boolean isUsedAsSelector(final J.Block body, final String paramName) {
+        final SelectorUsageDetector detector = new SelectorUsageDetector(paramName);
+        detector.visit(body, 0);
+        return detector.found;
     }
 
-    private static boolean conditionReferencesParam(Expression condition, String paramName) {
+    private static final class SelectorUsageDetector extends JavaIsoVisitor<Integer> {
+        private final String paramName;
+        boolean found;
+
+        SelectorUsageDetector(final String paramName) {
+            this.paramName = paramName;
+        }
+
+        @Override
+        public J.If visitIf(final J.If iff, final Integer unused) {
+            if (conditionReferencesParam(iff.getIfCondition().getTree(), paramName)) {
+                found = true;
+            }
+            return super.visitIf(iff, unused);
+        }
+
+        @Override
+        public J.Switch visitSwitch(final J.Switch sw, final Integer unused) {
+            if (selectorReferencesParam(sw.getSelector().getTree(), paramName)) {
+                found = true;
+            }
+            return super.visitSwitch(sw, unused);
+        }
+    }
+
+    private static boolean conditionReferencesParam(final Expression condition, final String paramName) {
         final String condText = condition.toString().trim();
         return condText.equals(paramName) || condText.startsWith(paramName + " ")
                 || condText.startsWith("!" + paramName);
     }
 
-    private static boolean selectorReferencesParam(Expression selector, String paramName) {
+    private static boolean selectorReferencesParam(final Expression selector, final String paramName) {
         return selector.toString().trim().equals(paramName);
     }
 
-    private static String findParamType(J.MethodDeclaration method, String paramName) {
+    private static String findParamType(final J.MethodDeclaration method, final String paramName) {
         return method.getParameters().stream()
                 .filter(J.VariableDeclarations.class::isInstance)
                 .map(J.VariableDeclarations.class::cast)
                 .filter(v -> v.getVariables().stream().anyMatch(n -> n.getSimpleName().equals(paramName)))
-                .map(v -> v.getTypeExpression() != null ? v.getTypeExpression().toString().trim() : "unknown")
+                .map(v -> v.getTypeExpression() != null ? v.getTypeExpression().toString().trim() : UNKNOWN)
                 .findFirst()
-                .orElse("unknown");
+                .orElse(UNKNOWN);
     }
 }
