@@ -5,40 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clean Code Report — plugin</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
-    header { background: #1a1a2e; color: #fff; padding: 2rem; }
-    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-    header p { opacity: 0.8; font-size: 0.95rem; }
-    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
-    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
-    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
-    .badge.error { background: #c0392b; }
-    .badge.warning { background: #e67e22; }
-    .badge.info { background: #95a5a6; }
-    details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
-    summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
-    summary:hover { background: #fafafa; }
-    .code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
-    .group-body { padding: 0 1rem 1rem 1rem; }
-    .reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
-    .guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
-    .group-body { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
-    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; word-wrap: break-word; overflow-wrap: break-word; }
-    th:first-child, td:first-child { width: 80px; white-space: nowrap; }
-    th:nth-child(2), td:nth-child(2) { width: 35%; white-space: nowrap; }
-    th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
-    .sev-error { color: #c0392b; font-weight: 600; }
-    .sev-warning { color: #e67e22; font-weight: 600; }
-    .sev-info { color: #95a5a6; }
-    .location a { color: #2980b9; text-decoration: none; }
-    .location a:hover { text-decoration: underline; }
-    .location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
-    .tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
-    .tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
-    .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
-    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f5f5f5; }
+header { background: #1a1a2e; color: #fff; padding: 2rem; }
+header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+header p { opacity: 0.8; font-size: 0.95rem; }
+main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+.summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
+.summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
+.badge.error { background: #c0392b; }
+.badge.warning { background: #e67e22; }
+.badge.info { background: #95a5a6; }
+details { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; }
+summary { cursor: pointer; padding: 1rem; font-weight: 600; font-size: 1rem; }
+summary:hover { background: #fafafa; }
+.code-label { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; color: #555; margin-right: 0.5rem; }
+.group-body { padding: 0 1rem 1rem 1rem; overflow-x: auto; }
+.reference { font-size: 0.85rem; color: #777; margin-bottom: 0.5rem; font-style: italic; }
+.guidance { font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 0.75rem; border-left: 3px solid #ddd; padding-left: 0.75rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+td:first-child { white-space: nowrap; }
+td:nth-child(2) { white-space: nowrap; font-size: 0.85rem; }
+td:nth-child(3) { word-break: break-word; }
+th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+.sev-error { color: #c0392b; font-weight: 600; }
+.sev-warning { color: #e67e22; font-weight: 600; }
+.sev-info { color: #95a5a6; }
+.location a { color: #2980b9; text-decoration: none; }
+.location a:hover { text-decoration: underline; }
+.location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+.tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+.tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+.clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
+footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
   </style>
 </head>
 <body>
@@ -49,47 +49,17 @@
   <main>
     <div class="summary">
       <span class="badge error">1 errors</span>
-      <span class="badge warning">81 warnings</span>
+      <span class="badge warning">32 warnings</span>
       <span class="badge info">0 info</span>
     </div>
     <details>
-      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (6)</summary>
+      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (1)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.10 'Classes' p.136</p>
         <p class="guidance">The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java</a></td><td>Class 'CleanCodeExtension' is 154 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Class 'CleanCodePlugin' is 173 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Class 'SkillFileScaffolder' is 171 lines</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>File length is 166 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java:1</a></td><td>File length is 192 lines (max allowed is 150).</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java#L1">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java:1</a></td><td>File length is 179 lines (max allowed is 150).</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">Ch7_1</span>Use Exceptions Rather Than Return Codes (4)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.7 'Error Handling' p.103</p>
-        <p class="guidance">Exceptions are for exceptional circumstances. When you catch an exception and merely log it — or worse, leave the catch block empty — you've told the calling code that everything is fine when it isn't. The caller makes decisions based on a lie. Either handle the exception meaningfully, or let it propagate to someone who can.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Catch block in 'refreshIfUnmodified' only logs or is empty</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Catch block in 'writeSkillFile' only logs or is empty</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Catch block in 'readHashFile' only logs or is empty</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Catch block in 'writeHashFile' only logs or is empty</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">Ch7_2</span>Don't Return Null (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.7 'Error Handling' p.110</p>
-        <p class="guidance">When you return null, you are creating work for your callers. Every caller must check for null, and if even one forgets, the application blows up with a NullPointerException at some unexpected point. Code peppered with null checks is noisy, hard to read, and fragile. Use Optional, throw an exception, or return a Special Case object instead.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Method 'resolveTemplateWithHash' has 3 null checks</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java:1</td><td>File length is 155 lines (max allowed is 150).</td></tr>
         </table>
       </div>
     </details>
@@ -115,80 +85,16 @@
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G10</span>Vertical Separation (15)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.292</p>
-        <p class="guidance">Local variables should be declared just before their first use. Vertical separation between declaration and use makes the reader hold a mental placeholder — 'what was that variable for again?' — while reading unrelated code. Declare variables at the point of need, not at the top of the method.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L4">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:4</a></td><td>'projectRoot' is declared in analyse() but not used until 19 lines later — move the declaration closer to line 23</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L6">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:6</a></td><td>'reportsDir' is declared in analyse() but not used until 24 lines later — move the declaration closer to line 30</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L9">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:9</a></td><td>'thresholds' is declared in analyse() but not used until 32 lines later — move the declaration closer to line 41</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L11">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:11</a></td><td>'claudeConfig' is declared in analyse() but not used until 31 lines later — move the declaration closer to line 42</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L12">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:12</a></td><td>'disabledRecipes' is declared in analyse() but not used until 33 lines later — move the declaration closer to line 45</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L14">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:14</a></td><td>'dependencies' is declared in analyse() but not used until 17 lines later — move the declaration closer to line 31</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L22">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:22</a></td><td>'context' is declared in analyse() but not used until 22 lines later — move the declaration closer to line 44</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L33">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:33</a></td><td>'sources' is declared in analyse() but not used until 11 lines later — move the declaration closer to line 44</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L6">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:6</a></td><td>'report' is declared in analyse() but not used until 24 lines later — move the declaration closer to line 30</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java#L3">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java:3</a></td><td>'cpdConfig' is declared in registerCpdTask() but not used until 14 lines later — move the declaration closer to line 17</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java#L12">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java:12</a></td><td>'minimumTokens' is declared in registerCpdTask() but not used until 24 lines later — move the declaration closer to line 36</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java#L5">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java:5</a></td><td>'reportFile' is declared in generate() but not used until 12 lines later — move the declaration closer to line 17</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java#L6">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java:6</a></td><td>'claudeMdFile' is declared in generate() but not used until 12 lines later — move the declaration closer to line 18</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java#L7">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java:7</a></td><td>'baselineFile' is declared in generate() but not used until 11 lines later — move the declaration closer to line 18</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java#L5">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java:5</a></td><td>'report' is declared in generate() but not used until 12 lines later — move the declaration closer to line 17</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G15</span>Selector Arguments (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.294</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Method 'scaffoldFile' uses boolean parameter 'thresholdsChanged' to select behaviour — split into separate methods</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G18</span>Inappropriate Static (3)</summary>
+      <summary><span class="code-label">G18</span>Inappropriate Static (4)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
         <p class="guidance">In general you should prefer non-static methods to static methods. If you really want a function to be static, make sure there is no chance that you'll want it to behave polymorphically. Static methods cannot be overridden and cannot participate in dependency injection.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java">org/fiftieshousewife/cleancode/plugin/BaselineTask.java</a></td><td>Method 'baseline' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java</a></td><td>Method 'generate' does not use instance state — consider making it static or extracting</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Method 'computeThresholdsHash' does not use instance state — consider making it static or extracting</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G19</span>Use Explanatory Variables (4)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
-        <p class="guidance">Complex expressions should be broken into intermediate variables with explanatory names. 'wasPressed' is better than 'event.getTarget().isButton() &amp;&amp; event.getState() == CLICKED'. The intermediate variable documents the programmer's intent and makes the code read like a well-written paragraph.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Complex expression in 'configureCheckstyle' should be extracted to a named variable: project.getResources().getText().fromString(configContent)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Complex expression in 'configureSpotBugs' should be extracted to a named variable: project.getLayout().getBuildDirectory().file(&quot;reports/spotbu</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Complex expression in 'registerCpdTask' should be extracted to a named variable: reportFile.get().getAsFile().toPath()</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Complex expression in 'computeThresholdsHash' should be extracted to a named variable: classLineCount + &quot;:&quot; + classTargetLines + &quot;:&quot; + recordCompon</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G22</span>Make Logical Dependencies Physical (6)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.298</p>
-        <p class="guidance">If something in your code can logically be constant — a variable that's never reassigned, an object that's never swapped — then declare it final. This isn't pedantry. It communicates intent to every future reader: 'this value is set once and never changes.' It prevents accidental reassignment and signals a design where fewer things are moving at once.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java#L15">org/fiftieshousewife/cleancode/plugin/BaselineTask.java:15</a></td><td>Variable 'buildDir' should be declared final.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java#L16">org/fiftieshousewife/cleancode/plugin/BaselineTask.java:16</a></td><td>Variable 'reportFile' should be declared final.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java#L17">org/fiftieshousewife/cleancode/plugin/BaselineTask.java:17</a></td><td>Variable 'baselineFile' should be declared final.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/BaselineTask.java#L19">org/fiftieshousewife/cleancode/plugin/BaselineTask.java:19</a></td><td>Variable 'report' should be declared final.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/ExplainTask.java#L24">org/fiftieshousewife/cleancode/plugin/ExplainTask.java:24</a></td><td>Variable 'skillPath' should be declared final.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/ExplainTask.java#L30">org/fiftieshousewife/cleancode/plugin/ExplainTask.java:30</a></td><td>Variable 'file' should be declared final.</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/BaselineTask.java</td><td>Method 'baseline' does not use instance state — consider making it static or extracting</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java</td><td>Method 'buildRecipeThresholds' does not use instance state — consider making it static or extracting</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/FixPlanTask.java</td><td>Method 'generate' does not use instance state — consider making it static or extracting</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java</td><td>Method 'generate' does not use instance state — consider making it static or extracting</td></tr>
         </table>
       </div>
     </details>
@@ -199,33 +105,18 @@
         <p class="guidance">When you see code that tests for a type to decide what behaviour to invoke, consider replacing it with polymorphism. 'One switch' is a reasonable rule of thumb — if you find yourself writing the same switch in multiple places, the switch is telling you that there's a class hierarchy hiding in your code, waiting to be discovered.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/ExplainTask.java">org/fiftieshousewife/cleancode/plugin/ExplainTask.java</a></td><td>Switch on String 'concern.toLowerCase()' with 5 cases — replace with an enum that encapsulates the behaviour</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/ExplainTask.java</td><td>Switch on String 'concern.toLowerCase(Locale.ROOT)' with 5 cases — replace with an enum that encapsulates the behaviour</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G25</span>Replace Magic Numbers with Named Constants (5)</summary>
+      <summary><span class="code-label">G25</span>Replace Magic Numbers with Named Constants (1)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.300</p>
         <p class="guidance">In general it is a bad idea to have raw numbers in your code. Numbers like 42 or 86400 are magic — they have no context, no meaning, no documentation. Hide them behind well-named constants. SECONDS_PER_DAY is immediately clear; 86400 is not.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java</a></td><td>String &quot;ANTHROPIC_API_KEY&quot; appears 2 times — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>String &quot;cpdMain&quot; appears 2 times — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>String &quot;{{classLineCount}}&quot; appears 2 times — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>String &quot;{{recordComponentCount}}&quot; appears 2 times — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>String &quot;{{classTargetLines}}&quot; appears 2 times — extract to a named constant</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G26</span>Be Precise (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.301</p>
-        <p class="guidance">Ambiguity in code is a sign of insufficient care. When you make a decision in code, make it precisely. Know why you've made it and how you will deal with any exceptions. Don't be lazy about the precision of your decisions.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/ExplainTask.java#L40">org/fiftieshousewife/cleancode/plugin/ExplainTask.java:40</a></td><td>When doing a String.toLowerCase()/toUpperCase() call, use a Locale</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java</td><td>String &quot;ANTHROPIC_API_KEY&quot; appears 2 times — extract to a named constant</td></tr>
         </table>
       </div>
     </details>
@@ -236,118 +127,70 @@
         <p class="guidance">Negatives are slightly harder to understand than positives. So, when possible, conditionals should be expressed as positives. if (buffer.shouldCompact()) is preferable to if (!buffer.shouldNotCompact()). Double negation forces the reader to do mental gymnastics that add nothing.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Method 'resolveTemplateWithHash' has 3 guard clauses — simplify with early return or extract filter</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</td><td>Method 'scaffoldIfMissing' has 2 guard clauses — simplify with early return or extract filter</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G30</span>Functions Should Do One Thing (4)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
-        <p class="guidance">Functions should do one thing. They should do it well. They should do it only. A function that is too long is probably doing too many things. If you can extract another function from it with a name that is not merely a restatement of its implementation, then the original is doing more than one thing.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java</a></td><td>Method 'analyse' has 8 blank-line sections across 61 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Method 'apply' has 7 blank-line sections across 39 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Method 'registerCpdTask' has 6 blank-line sections across 40 lines — each section should be its own method</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L19">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:19</a></td><td>Method analyse length is 61 lines (max allowed is 50).</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">G31</span>Hidden Temporal Couplings (5)</summary>
+      <summary><span class="code-label">G31</span>Hidden Temporal Couplings (9)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java</a></td><td>Method 'CleanCodeExtension' has 4 consecutive void calls with no data dependency — make the order explicit</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Method 'apply' has 4 consecutive void calls with no data dependency — make the order explicit</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Method 'applyStaticAnalysisPlugins' has 10 consecutive void calls with no data dependency — make the order explicit</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/ClaudeReviewExtension.java">ClaudeReviewExtension.java</a></td><td>Method 'ClaudeReviewExtension' has 6 consecutive void calls with no data dependency — make the order explicit</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/ThresholdsExtension.java">ThresholdsExtension.java</a></td><td>Method 'ThresholdsExtension' has 15 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java</td><td>Method 'CleanCodeExtension' has 5 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</td><td>Method 'apply' has 3 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CleanCodeTaskRegistrar.java</td><td>Method 'registerAll' has 5 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CpdTaskRegistrar.java</td><td>Method 'register' has 3 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CpdTaskRegistrar.java</td><td>Method 'configureCpdTask' has 7 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/StaticAnalysisPluginConfigurer.java</td><td>Method 'apply' has 4 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/StaticAnalysisPluginConfigurer.java</td><td>Method 'applyRequiredPlugins' has 5 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/StaticAnalysisPluginConfigurer.java</td><td>Method 'configureAppliedPlugins' has 4 consecutive void calls with no data dependency — make the order explicit</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/ThresholdsExtension.java</td><td>Method 'propertiesByThreshold' has 15 consecutive void calls with no data dependency — make the order explicit</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G35</span>Keep Configurable Data at High Levels (3)</summary>
+      <summary><span class="code-label">G33</span>Encapsulate Boundary Conditions (1)</summary>
       <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.306</p>
-        <p class="guidance">If you have a constant such as a default or configuration value, it is better to make it a named constant at the top of the class than to bury it in some low-level function. The high-level constant is easy to find and to change. A magic number deep in a private method is invisible.</p>
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.304</p>
+        <p class="guidance">Boundary conditions are hard to keep track of. Put the processing for them in one place. Don't let them leak all over the code. 'array.length - 1' scattered through your code is a bug waiting to happen. Extract it: 'final int lastIndex = array.length - 1;' — the name documents the intent and the adjustment happens in exactly one place.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Magic number 2 in private method 'resolveTemplateWithHash' — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Magic number 3 in private method 'parseThresholdsHash' — extract to a named constant</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Field 'SKILL_FILES' has 11 hardcoded literals — load from configuration</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/FixPlanTask.java</td><td>Boundary adjustment 'written.size() - 1' in 'generate' — extract to a named variable</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G4</span>Overridden Safeties (2)</summary>
+      <summary><span class="code-label">G4</span>Overridden Safeties (1)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.289</p>
         <p class="guidance">Don't override safeties. Turning off warnings, ignoring failing tests, catching and discarding exceptions — these are all the same mistake. Safeties exist because someone, at some point, decided they were important enough to create. Don't silence them; fix the underlying problem.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L30">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:30</a></td><td>Be wary of letting constructors throw exceptions.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java#L22">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java:22</a></td><td>Method ignores exceptional return value</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:33</td><td>Be wary of letting constructors throw exceptions.</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">G5</span>Duplication (2)</summary>
+      <summary><span class="code-label">J3</span>Constants versus Enums (1)</summary>
       <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.289</p>
-        <p class="guidance">Duplication is the root of all evil in software. Every duplication represents a missed opportunity for abstraction. When you see duplicated code, it almost always means there is a concept crying out to be a subroutine or a class. Find it and eliminate the duplication.</p>
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Java' p.308</p>
+        <p class="guidance">Now that Java has enums, use them. The old pattern of public static final int or String constants as an enumeration is obsolete. Enums provide type safety, can have methods and fields, and make switch statements exhaustive. Don't cling to the pre-Java 5 idiom.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L29">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:29</a></td><td>Duplicated block (98 tokens)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java#L19">org/fiftieshousewife/cleancode/plugin/GenerateClaudeMdTask.java:19</a></td><td>Duplicated block (98 tokens)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CpdTaskRegistrar.java</td><td>4 static final fields with prefix 'CPD' should be an enum</td></tr>
         </table>
       </div>
     </details>
     <details>
-      <summary><span class="code-label">J1</span>Avoid Long Import Lists by Using Wildcards (2)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Java' p.307</p>
-        <p class="guidance">Long lists of imports are daunting to the reader. If you're importing from many different packages, it's worth asking whether this class has too many responsibilities. Wildcard imports can reduce clutter, but the real fix is often to split the class.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L3">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:3</a></td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.adapters.*.</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/AnalyseTask.java#L7">org/fiftieshousewife/cleancode/plugin/AnalyseTask.java:7</a></td><td>Using the '.*' form of import should be avoided - org.fiftieshousewife.cleancode.core.*.</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">T1</span>Insufficient Tests (3)</summary>
+      <summary><span class="code-label">T1</span>Insufficient Tests (2)</summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.313</p>
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
           <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-error">ERROR</td><td class="location">(project)</td><td>Overall line coverage: 0.0% (0/375 lines covered)</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java">org/fiftieshousewife/cleancode/plugin/CleanCodePlugin.java</a></td><td>Private method 'applyStaticAnalysisPlugins' (10 lines) should be package-private so it can be tested directly</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/src/main/java/org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java">org/fiftieshousewife/cleancode/plugin/SkillFileScaffolder.java</a></td><td>Private method 'resolveTemplateWithHash' (6 lines) should be package-private so it can be tested directly</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">T8</span>Test Coverage Patterns Can Be Revealing (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.314</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java#L1">org/fiftieshousewife/cleancode/plugin/CleanCodeExtension.java:1</a></td><td>Class CleanCodeExtension$ThresholdsExtension has 0.0% line coverage (0/17 lines)</td></tr>
-        </table>
-      </div>
-    </details>
-    <details>
-      <summary><span class="code-label">T9</span>Tests Should Be Fast (1)</summary>
-      <div class="group-body">
-        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.314</p>
-        <p class="guidance">A slow test is a test that won't get run. When things get tight, the slow tests are the ones that get dropped from the suite. Keep your tests fast. Ruthlessly refactor tests that take too long to run.</p>
-        <table>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location"><a href="https://github.com/fiftiesHousewife/Clean-Claude/blob/main/plugin/org/fiftieshousewife/cleancode/plugin/CpdIntegrationTest.java">org/fiftieshousewife/cleancode/plugin/CpdIntegrationTest.java</a></td><td>Test 'analyseCleanCodeProducesReports()' took 5.5s (exceeds 5s threshold)</td></tr>
+          <tr><td class="sev-error">ERROR</td><td class="location">(project)</td><td>Overall line coverage: 0.0% (0/463 lines covered)</td></tr>
+          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/plugin/CpdTaskRegistrar.java</td><td>Private method 'configureCpdTask' (9 lines) should be package-private so it can be tested directly</td></tr>
         </table>
       </div>
     </details>
@@ -355,20 +198,17 @@
       <h2>Sources</h2>
       <table>
         <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>openrewrite</td><td>51</td></tr>
-        <tr><td>checkstyle</td><td>12</td></tr>
+        <tr><td>openrewrite</td><td>19</td></tr>
         <tr><td>dependency-updates</td><td>11</td></tr>
-        <tr><td>cpd</td><td>2</td></tr>
-        <tr><td>jacoco</td><td>2</td></tr>
-        <tr><td>spotbugs</td><td>2</td></tr>
-        <tr><td>pmd</td><td>1</td></tr>
-        <tr><td>surefire</td><td>1</td></tr>
+        <tr><td>jacoco</td><td>1</td></tr>
+        <tr><td>spotbugs</td><td>1</td></tr>
+        <tr><td>checkstyle</td><td>1</td></tr>
       </table>
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-16 09:06:30 Z</p>
-    <p>82 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 08:48:09 Z</p>
+    <p>33 total findings</p>
   </footer>
 </body>
 </html>

@@ -126,11 +126,14 @@ for part_log in $(ls -v .claude/session-log-part*.jsonl 2>/dev/null); do
 done
 [[ -e .claude/session-log.jsonl ]] && cat .claude/session-log.jsonl >> "$SESSION_OUT"
 
-# Token usage summary across every session id seen in the combined tools log
+# Token usage summary across sessions tagged with this experiment's task label.
+# Filtering by task prevents pollution from unrelated Claude Code sessions
+# (e.g. interactive dev work) whose tool calls landed in the same tool log.
 python3 - "$APPROACH" "$RUN" "$TOOLS_OUT" <<'PY'
 import json, re, sys, os, glob
 
 approach, run, tools_path = sys.argv[1], sys.argv[2], sys.argv[3]
+task_prefix = f"{approach}-fix-{run}"
 
 session_ids = []
 seen_ids = set()
@@ -138,12 +141,17 @@ if os.path.exists(tools_path):
     with open(tools_path) as f:
         for line in f:
             try:
-                sid = json.loads(line).get("session")
+                d = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if sid and sid not in seen_ids:
-                seen_ids.add(sid)
-                session_ids.append(sid)
+            sid = d.get("session")
+            task = d.get("task") or ""
+            if not sid or sid in seen_ids:
+                continue
+            if not task.startswith(task_prefix):
+                continue
+            seen_ids.add(sid)
+            session_ids.append(sid)
 
 totals = {"input": 0, "cache_creation": 0, "cache_read": 0, "output": 0, "turns": 0}
 transcript_bytes = 0
@@ -209,9 +217,150 @@ print(json.dumps({k: summary[k] for k in
     indent=2))
 PY
 
+echo "=== Generating analysis report ==="
+python3 - "$APPROACH" "$RUN" "$TOOLS_OUT" <<'PY'
+import json, os, subprocess, sys, collections, re
+from datetime import datetime
+
+approach, run, tools_path = sys.argv[1], sys.argv[2], sys.argv[3]
+task_prefix = f"{approach}-fix-{run}"
+
+rows = []
+if os.path.exists(tools_path):
+    with open(tools_path) as f:
+        for line in f:
+            try:
+                d = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (d.get("task") or "").startswith(task_prefix):
+                rows.append(d)
+
+tool_counts = collections.Counter(r["tool"] for r in rows)
+rows.sort(key=lambda r: r["ts"])
+
+def parse(ts): return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+per_sess = collections.defaultdict(list)
+for r in rows:
+    per_sess[r["session"]].append(parse(r["ts"]))
+
+active_seconds = sum(
+    (ts[-1] - ts[0]).total_seconds() for ts in per_sess.values() if len(ts) > 1)
+active_minutes = active_seconds / 60
+
+log = subprocess.run(
+    ["git", "log", "--format=%s", "main..HEAD"],
+    capture_output=True, text=True).stdout.strip().splitlines()
+commit_count = len(log)
+code_counts = collections.Counter()
+for msg in log:
+    m = re.search(r"\(([^)]+)\)$", msg)
+    if m:
+        for code in re.split(r",\s*", m.group(1)):
+            code_counts[code.strip()] += 1
+
+stat = subprocess.run(
+    ["git", "diff", "--shortstat", "main..HEAD"],
+    capture_output=True, text=True).stdout.strip()
+
+usage = json.load(open(f"experiment/{approach}-{run}-usage.json"))
+
+repeated_reads = collections.Counter(
+    r.get("detail", "") for r in rows if r["tool"] == "Read")
+top_reads = [(n, f) for f, n in repeated_reads.most_common() if n >= 3][:10]
+
+findings_after = {}
+for mod in ["annotations", "core", "adapters", "claude-review",
+            "plugin", "recipes", "refactoring"]:
+    p = f"{mod}/build/reports/clean-code/findings.json"
+    if os.path.exists(p):
+        findings_after[mod] = len(json.load(open(p)).get("findings", []))
+
+md = []
+md.append(f"# {approach.capitalize()} experiment run {run} — analysis\n")
+md.append(f"Branch: `experiment/{approach}-{run}`. Generated from tool-log + transcripts filtered by `task={task_prefix}*`.\n")
+
+md.append("## Top-line summary\n")
+md.append("| Metric | Value |")
+md.append("|---|---|")
+md.append(f"| Sessions | {usage['sessions']} |")
+md.append(f"| Turns | {usage['turns']} |")
+md.append(f"| Tool calls | {sum(tool_counts.values())} |")
+md.append(f"| Total tokens | {usage['total_tokens']:,} |")
+md.append(f"| Billed tokens | {usage['billed_tokens']:,} |")
+md.append(f"| Output tokens | {usage['output_tokens']:,} |")
+md.append(f"| Cache hit % | {usage['cache_hit_pct']}% |")
+md.append(f"| Active wall clock | {active_minutes:.1f} min |")
+md.append(f"| Commits | {commit_count} |")
+md.append(f"| {stat} | |")
+md.append(f"| Agents (tool calls) | {tool_counts.get('Agent', 0)} |\n")
+
+md.append("## Time (active only)\n")
+md.append("| Session | Duration | Calls | s/call |")
+md.append("|---|---:|---:|---:|")
+for sid, ts in per_sess.items():
+    if len(ts) < 2: continue
+    dur = (ts[-1] - ts[0]).total_seconds() / 60
+    md.append(f"| {sid[:8]} | {dur:.1f} min | {len(ts)} | {dur*60/len(ts):.1f} |")
+md.append("")
+
+md.append("## Tool breakdown\n")
+md.append("| Tool | Calls |")
+md.append("|---|---:|")
+for tool, n in tool_counts.most_common():
+    md.append(f"| {tool} | {n} |")
+md.append("")
+
+md.append("## Commits by heuristic code\n")
+md.append("| Code | Commits |")
+md.append("|---|---:|")
+for code, n in code_counts.most_common(20):
+    md.append(f"| {code} | {n} |")
+md.append("")
+
+md.append("## Findings remaining\n")
+md.append("| Module | Findings |")
+md.append("|---|---:|")
+for mod, n in sorted(findings_after.items(), key=lambda x: -x[1]):
+    md.append(f"| {mod} | {n} |")
+md.append(f"| **Total** | **{sum(findings_after.values())}** |\n")
+
+md.append("## Repeated reads (inefficiency signal)\n")
+if top_reads:
+    md.append("| Reads | File |")
+    md.append("|---:|---|")
+    for n, f in top_reads:
+        md.append(f"| {n} | `{f}` |")
+md.append("")
+
+md.append("## Quality review\n")
+md.append("_TODO: sample 5–10 commits, verify the anti-goal is respected. "
+          "Flag any readability regressions._\n")
+
+md.append("## Protocol adherence\n")
+md.append("_TODO: check commit message format, agent-per-file rate, "
+          "test invocations between batches, exit criterion reached._\n")
+
+md.append("## Automation action plan\n")
+md.append("_TODO: identify which commits could have been collapsed by an "
+          "existing refactoring recipe, and which codes justify a new recipe. "
+          "Estimate output-token savings for the next run._\n")
+
+md.append("## Prompt and detection improvements\n")
+md.append("_TODO: based on the data above, list concrete changes to the "
+          "experiment prompt, fix-brief generator, or severity map._\n")
+
+out = f"experiment/{approach}-{run}-analysis.md"
+with open(out, "w") as f:
+    f.write("\n".join(md))
+print(f"Wrote {out} ({sum(tool_counts.values())} tool calls, {commit_count} commits)")
+PY
+
 echo "=== Done. Branch $BRANCH ready for review ==="
 echo "Patch:       experiment/${APPROACH}-${RUN}.patch"
 echo "Usage JSON:  experiment/${APPROACH}-${RUN}-usage.json"
+echo "Analysis:    experiment/${APPROACH}-${RUN}-analysis.md   (TODO sections to fill in)"
 echo
 echo "To resume later, re-run the same command:"
 echo "  scripts/run-experiment.sh ${APPROACH} ${RUN}"
