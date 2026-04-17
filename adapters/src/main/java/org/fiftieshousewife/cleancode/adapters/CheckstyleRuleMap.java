@@ -6,6 +6,7 @@ import org.fiftieshousewife.cleancode.core.Severity;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 final class CheckstyleRuleMap {
@@ -57,12 +58,12 @@ final class CheckstyleRuleMap {
         return RULES.values();
     }
 
-    private static Map.Entry<String, RuleMapping> warning(
+    private static Entry<String, RuleMapping> warning(
             final String name, final HeuristicCode code, final Confidence confidence, final String path) {
         return Map.entry(name, new RuleMapping(code, Severity.WARNING, confidence, CHECKSTYLE_DOCS + path));
     }
 
-    private static Map.Entry<String, RuleMapping> info(
+    private static Entry<String, RuleMapping> info(
             final String name, final HeuristicCode code, final String path) {
         return Map.entry(name, new RuleMapping(code, Severity.INFO, Confidence.HIGH, CHECKSTYLE_DOCS + path));
     }
