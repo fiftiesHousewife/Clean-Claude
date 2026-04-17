@@ -106,33 +106,26 @@ final class SuppressionParser {
             return;
         }
         if (values.isExpired()) {
-            metaFindings.add(expiredFinding(ann, site.sourceFile(), values));
+            metaFindings.add(metaFinding(ann, site.sourceFile(),
+                    HeuristicCode.META_SUPPRESSION_EXPIRED, Severity.ERROR, "expired-suppression",
+                    "Suppression expired on " + values.until() + " for " + values.codes()));
         }
         if (values.hasNoMeaningfulReason()) {
-            metaFindings.add(blankReasonFinding(ann, site.sourceFile(), values));
+            metaFindings.add(metaFinding(ann, site.sourceFile(),
+                    HeuristicCode.META_SUPPRESSION_NO_REASON, Severity.WARNING, "blank-reason",
+                    "Suppression has no meaningful reason: '" + values.reason() + "'"));
         }
         suppressions.add(new Suppression(site.sourceFile(), site.startLine(), site.endLine(),
                 values.codes(), values.reason(), values.until(), site.packagePath()));
     }
 
-    private static Finding expiredFinding(final AnnotationExpr ann, final String sourceFile,
-                                          final SuppressionAnnotationReader.Values values) {
-        return Finding.at(HeuristicCode.META_SUPPRESSION_EXPIRED, sourceFile,
+    private static Finding metaFinding(final AnnotationExpr ann, final String sourceFile,
+                                       final HeuristicCode code, final Severity severity,
+                                       final String ruleRef, final String message) {
+        return Finding.at(code, sourceFile,
                 ann.getBegin().map(p -> p.line).orElse(-1),
                 ann.getEnd().map(p -> p.line).orElse(-1),
-                "Suppression expired on " + values.until() + " for " + values.codes(),
-                Severity.ERROR, Confidence.HIGH,
-                TOOL_NAME, "expired-suppression");
-    }
-
-    private static Finding blankReasonFinding(final AnnotationExpr ann, final String sourceFile,
-                                              final SuppressionAnnotationReader.Values values) {
-        return Finding.at(HeuristicCode.META_SUPPRESSION_NO_REASON, sourceFile,
-                ann.getBegin().map(p -> p.line).orElse(-1),
-                ann.getEnd().map(p -> p.line).orElse(-1),
-                "Suppression has no meaningful reason: '" + values.reason() + "'",
-                Severity.WARNING, Confidence.HIGH,
-                TOOL_NAME, "blank-reason");
+                message, severity, Confidence.HIGH, TOOL_NAME, ruleRef);
     }
 
     private static String deriveSourceFile(final CompilationUnit cu, final Path file) {
