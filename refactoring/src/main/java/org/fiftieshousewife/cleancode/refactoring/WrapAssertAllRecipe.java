@@ -46,69 +46,76 @@ public class WrapAssertAllRecipe extends Recipe {
         return new JavaIsoVisitor<>() {
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
-                final J.Block b = super.visitBlock(block, ctx);
-
-                final J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                if (enclosingMethod == null || !isTestMethod(enclosingMethod)) {
-                    return b;
+                final J.Block visitedBlock = super.visitBlock(block, ctx);
+                if (!isInsideTestMethod(getCursor())) {
+                    return visitedBlock;
                 }
-
-                final List<Statement> statements = b.getStatements();
+                final List<Statement> statements = visitedBlock.getStatements();
                 final List<AssertRun> runs = findAssertRuns(statements);
-
                 if (runs.isEmpty()) {
-                    return b;
+                    return visitedBlock;
                 }
-
-                final List<Statement> newStatements = new ArrayList<>();
-                int i = 0;
-                for (final AssertRun run : runs) {
-                    while (i < run.startIndex()) {
-                        newStatements.add(statements.get(i++));
-                    }
-
-                    final String lambdas = statements.subList(run.startIndex(), run.endIndex()).stream()
-                            .map(s -> "() -> " + s.toString().trim())
-                            .collect(Collectors.joining(",\n                "));
-
-                    final String assertAllSource = "class _T { void _m() { assertAll(\n                %s\n        ); } }"
-                            .formatted(lambdas);
-
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(assertAllSource).toList();
-
-                    if (!parsed.isEmpty()) {
-                        final J.MethodDeclaration method = (J.MethodDeclaration)
-                                ((J.CompilationUnit) parsed.getFirst())
-                                        .getClasses().getFirst().getBody().getStatements().getFirst();
-                        final Statement assertAllStmt = method.getBody().getStatements().getFirst();
-                        newStatements.add(assertAllStmt.withPrefix(statements.get(run.startIndex()).getPrefix()));
-                    } else {
-                        for (int j = run.startIndex(); j < run.endIndex(); j++) {
-                            newStatements.add(statements.get(j));
-                        }
-                    }
-
-                    i = run.endIndex();
-                }
-
-                while (i < statements.size()) {
-                    newStatements.add(statements.get(i++));
-                }
-
-                return b.withStatements(newStatements);
+                return visitedBlock.withStatements(rewriteStatements(statements, runs));
             }
         };
     }
 
+    private boolean isInsideTestMethod(final org.openrewrite.Cursor cursor) {
+        final J.MethodDeclaration enclosingMethod = cursor.firstEnclosing(J.MethodDeclaration.class);
+        return enclosingMethod != null && isTestMethod(enclosingMethod);
+    }
+
+    private List<Statement> rewriteStatements(final List<Statement> statements, final List<AssertRun> runs) {
+        final List<Statement> newStatements = new ArrayList<>();
+        int i = 0;
+        for (final AssertRun run : runs) {
+            while (i < run.startIndex()) {
+                newStatements.add(statements.get(i++));
+            }
+            appendAssertAllOrOriginals(newStatements, statements, run);
+            i = run.endIndex();
+        }
+        while (i < statements.size()) {
+            newStatements.add(statements.get(i++));
+        }
+        return newStatements;
+    }
+
+    private void appendAssertAllOrOriginals(final List<Statement> newStatements,
+                                            final List<Statement> statements,
+                                            final AssertRun run) {
+        final Statement assertAllStmt = buildAssertAllStatement(statements, run);
+        if (assertAllStmt != null) {
+            newStatements.add(assertAllStmt.withPrefix(statements.get(run.startIndex()).getPrefix()));
+        } else {
+            statements.subList(run.startIndex(), run.endIndex()).forEach(newStatements::add);
+        }
+    }
+
+    private Statement buildAssertAllStatement(final List<Statement> statements, final AssertRun run) {
+        final String lambdas = statements.subList(run.startIndex(), run.endIndex()).stream()
+                .map(s -> "() -> " + s.toString().trim())
+                .collect(Collectors.joining(",\n                "));
+        final String assertAllSource =
+                "class _T { void _m() { assertAll(\n                %s\n        ); } }".formatted(lambdas);
+        final List<SourceFile> parsed = JavaParser.fromJavaVersion()
+                .logCompilationWarningsAndErrors(false)
+                .build().parse(assertAllSource).toList();
+        if (parsed.isEmpty()) {
+            return null;
+        }
+        final J.MethodDeclaration method = (J.MethodDeclaration)
+                ((J.CompilationUnit) parsed.getFirst())
+                        .getClasses().getFirst().getBody().getStatements().getFirst();
+        return method.getBody().getStatements().getFirst();
+    }
+
     private record AssertRun(int startIndex, int endIndex) {}
 
-    private List<AssertRun> findAssertRuns(List<Statement> statements) {
+    List<AssertRun> findAssertRuns(final List<Statement> statements) {
         final List<AssertRun> runs = new ArrayList<>();
         int runStart = -1;
         int runLength = 0;
-
         for (int i = 0; i < statements.size(); i++) {
             if (isAssertCall(statements.get(i))) {
                 if (runStart < 0) {
@@ -123,22 +130,20 @@ public class WrapAssertAllRecipe extends Recipe {
                 runLength = 0;
             }
         }
-
         if (runLength >= minConsecutive) {
             runs.add(new AssertRun(runStart, runStart + runLength));
         }
-
         return runs;
     }
 
-    private static boolean isAssertCall(Statement stmt) {
+    private static boolean isAssertCall(final Statement stmt) {
         if (stmt instanceof J.MethodInvocation mi) {
             return ASSERT_PREFIXES.stream().anyMatch(p -> mi.getSimpleName().startsWith(p));
         }
         return false;
     }
 
-    private static boolean isTestMethod(J.MethodDeclaration method) {
+    private static boolean isTestMethod(final J.MethodDeclaration method) {
         return method.getLeadingAnnotations().stream()
                 .anyMatch(a -> "Test".equals(a.getSimpleName()));
     }
