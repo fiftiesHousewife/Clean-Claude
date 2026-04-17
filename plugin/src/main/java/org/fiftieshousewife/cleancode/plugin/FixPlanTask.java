@@ -13,9 +13,9 @@ public abstract class FixPlanTask extends DefaultTask {
 
     @TaskAction
     public void generate() throws Exception {
-        final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
-        final Path reportFile = buildDir.resolve("reports/clean-code/findings.json");
-        final Path outputDir = buildDir.resolve("reports/clean-code/fix-briefs");
+        final TaskPaths paths = TaskPaths.of(getProject());
+        final Path reportFile = paths.findingsReport();
+        final Path outputDir = reportFile.getParent().resolve("fix-briefs");
         final Path projectRoot = getProject().getProjectDir().toPath();
 
         final AggregatedReport report = JsonReportReader.read(reportFile);
