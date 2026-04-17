@@ -43,46 +43,10 @@ public class VisibilityReductionRecipe extends ScanningRecipe<VisibilityReductio
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable,
                                                                     ExecutionContext ctx) {
                 final J.VariableDeclarations vd = super.visitVariableDeclarations(multiVariable, ctx);
-
-                if (!isFieldDeclaration()) {
-                    return vd;
+                if (isReducibleVisibilityField(getCursor(), vd)) {
+                    acc.rows.addAll(rowsFor(findEnclosingClassName(getCursor()), vd));
                 }
-
-                if (!isPublic(vd) || isStatic(vd) || isFinal(vd)) {
-                    return vd;
-                }
-
-                final String className = findEnclosingClassName();
-                for (J.VariableDeclarations.NamedVariable var : vd.getVariables()) {
-                    acc.rows.add(new Row(className, var.getSimpleName(), "public", -1));
-                }
-
                 return vd;
-            }
-
-            private boolean isFieldDeclaration() {
-                return getCursor().firstEnclosing(J.MethodDeclaration.class) == null
-                        && getCursor().firstEnclosing(J.ClassDeclaration.class) != null;
-            }
-
-            private boolean isPublic(J.VariableDeclarations varDecls) {
-                return varDecls.getModifiers().stream()
-                        .anyMatch(mod -> mod.getType() == J.Modifier.Type.Public);
-            }
-
-            private boolean isStatic(J.VariableDeclarations varDecls) {
-                return varDecls.getModifiers().stream()
-                        .anyMatch(mod -> mod.getType() == J.Modifier.Type.Static);
-            }
-
-            private boolean isFinal(J.VariableDeclarations varDecls) {
-                return varDecls.getModifiers().stream()
-                        .anyMatch(mod -> mod.getType() == J.Modifier.Type.Final);
-            }
-
-            private String findEnclosingClassName() {
-                final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
             }
         };
     }
@@ -94,5 +58,35 @@ public class VisibilityReductionRecipe extends ScanningRecipe<VisibilityReductio
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    private static boolean isReducibleVisibilityField(org.openrewrite.Cursor cursor, J.VariableDeclarations vd) {
+        return isFieldDeclaration(cursor) && isPublicInstanceMutableField(vd);
+    }
+
+    private static boolean isFieldDeclaration(org.openrewrite.Cursor cursor) {
+        return cursor.firstEnclosing(J.MethodDeclaration.class) == null
+                && cursor.firstEnclosing(J.ClassDeclaration.class) != null;
+    }
+
+    private static boolean isPublicInstanceMutableField(J.VariableDeclarations vd) {
+        return hasModifier(vd, J.Modifier.Type.Public)
+                && !hasModifier(vd, J.Modifier.Type.Static)
+                && !hasModifier(vd, J.Modifier.Type.Final);
+    }
+
+    private static boolean hasModifier(J.VariableDeclarations vd, J.Modifier.Type type) {
+        return vd.getModifiers().stream().anyMatch(mod -> mod.getType() == type);
+    }
+
+    private static String findEnclosingClassName(org.openrewrite.Cursor cursor) {
+        final J.ClassDeclaration classDecl = cursor.firstEnclosing(J.ClassDeclaration.class);
+        return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
+    }
+
+    private static List<Row> rowsFor(String className, J.VariableDeclarations vd) {
+        return vd.getVariables().stream()
+                .map(var -> new Row(className, var.getSimpleName(), "public", -1))
+                .toList();
     }
 }
