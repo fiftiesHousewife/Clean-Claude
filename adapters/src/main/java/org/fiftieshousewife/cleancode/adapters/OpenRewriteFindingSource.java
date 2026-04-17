@@ -26,6 +26,9 @@ import java.util.stream.Stream;
 public class OpenRewriteFindingSource implements FindingSource {
 
     private static final String TOOL = "openrewrite";
+    private static final String JAVA_EXTENSION = ".java";
+    private static final int JAVA_EXTENSION_LENGTH = JAVA_EXTENSION.length();
+    private static final char PATH_SEPARATOR = '/';
 
     private static final Set<HeuristicCode> COVERED = Set.of(
             HeuristicCode.F1, HeuristicCode.F2, HeuristicCode.F3,
@@ -86,15 +89,26 @@ public class OpenRewriteFindingSource implements FindingSource {
         final Map<String, String> index = new HashMap<>();
         parsed.forEach(sf -> {
             final String path = sf.getSourcePath().toString();
-            final String fileName = path.contains("/")
-                    ? path.substring(path.lastIndexOf('/') + 1)
-                    : path;
-            final String className = fileName.endsWith(".java")
-                    ? fileName.substring(0, fileName.length() - 5)
-                    : fileName;
+            final String fileName = extractFileName(path);
+            final String className = stripJavaExtension(fileName);
             index.put(className, path);
         });
         return index;
+    }
+
+    private String extractFileName(final String path) {
+        if (!path.contains(String.valueOf(PATH_SEPARATOR))) {
+            return path;
+        }
+        final int fileNameStart = path.lastIndexOf(PATH_SEPARATOR) + 1;
+        return path.substring(fileNameStart);
+    }
+
+    private String stripJavaExtension(final String fileName) {
+        if (!fileName.endsWith(JAVA_EXTENSION)) {
+            return fileName;
+        }
+        return fileName.substring(0, fileName.length() - JAVA_EXTENSION_LENGTH);
     }
 
     private List<Finding> extractFindings(final List<ScanningRecipe<?>> recipes,
@@ -106,16 +120,28 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Path> collectSourceFiles(final ProjectContext context) {
-        final List<Path> files = new ArrayList<>();
-        context.sourceRoots().stream()
+        return context.sourceRoots().stream()
                 .filter(Files::isDirectory)
-                .forEach(root -> {
-                    try (Stream<Path> walk = Files.walk(root)) {
-                        walk.filter(p -> p.toString().endsWith(".java")).forEach(files::add);
-                    } catch (IOException ignored) {
-                    }
-                });
-        return files;
+                .flatMap(this::javaFilesUnder)
+                .toList();
+    }
+
+    private Stream<Path> javaFilesUnder(final Path root) {
+        try (Stream<Path> walk = Files.walk(root)) {
+            return walk.filter(p -> p.toString().endsWith(JAVA_EXTENSION)).toList().stream();
+        } catch (IOException unreadableRoot) {
+            return skipUnreadable(root, unreadableRoot);
+        }
+    }
+
+    /**
+     * Source file collection is best-effort: an unreadable root contributes
+     * no files but must not abort the whole run. Named method so the catch
+     * block documents its intent rather than being a silently empty block.
+     */
+    @SuppressWarnings("unused")
+    private Stream<Path> skipUnreadable(final Path root, final IOException cause) {
+        return Stream.empty();
     }
 
     private List<SourceFile> parseSourceFiles(final List<Path> files) {
