@@ -28,18 +28,29 @@ final class StaticAnalysisConfiguration {
     }
 
     void apply() {
-        project.getPluginManager().apply("java");
-        project.getPluginManager().apply("pmd");
-        project.getPluginManager().apply("checkstyle");
-        project.getPluginManager().apply("jacoco");
-        project.getPluginManager().apply(SpotBugsPlugin.class);
+        applyRequiredPlugins();
+        configureStaticAnalysisTools();
+        new CpdTaskRegistration(project, extension).register();
+        registerSpotlessOnEnforcedFormatting();
+    }
 
+    private void applyRequiredPlugins() {
+        final var pluginManager = project.getPluginManager();
+        pluginManager.apply("java");
+        pluginManager.apply("pmd");
+        pluginManager.apply("checkstyle");
+        pluginManager.apply("jacoco");
+        pluginManager.apply(SpotBugsPlugin.class);
+    }
+
+    private void configureStaticAnalysisTools() {
         configurePmd();
         configureCheckstyle();
         configureJacoco();
         configureSpotBugs();
-        new CpdTaskRegistration(project, extension).register();
+    }
 
+    private void registerSpotlessOnEnforcedFormatting() {
         project.afterEvaluate(p -> {
             if (extension.getEnforceFormatting().get()) {
                 p.getPluginManager().apply(SpotlessPlugin.class);
@@ -65,7 +76,8 @@ final class StaticAnalysisConfiguration {
             final var defaultConfigFile = project.file("config/checkstyle/checkstyle.xml");
             if (!defaultConfigFile.exists()) {
                 final String configContent = loadClasspathResource("/cleancode-checkstyle.xml");
-                cs.setConfig(project.getResources().getText().fromString(configContent));
+                final var bundledConfig = project.getResources().getText().fromString(configContent);
+                cs.setConfig(bundledConfig);
             }
         });
         project.getTasks().withType(Checkstyle.class).configureEach(task ->
@@ -103,8 +115,9 @@ final class StaticAnalysisConfiguration {
         project.getTasks().withType(SpotBugsTask.class).configureEach(task -> {
             final var xmlReport = task.getReports().create("xml");
             xmlReport.getRequired().set(true);
-            xmlReport.getOutputLocation().set(
-                    project.getLayout().getBuildDirectory().file("reports/spotbugs/main.xml"));
+            final var spotBugsXmlReportLocation =
+                    project.getLayout().getBuildDirectory().file("reports/spotbugs/main.xml");
+            xmlReport.getOutputLocation().set(spotBugsXmlReportLocation);
         });
     }
 
