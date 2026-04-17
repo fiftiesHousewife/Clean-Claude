@@ -1,6 +1,7 @@
 package org.fiftieshousewife.cleancode.core;
 
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
+import org.fiftieshousewife.cleancode.core.BaselineManager.Delta;
 
 import java.util.List;
 import java.util.Map;
@@ -17,39 +18,44 @@ public final class BuildOutputFormatter {
     }
 
     public static String format(final AggregatedReport report,
-                                final Map<HeuristicCode, BaselineManager.Delta> deltas) {
-        final StringBuilder out = new StringBuilder();
+                                final Map<HeuristicCode, Delta> deltas) {
         final List<Finding> findings = report.findings();
-
-        appendTitle(out, report.projectName());
-
+        final String title = title(report.projectName());
         if (findings.isEmpty()) {
-            out.append("\n  No violations found. The code is clean.\n");
-            out.append('\n').append(HEADER).append('\n');
-            return out.toString();
+            return title + emptyBody();
         }
+        return title + body(report, findings, deltas);
+    }
 
+    private static String title(final String projectName) {
+        return "\n" + HEADER + "\n"
+                + "  CLEAN CODE ANALYSIS  —  " + projectName + "\n"
+                + HEADER + "\n";
+    }
+
+    private static String emptyBody() {
+        return "\n  No violations found. The code is clean.\n"
+                + "\n" + HEADER + "\n";
+    }
+
+    private static String body(final AggregatedReport report,
+                               final List<Finding> findings,
+                               final Map<HeuristicCode, Delta> deltas) {
+        final StringBuilder out = new StringBuilder();
         SummaryLines.appendSeverity(out, report);
         if (!deltas.isEmpty()) {
             SummaryLines.appendBaselineDelta(out, deltas);
         }
         FindingsSection.append(out, findings);
         SummaryLines.appendToolSummary(out, findings);
-        appendFooter(out, findings);
-
+        out.append(footer(findings));
         return out.toString();
     }
 
-    private static void appendTitle(final StringBuilder out, final String projectName) {
-        out.append('\n').append(HEADER).append('\n');
-        out.append("  CLEAN CODE ANALYSIS  —  ").append(projectName).append('\n');
-        out.append(HEADER).append('\n');
-    }
-
-    private static void appendFooter(final StringBuilder out, final List<Finding> findings) {
-        out.append('\n').append(HEADER).append('\n');
-        out.append("  ").append(findings.size()).append(" findings");
-        out.append("  —  ./gradlew cleanCodeExplain --finding=<code>\n");
-        out.append(HEADER).append('\n');
+    private static String footer(final List<Finding> findings) {
+        return "\n" + HEADER + "\n"
+                + "  " + findings.size() + " findings"
+                + "  —  ./gradlew cleanCodeExplain --finding=<code>\n"
+                + HEADER + "\n";
     }
 }
