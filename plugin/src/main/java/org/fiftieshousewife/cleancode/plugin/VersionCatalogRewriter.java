@@ -11,8 +11,11 @@ final class VersionCatalogRewriter {
     private static final Pattern VERSION_REF_LINE =
             Pattern.compile("^([A-Za-z0-9_-]+)\\s*=\\s*\"([^\"]+)\"\\s*$");
 
-    List<String> rewriteVersions(final List<String> lines,
-                                 final Map<String, String> versionRefToNewValue) {
+    private VersionCatalogRewriter() {
+    }
+
+    static List<String> rewriteVersions(final List<String> lines,
+                                        final Map<String, String> versionRefToNewValue) {
         final List<String> out = new ArrayList<>(lines.size());
         boolean inVersions = false;
         for (final String raw : lines) {
@@ -22,7 +25,7 @@ final class VersionCatalogRewriter {
                 out.add(raw);
                 continue;
             }
-            if (!inVersions || trimmed.isEmpty() || trimmed.startsWith("#")) {
+            if (isSkippableVersionsLine(inVersions, trimmed)) {
                 out.add(raw);
                 continue;
             }
@@ -42,5 +45,9 @@ final class VersionCatalogRewriter {
             out.add(indent + ref + " = \"" + newValue + "\"");
         }
         return out;
+    }
+
+    private static boolean isSkippableVersionsLine(final boolean inVersions, final String trimmed) {
+        return !inVersions || trimmed.isEmpty() || trimmed.startsWith("#");
     }
 }

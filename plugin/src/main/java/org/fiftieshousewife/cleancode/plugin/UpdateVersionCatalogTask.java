@@ -15,17 +15,8 @@ public abstract class UpdateVersionCatalogTask extends DefaultTask {
 
     @TaskAction
     public void run() throws IOException {
-        final Path rootDir = getProject().getRootProject().getProjectDir().toPath();
-        final Path catalog = rootDir.resolve("gradle/libs.versions.toml");
-        final Path report = rootDir.resolve("build/dependencyUpdates/report.json");
-
-        if (!Files.exists(catalog)) {
-            throw new GradleException("No version catalog at " + catalog);
-        }
-        if (!Files.exists(report)) {
-            throw new GradleException("No Ben-Manes report at " + report
-                    + ". Run :dependencyUpdates first.");
-        }
+        final Path catalog = requireExistingCatalog();
+        final Path report = requireExistingReport();
 
         final Map<String, String> coordinateToLatest =
                 new OutdatedDependencyReport(report).nonMajorUpdatesByCoordinate();
@@ -34,6 +25,32 @@ public abstract class UpdateVersionCatalogTask extends DefaultTask {
             return;
         }
 
+        applyCatalogUpdates(catalog, coordinateToLatest);
+    }
+
+    private Path requireExistingCatalog() {
+        final Path catalog = rootDir().resolve("gradle/libs.versions.toml");
+        if (Files.exists(catalog)) {
+            return catalog;
+        }
+        throw new GradleException("No version catalog at " + catalog);
+    }
+
+    private Path requireExistingReport() {
+        final Path report = rootDir().resolve("build/dependencyUpdates/report.json");
+        if (Files.exists(report)) {
+            return report;
+        }
+        throw new GradleException("No Ben-Manes report at " + report
+                + ". Run :dependencyUpdates first.");
+    }
+
+    private Path rootDir() {
+        return getProject().getRootProject().getProjectDir().toPath();
+    }
+
+    private void applyCatalogUpdates(final Path catalog,
+                                     final Map<String, String> coordinateToLatest) throws IOException {
         final List<String> lines = Files.readAllLines(catalog);
         final Map<String, String> versionRefByCoordinate =
                 new VersionCatalogIndex().versionRefByCoordinate(lines);
@@ -45,10 +62,19 @@ public abstract class UpdateVersionCatalogTask extends DefaultTask {
             return;
         }
 
-        final List<String> rewritten =
-                new VersionCatalogRewriter().rewriteVersions(lines, versionRefToNewValue);
-        Files.write(catalog, rewritten);
+        writeRewrittenCatalog(catalog, lines, versionRefToNewValue);
+        logBumps(versionRefToNewValue);
+    }
 
+    private void writeRewrittenCatalog(final Path catalog,
+                                       final List<String> lines,
+                                       final Map<String, String> versionRefToNewValue) throws IOException {
+        final List<String> rewritten =
+                VersionCatalogRewriter.rewriteVersions(lines, versionRefToNewValue);
+        Files.write(catalog, rewritten);
+    }
+
+    private void logBumps(final Map<String, String> versionRefToNewValue) {
         versionRefToNewValue.forEach((ref, newValue) ->
                 getLogger().lifecycle("Bumped {} -> {}", ref, newValue));
     }
