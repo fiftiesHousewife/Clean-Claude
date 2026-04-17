@@ -24,6 +24,7 @@ public class SurefireFindingSource implements FindingSource {
     private static final double SLOW_TEST_WARNING_SECONDS = 5.0;
     private static final double SLOW_TEST_ERROR_SECONDS = 30.0;
     private static final double SKIP_PERCENTAGE_THRESHOLD = 10.0;
+    private static final String REPORT_FILE_GLOB = "TEST-*.xml";
 
     @Override
     public String id() {
@@ -46,7 +47,7 @@ public class SurefireFindingSource implements FindingSource {
         if (!Files.isDirectory(dir)) {
             return false;
         }
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "TEST-*.xml")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, REPORT_FILE_GLOB)) {
             return stream.iterator().hasNext();
         } catch (IOException e) {
             return false;
@@ -60,22 +61,20 @@ public class SurefireFindingSource implements FindingSource {
             return List.of();
         }
 
-        try {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, REPORT_FILE_GLOB)) {
             final List<Finding> findings = new ArrayList<>();
-            int totalTests = 0;
-            int totalSkipped = 0;
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "TEST-*.xml")) {
-                for (final Path reportFile : stream) {
-                    final Document doc = XmlReportParser.parse(reportFile);
-                    final Element suite = doc.getDocumentElement();
-                    totalTests += Integer.parseInt(suite.getAttribute("tests"));
-                    totalSkipped += Integer.parseInt(suite.getAttribute("skipped"));
-                    findings.addAll(findingsForSuite(doc));
-                }
+            final SuiteCounts counts = new SuiteCounts();
+            for (final Path reportFile : stream) {
+                final Document doc = XmlReportParser.parse(reportFile);
+                final Element suite = doc.getDocumentElement();
+                counts.add(
+                        Integer.parseInt(suite.getAttribute("tests")),
+                        Integer.parseInt(suite.getAttribute("skipped")));
+                findings.addAll(findingsForSuite(doc));
             }
-            addSkipPercentageFinding(findings, totalSkipped, totalTests);
+            skipPercentageFinding(counts).ifPresent(findings::add);
             return findings;
-        } catch (Exception e) {
+        } catch (IOException | NumberFormatException e) {
             throw new FindingSourceException("Failed to parse Surefire reports: " + dir, e);
         }
     }
@@ -104,40 +103,47 @@ public class SurefireFindingSource implements FindingSource {
                     Severity.INFO, Confidence.HIGH, "surefire", "skipped-test"));
         }
 
-        return findingForSlowTest(testcase, testName, sourceFile);
+        return findingForSlowTest(new SlowTestContext(testcase, testName, sourceFile));
     }
 
-    Optional<Finding> findingForSlowTest(Element testcase, String testName, String sourceFile) {
-        final double time = Double.parseDouble(testcase.getAttribute("time"));
+    Optional<Finding> findingForSlowTest(SlowTestContext context) {
+        final double time = Double.parseDouble(context.testcase().getAttribute("time"));
+        return slowTestThreshold(time)
+                .map(threshold -> slowTestFinding(context, time, threshold));
+    }
+
+    private Optional<SlowTestThreshold> slowTestThreshold(double time) {
         if (time > SLOW_TEST_ERROR_SECONDS) {
-            return Optional.of(slowTestFinding(testName, sourceFile, time, SLOW_TEST_ERROR_SECONDS, Severity.ERROR));
+            return Optional.of(new SlowTestThreshold(SLOW_TEST_ERROR_SECONDS, Severity.ERROR));
         }
         if (time > SLOW_TEST_WARNING_SECONDS) {
-            return Optional.of(slowTestFinding(testName, sourceFile, time, SLOW_TEST_WARNING_SECONDS, Severity.WARNING));
+            return Optional.of(new SlowTestThreshold(SLOW_TEST_WARNING_SECONDS, Severity.WARNING));
         }
         return Optional.empty();
     }
 
-    Finding slowTestFinding(String testName, String sourceFile, double time, double threshold, Severity severity) {
+    Finding slowTestFinding(SlowTestContext context, double time, SlowTestThreshold threshold) {
         return Finding.at(
-                HeuristicCode.T9, sourceFile, -1, -1,
-                String.format("Test '%s' took %.1fs (exceeds %.0fs threshold)", testName, time, threshold),
-                severity, Confidence.HIGH, "surefire", "slow-test");
+                HeuristicCode.T9, context.sourceFile(), -1, -1,
+                String.format("Test '%s' took %.1fs (exceeds %.0fs threshold)",
+                        context.testName(), time, threshold.seconds()),
+                threshold.severity(), Confidence.HIGH, "surefire", "slow-test");
     }
 
-    void addSkipPercentageFinding(List<Finding> findings, int totalSkipped, int totalTests) {
-        if (totalTests <= 0) {
-            return;
+    Optional<Finding> skipPercentageFinding(SuiteCounts counts) {
+        if (counts.totalTests() <= 0) {
+            return Optional.empty();
         }
 
-        final double skipPercentage = (totalSkipped * 100.0) / totalTests;
-        if (skipPercentage > SKIP_PERCENTAGE_THRESHOLD) {
-            findings.add(Finding.projectLevel(
-                    HeuristicCode.T3,
-                    String.format("%.1f%% of tests are skipped (%d/%d)",
-                            skipPercentage, totalSkipped, totalTests),
-                    Severity.WARNING, Confidence.HIGH, "surefire", "skip-percentage"));
+        final double skipPercentage = (counts.totalSkipped() * 100.0) / counts.totalTests();
+        if (skipPercentage <= SKIP_PERCENTAGE_THRESHOLD) {
+            return Optional.empty();
         }
+        return Optional.of(Finding.projectLevel(
+                HeuristicCode.T3,
+                String.format("%.1f%% of tests are skipped (%d/%d)",
+                        skipPercentage, counts.totalSkipped(), counts.totalTests()),
+                Severity.WARNING, Confidence.HIGH, "surefire", "skip-percentage"));
     }
 
     private boolean isSkipped(Element testcase) {
@@ -146,5 +152,27 @@ public class SurefireFindingSource implements FindingSource {
 
     private Path reportsDir(ProjectContext context) {
         return context.buildDir().resolve("test-results/test");
+    }
+
+    record SlowTestContext(Element testcase, String testName, String sourceFile) {}
+
+    record SlowTestThreshold(double seconds, Severity severity) {}
+
+    static final class SuiteCounts {
+        private int totalTests;
+        private int totalSkipped;
+
+        void add(int tests, int skipped) {
+            this.totalTests += tests;
+            this.totalSkipped += skipped;
+        }
+
+        int totalTests() {
+            return totalTests;
+        }
+
+        int totalSkipped() {
+            return totalSkipped;
+        }
     }
 }
