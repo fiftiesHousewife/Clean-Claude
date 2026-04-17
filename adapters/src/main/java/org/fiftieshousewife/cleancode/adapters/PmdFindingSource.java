@@ -8,17 +8,16 @@ import org.fiftieshousewife.cleancode.core.FindingSourceException;
 import org.fiftieshousewife.cleancode.core.ProjectContext;
 import org.fiftieshousewife.cleancode.core.Severity;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class PmdFindingSource implements FindingSource {
@@ -93,56 +92,47 @@ public class PmdFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         return Files.exists(reportPath(context));
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         final Path report = reportPath(context);
         if (!Files.exists(report)) {
             return List.of();
         }
-
         try {
-            final Document doc = XmlReportParser.parse(report);
-
-            final List<Finding> findings = new ArrayList<>();
-            final NodeList fileNodes = doc.getElementsByTagName("file");
-
-            for (int i = 0; i < fileNodes.getLength(); i++) {
-                final Element fileElement = (Element) fileNodes.item(i);
-                final String absolutePath = fileElement.getAttribute("name");
-                final String relativePath = PathUtils.relativise(absolutePath, context.projectRoot());
-
-                final NodeList violations = fileElement.getElementsByTagName("violation");
-                for (int j = 0; j < violations.getLength(); j++) {
-                    final Element v = (Element) violations.item(j);
-                    final String rule = v.getAttribute("rule");
-
-                    final RuleMapping mapping = RULE_MAP.get(rule);
-                    if (mapping == null) {
-                        continue;
-                    }
-
-                    final int startLine = Integer.parseInt(v.getAttribute("beginline"));
-                    final int endLine = Integer.parseInt(v.getAttribute("endline"));
-                    final String message = v.getTextContent().trim();
-
-                    findings.add(new Finding(
-                            mapping.code(), relativePath, startLine, endLine,
-                            message, mapping.severity(), mapping.confidence(),
-                            "pmd", rule, Map.of("ruleUrl", mapping.ruleUrl())));
-                }
-            }
-
-            return findings;
-        } catch (Exception e) {
+            return XmlFileFindings.collect(report, context, this::addFileFindings);
+        } catch (final Exception e) {
             throw new FindingSourceException("Failed to parse PMD report: " + report, e);
         }
     }
 
-    private Path reportPath(ProjectContext context) {
+    private void addFileFindings(
+            final XmlFileFindings.FileContext fileContext, final List<Finding> findings) {
+        final NodeList violations = fileContext.fileElement().getElementsByTagName("violation");
+        for (int j = 0; j < violations.getLength(); j++) {
+            toFinding((Element) violations.item(j), fileContext.relativePath()).ifPresent(findings::add);
+        }
+    }
+
+    private Optional<Finding> toFinding(final Element violation, final String relativePath) {
+        final String rule = violation.getAttribute("rule");
+        final RuleMapping mapping = RULE_MAP.get(rule);
+        if (mapping == null) {
+            return Optional.empty();
+        }
+        final int startLine = Integer.parseInt(violation.getAttribute("beginline"));
+        final int endLine = Integer.parseInt(violation.getAttribute("endline"));
+        final String message = violation.getTextContent().trim();
+        return Optional.of(new Finding(
+                mapping.code(), relativePath, startLine, endLine,
+                message, mapping.severity(), mapping.confidence(),
+                "pmd", rule, Map.of("ruleUrl", mapping.ruleUrl())));
+    }
+
+    private Path reportPath(final ProjectContext context) {
         return context.reportsDir().resolve("pmd/main.xml");
     }
 
