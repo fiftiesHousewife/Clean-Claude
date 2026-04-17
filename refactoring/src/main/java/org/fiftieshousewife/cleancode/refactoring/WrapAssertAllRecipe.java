@@ -72,7 +72,7 @@ public class WrapAssertAllRecipe extends Recipe {
             while (i < run.startIndex()) {
                 newStatements.add(statements.get(i++));
             }
-            appendAssertAllOrOriginals(newStatements, statements, run);
+            newStatements.addAll(assertAllOrOriginals(statements, run));
             i = run.endIndex();
         }
         while (i < statements.size()) {
@@ -81,18 +81,15 @@ public class WrapAssertAllRecipe extends Recipe {
         return newStatements;
     }
 
-    private void appendAssertAllOrOriginals(final List<Statement> newStatements,
-                                            final List<Statement> statements,
-                                            final AssertRun run) {
+    private List<Statement> assertAllOrOriginals(final List<Statement> statements, final AssertRun run) {
         final Statement assertAllStmt = buildAssertAllStatement(statements, run);
         if (assertAllStmt != null) {
-            newStatements.add(assertAllStmt.withPrefix(statements.get(run.startIndex()).getPrefix()));
-        } else {
-            statements.subList(run.startIndex(), run.endIndex()).forEach(newStatements::add);
+            return List.of(assertAllStmt.withPrefix(statements.get(run.startIndex()).getPrefix()));
         }
+        return statements.subList(run.startIndex(), run.endIndex());
     }
 
-    private Statement buildAssertAllStatement(final List<Statement> statements, final AssertRun run) {
+    Statement buildAssertAllStatement(final List<Statement> statements, final AssertRun run) {
         final String lambdas = statements.subList(run.startIndex(), run.endIndex()).stream()
                 .map(s -> "() -> " + s.toString().trim())
                 .collect(Collectors.joining(",\n                "));
@@ -113,9 +110,9 @@ public class WrapAssertAllRecipe extends Recipe {
     private record AssertRun(int startIndex, int endIndex) {}
 
     List<AssertRun> findAssertRuns(final List<Statement> statements) {
-        final List<AssertRun> runs = new ArrayList<>();
         int runStart = -1;
         int runLength = 0;
+        final List<AssertRun> runs = new ArrayList<>();
         for (int i = 0; i < statements.size(); i++) {
             if (isAssertCall(statements.get(i))) {
                 if (runStart < 0) {
