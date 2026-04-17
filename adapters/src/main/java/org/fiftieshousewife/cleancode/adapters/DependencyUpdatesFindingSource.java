@@ -26,6 +26,10 @@ import java.util.Set;
  * Parses Ben-Manes dependency-updates JSON reports and produces E1 findings
  * for outdated dependencies.
  */
+// TODO: G5 — requires human review: the coveredCodes/isAvailable/collectFindings preamble
+// is duplicated across every *FindingSource in this package. Extracting it affects the
+// FindingSource contract and every sibling implementation, which is out of scope for a
+// single-file fix.
 public class DependencyUpdatesFindingSource implements FindingSource {
 
     private static final String TOOL = "dependency-updates";
