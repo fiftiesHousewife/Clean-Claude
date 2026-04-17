@@ -16,8 +16,10 @@ public final class HtmlReportWriter {
     private static final DateTimeFormatter TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(ZoneOffset.UTC);
 
-    private static final String STYLES_RESOURCE = "/html-report/styles.css";
-    private static final String STYLES = loadResource(STYLES_RESOURCE);
+    private static final String STYLES = loadResource("/html-report/styles.css");
+    private static final String DOCUMENT_TEMPLATE = loadResource("/html-report/document.html");
+    private static final String SEVERITY_SUMMARY_TEMPLATE = loadResource("/html-report/severity-summary.html");
+    private static final String CLEAN_MESSAGE = loadResource("/html-report/clean-message.html");
 
     private HtmlReportWriter() {}
 
@@ -34,64 +36,46 @@ public final class HtmlReportWriter {
         Files.writeString(outputFile, render(report, repositoryUrl));
     }
 
-    private static String render(final AggregatedReport report, final String repositoryUrl) {
-        final StringBuilder html = new StringBuilder();
-        appendDocumentStart(html, report);
-        appendSeveritySummary(html, report);
+    static String render(final AggregatedReport report, final String repositoryUrl) {
+        final String body = renderBody(report, repositoryUrl);
+        return DOCUMENT_TEMPLATE
+                .replace("{{title}}", HtmlEscaping.escape(report.projectName()))
+                .replace("{{styles}}", STYLES)
+                .replace("{{projectLine}}", projectLine(report))
+                .replace("{{body}}", body)
+                .replace("{{timestamp}}", HtmlEscaping.escape(TIMESTAMP_FORMAT.format(report.generatedAt())))
+                .replace("{{totalFindings}}", Integer.toString(report.findings().size()));
+    }
 
+    static String renderBody(final AggregatedReport report, final String repositoryUrl) {
+        final StringBuilder body = new StringBuilder();
+        body.append(renderSeveritySummary(report));
         if (report.findings().isEmpty()) {
-            html.append("    <p class=\"clean\">No violations found. The code is clean.</p>\n");
+            body.append(CLEAN_MESSAGE);
         } else {
-            HtmlFindingsSection.appendByCode(html, report.findings(), repositoryUrl);
-            HtmlFindingsSection.appendToolSummary(html, report.findings());
+            HtmlFindingsSection.appendByCode(body, report.findings(), repositoryUrl);
+            HtmlFindingsSection.appendToolSummary(body, report.findings());
         }
-
-        appendFooter(html, report);
-        html.append("</body>\n</html>\n");
-        return html.toString();
+        return body.toString();
     }
 
-    private static void appendDocumentStart(final StringBuilder html, final AggregatedReport report) {
-        html.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n");
-        html.append("  <meta charset=\"UTF-8\">\n");
-        html.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-        html.append("  <title>Clean Code Report — ").append(HtmlEscaping.escape(report.projectName()));
-        html.append("</title>\n");
-        html.append("  <style>\n").append(STYLES).append("  </style>\n");
-        html.append("</head>\n<body>\n");
-        html.append("  <header>\n");
-        html.append("    <h1>Clean Code Analysis</h1>\n");
-        html.append("    <p>").append(HtmlEscaping.escape(report.projectName()));
-        if (report.projectVersion() != null) {
-            html.append(" v").append(HtmlEscaping.escape(report.projectVersion()));
-        }
-        html.append("</p>\n");
-        html.append("  </header>\n");
-        html.append("  <main>\n");
-    }
-
-    private static void appendSeveritySummary(final StringBuilder html, final AggregatedReport report) {
+    static String renderSeveritySummary(final AggregatedReport report) {
         final Map<Severity, List<Finding>> bySeverity = report.bySeverity();
         final int errors = bySeverity.getOrDefault(Severity.ERROR, List.of()).size();
         final int warnings = bySeverity.getOrDefault(Severity.WARNING, List.of()).size();
         final int info = bySeverity.getOrDefault(Severity.INFO, List.of()).size();
-
-        html.append("    <div class=\"summary\">\n");
-        html.append("      <span class=\"badge error\">").append(errors).append(" errors</span>\n");
-        html.append("      <span class=\"badge warning\">").append(warnings);
-        html.append(" warnings</span>\n");
-        html.append("      <span class=\"badge info\">").append(info).append(" info</span>\n");
-        html.append("    </div>\n");
+        return SEVERITY_SUMMARY_TEMPLATE
+                .replace("{{errors}}", Integer.toString(errors))
+                .replace("{{warnings}}", Integer.toString(warnings))
+                .replace("{{info}}", Integer.toString(info));
     }
 
-    private static void appendFooter(final StringBuilder html, final AggregatedReport report) {
-        final String timestamp = TIMESTAMP_FORMAT.format(report.generatedAt());
-        html.append("  </main>\n");
-        html.append("  <footer>\n");
-        html.append("    <p>Generated by Clean Code Plugin &mdash; ").append(HtmlEscaping.escape(timestamp));
-        html.append("</p>\n");
-        html.append("    <p>").append(report.findings().size()).append(" total findings</p>\n");
-        html.append("  </footer>\n");
+    static String projectLine(final AggregatedReport report) {
+        final String escapedName = HtmlEscaping.escape(report.projectName());
+        if (report.projectVersion() == null) {
+            return escapedName;
+        }
+        return escapedName + " v" + HtmlEscaping.escape(report.projectVersion());
     }
 
     private static String loadResource(final String path) {
