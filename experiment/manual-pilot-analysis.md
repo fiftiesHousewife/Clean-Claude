@@ -307,6 +307,64 @@ Changes to the fix prompt and to detection/routing that the data from this run s
 
 8. **Protocol-adherence linter.** A small post-run script that asserts the protocol was followed: commit message format, agent spawned per file, no refactoring recipes invoked (for manual), test ran after every batch. Would have caught the 39% direct-edit rate automatically.
 
+## Actions to clear the remaining 341 findings
+
+Per-code plan in priority order. "Effort" is the expected cost for one sweep: a recipe application takes seconds, a skill-guided agent takes minutes per file, human design takes hours per class.
+
+### Mechanical — recipe or skill, one sweep each
+
+| Code | Count | Action | Existing tool | Estimated time |
+|---|---:|---|---|---|
+| E1 | 93 | Bump each outdated dep in `gradle/libs.versions.toml`, one commit per dep, run tests between. Refuse major-version bumps. | `clean-code-dependency-updates` skill (new) | ~90 min for 93 deps at 1 min each, bounded by test-run time |
+| G24 | 14 | Apply Checkstyle auto-fixes: missing braces, line length, whitespace. | New `FormatRecipe` or integrate `google-java-format`/Spotless | ~1 min once the recipe exists |
+| G12 | 7 | Remove unused imports, expand star imports. | `DeleteUnusedImportRecipe` (already exists) | ~1 min |
+| J1 | 5 | Same as G12. | `DeleteUnusedImportRecipe` | included |
+| G19 | 7 | Extract complex in-conditional expressions to named variables. | `ExtractExplanatoryVariableRecipe` (exists) | ~1 min |
+| G33 | 7 | Encapsulate `array.length - 1`/`size() - 1` as named locals. | `EncapsulateBoundaryRecipe` (exists) | ~1 min |
+| G29 (simple half) | ~15 of 30 | Invert `!cond` branches where the positive reads naturally. | New `NegativeConditionalInversionRecipe` (planned) | ~1 min once built |
+
+**Sub-total (mechanical): ~150 findings clearable in under 2 hours once the three new recipes (deps skill is ready, Format, NegativeInversion) are in place.**
+
+### Skill-guided agent — one brief per file, mostly local edits
+
+| Code | Count | Action | Skill pointer |
+|---|---:|---|---|
+| G35 | 18 | Pull embedded magic data up to class-level constants or a config file. | `clean-code-functions` (G35 is registered there) |
+| G30 | 33 | Split methods that do more than one thing; extract sub-steps with descriptive names. | `clean-code-functions` |
+| F2 | 10 | Convert output arguments to return values; use records or small value objects. | `clean-code-functions` |
+| G18 | 17 | Convert static helpers that reference instance state to instance methods; OR move pure utilities to a `*Util`-free utility class. | `clean-code-classes` |
+| T1 | 17 | Add missing tests; wrap adjacent assertions in `assertAll`; reduce visibility to package-private for testability. | `clean-code-test-quality`, combined with `WrapAssertAllRecipe` + `ReduceVisibilityRecipe` as first pass |
+| F1 | 5 | Introduce parameter object / builder / record for constructors with ≥4 args. | `clean-code-functions`; `RecordToLombokValueRecipe` for record cases |
+| G29 (hard half) | ~15 of 30 | Cases where inversion would obscure intent; rewrite differently or accept. | `clean-code-conditionals-and-expressions` |
+
+**Sub-total (skill-guided): ~115 findings, estimated 1.5–2 hours of agent time at ~1 minute per finding.**
+
+### Human design — requires architectural thinking
+
+| Code | Count | Action |
+|---|---:|---|
+| Ch10.1 | 20 | Classes still >150 lines. Split by responsibility — pair programming session, not an agent job. |
+| G31 | 18 | Hidden temporal coupling — methods that must be called in a specific order. Redesign to make ordering explicit via types (builder, fluent chain) or state machines. |
+
+**Sub-total (design): 38 findings. No time estimate — this is real design work, maybe half a day per class touched.**
+
+### Sequencing recommendation
+
+1. **Tomorrow:** run the three mechanical recipes (existing + new Format) on a fresh branch. Expect ~150 fewer findings in under an hour.
+2. **This week:** run the clean `manual-1` experiment from the current main tip, which now includes all the skill-routing fixes. Compare tokens and quality against this pilot.
+3. **Next week:** run `recipe-1` for the side-by-side comparison. The automation action plan earlier in this report predicts a 30%-of-manual billed cost.
+4. **Follow-up:** the Ch10.1 and G31 work is independent of the experiment — assign per class to a human reviewer.
+
+### What to do about the 93 E1 findings before the next experiment
+
+The remaining E1 count is noise in the agent's brief rotation: it'll pick them up, be told "bump the dep", produce 93 one-line commits. Options:
+
+- **Accept it:** dep-bump commits are small, isolated, and demonstrate the agent handles the path end-to-end. The token cost is tiny.
+- **Pre-bump before the run:** run `./gradlew dependencyUpdates` once manually, apply all the safe (non-major) bumps in a single operator pass, commit with `chore(deps): bulk bump` and hand the agent a smaller working set.
+- **Disable for the next run:** `cleanCode.disabledRecipes = listOf("E1")` in the dogfood init script. Fast, but you lose the signal that deps are stale.
+
+Recommended: pre-bump. It costs the operator 10 minutes and removes 93 findings of noise from the comparison.
+
 ## Non-automation follow-ups from this run
 
 - **Severity rebalance** (per `docs/plan-review-and-severity.md`) — still high-leverage. Many of the codes fixed here (G4, Ch7.1) would become ERRORs, which would surface them at the top of briefs and likely change agent prioritisation.
