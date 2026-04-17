@@ -205,6 +205,10 @@ plugins {
 
 The plugin automatically applies `java`, `pmd`, `checkstyle`, `jacoco`, and `com.github.spotbugs`. It provides a bundled Checkstyle configuration if the project has none, and wires `analyseCleanCode` to depend on all tool report tasks.
 
+### Opt-in formatter enforcement
+
+Set `cleanCode.enforceFormatting = true` to apply the Spotless plugin with Google Java Format (AOSP) to every `src/**/*.java` source set. Intended for projects ready to commit to a single formatter — running it on an older codebase will reformat many files at once. Once enabled, `./gradlew check` fails if any file drifts from the style; `./gradlew spotlessApply` fixes it.
+
 ## Apply to another project
 
 The SpotBugs Gradle plugin is bundled into the Clean Code plugin jar, so consumers

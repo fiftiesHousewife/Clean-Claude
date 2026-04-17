@@ -26,6 +26,8 @@ public abstract class CleanCodeExtension {
 
     public abstract Property<String> getRepositoryUrl();
 
+    public abstract Property<Boolean> getEnforceFormatting();
+
     private final ThresholdsExtension thresholds;
     private final ClaudeReviewExtension claudeReview;
 
@@ -36,6 +38,7 @@ public abstract class CleanCodeExtension {
         getPackageSuppressions().convention(java.util.Map.of());
         getSkillsDir().convention(".claude/skills");
         getRepositoryUrl().convention("");
+        getEnforceFormatting().convention(false);
         thresholds = objects.newInstance(ThresholdsExtension.class);
         claudeReview = objects.newInstance(ClaudeReviewExtension.class);
     }

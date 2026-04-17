@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":adapters"))
     implementation(project(":claude-review"))
     implementation(project(":annotations"))
+    implementation(libs.spotless.gradle.plugin)
     "bundled"(libs.spotbugs.gradle.plugin)
 }
 

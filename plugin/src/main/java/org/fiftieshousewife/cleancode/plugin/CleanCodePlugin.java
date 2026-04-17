@@ -1,5 +1,7 @@
 package org.fiftieshousewife.cleancode.plugin;
 
+import com.diffplug.gradle.spotless.SpotlessExtension;
+import com.diffplug.gradle.spotless.SpotlessPlugin;
 import com.github.spotbugs.snom.SpotBugsExtension;
 import com.github.spotbugs.snom.SpotBugsPlugin;
 import com.github.spotbugs.snom.SpotBugsTask;
@@ -83,6 +85,13 @@ public class CleanCodePlugin implements Plugin<Project> {
         configureJacoco(project);
         configureSpotBugs(project);
         registerCpdTask(project, ext);
+
+        project.afterEvaluate(p -> {
+            if (ext.getEnforceFormatting().get()) {
+                p.getPluginManager().apply(SpotlessPlugin.class);
+                configureSpotless(p);
+            }
+        });
     }
 
     private void configurePmd(Project project) {
@@ -116,6 +125,19 @@ public class CleanCodePlugin implements Plugin<Project> {
         project.getTasks().withType(JacocoReport.class).configureEach(task -> {
             task.getReports().getXml().getRequired().set(true);
             task.dependsOn(project.getTasks().named("test"));
+        });
+    }
+
+    private void configureSpotless(Project project) {
+        project.getRepositories().mavenCentral();
+        project.getExtensions().configure(SpotlessExtension.class, spotless -> {
+            spotless.java(java -> {
+                java.target("src/**/*.java");
+                java.googleJavaFormat().aosp().reflowLongStrings();
+                java.removeUnusedImports();
+                java.trimTrailingWhitespace();
+                java.endWithNewline();
+            });
         });
     }
 
