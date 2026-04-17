@@ -319,19 +319,20 @@ Robert C. Martin, *Clean Code: A Handbook of Agile Software Craftsmanship*, Pren
 
 The plugin analyses its own codebase. Each module report includes clickable links to the source at the exact line of each finding.
 
-Pre-suppression counts (captured as `experiment/baseline/*.json` before package-level `@SuppressCleanCode` on `recipes/` and `refactoring/`):
+Current counts across the self-analysis after the severity rebalance (`E1`, `G4`, `Ch7.1`, `F2`, `G8`, and long-line escalations now emit `ERROR`) and the E1 dedup that anchors outdated-dependency findings to the root project's `gradle/libs.versions.toml`:
 
 | Module | Report | Errors | Warnings | Info |
 |--------|--------|-------:|---------:|-----:|
-| [annotations](annotations/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/annotations.html) | 0 | 11 | 1 |
-| [core](core/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/core.html) | 0 | 55 | 1 |
-| [adapters](adapters/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/adapters.html) | 0 | 53 | 1 |
-| [claude-review](claude-review/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/claude-review.html) | 1 | 20 | 0 |
-| [plugin](plugin/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/plugin.html) | 1 | 32 | 0 |
-| [recipes](recipes/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/recipes.html) | 0 | 131 | 1 |
-| [refactoring](refactoring/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/refactoring.html) | 0 | 32 | 1 |
+| (root) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/root.html) | 18 | 0 | 0 |
+| [annotations](annotations/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/annotations.html) | 0 | 0 | 1 |
+| [core](core/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/core.html) | 2 | 99 | 2 |
+| [adapters](adapters/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/adapters.html) | 45 | 190 | 1 |
+| [claude-review](claude-review/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/claude-review.html) | 1 | 8 | 0 |
+| [plugin](plugin/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/plugin.html) | 1 | 24 | 0 |
+| [recipes](recipes/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/recipes.html) | 0 | 64 | 1 |
+| [refactoring](refactoring/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/refactoring.html) | 0 | 8 | 1 |
 
-Current counts are after the `experiment/manual-pilot` run and the package-level `@SuppressCleanCode` on `recipes/` and `refactoring/`. A clean baseline from `experiment/manual-1` will replace these once that run lands. Regenerate locally with (self-applied via init script, no changes to committed build files):
+E1 findings (outdated deps) are emitted only at the Gradle root — sub-modules skip them. A clean baseline from a fresh `experiment/manual-1` run will replace these once that run lands. Regenerate locally with (self-applied via init script, no changes to committed build files):
 
 ```bash
 ./gradlew publishToMavenLocal
