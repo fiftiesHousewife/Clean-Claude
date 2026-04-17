@@ -15,7 +15,6 @@ final class ClaudeMdSectionBuilder {
             HeuristicCode.G20, HeuristicCode.G21, HeuristicCode.G31, HeuristicCode.G32
     );
 
-    private final StringBuilder sb = new StringBuilder();
     private final AggregatedReport report;
     private final Map<String, String> preservedAnnotations;
 
@@ -25,15 +24,15 @@ final class ClaudeMdSectionBuilder {
     }
 
     String build(final List<String> dependencies, final Path baselineFile) throws IOException {
-        appendPreamble();
-        appendFrameworksSection(dependencies);
-        new BaselineDeltaTable(report).appendTo(sb, baselineFile);
-        appendFindingSections();
-        appendNarrativeStubs();
-        return sb.toString();
+        final StringBuilder withPreamble = appendPreamble(new StringBuilder());
+        final StringBuilder withFrameworks = appendFrameworksSection(withPreamble, dependencies);
+        final StringBuilder withBaseline = appendBaselineDelta(withFrameworks, baselineFile);
+        final StringBuilder withFindings = appendFindingSections(withBaseline);
+        final StringBuilder withNarrativeStubs = appendNarrativeStubs(withFindings);
+        return withNarrativeStubs.toString();
     }
 
-    private void appendPreamble() {
+    StringBuilder appendPreamble(final StringBuilder sb) {
         sb.append("## Before you start any work in this codebase\n\n");
         sb.append("1. Read `.claude/skills/SKILLS.md` now, before reading anything else.\n");
         sb.append("   This is mandatory, not optional.\n");
@@ -41,26 +40,34 @@ final class ClaudeMdSectionBuilder {
         sb.append("   acting on that finding.\n");
         sb.append("3. When working on anything not covered by a finding, check SKILLS.md\n");
         sb.append("   for a matching skill before proceeding.\n\n");
+        return sb;
     }
 
-    private void appendFrameworksSection(final List<String> dependencies) {
+    private StringBuilder appendFrameworksSection(final StringBuilder sb, final List<String> dependencies) {
         final List<String> frameworks = FrameworkRegistry.detect(dependencies);
         if (frameworks.isEmpty()) {
-            return;
+            return sb;
         }
         sb.append("## Frameworks in use\n\n");
         frameworks.forEach(f -> sb.append(String.format("- %s%n", f)));
         sb.append('\n');
+        return sb;
     }
 
-    private void appendNarrativeStubs() {
+    private StringBuilder appendBaselineDelta(final StringBuilder sb, final Path baselineFile) throws IOException {
+        new BaselineDeltaTable(report).appendTo(sb, baselineFile);
+        return sb;
+    }
+
+    private StringBuilder appendNarrativeStubs(final StringBuilder sb) {
         final Set<HeuristicCode> codesWithFindings = report.byCode().keySet();
         NARRATIVE_STUB_CODES.stream()
                 .filter(code -> !codesWithFindings.contains(code))
-                .forEach(this::appendNarrativeStub);
+                .forEach(code -> appendNarrativeStub(sb, code));
+        return sb;
     }
 
-    private void appendNarrativeStub(final HeuristicCode code) {
+    StringBuilder appendNarrativeStub(final StringBuilder sb, final HeuristicCode code) {
         final String codeName = code.name();
         final String heading = HeuristicDescriptions.name(code);
         sb.append(String.format("## %s: %s%n", codeName, heading));
@@ -73,13 +80,16 @@ final class ClaudeMdSectionBuilder {
             sb.append("<!-- Add project-specific guidance for this heuristic here -->\n");
         }
         sb.append("<!-- /ANNOTATE -->\n\n");
+        return sb;
     }
 
-    private void appendFindingSections() {
-        report.byCode().forEach(this::appendFindingSection);
+    private StringBuilder appendFindingSections(final StringBuilder sb) {
+        report.byCode().forEach((code, findings) -> appendFindingSection(sb, code, findings));
+        return sb;
     }
 
-    private void appendFindingSection(final HeuristicCode code, final List<Finding> findings) {
+    StringBuilder appendFindingSection(final StringBuilder sb, final HeuristicCode code,
+                                       final List<Finding> findings) {
         sb.append(String.format("## %s [%d finding%s]%n", code.name(),
                 findings.size(), findings.size() == 1 ? "" : "s"));
 
@@ -99,11 +109,12 @@ final class ClaudeMdSectionBuilder {
 
         sb.append(String.format("<!-- GENERATED: %s -->%n", code.name()));
         sb.append("**From analysis:**\n");
-        findings.forEach(this::appendFindingLine);
+        findings.forEach(f -> appendFindingLine(sb, f));
         sb.append("<!-- /GENERATED -->\n\n");
+        return sb;
     }
 
-    private void appendFindingLine(final Finding f) {
+    private void appendFindingLine(final StringBuilder sb, final Finding f) {
         if (f.sourceFile() != null) {
             sb.append(String.format("- %s:%d%n", f.sourceFile(), f.startLine()));
         } else {
