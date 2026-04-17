@@ -74,14 +74,16 @@ final class SkillFileScaffolder {
             String resolvedContent, String previousHash) {
         try {
             final String currentFileContent = Files.readString(target);
-            final String previousTemplate = resolver.resolveTemplateWithHash(filename, previousHash);
-            if (previousTemplate != null && currentFileContent.equals(previousTemplate)) {
-                writeSkillFile(target, resolvedContent);
-                logger.lifecycle("Refreshed skill file with new thresholds: {}", target);
-            } else {
-                logger.warn("Threshold changed but {} has been customised — manual update needed",
-                        filename);
-            }
+            resolver.resolveTemplateWithHash(filename, previousHash)
+                    .filter(currentFileContent::equals)
+                    .ifPresentOrElse(
+                            previousTemplate -> {
+                                writeSkillFile(target, resolvedContent);
+                                logger.lifecycle("Refreshed skill file with new thresholds: {}", target);
+                            },
+                            () -> logger.warn(
+                                    "Threshold changed but {} has been customised — manual update needed",
+                                    filename));
         } catch (IOException e) {
             logger.warn("Could not read skill file for refresh: {}", filename, e);
         }
