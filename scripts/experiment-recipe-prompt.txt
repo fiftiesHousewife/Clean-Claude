@@ -16,7 +16,10 @@ Protocol:
 Anti-goal:
 - Never make the code worse to satisfy a metric. If squeezing under a threshold would hurt readability, leave the finding and document it.
 
-When you believe you are done, print a final summary:
-- Findings fixed by recipe vs manually
-- Findings intentionally skipped, with reasons
-- Test status per module
+Exit protocol:
+- Before exiting for any reason — usage limit, zero findings, or every remaining finding intentionally skipped — write `experiment/<approach>-<n>-summary.md` (where approach/n come from the branch name, e.g. `recipe-1`). The file must contain:
+  - Findings fixed by recipe vs manually, grouped by code.
+  - Findings intentionally skipped, each with a one-line reason.
+  - Remaining findings per code (from the last `./gradlew analyseCleanCode` run).
+  - Test status per module (which modules' `test` task you ran, and whether they passed).
+- Write this file even if interrupted by a usage limit. It is the handoff to the next session; missing it means the operator has to reconstruct the end state from `git log`.

@@ -108,6 +108,12 @@ public final class FixBriefGenerator {
             sb.append("> **You MUST Read this file first — before any Edit or Write tool call:** `")
                     .append(skillPath).append("`\n\n");
         }
+        if (code == HeuristicCode.E1) {
+            sb.append("> Act on every E1 finding. Bump the version in `gradle/libs.versions.toml`, "
+                    + "one commit per dep, and run `./gradlew test` before moving on. Only skip a "
+                    + "bump when it is a major-version jump with a breaking changelog — document the "
+                    + "skip and the changelog link in your final summary.\n\n");
+        }
         for (final Finding f : findings) {
             sb.append("- ");
             if (f.startLine() > 0) {

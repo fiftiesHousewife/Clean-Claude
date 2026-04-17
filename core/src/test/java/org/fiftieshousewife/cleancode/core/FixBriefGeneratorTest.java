@@ -84,6 +84,26 @@ class FixBriefGeneratorTest {
     }
 
     @Test
+    void e1SectionOrdersAgentToBumpAndRunTests() throws IOException {
+        final AggregatedReport report = reportWith(
+                Finding.at(HeuristicCode.E1, null,
+                        0, 0, "outdated dep", Severity.WARNING, Confidence.HIGH, "benmanes", "r"));
+
+        FixBriefGenerator.generate(report, outputDir);
+
+        final String content = Files.readString(outputDir.resolve("project-level-findings.md"));
+        assertAll(
+                () -> assertTrue(content.contains("gradle/libs.versions.toml"),
+                        "E1 section must point at the file the agent should edit"),
+                () -> assertTrue(content.contains("one commit per dep"),
+                        "E1 section must instruct per-dep commits"),
+                () -> assertTrue(content.contains("major-version jump"),
+                        "E1 section must carve out major-version bumps as the only legitimate skip"),
+                () -> assertFalse(content.contains("SuppressCleanCode"),
+                        "E1 section must not mention suppression — action, not avoidance"));
+    }
+
+    @Test
     void indexLinksEveryBrief() throws IOException {
         final AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.G22, "core/src/main/java/com/example/Foo.java",
