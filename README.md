@@ -276,6 +276,7 @@ The `refactoring` module contains OpenRewrite recipes that **transform** code, n
 |--------|-------|--------------|
 | AddFinalRecipe | G22 | Adds `final` to non-reassigned local variables |
 | DeleteUnusedImportRecipe | G12/J1 | Removes unused imports, expands star imports |
+| ShortenFullyQualifiedReferencesRecipe | G12 | Replaces inline `org.pkg.Foo` with `Foo` + an import statement |
 | ExtractConstantRecipe | G25 | Adds `private static final` for repeated string literals |
 | ReduceVisibilityRecipe | T1/Ch3.1 | Changes `private` to package-private for testability |
 | RecordToLombokValueRecipe | F1 | Converts large records to `@Value @Builder` classes |
