@@ -13,11 +13,11 @@ import org.openrewrite.java.tree.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EncapsulateBoundaryRecipe extends Recipe {
 
     private static final Set<String> BOUNDARY_METHODS = Set.of("length", "size");
+    private static final String DECL_TEMPLATE = "class _T { void _m() { final int lastIndex = %s; } }";
 
     @Override
     public String getDisplayName() {
@@ -34,79 +34,97 @@ public class EncapsulateBoundaryRecipe extends Recipe {
         return new JavaIsoVisitor<>() {
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
-                final J.Block b = super.visitBlock(block, ctx);
-                final List<Statement> statements = b.getStatements();
-                final List<Statement> newStatements = new ArrayList<>();
-                boolean changed = false;
-
-                for (final Statement stmt : statements) {
-                    final String boundaryExpr = extractBoundaryText(stmt);
-                    if (boundaryExpr == null) {
-                        newStatements.add(stmt);
-                        continue;
-                    }
-
-                    final String declSource = "class _T { void _m() { final int lastIndex = %s; } }"
-                            .formatted(boundaryExpr);
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(declSource).toList();
-
-                    if (parsed.isEmpty()) {
-                        newStatements.add(stmt);
-                        continue;
-                    }
-
-                    final J.MethodDeclaration method = (J.MethodDeclaration)
-                            ((J.CompilationUnit) parsed.getFirst())
-                                    .getClasses().getFirst().getBody().getStatements().getFirst();
-                    newStatements.add(method.getBody().getStatements().getFirst()
-                            .withPrefix(stmt.getPrefix()));
-                    newStatements.add(stmt);
-                    changed = true;
-                }
-
-                return changed ? b.withStatements(newStatements) : b;
+                final J.Block visitedBlock = super.visitBlock(block, ctx);
+                return rewriteStatements(visitedBlock);
             }
         };
     }
 
-    static String extractBoundaryText(Statement stmt) {
-        final List<J.Binary> matches = new ArrayList<>();
-        new JavaIsoVisitor<List<J.Binary>>() {
-            @Override
-            public J.Binary visitBinary(J.Binary binary, List<J.Binary> out) {
-                if (isBoundaryMinusOne(binary)) {
-                    out.add(binary);
-                }
-                return super.visitBinary(binary, out);
+    static J.Block rewriteStatements(final J.Block block) {
+        final List<Statement> statements = block.getStatements();
+        final List<Statement> newStatements = new ArrayList<>();
+        boolean changed = false;
+
+        for (final Statement stmt : statements) {
+            final Statement lastIndexDecl = buildLastIndexDeclaration(stmt);
+            if (lastIndexDecl == null) {
+                newStatements.add(stmt);
+                continue;
             }
-        }.visit(stmt, matches);
-        if (matches.isEmpty()) {
+            newStatements.add(lastIndexDecl);
+            newStatements.add(stmt);
+            changed = true;
+        }
+
+        return changed ? block.withStatements(newStatements) : block;
+    }
+
+    static Statement buildLastIndexDeclaration(final Statement stmt) {
+        final String boundaryExpr = extractBoundaryText(stmt);
+        if (boundaryExpr == null) {
             return null;
         }
-        final J.Binary match = matches.getFirst();
+        final Statement parsedDecl = parseLastIndexDecl(boundaryExpr);
+        if (parsedDecl == null) {
+            return null;
+        }
+        return parsedDecl.withPrefix(stmt.getPrefix());
+    }
+
+    static Statement parseLastIndexDecl(final String boundaryExpr) {
+        final String declSource = DECL_TEMPLATE.formatted(boundaryExpr);
+        final List<SourceFile> parsed = JavaParser.fromJavaVersion()
+                .logCompilationWarningsAndErrors(false)
+                .build().parse(declSource).toList();
+        if (parsed.isEmpty()) {
+            return null;
+        }
+        final J.CompilationUnit compilationUnit = (J.CompilationUnit) parsed.getFirst();
+        final J.MethodDeclaration method = (J.MethodDeclaration)
+                compilationUnit.getClasses().getFirst().getBody().getStatements().getFirst();
+        return method.getBody().getStatements().getFirst();
+    }
+
+    static String extractBoundaryText(final Statement stmt) {
+        final BoundaryCollector collector = new BoundaryCollector();
+        collector.visit(stmt, 0);
+        if (collector.matches.isEmpty()) {
+            return null;
+        }
+        final J.Binary match = collector.matches.getFirst();
         final String left = match.getLeft().toString().trim();
         return left + " - 1";
     }
 
-    private static boolean isBoundaryMinusOne(J.Binary binary) {
-        if (binary.getOperator() != J.Binary.Type.Subtraction) {
-            return false;
+    private static final class BoundaryCollector extends JavaIsoVisitor<Integer> {
+        private final List<J.Binary> matches = new ArrayList<>();
+
+        @Override
+        public J.Binary visitBinary(final J.Binary binary, final Integer unused) {
+            if (isBoundaryMinusOne(binary)) {
+                matches.add(binary);
+            }
+            return super.visitBinary(binary, unused);
         }
-        if (!(binary.getRight() instanceof J.Literal lit) || !(lit.getValue() instanceof Integer i) || i != 1) {
-            return false;
-        }
-        return isBoundaryAccess(binary.getLeft());
     }
 
-    private static boolean isBoundaryAccess(Expression expr) {
-        if (expr instanceof J.FieldAccess fa) {
-            return BOUNDARY_METHODS.contains(fa.getSimpleName());
-        }
-        if (expr instanceof J.MethodInvocation mi) {
-            return BOUNDARY_METHODS.contains(mi.getSimpleName());
-        }
-        return false;
+    private static boolean isBoundaryMinusOne(final J.Binary binary) {
+        return binary.getOperator() == J.Binary.Type.Subtraction
+                && isLiteralOne(binary.getRight())
+                && isBoundaryAccess(binary.getLeft());
+    }
+
+    private static boolean isLiteralOne(final Expression expr) {
+        return expr instanceof J.Literal lit
+                && lit.getValue() instanceof Integer value
+                && value == 1;
+    }
+
+    private static boolean isBoundaryAccess(final Expression expr) {
+        return switch (expr) {
+            case J.FieldAccess fa -> BOUNDARY_METHODS.contains(fa.getSimpleName());
+            case J.MethodInvocation mi -> BOUNDARY_METHODS.contains(mi.getSimpleName());
+            default -> false;
+        };
     }
 }
