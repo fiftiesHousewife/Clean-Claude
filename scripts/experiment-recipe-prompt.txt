@@ -4,7 +4,7 @@ Step 1: Apply refactoring recipes from the refactoring module to fix mechanical 
 
 Step 2: Re-run `./gradlew analyseCleanCode cleanCodeFixPlan` so the per-file briefs reflect the post-recipe state.
 
-Step 3: For each remaining file with findings, spawn a general-purpose Agent whose prompt IS the per-file brief at build/reports/clean-code/fix-briefs/<ClassName>.md. One agent per file. Do not edit files yourself.
+Step 3: For each remaining file with findings, spawn a general-purpose Agent whose prompt IS the per-file brief at build/reports/clean-code/fix-briefs/<ClassName>.md. One agent per file. Do not edit files yourself. Every file under `build/reports/clean-code/fix-briefs/` other than `_INDEX.md` is an actionable brief — including `project-level-findings.md`. Do not skip any.
 
 Step 4: Run the analysis one last time and report the remaining count.
 

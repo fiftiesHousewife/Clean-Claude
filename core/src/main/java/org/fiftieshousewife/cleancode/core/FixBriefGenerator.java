@@ -52,7 +52,7 @@ public final class FixBriefGenerator {
 
     private static String briefFileName(final String sourceFile) {
         if (UNASSIGNED.equals(sourceFile)) {
-            return "_project-level.md";
+            return "project-level-findings.md";
         }
         final String base = sourceFile.replaceAll(".*/", "").replace(".java", "");
         return base + ".md";

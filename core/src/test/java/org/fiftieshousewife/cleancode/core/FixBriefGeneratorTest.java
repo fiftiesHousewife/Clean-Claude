@@ -63,6 +63,22 @@ class FixBriefGeneratorTest {
     }
 
     @Test
+    void projectLevelFindingsWriteToStableFileName() throws IOException {
+        final AggregatedReport report = reportWith(
+                Finding.at(HeuristicCode.E1, null,
+                        0, 0, "outdated dep", Severity.WARNING, Confidence.HIGH, "benmanes", "r"));
+
+        FixBriefGenerator.generate(report, outputDir);
+
+        final Path brief = outputDir.resolve("project-level-findings.md");
+        assertAll(
+                () -> assertTrue(Files.exists(brief),
+                        "project-level brief uses a non-underscore name so drivers do not skip it"),
+                () -> assertFalse(Files.exists(outputDir.resolve("_project-level.md")),
+                        "legacy underscore-prefixed name must not be used"));
+    }
+
+    @Test
     void indexLinksEveryBrief() throws IOException {
         final AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.G22, "core/src/main/java/com/example/Foo.java",
