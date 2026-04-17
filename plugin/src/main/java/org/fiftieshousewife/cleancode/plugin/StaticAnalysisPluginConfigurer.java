@@ -29,16 +29,27 @@ final class StaticAnalysisPluginConfigurer {
 
     void apply() {
         verifySpotBugsOnClasspath();
+        applyRequiredPlugins();
+        configureAppliedPlugins();
+        registerCpdTask();
+    }
+
+    private void applyRequiredPlugins() {
         project.getPluginManager().apply("java");
         project.getPluginManager().apply("pmd");
         project.getPluginManager().apply("checkstyle");
         project.getPluginManager().apply("jacoco");
         project.getPluginManager().apply(SpotBugsPlugin.class);
+    }
 
+    private void configureAppliedPlugins() {
         configurePmd();
         configureCheckstyle();
         configureJacoco();
         configureSpotBugs();
+    }
+
+    private void registerCpdTask() {
         new CpdTaskRegistrar(project, extension.getThresholds().getCpdMinimumTokens()).register();
     }
 
@@ -59,7 +70,8 @@ final class StaticAnalysisPluginConfigurer {
             final var defaultConfigFile = project.file("config/checkstyle/checkstyle.xml");
             if (!defaultConfigFile.exists()) {
                 final String configContent = loadClasspathResource("/cleancode-checkstyle.xml");
-                cs.setConfig(project.getResources().getText().fromString(configContent));
+                final var bundledCheckstyleConfig = project.getResources().getText().fromString(configContent);
+                cs.setConfig(bundledCheckstyleConfig);
             }
         });
         project.getTasks().withType(Checkstyle.class).configureEach(task ->
@@ -84,8 +96,8 @@ final class StaticAnalysisPluginConfigurer {
         project.getTasks().withType(SpotBugsTask.class).configureEach(task -> {
             final var xmlReport = task.getReports().create("xml");
             xmlReport.getRequired().set(true);
-            xmlReport.getOutputLocation().set(
-                    project.getLayout().getBuildDirectory().file("reports/spotbugs/main.xml"));
+            final var xmlReportLocation = project.getLayout().getBuildDirectory().file("reports/spotbugs/main.xml");
+            xmlReport.getOutputLocation().set(xmlReportLocation);
         });
     }
 
