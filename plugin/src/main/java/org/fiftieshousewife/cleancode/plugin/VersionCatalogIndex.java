@@ -8,6 +8,12 @@ import java.util.regex.Pattern;
 
 final class VersionCatalogIndex {
 
+    private static final String LIBRARIES_SECTION_HEADER = "[libraries]";
+    private static final String SECTION_HEADER_PREFIX = "[";
+    private static final String COMMENT_PREFIX = "#";
+    private static final int MODULE_GROUP_PART = 1;
+    private static final int MODULE_ARTIFACT_PART = 2;
+
     private static final Pattern LIBRARY_LINE =
             Pattern.compile("^([A-Za-z0-9_-]+)\\s*=\\s*\\{\\s*(.*)\\}\\s*$");
 
@@ -28,31 +34,47 @@ final class VersionCatalogIndex {
         boolean inLibraries = false;
         for (final String raw : lines) {
             final String line = raw.trim();
-            if (line.startsWith("[")) {
-                inLibraries = "[libraries]".equals(line);
+            if (isSectionHeader(line)) {
+                inLibraries = LIBRARIES_SECTION_HEADER.equals(line);
                 continue;
             }
-            if (!inLibraries || line.isEmpty() || line.startsWith("#")) {
+            if (isSkippableLine(line, inLibraries)) {
                 continue;
             }
-            final Matcher matcher = LIBRARY_LINE.matcher(line);
-            if (!matcher.matches()) {
-                continue;
-            }
-            final String fields = matcher.group(2);
-            final String coordinate = extractCoordinate(fields);
-            final String versionRef = extractVersionRef(fields);
-            if (coordinate != null && versionRef != null) {
-                index.put(coordinate, versionRef);
-            }
+            indexLibraryEntry(line, index);
         }
         return index;
     }
 
-    private String extractCoordinate(final String fields) {
+    private void indexLibraryEntry(final String line, final Map<String, String> index) {
+        final Matcher matcher = LIBRARY_LINE.matcher(line);
+        if (!matcher.matches()) {
+            return;
+        }
+        final String fields = matcher.group(2);
+        final String coordinate = extractCoordinate(fields);
+        final String versionRef = extractVersionRef(fields);
+        if (isValidEntry(coordinate, versionRef)) {
+            index.put(coordinate, versionRef);
+        }
+    }
+
+    private boolean isSectionHeader(final String line) {
+        return line.startsWith(SECTION_HEADER_PREFIX);
+    }
+
+    private boolean isSkippableLine(final String line, final boolean inLibraries) {
+        return !inLibraries || line.isEmpty() || line.startsWith(COMMENT_PREFIX);
+    }
+
+    private boolean isValidEntry(final String coordinate, final String versionRef) {
+        return coordinate != null && versionRef != null;
+    }
+
+    String extractCoordinate(final String fields) {
         final Matcher module = MODULE_FIELD.matcher(fields);
         if (module.find()) {
-            return module.group(1) + ":" + module.group(2);
+            return module.group(MODULE_GROUP_PART) + ":" + module.group(MODULE_ARTIFACT_PART);
         }
         final Matcher group = GROUP_FIELD.matcher(fields);
         final Matcher name = NAME_FIELD.matcher(fields);
