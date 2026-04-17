@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -29,10 +30,38 @@ public class CheckstyleFindingSource implements FindingSource {
 
     private record RuleMapping(HeuristicCode code, Severity severity, Confidence confidence, String ruleUrl) {}
 
+    private enum XmlSeverity {
+        ERROR("error", Severity.ERROR),
+        WARNING("warning", Severity.WARNING),
+        INFO("info", Severity.INFO);
+
+        private final String xmlValue;
+        private final Severity severity;
+
+        XmlSeverity(final String xmlValue, final Severity severity) {
+            this.xmlValue = xmlValue;
+            this.severity = severity;
+        }
+
+        static Severity parseOrDefault(final String xmlValue, final Severity defaultSeverity) {
+            return Arrays.stream(values())
+                    .filter(entry -> entry.xmlValue.equals(xmlValue))
+                    .map(entry -> entry.severity)
+                    .findFirst()
+                    .orElse(defaultSeverity);
+        }
+    }
+
     private static final String DOCS_BASE = "https://checkstyle.org/checks/";
     private static final String MAPPING_RESOURCE = "/checkstyle/rule-mapping.properties";
     private static final String CHECK_SUFFIX = "Check";
     private static final String TOOL_ID = "checkstyle";
+    private static final String RULE_MAPPING_SEPARATOR = "\\|";
+    private static final int RULE_MAPPING_FIELD_COUNT = 4;
+    private static final int RULE_MAPPING_CODE_INDEX = 0;
+    private static final int RULE_MAPPING_SEVERITY_INDEX = 1;
+    private static final int RULE_MAPPING_CONFIDENCE_INDEX = 2;
+    private static final int RULE_MAPPING_URL_INDEX = 3;
     private static final Map<String, RuleMapping> RULE_MAP = loadRuleMap();
 
     @Override
@@ -63,13 +92,9 @@ public class CheckstyleFindingSource implements FindingSource {
         if (!Files.exists(report)) {
             return List.of();
         }
-        try {
-            return elementsOf(XmlReportParser.parse(report).getElementsByTagName("file"))
-                    .flatMap(file -> findingsFromFile(file, context))
-                    .toList();
-        } catch (final Exception e) {
-            throw new FindingSourceException("Failed to parse Checkstyle report: " + report, e);
-        }
+        return elementsOf(XmlReportParser.parse(report).getElementsByTagName("file"))
+                .flatMap(file -> findingsFromFile(file, context))
+                .toList();
     }
 
     private Stream<Finding> findingsFromFile(final Element fileElement, final ProjectContext context) {
@@ -80,7 +105,7 @@ public class CheckstyleFindingSource implements FindingSource {
                 .map(Optional::get);
     }
 
-    private Optional<Finding> toFinding(final Element error, final String relativePath) {
+    Optional<Finding> toFinding(final Element error, final String relativePath) {
         final String checkName = extractCheckName(error.getAttribute("source"));
         final RuleMapping mapping = RULE_MAP.get(checkName);
         if (mapping == null) {
@@ -108,12 +133,7 @@ public class CheckstyleFindingSource implements FindingSource {
     }
 
     private Severity xmlSeverityOrDefault(final String xmlSeverity, final Severity defaultSeverity) {
-        return switch (xmlSeverity) {
-            case "error" -> Severity.ERROR;
-            case "info" -> Severity.INFO;
-            case "warning" -> Severity.WARNING;
-            default -> defaultSeverity;
-        };
+        return XmlSeverity.parseOrDefault(xmlSeverity, defaultSeverity);
     }
 
     private static Stream<Element> elementsOf(final NodeList nodes) {
@@ -136,14 +156,14 @@ public class CheckstyleFindingSource implements FindingSource {
     }
 
     private static RuleMapping parseRuleMapping(final String value) {
-        final String[] parts = value.split("\\|");
-        if (parts.length != 4) {
+        final String[] parts = value.split(RULE_MAPPING_SEPARATOR);
+        if (parts.length != RULE_MAPPING_FIELD_COUNT) {
             throw new IllegalStateException("Invalid rule mapping format: " + value);
         }
         return new RuleMapping(
-                HeuristicCode.valueOf(parts[0].trim()),
-                Severity.valueOf(parts[1].trim()),
-                Confidence.valueOf(parts[2].trim()),
-                DOCS_BASE + parts[3].trim());
+                HeuristicCode.valueOf(parts[RULE_MAPPING_CODE_INDEX].trim()),
+                Severity.valueOf(parts[RULE_MAPPING_SEVERITY_INDEX].trim()),
+                Confidence.valueOf(parts[RULE_MAPPING_CONFIDENCE_INDEX].trim()),
+                DOCS_BASE + parts[RULE_MAPPING_URL_INDEX].trim());
     }
 }
