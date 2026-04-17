@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,7 @@ public final class JsonReportWriter {
     public static void write(AggregatedReport report, Path outputFile) throws IOException {
         Files.createDirectories(outputFile.getParent());
 
-        List<JsonFinding> jsonFindings = report.findings().stream()
+        final List<JsonFinding> jsonFindings = report.findings().stream()
                 .map(f -> new JsonFinding(
                         f.code().name(),
                         f.sourceFile(),
@@ -51,13 +50,13 @@ public final class JsonReportWriter {
                         f.metadata()))
                 .toList();
 
-        JsonReport jsonReport = new JsonReport(
+        final JsonReport jsonReport = new JsonReport(
                 report.projectName(),
                 report.projectVersion(),
                 report.generatedAt().toString(),
                 jsonFindings);
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Files.writeString(outputFile, gson.toJson(jsonReport));
     }
 }
