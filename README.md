@@ -323,7 +323,7 @@ Current counts across the self-analysis after the severity rebalance (`E1`, `G4`
 
 | Module | Report | Errors | Warnings | Info |
 |--------|--------|-------:|---------:|-----:|
-| (root) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/root.html) | 18 | 0 | 0 |
+| [root (`gradle/libs.versions.toml`)](gradle/libs.versions.toml) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/root.html) | 18 | 0 | 0 |
 | [annotations](annotations/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/annotations.html) | 0 | 0 | 1 |
 | [core](core/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/core.html) | 2 | 99 | 2 |
 | [adapters](adapters/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/adapters.html) | 45 | 190 | 1 |
@@ -331,6 +331,7 @@ Current counts across the self-analysis after the severity rebalance (`E1`, `G4`
 | [plugin](plugin/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/plugin.html) | 1 | 24 | 0 |
 | [recipes](recipes/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/recipes.html) | 0 | 64 | 1 |
 | [refactoring](refactoring/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/refactoring.html) | 0 | 8 | 1 |
+| **Total** | | **67** | **393** | **6** |
 
 E1 findings (outdated deps) are emitted only at the Gradle root — sub-modules skip them. A clean baseline from a fresh `experiment/manual-1` run will replace these once that run lands. Regenerate locally with (self-applied via init script, no changes to committed build files):
 
