@@ -5,8 +5,6 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +13,8 @@ import java.util.Set;
 
 public class OutputArgumentRecipe extends ScanningRecipe<OutputArgumentRecipe.Accumulator> {
 
-    private static final Set<String> MUTATING_METHODS = Set.of("add", "put", "set", "remove", "clear", "addAll", "putAll");
+    private static final Set<String> MUTATING_METHODS = Set.of(
+            "add", "put", "set", "remove", "clear", "addAll", "putAll");
 
     public record Row(String className, String methodName, String paramName,
                       String paramType, int lineNumber) {}
@@ -48,7 +47,6 @@ public class OutputArgumentRecipe extends ScanningRecipe<OutputArgumentRecipe.Ac
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
-                final String className = findEnclosingClassName();
                 final String methodBody = m.getBody() != null ? m.getBody().print(getCursor()) : "";
 
                 m.getParameters().stream()
@@ -57,6 +55,7 @@ public class OutputArgumentRecipe extends ScanningRecipe<OutputArgumentRecipe.Ac
                         .forEach(varDecl -> varDecl.getVariables().forEach(v -> {
                             final String paramName = v.getSimpleName();
                             if (isMutatedInBody(paramName, methodBody)) {
+                                final String className = findEnclosingClassName();
                                 final String typeName = varDecl.getType() != null
                                         ? varDecl.getType().toString() : "unknown";
                                 acc.rows.add(new Row(className, m.getSimpleName(),
