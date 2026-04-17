@@ -8,6 +8,7 @@ import org.gradle.api.tasks.TaskAction;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class FixPlanTask extends DefaultTask {
 
@@ -15,7 +16,8 @@ public abstract class FixPlanTask extends DefaultTask {
     public void generate() throws Exception {
         final TaskPaths paths = TaskPaths.of(getProject());
         final Path reportFile = paths.findingsReport();
-        final Path outputDir = reportFile.getParent().resolve("fix-briefs");
+        final Path reportDir = Objects.requireNonNull(reportFile.getParent(), "reportFile.parent");
+        final Path outputDir = reportDir.resolve("fix-briefs");
         final Path projectRoot = getProject().getProjectDir().toPath();
 
         final AggregatedReport report = JsonReportReader.read(reportFile);
