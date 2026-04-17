@@ -55,6 +55,9 @@ public class VerticalSeparationRecipe extends ScanningRecipe<VerticalSeparationR
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+                if (m.getBody() == null) {
+                    return m;
+                }
                 final String className = findEnclosingClassName();
                 final String methodPrint = m.print(getCursor());
                 final String[] lines = methodPrint.split("\n");
