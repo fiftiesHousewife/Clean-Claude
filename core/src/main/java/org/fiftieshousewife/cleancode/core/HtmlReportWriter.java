@@ -1,6 +1,9 @@
 package org.fiftieshousewife.cleancode.core;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZoneOffset;
@@ -14,8 +17,14 @@ import static org.fiftieshousewife.cleancode.core.HtmlFindingsRenderer.appendToo
 
 public final class HtmlReportWriter {
 
+    private static final String TEMPLATE_RESOURCE = "/org/fiftieshousewife/cleancode/core/html-report.html";
+    private static final String TEMPLATE = loadTemplate();
+
     private static final DateTimeFormatter TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(ZoneOffset.UTC);
+
+    private static final String NO_FINDINGS_BODY =
+            "    <p class=\"clean\">No violations found. The code is clean.</p>\n";
 
     private HtmlReportWriter() {}
 
@@ -32,80 +41,50 @@ public final class HtmlReportWriter {
         Files.writeString(outputFile, render(report, repositoryUrl));
     }
 
-    private static String render(final AggregatedReport report, final String repositoryUrl) {
-        final StringBuilder html = new StringBuilder();
-        appendDocumentStart(html, report);
-        appendSeveritySummary(html, report);
+    static String render(final AggregatedReport report, final String repositoryUrl) {
+        return TEMPLATE
+                .replace("{projectName}", escape(report.projectName()))
+                .replace("{styles}", HtmlReportStyles.css())
+                .replace("{projectHeading}", projectHeading(report))
+                .replace("{errorCount}", severityCount(report, Severity.ERROR))
+                .replace("{warningCount}", severityCount(report, Severity.WARNING))
+                .replace("{infoCount}", severityCount(report, Severity.INFO))
+                .replace("{body}", body(report, repositoryUrl))
+                .replace("{timestamp}", escape(TIMESTAMP_FORMAT.format(report.generatedAt())))
+                .replace("{totalFindings}", Integer.toString(report.findings().size()));
+    }
 
-        if (report.findings().isEmpty()) {
-            html.append("    <p class=\"clean\">No violations found. The code is clean.</p>\n");
-        } else {
-            appendFindingsByCode(html, report.findings(), repositoryUrl);
-            appendToolSummary(html, report.findings());
+    static String projectHeading(final AggregatedReport report) {
+        final String name = escape(report.projectName());
+        if (report.projectVersion() == null) {
+            return name;
         }
+        return name + " v" + escape(report.projectVersion());
+    }
 
-        appendFooter(html, report);
-        appendDocumentEnd(html);
+    static String severityCount(final AggregatedReport report, final Severity severity) {
+        final Map<Severity, List<Finding>> bySeverity = report.bySeverity();
+        return Integer.toString(bySeverity.getOrDefault(severity, List.of()).size());
+    }
+
+    static String body(final AggregatedReport report, final String repositoryUrl) {
+        if (report.findings().isEmpty()) {
+            return NO_FINDINGS_BODY;
+        }
+        final StringBuilder html = new StringBuilder();
+        appendFindingsByCode(html, report.findings(), repositoryUrl);
+        appendToolSummary(html, report.findings());
         return html.toString();
     }
 
-    private static void appendDocumentStart(final StringBuilder html, final AggregatedReport report) {
-        html.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n");
-        html.append("  <meta charset=\"UTF-8\">\n");
-        html.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-        html.append("  <title>Clean Code Report — ").append(escape(report.projectName()));
-        html.append("</title>\n");
-        appendStyles(html);
-        html.append("</head>\n<body>\n");
-        appendHeader(html, report);
-        html.append("  <main>\n");
-    }
-
-    private static void appendHeader(final StringBuilder html, final AggregatedReport report) {
-        html.append("  <header>\n");
-        html.append("    <h1>Clean Code Analysis</h1>\n");
-        html.append("    <p>").append(escape(report.projectName()));
-        if (report.projectVersion() != null) {
-            html.append(" v").append(escape(report.projectVersion()));
+    private static String loadTemplate() {
+        try (InputStream stream = HtmlReportWriter.class.getResourceAsStream(TEMPLATE_RESOURCE)) {
+            if (stream == null) {
+                throw new IllegalStateException("Missing HTML template resource: " + TEMPLATE_RESOURCE);
+            }
+            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (final IOException exception) {
+            throw new UncheckedIOException("Failed to load HTML template: " + TEMPLATE_RESOURCE, exception);
         }
-        html.append("</p>\n");
-        html.append("  </header>\n");
-    }
-
-    private static void appendStyles(final StringBuilder html) {
-        html.append("  <style>\n").append(HtmlReportStyles.css()).append("  </style>\n");
-    }
-
-    private static void appendSeveritySummary(final StringBuilder html, final AggregatedReport report) {
-        final Map<Severity, List<Finding>> bySeverity = report.bySeverity();
-        html.append("    <div class=\"summary\">\n");
-        appendSeverityBadge(html, "error", countOf(bySeverity, Severity.ERROR), "errors");
-        appendSeverityBadge(html, "warning", countOf(bySeverity, Severity.WARNING), "warnings");
-        appendSeverityBadge(html, "info", countOf(bySeverity, Severity.INFO), "info");
-        html.append("    </div>\n");
-    }
-
-    private static int countOf(final Map<Severity, List<Finding>> bySeverity, final Severity severity) {
-        return bySeverity.getOrDefault(severity, List.of()).size();
-    }
-
-    private static void appendSeverityBadge(final StringBuilder html, final String cssClass,
-                                             final int count, final String label) {
-        html.append("      <span class=\"badge ").append(cssClass).append("\">");
-        html.append(count).append(' ').append(label).append("</span>\n");
-    }
-
-    private static void appendFooter(final StringBuilder html, final AggregatedReport report) {
-        final String timestamp = TIMESTAMP_FORMAT.format(report.generatedAt());
-        html.append("  </main>\n");
-        html.append("  <footer>\n");
-        html.append("    <p>Generated by Clean Code Plugin &mdash; ").append(escape(timestamp));
-        html.append("</p>\n");
-        html.append("    <p>").append(report.findings().size()).append(" total findings</p>\n");
-        html.append("  </footer>\n");
-    }
-
-    private static void appendDocumentEnd(final StringBuilder html) {
-        html.append("</body>\n</html>\n");
     }
 }
