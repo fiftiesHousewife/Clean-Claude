@@ -194,9 +194,42 @@ class CheckstyleFindingSourceTest {
 
         assertAll(
                 () -> assertEquals(Severity.ERROR, at155.severity(),
-                        "155 > 150 threshold escalates to ERROR"),
+                        "155 > default 150 threshold escalates to ERROR"),
                 () -> assertEquals(Severity.ERROR, at150.severity(),
-                        "150 at threshold escalates to ERROR"));
+                        "150 at default threshold escalates to ERROR"));
+    }
+
+    @Test
+    void collectFindings_lineLengthEscalationHonoursConfiguredThreshold(@TempDir Path tempDir) throws Exception {
+        final RecipeThresholds tighter = new RecipeThresholds(
+                RecipeThresholds.DEFAULT_CLASS_LINE_COUNT,
+                RecipeThresholds.DEFAULT_RECORD_COMPONENT_COUNT,
+                RecipeThresholds.DEFAULT_NULL_CHECK_DENSITY,
+                RecipeThresholds.DEFAULT_CHAIN_DEPTH_THRESHOLD,
+                RecipeThresholds.DEFAULT_VERTICAL_SEPARATION_DISTANCE,
+                RecipeThresholds.DEFAULT_METHOD_BLANK_LINE_SECTIONS,
+                RecipeThresholds.DEFAULT_PRIVATE_METHOD_MIN_LINES,
+                RecipeThresholds.DEFAULT_MAGIC_STRING_MIN_OCCURRENCES,
+                RecipeThresholds.DEFAULT_STRING_SWITCH_MIN_CASES,
+                RecipeThresholds.DEFAULT_SHORT_NAME_MIN_LENGTH,
+                RecipeThresholds.DEFAULT_CPD_MINIMUM_TOKENS,
+                RecipeThresholds.DEFAULT_MAGIC_NUMBER_MIN_VALUE,
+                RecipeThresholds.DEFAULT_SECTION_COMMENT_THRESHOLD,
+                RecipeThresholds.DEFAULT_HARDCODED_LIST_MIN_LITERALS,
+                RecipeThresholds.DEFAULT_TEMPORAL_COUPLING_MIN_CALLS,
+                130);
+        final CheckstyleFindingSource tighterSource = new CheckstyleFindingSource(tighter);
+
+        ProjectContext ctx = contextWithFixture(
+                tempDir, "/checkstyle/line-length.xml", "checkstyle/main.xml");
+        List<Finding> findings = tighterSource.collectFindings(ctx);
+
+        Finding at135 = findings.stream()
+                .filter(f -> f.startLine() == 12)
+                .findFirst().orElseThrow();
+
+        assertEquals(Severity.ERROR, at135.severity(),
+                "135 escalates to ERROR once the configured threshold is 130");
     }
 
     private ProjectContext contextWithFixture(Path tempDir, String resourcePath, String targetPath)

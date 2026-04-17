@@ -15,7 +15,8 @@ public record RecipeThresholds(
         int magicNumberMinValue,
         int sectionCommentThreshold,
         int hardcodedListMinLiterals,
-        int temporalCouplingMinCalls
+        int temporalCouplingMinCalls,
+        int lineLengthErrorThreshold
 ) {
 
     public static final int DEFAULT_CLASS_LINE_COUNT = 150;
@@ -33,6 +34,7 @@ public record RecipeThresholds(
     public static final int DEFAULT_SECTION_COMMENT_THRESHOLD = 1;
     public static final int DEFAULT_HARDCODED_LIST_MIN_LITERALS = 5;
     public static final int DEFAULT_TEMPORAL_COUPLING_MIN_CALLS = 3;
+    public static final int DEFAULT_LINE_LENGTH_ERROR_THRESHOLD = 150;
 
     public static RecipeThresholds defaults() {
         return new RecipeThresholds(
@@ -50,6 +52,7 @@ public record RecipeThresholds(
                 DEFAULT_MAGIC_NUMBER_MIN_VALUE,
                 DEFAULT_SECTION_COMMENT_THRESHOLD,
                 DEFAULT_HARDCODED_LIST_MIN_LITERALS,
-                DEFAULT_TEMPORAL_COUPLING_MIN_CALLS);
+                DEFAULT_TEMPORAL_COUPLING_MIN_CALLS,
+                DEFAULT_LINE_LENGTH_ERROR_THRESHOLD);
     }
 }

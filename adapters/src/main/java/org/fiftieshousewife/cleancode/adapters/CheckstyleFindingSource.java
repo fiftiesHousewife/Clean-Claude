@@ -19,8 +19,17 @@ public class CheckstyleFindingSource implements FindingSource {
 
     private static final String CS = "https://checkstyle.org/checks/";
 
-    private static final int LINE_LENGTH_ERROR_THRESHOLD = 150;
     private static final Pattern LINE_LENGTH_FOUND = Pattern.compile("found (\\d+)");
+
+    private final int lineLengthErrorThreshold;
+
+    public CheckstyleFindingSource() {
+        this(RecipeThresholds.defaults());
+    }
+
+    public CheckstyleFindingSource(final RecipeThresholds thresholds) {
+        this.lineLengthErrorThreshold = thresholds.lineLengthErrorThreshold();
+    }
 
     private static final Map<String, RuleMapping> RULE_MAP = Map.ofEntries(
             Map.entry("ParameterNumber", new RuleMapping(HeuristicCode.F1, Severity.WARNING, Confidence.HIGH, CS + "sizes/parameternumber.html")),
@@ -151,6 +160,6 @@ public class CheckstyleFindingSource implements FindingSource {
             return current;
         }
         final int actualLength = Integer.parseInt(matcher.group(1));
-        return actualLength >= LINE_LENGTH_ERROR_THRESHOLD ? Severity.ERROR : current;
+        return actualLength >= lineLengthErrorThreshold ? Severity.ERROR : current;
     }
 }

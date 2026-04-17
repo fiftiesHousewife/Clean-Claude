@@ -50,7 +50,7 @@ public abstract class AnalyseTask extends DefaultTask {
 
         final List<FindingSource> sources = List.of(
                 new PmdFindingSource(),
-                new CheckstyleFindingSource(),
+                new CheckstyleFindingSource(thresholds),
                 new SpotBugsFindingSource(),
                 new CpdFindingSource(),
                 new JacocoFindingSource(),
