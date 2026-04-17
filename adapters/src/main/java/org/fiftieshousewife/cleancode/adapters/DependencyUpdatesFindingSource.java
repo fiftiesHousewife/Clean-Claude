@@ -16,9 +16,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Parses Ben-Manes dependency-updates JSON reports and produces E1 findings
@@ -55,11 +57,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         if (!Files.exists(report)) {
             return List.of();
         }
-
-        final JsonObject root = parseReport(report);
-        final List<Finding> findings = new ArrayList<>();
-        extractOutdated(root, findings);
-        return findings;
+        return extractOutdated(parseReport(report));
     }
 
     private JsonObject parseReport(Path report) throws FindingSourceException {
@@ -70,38 +68,39 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         }
     }
 
-    private void extractOutdated(JsonObject root, List<Finding> findings) {
-        final JsonObject outdated = root.getAsJsonObject("outdated");
-        if (outdated == null) {
-            return;
-        }
-
-        final JsonArray dependencies = outdated.getAsJsonArray("dependencies");
-        if (dependencies == null) {
-            return;
-        }
-
-        dependencies.forEach(dep -> extractDependency(dep.getAsJsonObject(), findings));
+    private List<Finding> extractOutdated(JsonObject root) {
+        final JsonArray dependencies = outdatedDependencies(root);
+        return StreamSupport.stream(dependencies.spliterator(), false)
+                .map(dep -> extractDependency(dep.getAsJsonObject()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableList());
     }
 
-    private void extractDependency(JsonObject dep, List<Finding> findings) {
+    private JsonArray outdatedDependencies(JsonObject root) {
+        final JsonObject outdated = root.getAsJsonObject("outdated");
+        if (outdated == null) {
+            return new JsonArray();
+        }
+        final JsonArray dependencies = outdated.getAsJsonArray("dependencies");
+        return dependencies == null ? new JsonArray() : dependencies;
+    }
+
+    Finding extractDependency(JsonObject dep) {
+        final String latestVersion = latestAvailable(dep);
+        if (latestVersion == null) {
+            return null;
+        }
         final String group = dep.get("group").getAsString();
         final String name = dep.get("name").getAsString();
         final String currentVersion = dep.get("version").getAsString();
-        final String latestVersion = latestAvailable(dep);
-
-        if (latestVersion == null) {
-            return;
-        }
-
         final String coordinate = group + ":" + name;
-        findings.add(Finding.projectLevel(
+        return Finding.projectLevel(
                 HeuristicCode.E1,
                 "Outdated dependency %s [%s -> %s]".formatted(coordinate, currentVersion, latestVersion),
                 Severity.WARNING,
                 Confidence.HIGH,
                 TOOL,
-                coordinate));
+                coordinate);
     }
 
     private String latestAvailable(JsonObject dep) {
