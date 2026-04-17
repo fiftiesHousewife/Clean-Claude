@@ -52,6 +52,8 @@ bin/
 ### Claude Code logs ###
 .claude/tool-log.jsonl
 .claude/session-log.jsonl
+.claude/tool-log-part*.jsonl
+.claude/session-log-part*.jsonl
 
 ### Plugin-scaffolded per-module skill copies (build artefacts) ###
 /*/.claude/
