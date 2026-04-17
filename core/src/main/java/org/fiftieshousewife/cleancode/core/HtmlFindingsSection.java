@@ -14,12 +14,8 @@ final class HtmlFindingsSection {
 
     static void appendByCode(final StringBuilder html, final List<Finding> findings,
                              final String repositoryUrl) {
-        final Map<HeuristicCode, List<Finding>> byCode = findings.stream()
-                .collect(Collectors.groupingBy(Finding::code));
-
-        byCode.entrySet().stream()
-                .sorted(Comparator.comparing(e -> e.getKey().name()))
-                .forEach(entry -> appendCodeGroup(html, entry.getKey(), entry.getValue(), repositoryUrl));
+        FindingsByCode.forEachSorted(findings,
+                (code, group) -> appendCodeGroup(html, code, group, repositoryUrl));
     }
 
     static void appendToolSummary(final StringBuilder html, final List<Finding> findings) {
