@@ -84,40 +84,54 @@ public class ClaudeReviewFindingSource implements FindingSource {
             if (analysed >= config.maxFilesPerRun()) {
                 break;
             }
-            if (reviewSingleFile(file, session, allFindings)) {
+            final ReviewResult result = reviewSingleFile(file, session);
+            allFindings.addAll(result.findings());
+            if (result.counted()) {
                 analysed++;
             }
         }
         return allFindings;
     }
 
-    private boolean reviewSingleFile(final Path file, final ReviewSession session,
-                                     final List<Finding> allFindings) {
+    private ReviewResult reviewSingleFile(final Path file, final ReviewSession session) {
         try {
             final String content = Files.readString(file, StandardCharsets.UTF_8);
             final String relativePath = session.context().projectRoot().relativize(file).toString();
             final String hash = ReviewCache.hash(content, session.codesKey());
             final var cached = session.cache().lookup(hash);
             if (cached.isPresent()) {
-                allFindings.addAll(CachedFindings.toFindings(cached.get(), relativePath));
-                return false;
+                return ReviewResult.cached(CachedFindings.toFindings(cached.get(), relativePath));
             }
             final List<Finding> findings = parser.parse(
                     session.reviewer().review(content, relativePath), relativePath);
             session.cache().store(hash, CachedFindings.fromFindings(findings));
-            allFindings.addAll(findings);
-            return true;
+            return ReviewResult.analysed(findings);
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Failed to read file: " + file, e);
-            return false;
+            return ReviewResult.skipped();
         }
     }
 
-    private static void persistCache(final ReviewSession session) {
+    private static void persistCache(final ReviewSession session) throws FindingSourceException {
         try {
             session.cache().save(session.cacheDir());
         } catch (IOException e) {
-            LOG.log(Level.WARNING, "Failed to save review cache", e);
+            throw new FindingSourceException(
+                    "Failed to save review cache at: " + session.cacheDir(), e);
+        }
+    }
+
+    private record ReviewResult(List<Finding> findings, boolean counted) {
+        static ReviewResult cached(final List<Finding> findings) {
+            return new ReviewResult(findings, false);
+        }
+
+        static ReviewResult analysed(final List<Finding> findings) {
+            return new ReviewResult(findings, true);
+        }
+
+        static ReviewResult skipped() {
+            return new ReviewResult(List.of(), false);
         }
     }
 
