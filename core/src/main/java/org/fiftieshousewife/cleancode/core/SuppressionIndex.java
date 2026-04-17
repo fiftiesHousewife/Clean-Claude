@@ -38,16 +38,21 @@ public class SuppressionIndex {
     }
 
     private static boolean matches(final Suppression s, final Finding finding) {
-        if (!s.codes().contains(finding.code()) || s.isExpired()) {
+        if (!appliesTo(s, finding)) {
             return false;
         }
         if (s.isPackageScoped()) {
             return matchesPackage(finding.sourceFile(), s.packagePath())
                     || matchesPackage(otherFile(finding), s.packagePath());
         }
-        return matchesFile(finding.sourceFile(), s.sourceFile())
+        final boolean inSuppressedLineRange = matchesFile(finding.sourceFile(), s.sourceFile())
                 && finding.startLine() >= s.startLine()
                 && finding.startLine() <= s.endLine();
+        return inSuppressedLineRange;
+    }
+
+    private static boolean appliesTo(final Suppression s, final Finding finding) {
+        return s.codes().contains(finding.code()) && !s.isExpired();
     }
 
     private static boolean matchesPackage(final String path, final String packagePath) {
