@@ -2,8 +2,6 @@ package org.fiftieshousewife.cleancode.core;
 
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +16,7 @@ final class BriefMarkdown {
     static String render(final String sourceFile, final List<Finding> findings, final Path projectRoot) {
         final StringBuilder sb = new StringBuilder();
         appendHeader(sb, sourceFile, findings);
-        appendSiblings(sb, findSiblings(sourceFile, projectRoot));
+        appendSiblings(sb, PackageSiblings.findFor(sourceFile, projectRoot));
         appendPreamble(sb, findings);
         appendCodeSections(sb, findings);
         appendSelfCheck(sb);
@@ -118,29 +116,6 @@ final class BriefMarkdown {
         sb.append("1. Tests pass for the affected module.\n");
         sb.append("2. Each change makes the code clearer, not just shorter.\n");
         sb.append("3. List any findings you intentionally did not fix and why.\n");
-    }
-
-    private static List<String> findSiblings(final String sourceFile, final Path projectRoot) {
-        if (projectRoot == null || sourceFile == null || !sourceFile.endsWith(".java")) {
-            return List.of();
-        }
-        final Path absolute = projectRoot.resolve(sourceFile);
-        final Path packageDir = absolute.getParent();
-        if (packageDir == null || !Files.isDirectory(packageDir)) {
-            return List.of();
-        }
-        final String thisFileName = absolute.getFileName().toString();
-        try (var stream = Files.list(packageDir)) {
-            return stream
-                    .map(p -> p.getFileName().toString())
-                    .filter(n -> n.endsWith(".java"))
-                    .filter(n -> !n.equals(thisFileName))
-                    .sorted()
-                    .map(n -> n.substring(0, n.length() - ".java".length()))
-                    .toList();
-        } catch (IOException e) {
-            return List.of();
-        }
     }
 
     private static boolean triggersMetricSqueezingWarning(final List<Finding> findings) {
