@@ -322,13 +322,14 @@ Pre-suppression counts (captured as `experiment/baseline/*.json` before package-
 | Module | Report | Errors | Warnings | Info |
 |--------|--------|-------:|---------:|-----:|
 | [annotations](annotations/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/annotations.html) | 0 | 11 | 1 |
-| [core](core/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/core.html) | 2 | 247 | 2 |
-| [recipes](recipes/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/recipes.html) | 0 | 698 | 1 |
-| [adapters](adapters/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/adapters.html) | 2 | 284 | 1 |
-| [claude-review](claude-review/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/claude-review.html) | 1 | 36 | 0 |
-| [plugin](plugin/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/plugin.html) | 1 | 81 | 0 |
+| [core](core/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/core.html) | 0 | 55 | 1 |
+| [adapters](adapters/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/adapters.html) | 0 | 53 | 1 |
+| [claude-review](claude-review/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/claude-review.html) | 1 | 20 | 0 |
+| [plugin](plugin/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/plugin.html) | 1 | 32 | 0 |
+| [recipes](recipes/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/recipes.html) | 0 | 131 | 1 |
+| [refactoring](refactoring/) | [view report](https://htmlpreview.github.io/?https://github.com/fiftiesHousewife/Clean-Claude/blob/main/docs/reports/refactoring.html) | 0 | 32 | 1 |
 
-The recipes G5 + Ch7.2 suppressions alone remove ~493 warnings from the recipes/ count; the next analyse run will regenerate the numbers. To regenerate locally (self-applied via init script, no changes to committed build files):
+Current counts are after the `experiment/manual-pilot` run and the package-level `@SuppressCleanCode` on `recipes/` and `refactoring/`. A clean baseline from `experiment/manual-1` will replace these once that run lands. Regenerate locally with (self-applied via init script, no changes to committed build files):
 
 ```bash
 ./gradlew publishToMavenLocal
