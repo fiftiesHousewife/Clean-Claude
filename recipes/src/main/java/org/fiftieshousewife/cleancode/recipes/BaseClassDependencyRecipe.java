@@ -5,8 +5,6 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeTree;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,40 +46,7 @@ public class BaseClassDependencyRecipe extends ScanningRecipe<BaseClassDependenc
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
-
-                if (c.getExtends() != null) {
-                    final String parentName = c.getExtends().toString().trim();
-                    acc.subclassMap
-                            .computeIfAbsent(parentName, k -> new HashSet<>())
-                            .add(c.getSimpleName());
-                }
-
-                return c;
-            }
-
-            @Override
-            public J.InstanceOf visitInstanceOf(J.InstanceOf instanceOf, ExecutionContext ctx) {
-                final J.InstanceOf io = super.visitInstanceOf(instanceOf, ctx);
-
-                final J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                if (enclosingClass == null) {
-                    return io;
-                }
-
-                final String className = enclosingClass.getSimpleName();
-                final String checkedType = extractTypeName(io.getClazz());
-
-                if (checkedType != null && !checkedType.equals(className)) {
-                    acc.instanceofChecks.add(new InstanceofCheck(className, checkedType));
-                }
-
-                return io;
-            }
-        };
+        return new ScannerVisitor(acc);
     }
 
     @Override
@@ -93,10 +58,13 @@ public class BaseClassDependencyRecipe extends ScanningRecipe<BaseClassDependenc
         if (lastAccumulator == null) {
             return List.of();
         }
+        return buildRows(lastAccumulator);
+    }
+
+    static List<Row> buildRows(final Accumulator acc) {
         final List<Row> results = new ArrayList<>();
-        lastAccumulator.instanceofChecks.forEach(check -> {
-            final Set<String> subclasses = lastAccumulator.subclassMap
-                    .getOrDefault(check.enclosingClass(), Set.of());
+        acc.instanceofChecks.forEach(check -> {
+            final Set<String> subclasses = acc.subclassMap.getOrDefault(check.enclosingClass(), Set.of());
             if (subclasses.contains(check.checkedType())) {
                 results.add(new Row(check.enclosingClass(), check.checkedType()));
             }
@@ -104,13 +72,56 @@ public class BaseClassDependencyRecipe extends ScanningRecipe<BaseClassDependenc
         return Collections.unmodifiableList(results);
     }
 
-    private static String extractTypeName(J tree) {
-        if (tree instanceof J.Identifier ident) {
-            return ident.getSimpleName();
+    static String extractTypeName(final J tree) {
+        return switch (tree) {
+            case J.Identifier ident -> ident.getSimpleName();
+            case J.FieldAccess fa -> fa.getSimpleName();
+            default -> null;
+        };
+    }
+
+    private static final class ScannerVisitor extends JavaIsoVisitor<ExecutionContext> {
+
+        private final Accumulator acc;
+
+        ScannerVisitor(final Accumulator acc) {
+            this.acc = acc;
         }
-        if (tree instanceof J.FieldAccess fa) {
-            return fa.getSimpleName();
+
+        @Override
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
+            recordSubclass(c);
+            return c;
         }
-        return null;
+
+        @Override
+        public J.InstanceOf visitInstanceOf(J.InstanceOf instanceOf, ExecutionContext ctx) {
+            final J.InstanceOf io = super.visitInstanceOf(instanceOf, ctx);
+            recordInstanceofCheck(io);
+            return io;
+        }
+
+        private void recordSubclass(final J.ClassDeclaration c) {
+            if (c.getExtends() == null) {
+                return;
+            }
+            final String parentName = c.getExtends().toString().trim();
+            acc.subclassMap
+                    .computeIfAbsent(parentName, k -> new HashSet<>())
+                    .add(c.getSimpleName());
+        }
+
+        private void recordInstanceofCheck(final J.InstanceOf io) {
+            final J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            if (enclosingClass == null) {
+                return;
+            }
+            final String className = enclosingClass.getSimpleName();
+            final String checkedType = extractTypeName(io.getClazz());
+            if (checkedType != null && !checkedType.equals(className)) {
+                acc.instanceofChecks.add(new InstanceofCheck(className, checkedType));
+            }
+        }
     }
 }
