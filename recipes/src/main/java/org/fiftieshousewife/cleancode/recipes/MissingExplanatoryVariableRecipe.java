@@ -17,6 +17,8 @@ public class MissingExplanatoryVariableRecipe
     private static final int CHAIN_DEPTH_THRESHOLD = 3;
     private static final int BINARY_OPERATOR_THRESHOLD = 4;
     private static final int PREVIEW_MAX_LENGTH = 60;
+    private static final String UNKNOWN_ENCLOSING_NAME = "<unknown>";
+    private static final int UNKNOWN_LINE_NUMBER = -1;
 
     public record Row(
             String className,
@@ -50,76 +52,7 @@ public class MissingExplanatoryVariableRecipe
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                final J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-
-                for (Expression argument : m.getArguments()) {
-                    if (chainDepth(argument) >= CHAIN_DEPTH_THRESHOLD) {
-                        acc.rows.add(new Row(
-                                findEnclosingClassName(),
-                                findEnclosingMethodName(),
-                                truncate(argument.printTrimmed(getCursor())),
-                                -1));
-                    }
-                }
-
-                return m;
-            }
-
-            @Override
-            public J.Return visitReturn(J.Return returnStatement, ExecutionContext ctx) {
-                final J.Return r = super.visitReturn(returnStatement, ctx);
-                final Expression expression = r.getExpression();
-
-                if (expression instanceof J.Binary && countOperators(expression) >= BINARY_OPERATOR_THRESHOLD) {
-                    acc.rows.add(new Row(
-                            findEnclosingClassName(),
-                            findEnclosingMethodName(),
-                            truncate(expression.printTrimmed(getCursor())),
-                            -1));
-                }
-
-                return r;
-            }
-
-            private int chainDepth(Expression expression) {
-                if (!(expression instanceof J.MethodInvocation invocation)) {
-                    return 0;
-                }
-                final Expression select = invocation.getSelect();
-                if (select instanceof J.MethodInvocation) {
-                    return 1 + chainDepth(select);
-                }
-                return 1;
-            }
-
-            private int countOperators(Expression expression) {
-                if (expression instanceof J.Binary binary) {
-                    return 1 + countOperators(binary.getLeft()) + countOperators(binary.getRight());
-                }
-                return 0;
-            }
-
-            private String truncate(String text) {
-                final String normalized = text.replaceAll("\\s+", " ");
-                if (normalized.length() <= PREVIEW_MAX_LENGTH) {
-                    return normalized;
-                }
-                return normalized.substring(0, PREVIEW_MAX_LENGTH);
-            }
-
-            private String findEnclosingClassName() {
-                final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
-            }
-
-            private String findEnclosingMethodName() {
-                final J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                return methodDecl != null ? methodDecl.getSimpleName() : "<unknown>";
-            }
-        };
+        return new Scanner(acc);
     }
 
     @Override
@@ -129,5 +62,78 @@ public class MissingExplanatoryVariableRecipe
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    private static final class Scanner extends JavaIsoVisitor<ExecutionContext> {
+        private final Accumulator acc;
+
+        Scanner(final Accumulator acc) {
+            this.acc = acc;
+        }
+
+        @Override
+        public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation method, final ExecutionContext ctx) {
+            final J.MethodInvocation visited = super.visitMethodInvocation(method, ctx);
+            visited.getArguments().stream()
+                    .filter(argument -> chainDepth(argument) >= CHAIN_DEPTH_THRESHOLD)
+                    .forEach(argument -> acc.rows.add(rowFor(argument)));
+            return visited;
+        }
+
+        @Override
+        public J.Return visitReturn(final J.Return returnStatement, final ExecutionContext ctx) {
+            final J.Return visited = super.visitReturn(returnStatement, ctx);
+            final Expression expression = visited.getExpression();
+            if (expression instanceof J.Binary && countOperators(expression) >= BINARY_OPERATOR_THRESHOLD) {
+                acc.rows.add(rowFor(expression));
+            }
+            return visited;
+        }
+
+        private Row rowFor(final Expression expression) {
+            return new Row(
+                    findEnclosingClassName(),
+                    findEnclosingMethodName(),
+                    truncate(expression.printTrimmed(getCursor())),
+                    UNKNOWN_LINE_NUMBER);
+        }
+
+        int chainDepth(final Expression expression) {
+            if (!(expression instanceof J.MethodInvocation invocation)) {
+                return 0;
+            }
+            final Expression select = invocation.getSelect();
+            final int selectDepth = select instanceof J.MethodInvocation ? chainDepth(select) : 0;
+            final int thisInvocation = 1;
+            return thisInvocation + selectDepth;
+        }
+
+        int countOperators(final Expression expression) {
+            if (!(expression instanceof J.Binary binary)) {
+                return 0;
+            }
+            final int leftOperators = countOperators(binary.getLeft());
+            final int rightOperators = countOperators(binary.getRight());
+            final int thisOperator = 1;
+            return thisOperator + leftOperators + rightOperators;
+        }
+
+        String truncate(final String text) {
+            final String normalized = text.replaceAll("\\s+", " ");
+            if (normalized.length() <= PREVIEW_MAX_LENGTH) {
+                return normalized;
+            }
+            return normalized.substring(0, PREVIEW_MAX_LENGTH);
+        }
+
+        private String findEnclosingClassName() {
+            final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            return classDecl != null ? classDecl.getSimpleName() : UNKNOWN_ENCLOSING_NAME;
+        }
+
+        private String findEnclosingMethodName() {
+            final J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
+            return methodDecl != null ? methodDecl.getSimpleName() : UNKNOWN_ENCLOSING_NAME;
+        }
     }
 }
