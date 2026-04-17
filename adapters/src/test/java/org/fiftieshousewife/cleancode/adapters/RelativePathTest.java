@@ -6,23 +6,23 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PathUtilsTest {
+class RelativePathTest {
 
     @Test
     void relativisesCorrectly() {
-        String result = PathUtils.relativise("/project/src/main/Foo.java", Path.of("/project"));
+        String result = RelativePath.of("/project/src/main/Foo.java", Path.of("/project"));
         assertEquals("src/main/Foo.java", result);
     }
 
     @Test
     void handlesTrailingSlash() {
-        String result = PathUtils.relativise("/project/src/Foo.java", Path.of("/project"));
+        String result = RelativePath.of("/project/src/Foo.java", Path.of("/project"));
         assertEquals("src/Foo.java", result);
     }
 
     @Test
     void returnsOriginalIfNoPrefixMatch() {
-        String result = PathUtils.relativise("/other/src/Foo.java", Path.of("/project"));
+        String result = RelativePath.of("/other/src/Foo.java", Path.of("/project"));
         assertEquals("/other/src/Foo.java", result);
     }
 }

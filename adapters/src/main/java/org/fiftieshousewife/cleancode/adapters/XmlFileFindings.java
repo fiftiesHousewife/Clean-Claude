@@ -25,7 +25,7 @@ final class XmlFileFindings {
         final NodeList fileNodes = doc.getElementsByTagName("file");
         for (int i = 0; i < fileNodes.getLength(); i++) {
             final Element fileElement = (Element) fileNodes.item(i);
-            final String relativePath = PathUtils.relativise(
+            final String relativePath = RelativePath.of(
                     fileElement.getAttribute("name"), context.projectRoot());
             perFile.accept(new FileContext(fileElement, relativePath), findings);
         }

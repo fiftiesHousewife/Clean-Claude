@@ -2,11 +2,11 @@ package org.fiftieshousewife.cleancode.adapters;
 
 import java.nio.file.Path;
 
-public final class PathUtils {
+public final class RelativePath {
 
-    private PathUtils() {}
+    private RelativePath() {}
 
-    public static String relativise(String absolutePath, Path projectRoot) {
+    public static String of(final String absolutePath, final Path projectRoot) {
         final String root = projectRoot.toString();
         if (absolutePath.startsWith(root)) {
             String relative = absolutePath.substring(root.length());
