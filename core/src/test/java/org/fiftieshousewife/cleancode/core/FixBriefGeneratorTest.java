@@ -84,6 +84,76 @@ class FixBriefGeneratorTest {
     }
 
     @Test
+    void siblingBlockListsOtherJavaTypesInTheSameDirectory(@TempDir Path projectRoot) throws IOException {
+        final Path pkg = projectRoot.resolve("core/src/main/java/com/example");
+        Files.createDirectories(pkg);
+        Files.writeString(pkg.resolve("Foo.java"), "package com.example; public class Foo {}");
+        Files.writeString(pkg.resolve("Bar.java"), "package com.example; public class Bar {}");
+        Files.writeString(pkg.resolve("Baz.java"), "package com.example; public class Baz {}");
+
+        final AggregatedReport report = reportWith(
+                Finding.at(HeuristicCode.G22, "core/src/main/java/com/example/Foo.java",
+                        10, 10, "missing final", Severity.WARNING, Confidence.HIGH, "checkstyle", "r"));
+
+        FixBriefGenerator.generate(report, outputDir, projectRoot);
+
+        final String content = Files.readString(outputDir.resolve("Foo.md"));
+        assertAll(
+                () -> assertTrue(content.contains("Sibling types in this package"),
+                        "brief must include the sibling-context header"),
+                () -> assertTrue(content.contains("- Bar"),
+                        "Bar sibling must be listed"),
+                () -> assertTrue(content.contains("- Baz"),
+                        "Baz sibling must be listed"),
+                () -> assertFalse(content.contains("- Foo"),
+                        "the file itself must not be listed as its own sibling"));
+    }
+
+    @Test
+    void siblingBlockOmittedWhenProjectRootIsUnknown() throws IOException {
+        final AggregatedReport report = reportWith(
+                Finding.at(HeuristicCode.G22, "core/src/main/java/com/example/Foo.java",
+                        10, 10, "missing final", Severity.WARNING, Confidence.HIGH, "checkstyle", "r"));
+
+        FixBriefGenerator.generate(report, outputDir);
+
+        final String content = Files.readString(outputDir.resolve("Foo.md"));
+        assertFalse(content.contains("Sibling types in this package"),
+                "without a projectRoot we cannot enumerate siblings — omit the block entirely");
+    }
+
+    @Test
+    void metricSqueezingWarningAppearsWhenSizeAndDuplicationBothPresent() throws IOException {
+        final AggregatedReport report = reportWith(
+                Finding.at(HeuristicCode.Ch10_1, "core/src/main/java/com/example/Big.java",
+                        1, 200, "class too long", Severity.WARNING, Confidence.HIGH, "openrewrite", "r"),
+                Finding.at(HeuristicCode.G5, "core/src/main/java/com/example/Big.java",
+                        40, 80, "duplicate block", Severity.WARNING, Confidence.HIGH, "cpd", "r"));
+
+        FixBriefGenerator.generate(report, outputDir);
+
+        final String content = Files.readString(outputDir.resolve("Big.md"));
+        assertAll(
+                () -> assertTrue(content.contains("Do not metric-squeeze"),
+                        "brief with Ch10.1 + G5 must call out the squeeze anti-pattern"),
+                () -> assertTrue(content.contains("Split by responsibility, not by LOC"),
+                        "brief must give the positive replacement for LOC-minimisation"));
+    }
+
+    @Test
+    void metricSqueezingWarningAbsentWhenOnlySizeFindingPresent() throws IOException {
+        final AggregatedReport report = reportWith(
+                Finding.at(HeuristicCode.Ch10_1, "core/src/main/java/com/example/Big.java",
+                        1, 200, "class too long", Severity.WARNING, Confidence.HIGH, "openrewrite", "r"));
+
+        FixBriefGenerator.generate(report, outputDir);
+
+        final String content = Files.readString(outputDir.resolve("Big.md"));
+        assertFalse(content.contains("Do not metric-squeeze"),
+                "size finding alone should not trigger the squeeze warning");
+    }
+
+    @Test
     void e1SectionOrdersAgentToBumpAndRunTests() throws IOException {
         final AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.E1, null,
