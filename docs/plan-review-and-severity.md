@@ -112,7 +112,7 @@ The biggest fix is to give OpenRewrite per-code severity. `OpenRewriteFindingSou
 | G5 | CPD | WARNING | WARNING + ERROR when tokens > 2× threshold | Large duplication blocks are actionable bugs |
 | Ch10.1 | `ClassLineLengthRecipe` | WARNING | WARNING + ERROR when > 2× threshold | Same escalation pattern |
 | F1 | `LargeConstructorRecipe` | WARNING | WARNING + ERROR when > 2× threshold | Same |
-| E1 | `DependencyUpdatesFindingSource` | WARNING | INFO | User said this is low-value noise relative to other issues |
+| E1 | `DependencyUpdatesFindingSource` | WARNING | ERROR | Outdated deps carry real supply-chain / CVE risk; dedupe to one entry per coord makes this actionable rather than noisy |
 
 The "2× threshold" escalation pattern captures what's genuinely alarming vs merely over the line. Keep thresholds configurable in `cleanCode.thresholds.*` so consumers can tune per-project.
 

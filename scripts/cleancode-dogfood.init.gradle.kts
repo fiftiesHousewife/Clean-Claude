@@ -17,6 +17,7 @@ initscript {
     }
     dependencies {
         classpath("org.fiftieshousewife.cleancode:plugin:1.0-SNAPSHOT")
+        classpath("com.github.ben-manes:gradle-versions-plugin:0.53.0")
     }
 }
 
@@ -25,7 +26,24 @@ val javaModules = setOf(
     "plugin", "recipes", "refactoring"
 )
 
+// The Gradle root project owns gradle/libs.versions.toml, so E1 dependency
+// findings are emitted only there. Sub-modules see the catalog as an ancestor
+// and skip E1 to avoid the cross-module duplication that made the per-module
+// HTML reports list the same outdated deps five times.
 allprojects {
-    if (name !in javaModules) return@allprojects
+    val isRoot = project == rootProject
+    if (!isRoot && name !in javaModules) return@allprojects
+    if (isRoot) {
+        repositories {
+            mavenCentral()
+        }
+        apply<com.github.benmanes.gradle.versions.VersionsPlugin>()
+        tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>().configureEach {
+            outputFormatter = "json"
+            rejectVersionIf {
+                candidate.version.substringBefore(".") != currentVersion.substringBefore(".")
+            }
+        }
+    }
     apply<org.fiftieshousewife.cleancode.plugin.CleanCodePlugin>()
 }

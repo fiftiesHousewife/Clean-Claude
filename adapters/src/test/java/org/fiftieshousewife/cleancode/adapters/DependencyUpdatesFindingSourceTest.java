@@ -106,6 +106,124 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
+    void anchorsFindingsToVersionCatalogWhenPresent(@TempDir Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "org.example",
+                        "name": "lib",
+                        "version": "1.0.0",
+                        "available": { "release": "1.1.0" }
+                      }
+                    ]
+                  }
+                }
+                """);
+        Files.createDirectories(tempDir.resolve("gradle"));
+        Files.writeString(tempDir.resolve("gradle/libs.versions.toml"), "[versions]\n");
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertEquals("gradle/libs.versions.toml", findings.get(0).sourceFile(),
+                "when a catalog exists, route E1 to the catalog so all findings land in one brief");
+    }
+
+    @Test
+    void leavesFindingsProjectLevelWhenNoCatalogExists(@TempDir Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "org.example",
+                        "name": "lib",
+                        "version": "1.0.0",
+                        "available": { "release": "1.1.0" }
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertNull(findings.get(0).sourceFile(),
+                "without a catalog, E1 stays project-level (no source anchor)");
+    }
+
+    @Test
+    void skipsE1WhenCatalogLivesInAncestor(@TempDir Path tempDir) throws Exception {
+        final Path rootDir = tempDir.resolve("repo-root");
+        final Path moduleDir = rootDir.resolve("module");
+        Files.createDirectories(rootDir.resolve("gradle"));
+        Files.writeString(rootDir.resolve("gradle/libs.versions.toml"), "[versions]\n");
+        Files.writeString(rootDir.resolve("settings.gradle.kts"), "rootProject.name = \"r\"");
+
+        final Path buildDir = moduleDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "org.example",
+                        "name": "lib",
+                        "version": "1.0.0",
+                        "available": { "release": "1.1.0" }
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        final ProjectContext context = new ProjectContext(
+                moduleDir, "module", "1.0", "21",
+                List.of(), List.of(),
+                buildDir, buildDir.resolve("reports"), List.of());
+
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertTrue(findings.isEmpty(),
+                "sub-modules must defer E1 emission to the project that owns the catalog");
+    }
+
+    @Test
+    void deduplicatesCoordinatesAcrossReport(@TempDir Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "org.example",
+                        "name": "lib",
+                        "version": "1.0.0",
+                        "available": { "release": "1.1.0" }
+                      },
+                      {
+                        "group": "org.example",
+                        "name": "lib",
+                        "version": "1.0.0",
+                        "available": { "release": "1.1.0" }
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertEquals(1, findings.size(),
+                "same coordinate across multiple configurations must collapse to one finding");
+    }
+
+    @Test
     void prefersMilestoneOverReleaseVersion(@TempDir Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """

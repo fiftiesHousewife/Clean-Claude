@@ -12,6 +12,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
 
     private static final String TOOL = "dependency-updates";
     private static final String REPORT_FILE = "dependencyUpdates/report.json";
+    private static final String VERSION_CATALOG = "gradle/libs.versions.toml";
 
     @Override
     public String id() {
@@ -51,10 +53,36 @@ public class DependencyUpdatesFindingSource implements FindingSource {
             return List.of();
         }
 
+        final CatalogLocation location = locateCatalog(context.projectRoot());
+        if (location == CatalogLocation.ANCESTOR) {
+            return List.of();
+        }
+
         final JsonObject root = parseReport(report);
         final List<Finding> findings = new ArrayList<>();
-        extractOutdated(root, findings);
+        final Set<String> seenCoordinates = new LinkedHashSet<>();
+        extractOutdated(root, findings, seenCoordinates, location == CatalogLocation.HERE);
         return findings;
+    }
+
+    private enum CatalogLocation { HERE, ANCESTOR, NONE }
+
+    private CatalogLocation locateCatalog(final Path projectRoot) {
+        if (Files.exists(projectRoot.resolve(VERSION_CATALOG))) {
+            return CatalogLocation.HERE;
+        }
+        Path ancestor = projectRoot.getParent();
+        while (ancestor != null) {
+            if (Files.exists(ancestor.resolve(VERSION_CATALOG))) {
+                return CatalogLocation.ANCESTOR;
+            }
+            if (Files.exists(ancestor.resolve("settings.gradle"))
+                    || Files.exists(ancestor.resolve("settings.gradle.kts"))) {
+                return CatalogLocation.NONE;
+            }
+            ancestor = ancestor.getParent();
+        }
+        return CatalogLocation.NONE;
     }
 
     private JsonObject parseReport(Path report) throws FindingSourceException {
@@ -65,7 +93,8 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         }
     }
 
-    private void extractOutdated(JsonObject root, List<Finding> findings) {
+    private void extractOutdated(JsonObject root, List<Finding> findings,
+                                 Set<String> seenCoordinates, boolean hasCatalog) {
         final JsonObject outdated = root.getAsJsonObject("outdated");
         if (outdated == null) {
             return;
@@ -76,10 +105,12 @@ public class DependencyUpdatesFindingSource implements FindingSource {
             return;
         }
 
-        dependencies.forEach(dep -> extractDependency(dep.getAsJsonObject(), findings));
+        dependencies.forEach(dep ->
+                extractDependency(dep.getAsJsonObject(), findings, seenCoordinates, hasCatalog));
     }
 
-    private void extractDependency(JsonObject dep, List<Finding> findings) {
+    private void extractDependency(JsonObject dep, List<Finding> findings,
+                                   Set<String> seenCoordinates, boolean hasCatalog) {
         final String group = dep.get("group").getAsString();
         final String name = dep.get("name").getAsString();
         final String currentVersion = dep.get("version").getAsString();
@@ -90,13 +121,17 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         }
 
         final String coordinate = group + ":" + name;
-        findings.add(Finding.projectLevel(
-                HeuristicCode.E1,
-                "Outdated dependency %s [%s -> %s]".formatted(coordinate, currentVersion, latestVersion),
-                Severity.INFO,
-                Confidence.HIGH,
-                TOOL,
-                coordinate));
+        if (!seenCoordinates.add(coordinate)) {
+            return;
+        }
+
+        final String message = "Outdated dependency %s [%s -> %s]"
+                .formatted(coordinate, currentVersion, latestVersion);
+        findings.add(hasCatalog
+                ? Finding.at(HeuristicCode.E1, VERSION_CATALOG, 0, 0,
+                        message, Severity.ERROR, Confidence.HIGH, TOOL, coordinate)
+                : Finding.projectLevel(HeuristicCode.E1,
+                        message, Severity.ERROR, Confidence.HIGH, TOOL, coordinate));
     }
 
     private String latestAvailable(JsonObject dep) {
