@@ -25,6 +25,16 @@ LOG="$LOG_DIR/${APPROACH}-${RUN}-$(date +%Y%m%d-%H%M%S).log"
     echo "PATH=$PATH"
     echo "pwd=$(pwd)"
     echo
+
+    # Skip cleanly if another experiment run is still working the tree.
+    # pgrep -f matches the full command line; -n the newest matching pid.
+    if pgrep -fl "scripts/run-experiment\.sh " | grep -v "$$" >/dev/null; then
+        echo "SKIP: another run-experiment.sh process is active. Aborting to avoid"
+        echo "      a preflight collision on the shared working tree."
+        pgrep -fl "scripts/run-experiment\.sh "
+        exit 0
+    fi
+
     cd "$REPO"
     bash scripts/run-experiment.sh "$APPROACH" "$RUN"
     echo
