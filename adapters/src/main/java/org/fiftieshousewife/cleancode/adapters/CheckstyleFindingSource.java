@@ -10,12 +10,17 @@ import org.w3c.dom.NodeList;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CheckstyleFindingSource implements FindingSource {
 
     private record RuleMapping(HeuristicCode code, Severity severity, Confidence confidence, String ruleUrl) {}
 
     private static final String CS = "https://checkstyle.org/checks/";
+
+    private static final int LINE_LENGTH_ERROR_THRESHOLD = 150;
+    private static final Pattern LINE_LENGTH_FOUND = Pattern.compile("found (\\d+)");
 
     private static final Map<String, RuleMapping> RULE_MAP = Map.ofEntries(
             Map.entry("ParameterNumber", new RuleMapping(HeuristicCode.F1, Severity.WARNING, Confidence.HIGH, CS + "sizes/parameternumber.html")),
@@ -43,7 +48,7 @@ public class CheckstyleFindingSource implements FindingSource {
             Map.entry("UnusedImports", new RuleMapping(HeuristicCode.G12, Severity.INFO, Confidence.HIGH, CS + "imports/unusedimports.html")),
             Map.entry("EmptyBlock", new RuleMapping(HeuristicCode.G4, Severity.WARNING, Confidence.HIGH, CS + "blocks/emptyblock.html")),
             Map.entry("FileLength", new RuleMapping(HeuristicCode.Ch10_1, Severity.WARNING, Confidence.MEDIUM, CS + "sizes/filelength.html")),
-            Map.entry("LineLength", new RuleMapping(HeuristicCode.G24, Severity.INFO, Confidence.HIGH, CS + "sizes/linelength.html"))
+            Map.entry("LineLength", new RuleMapping(HeuristicCode.G24, Severity.WARNING, Confidence.HIGH, CS + "sizes/linelength.html"))
     );
 
     @Override
@@ -100,6 +105,7 @@ public class CheckstyleFindingSource implements FindingSource {
                     int line = Integer.parseInt(e.getAttribute("line"));
                     String message = e.getAttribute("message");
                     Severity severity = xmlSeverityOrDefault(e.getAttribute("severity"), mapping.severity());
+                    severity = escalateLineLength(checkName, message, severity);
 
                     findings.add(new Finding(
                             mapping.code(), relativePath, line, line,
@@ -134,5 +140,17 @@ public class CheckstyleFindingSource implements FindingSource {
             case "warning" -> Severity.WARNING;
             default -> defaultSeverity;
         };
+    }
+
+    private Severity escalateLineLength(String checkName, String message, Severity current) {
+        if (!"LineLength".equals(checkName)) {
+            return current;
+        }
+        final Matcher matcher = LINE_LENGTH_FOUND.matcher(message);
+        if (!matcher.find()) {
+            return current;
+        }
+        final int actualLength = Integer.parseInt(matcher.group(1));
+        return actualLength >= LINE_LENGTH_ERROR_THRESHOLD ? Severity.ERROR : current;
     }
 }

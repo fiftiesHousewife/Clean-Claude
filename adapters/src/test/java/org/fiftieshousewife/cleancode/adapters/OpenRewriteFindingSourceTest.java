@@ -28,6 +28,25 @@ class OpenRewriteFindingSourceTest {
     }
 
     @Test
+    void severityFor_escalatesLatentBugCodesToError() {
+        assertAll(
+                () -> assertEquals(Severity.ERROR,
+                        OpenRewriteFindingSource.severityFor(HeuristicCode.G4)),
+                () -> assertEquals(Severity.ERROR,
+                        OpenRewriteFindingSource.severityFor(HeuristicCode.Ch7_1)),
+                () -> assertEquals(Severity.ERROR,
+                        OpenRewriteFindingSource.severityFor(HeuristicCode.F2)),
+                () -> assertEquals(Severity.ERROR,
+                        OpenRewriteFindingSource.severityFor(HeuristicCode.G8)));
+    }
+
+    @Test
+    void severityFor_defaultsToWarningForCodesWithoutAnEntry() {
+        assertEquals(Severity.WARNING,
+                OpenRewriteFindingSource.severityFor(HeuristicCode.G30));
+    }
+
+    @Test
     void displayName_returnsHumanReadable() {
         assertEquals("OpenRewrite", source.displayName());
     }

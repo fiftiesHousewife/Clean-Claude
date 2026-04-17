@@ -93,7 +93,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         findings.add(Finding.projectLevel(
                 HeuristicCode.E1,
                 "Outdated dependency %s [%s -> %s]".formatted(coordinate, currentVersion, latestVersion),
-                Severity.WARNING,
+                Severity.INFO,
                 Confidence.HIGH,
                 TOOL,
                 coordinate));

@@ -31,6 +31,16 @@ public class OpenRewriteFindingSource implements FindingSource {
         this.thresholds = thresholds;
     }
 
+    private static final Map<HeuristicCode, Severity> DEFAULT_SEVERITY = Map.of(
+            HeuristicCode.G4, Severity.ERROR,
+            HeuristicCode.Ch7_1, Severity.ERROR,
+            HeuristicCode.F2, Severity.ERROR,
+            HeuristicCode.G8, Severity.ERROR);
+
+    static Severity severityFor(final HeuristicCode code) {
+        return DEFAULT_SEVERITY.getOrDefault(code, Severity.WARNING);
+    }
+
     private static final Set<HeuristicCode> COVERED = Set.of(
             HeuristicCode.F1, HeuristicCode.F2, HeuristicCode.F3,
             HeuristicCode.C3, HeuristicCode.C5,
@@ -656,13 +666,13 @@ public class OpenRewriteFindingSource implements FindingSource {
     private Finding finding(HeuristicCode code, String className, String message) {
         final String sourcePath = resolveSourcePath(className);
         return Finding.at(code, sourcePath, -1, -1,
-                message, Severity.WARNING, Confidence.HIGH, TOOL, code.name());
+                message, severityFor(code), Confidence.HIGH, TOOL, code.name());
     }
 
     private Finding finding(HeuristicCode code, String className, int line, String message) {
         final String sourcePath = resolveSourcePath(className);
         return Finding.at(code, sourcePath, line, line,
-                message, Severity.WARNING, Confidence.HIGH, TOOL, code.name());
+                message, severityFor(code), Confidence.HIGH, TOOL, code.name());
     }
 
     private String resolveSourcePath(String className) {

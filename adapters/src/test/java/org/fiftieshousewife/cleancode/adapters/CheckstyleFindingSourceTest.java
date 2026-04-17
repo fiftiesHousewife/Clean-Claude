@@ -166,6 +166,39 @@ class CheckstyleFindingSourceTest {
         assertEquals("src/main/java/com/example/Foo.java", pn.sourceFile());
     }
 
+    @Test
+    void collectFindings_lineLengthUnder150StaysWarning(@TempDir Path tempDir) throws Exception {
+        ProjectContext ctx = contextWithFixture(
+                tempDir, "/checkstyle/line-length.xml", "checkstyle/main.xml");
+        List<Finding> findings = source.collectFindings(ctx);
+
+        Finding at135 = findings.stream()
+                .filter(f -> f.startLine() == 12)
+                .findFirst().orElseThrow();
+
+        assertEquals(Severity.WARNING, at135.severity());
+    }
+
+    @Test
+    void collectFindings_lineLengthAtOrOver150EscalatesToError(@TempDir Path tempDir) throws Exception {
+        ProjectContext ctx = contextWithFixture(
+                tempDir, "/checkstyle/line-length.xml", "checkstyle/main.xml");
+        List<Finding> findings = source.collectFindings(ctx);
+
+        Finding at155 = findings.stream()
+                .filter(f -> f.startLine() == 34)
+                .findFirst().orElseThrow();
+        Finding at150 = findings.stream()
+                .filter(f -> f.startLine() == 56)
+                .findFirst().orElseThrow();
+
+        assertAll(
+                () -> assertEquals(Severity.ERROR, at155.severity(),
+                        "155 > 150 threshold escalates to ERROR"),
+                () -> assertEquals(Severity.ERROR, at150.severity(),
+                        "150 at threshold escalates to ERROR"));
+    }
+
     private ProjectContext contextWithFixture(Path tempDir, String resourcePath, String targetPath)
             throws IOException {
         return TestContexts.contextWithFixture(getClass(), tempDir, resourcePath, targetPath);
