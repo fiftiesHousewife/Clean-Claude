@@ -1,8 +1,6 @@
 package org.fiftieshousewife.cleancode.plugin;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -26,14 +24,16 @@ final class SkillFileScaffolder {
     private static final String THRESHOLDS_HASH_FILE = ".thresholds-hash";
 
     private final Path skillsDir;
-    private final CleanCodeExtension.ThresholdsExtension thresholds;
     private final Logger logger;
+    private final ThresholdsHashStore hashStore;
+    private final SkillTemplateResolver templateResolver;
 
-    SkillFileScaffolder(Path skillsDir,
-            CleanCodeExtension.ThresholdsExtension thresholds, Logger logger) {
+    SkillFileScaffolder(final Path skillsDir,
+            final ThresholdsExtension thresholds, final Logger logger) {
         this.skillsDir = skillsDir;
-        this.thresholds = thresholds;
         this.logger = logger;
+        this.hashStore = new ThresholdsHashStore(thresholds, logger);
+        this.templateResolver = new SkillTemplateResolver(thresholds, hashStore);
     }
 
     void scaffold() {
@@ -44,20 +44,20 @@ final class SkillFileScaffolder {
             return;
         }
 
-        final String currentHash = computeThresholdsHash();
+        final String currentHash = hashStore.computeCurrentHash();
         final Path hashFile = skillsDir.resolve(THRESHOLDS_HASH_FILE);
-        final String previousHash = readHashFile(hashFile);
+        final String previousHash = hashStore.readHash(hashFile);
         final boolean thresholdsChanged = !currentHash.equals(previousHash);
 
         SKILL_FILES.forEach(filename -> scaffoldFile(filename, thresholdsChanged, previousHash));
 
-        writeHashFile(hashFile, currentHash);
+        hashStore.writeHash(hashFile, currentHash);
     }
 
-    private void scaffoldFile(String filename, boolean thresholdsChanged,
-            String previousHash) {
+    private void scaffoldFile(final String filename, final boolean thresholdsChanged,
+            final String previousHash) {
         final Path target = skillsDir.resolve(filename);
-        final String resolvedContent = loadAndResolveTemplate(filename);
+        final String resolvedContent = templateResolver.resolveCurrent(filename);
         if (resolvedContent == null) {
             return;
         }
@@ -72,11 +72,11 @@ final class SkillFileScaffolder {
         }
     }
 
-    private void refreshIfUnmodified(Path target, String filename,
-            String resolvedContent, String previousHash) {
+    private void refreshIfUnmodified(final Path target, final String filename,
+            final String resolvedContent, final String previousHash) {
         try {
             final String currentFileContent = Files.readString(target);
-            final String previousTemplate = resolveTemplateWithHash(filename, previousHash);
+            final String previousTemplate = templateResolver.resolveWithHash(filename, previousHash);
             if (previousTemplate != null && currentFileContent.equals(previousTemplate)) {
                 writeSkillFile(target, resolvedContent);
                 logger.lifecycle("Refreshed skill file with new thresholds: {}", target);
@@ -89,44 +89,7 @@ final class SkillFileScaffolder {
         }
     }
 
-    private String resolveTemplateWithHash(String filename, String previousHash) {
-        if (previousHash == null) {
-            return null;
-        }
-        final String template = loadTemplateResource(filename);
-        if (template == null) {
-            return null;
-        }
-        final String[] values = parseThresholdsHash(previousHash);
-        if (values == null) {
-            return null;
-        }
-        return template
-                .replace("{{classLineCount}}", values[0])
-                .replace("{{classTargetLines}}", values[1])
-                .replace("{{recordComponentCount}}", values[2]);
-    }
-
-    private String loadAndResolveTemplate(String filename) {
-        final String template = loadTemplateResource(filename);
-        if (template == null) {
-            return null;
-        }
-        return replaceTokens(template);
-    }
-
-    private String loadTemplateResource(String filename) {
-        try (InputStream is = getClass().getResourceAsStream("/skills/" + filename)) {
-            if (is == null) {
-                return null;
-            }
-            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    private void writeSkillFile(Path target, String content) {
+    private void writeSkillFile(final Path target, final String content) {
         try {
             final Path parent = target.getParent();
             if (parent != null) {
@@ -136,48 +99,6 @@ final class SkillFileScaffolder {
             logger.lifecycle("Scaffolded skill file: {}", target);
         } catch (IOException e) {
             logger.warn("Could not write skill file: {}", target, e);
-        }
-    }
-
-    String replaceTokens(String content) {
-        return content
-                .replace("{{classLineCount}}", String.valueOf(thresholds.getClassLineCount().get()))
-                .replace("{{classTargetLines}}",
-                        String.valueOf(thresholds.getClassLineCount().get() / 3))
-                .replace("{{recordComponentCount}}",
-                        String.valueOf(thresholds.getRecordComponentCount().get()));
-    }
-
-    String computeThresholdsHash() {
-        final int classLineCount = thresholds.getClassLineCount().get();
-        final int classTargetLines = classLineCount / 3;
-        final int recordComponentCount = thresholds.getRecordComponentCount().get();
-        return classLineCount + ":" + classTargetLines + ":" + recordComponentCount;
-    }
-
-    private String[] parseThresholdsHash(String hash) {
-        final String[] parts = hash.split(":");
-        if (parts.length != 3) {
-            return null;
-        }
-        return parts;
-    }
-
-    private String readHashFile(Path hashFile) {
-        try {
-            if (Files.exists(hashFile)) {
-                return Files.readString(hashFile).strip();
-            }
-        } catch (IOException ignored) {
-        }
-        return null;
-    }
-
-    private void writeHashFile(Path hashFile, String hash) {
-        try {
-            Files.writeString(hashFile, hash);
-        } catch (IOException e) {
-            logger.warn("Could not write thresholds hash: {}", hashFile, e);
         }
     }
 }
