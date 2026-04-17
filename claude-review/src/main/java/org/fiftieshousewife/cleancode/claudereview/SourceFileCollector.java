@@ -17,10 +17,11 @@ final class SourceFileCollector {
     private final int minFileLines;
 
     SourceFileCollector(final ClaudeReviewConfig config) {
-        this.excludeMatchers = config.excludePatterns().stream()
+        final ClaudeReviewConfig.FileSelection fileSelection = config.fileSelection();
+        this.excludeMatchers = fileSelection.excludePatterns().stream()
                 .map(p -> FileSystems.getDefault().getPathMatcher("glob:" + p))
                 .toList();
-        this.minFileLines = config.minFileLines();
+        this.minFileLines = fileSelection.minFileLines();
     }
 
     List<Path> collect(final ProjectContext context) {

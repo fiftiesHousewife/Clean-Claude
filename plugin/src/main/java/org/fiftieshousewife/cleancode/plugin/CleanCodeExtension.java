@@ -63,14 +63,16 @@ public abstract class CleanCodeExtension {
         final Set<HeuristicCode> enabledCodes = claudeReview.getCodes().get().stream()
                 .map(HeuristicCode::valueOf)
                 .collect(Collectors.toUnmodifiableSet());
+        final ClaudeReviewConfig.FileSelection fileSelection = new ClaudeReviewConfig.FileSelection(
+                claudeReview.getMaxFilesPerRun().get(),
+                claudeReview.getMinFileLines().get(),
+                claudeReview.getExcludePatterns().get());
         return new ClaudeReviewConfig(
                 claudeReview.getEnabled().get(),
                 apiKey,
                 claudeReview.getModel().get(),
-                claudeReview.getMaxFilesPerRun().get(),
-                claudeReview.getMinFileLines().get(),
                 enabledCodes,
-                claudeReview.getExcludePatterns().get());
+                fileSelection);
     }
 
     public RecipeThresholds buildRecipeThresholds() {

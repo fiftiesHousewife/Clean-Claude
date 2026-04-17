@@ -81,7 +81,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
         final List<Finding> allFindings = new ArrayList<>();
         int analysed = 0;
         for (final Path file : files) {
-            if (analysed >= config.maxFilesPerRun()) {
+            if (analysed >= config.fileSelection().maxFilesPerRun()) {
                 break;
             }
             final ReviewResult result = reviewSingleFile(file, session);

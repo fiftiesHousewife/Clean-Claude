@@ -9,17 +9,24 @@ public record ClaudeReviewConfig(
         boolean enabled,
         String apiKey,
         String model,
-        int maxFilesPerRun,
-        int minFileLines,
         Set<HeuristicCode> enabledCodes,
-        List<String> excludePatterns
+        FileSelection fileSelection
 ) {
     public ClaudeReviewConfig {
         enabledCodes = Set.copyOf(enabledCodes);
-        excludePatterns = List.copyOf(excludePatterns);
     }
 
     public boolean hasApiKey() {
         return apiKey != null && !apiKey.isBlank();
+    }
+
+    public record FileSelection(
+            int maxFilesPerRun,
+            int minFileLines,
+            List<String> excludePatterns
+    ) {
+        public FileSelection {
+            excludePatterns = List.copyOf(excludePatterns);
+        }
     }
 }
