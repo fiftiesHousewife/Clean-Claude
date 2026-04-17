@@ -1,0 +1,12 @@
+# Method name prefixes considered assertion calls when counting consecutive
+# assertions in test bodies. Loaded by AssertPrefixes.
+# Lines starting with '#' and blank lines are ignored.
+
+assertThat
+assertEquals
+assertTrue
+assertFalse
+assertNull
+assertNotNull
+assertThrows
+assertSame
