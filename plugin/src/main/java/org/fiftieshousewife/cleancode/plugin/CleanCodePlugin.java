@@ -71,28 +71,7 @@ public class CleanCodePlugin implements Plugin<Project> {
                 });
     }
 
-    private static void verifySpotBugsOnClasspath() {
-        try {
-            Class.forName("com.github.spotbugs.snom.SpotBugsPlugin",
-                    false, CleanCodePlugin.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new org.gradle.api.GradleException(
-                    "The Clean Code plugin requires the SpotBugs Gradle plugin on the plugin classpath, "
-                            + "but it was not found. The SpotBugs plugin is published only to the Gradle "
-                            + "Plugin Portal — ensure your settings.gradle(.kts) includes it in pluginManagement:\n\n"
-                            + "  pluginManagement {\n"
-                            + "      repositories {\n"
-                            + "          mavenLocal()\n"
-                            + "          gradlePluginPortal()\n"
-                            + "          mavenCentral()\n"
-                            + "      }\n"
-                            + "  }\n\n"
-                            + "Or apply the bundled init script (see README: 'Apply to another project').");
-        }
-    }
-
     private void applyStaticAnalysisPlugins(Project project, CleanCodeExtension ext) {
-        verifySpotBugsOnClasspath();
         project.getPluginManager().apply("java");
         project.getPluginManager().apply("pmd");
         project.getPluginManager().apply("checkstyle");
