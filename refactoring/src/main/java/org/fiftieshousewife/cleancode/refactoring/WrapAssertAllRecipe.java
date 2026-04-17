@@ -23,6 +23,9 @@ public class WrapAssertAllRecipe extends Recipe {
             "assertNull", "assertNotNull", "assertThrows", "assertSame",
             "assertNotEquals", "assertArrayEquals", "assertIterableEquals");
 
+    private static final String ASSERT_ALL_TEMPLATE =
+            "class _T { void _m() { assertAll(\n                %s\n        ); } }";
+
     private final int minConsecutive;
 
     @JsonCreator
@@ -43,63 +46,80 @@ public class WrapAssertAllRecipe extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
-                final J.Block b = super.visitBlock(block, ctx);
+        return new WrapAssertAllVisitor();
+    }
 
-                final J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                if (enclosingMethod == null || !isTestMethod(enclosingMethod)) {
-                    return b;
-                }
+    private final class WrapAssertAllVisitor extends JavaIsoVisitor<ExecutionContext> {
+        @Override
+        public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+            final J.Block visited = super.visitBlock(block, ctx);
 
-                final List<Statement> statements = b.getStatements();
-                final List<AssertRun> runs = findAssertRuns(statements);
-
-                if (runs.isEmpty()) {
-                    return b;
-                }
-
-                final List<Statement> newStatements = new ArrayList<>();
-                int i = 0;
-                for (final AssertRun run : runs) {
-                    while (i < run.startIndex()) {
-                        newStatements.add(statements.get(i++));
-                    }
-
-                    final String lambdas = statements.subList(run.startIndex(), run.endIndex()).stream()
-                            .map(s -> "() -> " + s.toString().trim())
-                            .collect(Collectors.joining(",\n                "));
-
-                    final String assertAllSource = "class _T { void _m() { assertAll(\n                %s\n        ); } }"
-                            .formatted(lambdas);
-
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(assertAllSource).toList();
-
-                    if (!parsed.isEmpty()) {
-                        final J.MethodDeclaration method = (J.MethodDeclaration)
-                                ((J.CompilationUnit) parsed.getFirst())
-                                        .getClasses().getFirst().getBody().getStatements().getFirst();
-                        final Statement assertAllStmt = method.getBody().getStatements().getFirst();
-                        newStatements.add(assertAllStmt.withPrefix(statements.get(run.startIndex()).getPrefix()));
-                    } else {
-                        for (int j = run.startIndex(); j < run.endIndex(); j++) {
-                            newStatements.add(statements.get(j));
-                        }
-                    }
-
-                    i = run.endIndex();
-                }
-
-                while (i < statements.size()) {
-                    newStatements.add(statements.get(i++));
-                }
-
-                return b.withStatements(newStatements);
+            final J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
+            if (enclosingMethod == null || !isTestMethod(enclosingMethod)) {
+                return visited;
             }
-        };
+
+            final List<Statement> statements = visited.getStatements();
+            final List<AssertRun> runs = findAssertRuns(statements);
+
+            if (runs.isEmpty()) {
+                return visited;
+            }
+
+            return visited.withStatements(rewriteStatements(statements, runs));
+        }
+    }
+
+    private List<Statement> rewriteStatements(final List<Statement> statements, final List<AssertRun> runs) {
+        final List<Statement> newStatements = new ArrayList<>();
+        int i = 0;
+        for (final AssertRun run : runs) {
+            while (i < run.startIndex()) {
+                newStatements.add(statements.get(i++));
+            }
+            addWrappedRun(newStatements, statements, run);
+            i = run.endIndex();
+        }
+
+        while (i < statements.size()) {
+            newStatements.add(statements.get(i++));
+        }
+        return newStatements;
+    }
+
+    private void addWrappedRun(
+            final List<Statement> newStatements,
+            final List<Statement> statements,
+            final AssertRun run) {
+        final Statement assertAllStmt = parseAssertAll(statements, run);
+        if (assertAllStmt != null) {
+            newStatements.add(assertAllStmt.withPrefix(statements.get(run.startIndex()).getPrefix()));
+        } else {
+            for (int j = run.startIndex(); j < run.endIndex(); j++) {
+                newStatements.add(statements.get(j));
+            }
+        }
+    }
+
+    private Statement parseAssertAll(final List<Statement> statements, final AssertRun run) {
+        final String lambdas = statements.subList(run.startIndex(), run.endIndex()).stream()
+                .map(s -> "() -> " + s.toString().trim())
+                .collect(Collectors.joining(",\n                "));
+
+        final String assertAllSource = ASSERT_ALL_TEMPLATE.formatted(lambdas);
+
+        final List<SourceFile> parsed = JavaParser.fromJavaVersion()
+                .logCompilationWarningsAndErrors(false)
+                .build().parse(assertAllSource).toList();
+
+        if (parsed.isEmpty()) {
+            return null;
+        }
+
+        final J.MethodDeclaration method = (J.MethodDeclaration)
+                ((J.CompilationUnit) parsed.getFirst())
+                        .getClasses().getFirst().getBody().getStatements().getFirst();
+        return method.getBody().getStatements().getFirst();
     }
 
     private record AssertRun(int startIndex, int endIndex) {}
