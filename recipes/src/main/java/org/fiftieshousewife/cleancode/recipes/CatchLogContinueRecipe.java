@@ -44,69 +44,7 @@ public class CatchLogContinueRecipe extends ScanningRecipe<CatchLogContinueRecip
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.Try visitTry(J.Try tryStatement, ExecutionContext ctx) {
-                J.Try t = super.visitTry(tryStatement, ctx);
-
-                for (J.Try.Catch catchClause : t.getCatches()) {
-                    if (isCatchLogContinue(catchClause)) {
-                        String className = findEnclosingClassName();
-                        String methodName = findEnclosingMethodName();
-                        String exceptionType = catchClause.getParameter().getTree()
-                                .getTypeAsFullyQualified() != null
-                                ? catchClause.getParameter().getTree().getTypeAsFullyQualified().getClassName()
-                                : catchClause.getParameter().getTree().getType() != null
-                                ? catchClause.getParameter().getTree().getType().toString()
-                                : "Exception";
-
-                        acc.rows.add(new Row(className, methodName, exceptionType, -1));
-                    }
-                }
-
-                return t;
-            }
-
-            private boolean isCatchLogContinue(J.Try.Catch catchClause) {
-                List<Statement> statements = catchClause.getBody().getStatements();
-
-                if (statements.isEmpty()) {
-                    return true;
-                }
-
-                if (containsThrow(statements)) {
-                    return false;
-                }
-
-                return statements.stream().allMatch(this::isLoggingStatement);
-            }
-
-            private boolean containsThrow(List<Statement> statements) {
-                return statements.stream().anyMatch(s -> s instanceof J.Throw);
-            }
-
-            private boolean isLoggingStatement(Statement statement) {
-                if (statement instanceof J.MethodInvocation invocation) {
-                    return isLoggerCall(invocation);
-                }
-                return false;
-            }
-
-            private boolean isLoggerCall(J.MethodInvocation invocation) {
-                String methodName = invocation.getSimpleName();
-                return LOGGER_METHOD_NAMES.contains(methodName);
-            }
-
-            private String findEnclosingClassName() {
-                J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
-            }
-
-            private String findEnclosingMethodName() {
-                J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                return methodDecl != null ? methodDecl.getSimpleName() : "<unknown>";
-            }
-        };
+        return new CatchLogContinueVisitor(acc);
     }
 
     @Override
@@ -116,5 +54,81 @@ public class CatchLogContinueRecipe extends ScanningRecipe<CatchLogContinueRecip
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    private static final class CatchLogContinueVisitor extends JavaIsoVisitor<ExecutionContext> {
+
+        private final Accumulator acc;
+
+        CatchLogContinueVisitor(final Accumulator acc) {
+            this.acc = acc;
+        }
+
+        @Override
+        public J.Try visitTry(final J.Try tryStatement, final ExecutionContext ctx) {
+            final J.Try t = super.visitTry(tryStatement, ctx);
+
+            for (final J.Try.Catch catchClause : t.getCatches()) {
+                if (isCatchLogContinue(catchClause)) {
+                    final String className = findEnclosingClassName();
+                    final String methodName = findEnclosingMethodName();
+                    final String exceptionType = resolveExceptionType(catchClause);
+
+                    acc.rows.add(new Row(className, methodName, exceptionType, -1));
+                }
+            }
+
+            return t;
+        }
+
+        private String resolveExceptionType(final J.Try.Catch catchClause) {
+            if (catchClause.getParameter().getTree().getTypeAsFullyQualified() != null) {
+                return catchClause.getParameter().getTree().getTypeAsFullyQualified().getClassName();
+            }
+            if (catchClause.getParameter().getTree().getType() != null) {
+                return catchClause.getParameter().getTree().getType().toString();
+            }
+            return "Exception";
+        }
+
+        private boolean isCatchLogContinue(final J.Try.Catch catchClause) {
+            final List<Statement> statements = catchClause.getBody().getStatements();
+
+            if (statements.isEmpty()) {
+                return true;
+            }
+
+            if (containsThrow(statements)) {
+                return false;
+            }
+
+            return statements.stream().allMatch(this::isLoggingStatement);
+        }
+
+        private boolean containsThrow(final List<Statement> statements) {
+            return statements.stream().anyMatch(s -> s instanceof J.Throw);
+        }
+
+        private boolean isLoggingStatement(final Statement statement) {
+            if (statement instanceof J.MethodInvocation invocation) {
+                return isLoggerCall(invocation);
+            }
+            return false;
+        }
+
+        private boolean isLoggerCall(final J.MethodInvocation invocation) {
+            final String methodName = invocation.getSimpleName();
+            return LOGGER_METHOD_NAMES.contains(methodName);
+        }
+
+        private String findEnclosingClassName() {
+            final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
+        }
+
+        private String findEnclosingMethodName() {
+            final J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
+            return methodDecl != null ? methodDecl.getSimpleName() : "<unknown>";
+        }
     }
 }
