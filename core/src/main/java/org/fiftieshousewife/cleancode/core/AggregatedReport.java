@@ -16,6 +16,11 @@ public record AggregatedReport(
         String projectName,
         String projectVersion
 ) {
+    public AggregatedReport {
+        findings = List.copyOf(findings);
+        coveredCodes = Set.copyOf(coveredCodes);
+    }
+
     public Map<HeuristicCode, List<Finding>> byCode() {
         return findings.stream().collect(
                 Collectors.groupingBy(Finding::code, TreeMap::new, Collectors.toList()));
