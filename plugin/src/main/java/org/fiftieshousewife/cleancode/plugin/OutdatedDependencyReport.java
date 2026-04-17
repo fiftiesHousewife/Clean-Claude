@@ -66,7 +66,7 @@ final class OutdatedDependencyReport {
     }
 
     private boolean isMajorBump(final String current, final String latest) {
-        return major(current) != major(latest);
+        return !major(current).equals(major(latest));
     }
 
     private String major(final String version) {
