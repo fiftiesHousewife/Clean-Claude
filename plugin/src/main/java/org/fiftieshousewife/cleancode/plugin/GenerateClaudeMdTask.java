@@ -18,21 +18,11 @@ public abstract class GenerateClaudeMdTask extends DefaultTask {
         final Path claudeMdFile = projectDir.resolve("CLAUDE.md");
         final Path baselineFile = projectDir.resolve("clean-code-baseline.json");
 
-        final List<String> dependencies = resolveRuntimeDependencies();
+        final List<String> dependencies = RuntimeDependencies.resolve(getProject());
 
         final AggregatedReport report = JsonReportReader.read(reportFile);
         ClaudeMdGenerator.generate(report, claudeMdFile, baselineFile, dependencies);
 
         getLogger().lifecycle("Generated CLAUDE.md with {} findings", report.findings().size());
-    }
-
-    private List<String> resolveRuntimeDependencies() {
-        return getProject().getConfigurations().stream()
-                .filter(c -> "runtimeClasspath".equals(c.getName()))
-                .flatMap(c -> c.getResolvedConfiguration().getResolvedArtifacts().stream())
-                .map(a -> a.getModuleVersion().getId().getGroup()
-                        + ":" + a.getModuleVersion().getId().getName())
-                .distinct()
-                .toList();
     }
 }
