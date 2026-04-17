@@ -7,6 +7,9 @@ import org.gradle.api.logging.Logger;
 
 final class ThresholdsHashStore {
 
+    private static final int HASH_PART_COUNT = 3;
+    private static final int LINE_COUNT_TO_TARGET_DIVISOR = 3;
+
     private final ThresholdsExtension thresholds;
     private final Logger logger;
 
@@ -17,20 +20,19 @@ final class ThresholdsHashStore {
 
     String computeCurrentHash() {
         final int classLineCount = thresholds.getClassLineCount().get();
-        final int classTargetLines = classLineCount / 3;
+        final int classTargetLines = classLineCount / LINE_COUNT_TO_TARGET_DIVISOR;
         final int recordComponentCount = thresholds.getRecordComponentCount().get();
-        return classLineCount + ":" + classTargetLines + ":" + recordComponentCount;
+        final String thresholdsHash =
+                classLineCount + ":" + classTargetLines + ":" + recordComponentCount;
+        return thresholdsHash;
     }
 
-    String[] parseHash(final String hash) {
+    static String[] parseHash(final String hash) {
         if (hash == null) {
             return null;
         }
         final String[] parts = hash.split(":");
-        if (parts.length != 3) {
-            return null;
-        }
-        return parts;
+        return parts.length == HASH_PART_COUNT ? parts : null;
     }
 
     String readHash(final Path hashFile) {
@@ -38,7 +40,8 @@ final class ThresholdsHashStore {
             if (Files.exists(hashFile)) {
                 return Files.readString(hashFile).strip();
             }
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            logger.warn("Could not read thresholds hash, will re-scaffold: {}", hashFile, e);
         }
         return null;
     }
