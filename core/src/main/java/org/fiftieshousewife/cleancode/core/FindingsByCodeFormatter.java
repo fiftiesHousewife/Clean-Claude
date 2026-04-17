@@ -12,6 +12,7 @@ final class FindingsByCodeFormatter {
     private static final String DIVIDER =
             "───────────────────────────────────────────────────────────────────────────";
     private static final int WRAP_WIDTH = 72;
+    private static final String PROJECT_LOCATION = "(project)";
 
     private FindingsByCodeFormatter() {}
 
@@ -24,24 +25,36 @@ final class FindingsByCodeFormatter {
                 .forEach(entry -> appendCodeGroup(out, entry.getKey(), entry.getValue()));
     }
 
-    private static void appendCodeGroup(final StringBuilder out,
-                                        final HeuristicCode code,
-                                        final List<Finding> group) {
+    static void appendCodeGroup(final StringBuilder out,
+                                final HeuristicCode code,
+                                final List<Finding> group) {
+        appendHeader(out, code, group.size());
+        appendSummaryAndReference(out, code);
+        appendGuidance(out, code);
+        appendFindings(out, group);
+    }
+
+    private static void appendHeader(final StringBuilder out, final HeuristicCode code, final int count) {
         out.append('\n').append(DIVIDER).append('\n');
+        out.append("  ").append(code.name()).append(": ").append(HeuristicDescriptions.name(code));
+        out.append(" (").append(count).append(")\n");
+    }
 
-        final String name = HeuristicDescriptions.name(code);
-        out.append("  ").append(code.name()).append(": ").append(name);
-        out.append(" (").append(group.size()).append(")\n");
-
+    private static void appendSummaryAndReference(final StringBuilder out, final HeuristicCode code) {
         appendIfPresent(out, HeuristicDescriptions.summary(code));
         appendIfPresent(out, HeuristicDescriptions.reference(code));
+    }
 
+    private static void appendGuidance(final StringBuilder out, final HeuristicCode code) {
         final String guidance = HeuristicDescriptions.guidance(code);
-        if (guidance != null) {
-            out.append('\n');
-            appendWrapped(out, guidance, "  ", WRAP_WIDTH);
+        if (guidance == null) {
+            return;
         }
+        out.append('\n');
+        appendWrapped(out, guidance, "  ", WRAP_WIDTH);
+    }
 
+    private static void appendFindings(final StringBuilder out, final List<Finding> group) {
         out.append('\n');
         group.stream()
                 .sorted(Comparator.comparing(f -> f.sourceFile() != null ? f.sourceFile() : ""))
@@ -55,10 +68,11 @@ final class FindingsByCodeFormatter {
     }
 
     private static void appendFinding(final StringBuilder out, final Finding finding) {
-        final String location = formatLocation(finding);
-        out.append("    ").append(severityIcon(finding.severity()));
-        out.append(" ").append(location);
-        out.append("  ").append(finding.message()).append('\n');
+        out.append("    ")
+                .append(severityIcon(finding.severity()))
+                .append(' ').append(formatLocation(finding))
+                .append("  ").append(finding.message())
+                .append('\n');
     }
 
     private static void appendWrapped(final StringBuilder out,
@@ -83,15 +97,12 @@ final class FindingsByCodeFormatter {
         }
     }
 
-    private static String formatLocation(final Finding finding) {
-        if (finding.sourceFile() == null) {
-            return "(project)";
-        }
+    static String formatLocation(final Finding finding) {
         final String file = finding.sourceFile();
-        if (finding.startLine() > 0) {
-            return file + ":" + finding.startLine();
+        if (file == null) {
+            return PROJECT_LOCATION;
         }
-        return file;
+        return finding.startLine() > 0 ? file + ":" + finding.startLine() : file;
     }
 
     private static String severityIcon(final Severity severity) {
