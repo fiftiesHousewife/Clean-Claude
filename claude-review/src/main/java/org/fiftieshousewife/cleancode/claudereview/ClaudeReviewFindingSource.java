@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +31,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
     private final SourceFileCollector fileCollector;
     private final SystemPromptLoader promptLoader;
 
-    public ClaudeReviewFindingSource(ClaudeReviewConfig config) {
+    public ClaudeReviewFindingSource(final ClaudeReviewConfig config) {
         this.config = config;
         this.parser = new ClaudeFindingParser(config.enabledCodes(), TOOL, config.model());
         this.cacheMapper = new FindingCacheMapper(TOOL);
@@ -54,12 +55,12 @@ public class ClaudeReviewFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         return config.enabled() && config.hasApiKey();
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         if (!config.hasApiKey()) {
             return List.of();
         }
@@ -69,11 +70,11 @@ public class ClaudeReviewFindingSource implements FindingSource {
         return allFindings;
     }
 
-    List<Finding> parseFindings(String json, String sourceFile) {
+    List<Finding> parseFindings(final String json, final String sourceFile) {
         return parser.parse(json, sourceFile);
     }
 
-    private ReviewSession openSession(ProjectContext context) {
+    ReviewSession openSession(final ProjectContext context) {
         final AnthropicClient client = AnthropicOkHttpClient.builder().apiKey(config.apiKey()).build();
         final ClaudeFileAnalyser analyser = new ClaudeFileAnalyser(client, config.model(), parser);
         final String systemPrompt = promptLoader.load();
@@ -89,7 +90,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
                 .collect(Collectors.joining(","));
     }
 
-    private List<Finding> analyseAll(ReviewSession session) {
+    private List<Finding> analyseAll(final ReviewSession session) {
         final List<Path> files = fileCollector.collect(session.context());
         final List<Finding> allFindings = new ArrayList<>();
         int analysed = 0;
@@ -97,39 +98,44 @@ public class ClaudeReviewFindingSource implements FindingSource {
             if (analysed >= config.maxFilesPerRun()) {
                 break;
             }
-            if (analyseOne(file, session, allFindings)) {
+            final Optional<FileAnalysisResult> result = analyseOne(file, session);
+            if (result.isEmpty()) {
+                continue;
+            }
+            allFindings.addAll(result.get().findings());
+            if (result.get().freshlyAnalysed()) {
                 analysed++;
             }
         }
         return allFindings;
     }
 
-    private boolean analyseOne(Path file, ReviewSession session, List<Finding> sink) {
+    private Optional<FileAnalysisResult> analyseOne(final Path file, final ReviewSession session) {
         try {
             final String content = Files.readString(file, StandardCharsets.UTF_8);
             final String relativePath = session.context().projectRoot().relativize(file).toString();
             final String hash = ReviewCache.hash(content, session.codesKey());
             final var cached = session.cache().lookup(hash);
             if (cached.isPresent()) {
-                sink.addAll(cacheMapper.toFindings(cached.get(), relativePath));
-                return false;
+                return Optional.of(new FileAnalysisResult(cacheMapper.toFindings(cached.get(), relativePath), false));
             }
             final List<Finding> findings = session.analyser().analyse(
                     new AnalysisRequest(content, relativePath, session.systemPrompt(), session.codesKey()));
             session.cache().store(hash, cacheMapper.toCachedFindings(findings));
-            sink.addAll(findings);
-            return true;
+            return Optional.of(new FileAnalysisResult(findings, true));
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Failed to read file: " + file, e);
-            return false;
+            return Optional.empty();
         }
     }
 
-    private static void persistCache(ReviewCache cache) {
+    private static void persistCache(final ReviewCache cache) throws FindingSourceException {
         try {
             cache.save();
         } catch (IOException e) {
-            LOG.log(Level.WARNING, "Failed to save review cache", e);
+            throw new FindingSourceException("Failed to save review cache", e);
         }
     }
+
+    private record FileAnalysisResult(List<Finding> findings, boolean freshlyAnalysed) {}
 }
