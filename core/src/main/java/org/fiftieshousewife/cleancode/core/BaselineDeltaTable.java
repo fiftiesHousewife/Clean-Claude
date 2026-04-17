@@ -1,7 +1,5 @@
 package org.fiftieshousewife.cleancode.core;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
 import java.io.IOException;
@@ -45,9 +43,7 @@ final class BaselineDeltaTable {
     }
 
     private static Map<String, Double> readBaselineCounts(final Path baselineFile) throws IOException {
-        final String json = Files.readString(baselineFile);
-        final Gson gson = new Gson();
-        final Map<String, Object> raw = gson.fromJson(json, new TypeToken<Map<String, Object>>() {}.getType());
+        final Map<String, Object> raw = JsonObjectFile.read(baselineFile);
         return castToStringDoubleMap(raw.get("counts"));
     }
 
