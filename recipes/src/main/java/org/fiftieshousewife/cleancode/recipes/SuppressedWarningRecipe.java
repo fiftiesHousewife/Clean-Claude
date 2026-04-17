@@ -15,6 +15,9 @@ public class SuppressedWarningRecipe extends ScanningRecipe<SuppressedWarningRec
 
     private static final Set<String> SAFETY_WARNINGS = Set.of(
             "unchecked", "rawtypes", "deprecation", "serial");
+    private static final String SUPPRESS_WARNINGS = "SuppressWarnings";
+    private static final String UNKNOWN_CLASS = "<unknown>";
+    private static final String CLASS_LEVEL_MEMBER = "<class>";
 
     public record Row(String className, String methodName, String warningType) {}
 
@@ -42,35 +45,7 @@ public class SuppressedWarningRecipe extends ScanningRecipe<SuppressedWarningRec
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-                final J.Annotation a = super.visitAnnotation(annotation, ctx);
-
-                if (!"SuppressWarnings".equals(a.getSimpleName())) {
-                    return a;
-                }
-
-                final String argText = a.getArguments() != null
-                        ? a.getArguments().toString() : "";
-
-                SAFETY_WARNINGS.stream()
-                        .filter(argText::contains)
-                        .forEach(warning -> {
-                            final J.ClassDeclaration classDecl = getCursor()
-                                    .firstEnclosing(J.ClassDeclaration.class);
-                            final J.MethodDeclaration methodDecl = getCursor()
-                                    .firstEnclosing(J.MethodDeclaration.class);
-                            final String className = classDecl != null
-                                    ? classDecl.getSimpleName() : "<unknown>";
-                            final String methodName = methodDecl != null
-                                    ? methodDecl.getSimpleName() : "<class>";
-                            acc.rows.add(new Row(className, methodName, warning));
-                        });
-
-                return a;
-            }
-        };
+        return new SuppressedWarningScanner(acc);
     }
 
     @Override
@@ -80,5 +55,48 @@ public class SuppressedWarningRecipe extends ScanningRecipe<SuppressedWarningRec
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    static String argumentText(final J.Annotation annotation) {
+        return annotation.getArguments() != null ? annotation.getArguments().toString() : "";
+    }
+
+    static final class SuppressedWarningScanner extends JavaIsoVisitor<ExecutionContext> {
+
+        private final Accumulator acc;
+
+        SuppressedWarningScanner(final Accumulator acc) {
+            this.acc = acc;
+        }
+
+        @Override
+        public J.Annotation visitAnnotation(final J.Annotation annotation, final ExecutionContext ctx) {
+            final J.Annotation visited = super.visitAnnotation(annotation, ctx);
+            if (!SUPPRESS_WARNINGS.equals(visited.getSimpleName())) {
+                return visited;
+            }
+            recordMatchingWarnings(argumentText(visited));
+            return visited;
+        }
+
+        void recordMatchingWarnings(final String argText) {
+            SAFETY_WARNINGS.stream()
+                    .filter(argText::contains)
+                    .forEach(this::recordWarning);
+        }
+
+        void recordWarning(final String warning) {
+            acc.rows.add(new Row(findEnclosingClassName(), findEnclosingMethodName(), warning));
+        }
+
+        String findEnclosingClassName() {
+            final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            return classDecl != null ? classDecl.getSimpleName() : UNKNOWN_CLASS;
+        }
+
+        String findEnclosingMethodName() {
+            final J.MethodDeclaration methodDecl = getCursor().firstEnclosing(J.MethodDeclaration.class);
+            return methodDecl != null ? methodDecl.getSimpleName() : CLASS_LEVEL_MEMBER;
+        }
     }
 }
