@@ -1,14 +1,18 @@
 package org.fiftieshousewife.cleancode.annotations;
 
 import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD, ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.PACKAGE})
-@Retention(RetentionPolicy.SOURCE)
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PACKAGE;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+
+@Target({METHOD, TYPE, CONSTRUCTOR, PACKAGE})
+@Retention(SOURCE)
 @Documented
 @Repeatable(SuppressCleanCode.List.class)
 public @interface SuppressCleanCode {
@@ -16,8 +20,8 @@ public @interface SuppressCleanCode {
     String reason();
     String until() default "";
 
-    @Target({ElementType.METHOD, ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.PACKAGE})
-    @Retention(RetentionPolicy.SOURCE)
+    @Target({METHOD, TYPE, CONSTRUCTOR, PACKAGE})
+    @Retention(SOURCE)
     @Documented
     @interface List {
         SuppressCleanCode[] value();
