@@ -1,0 +1,31 @@
+# Short variable names that are universally understood and therefore exempt
+# from the N5 short-variable-name check. Loaded by AllowedShortNames.
+# Lines starting with '#' and blank lines are ignored.
+
+# Loop indices
+i
+j
+k
+
+# Mathematical coordinates
+x
+y
+z
+
+# Exceptions
+e
+ex
+
+# Identifiers
+id
+
+# Short type-hint names used in lambdas and short scopes
+m
+v
+s
+c
+p
+t
+r
+n
+f
