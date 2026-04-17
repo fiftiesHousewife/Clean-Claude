@@ -4,8 +4,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.fiftieshousewife.cleancode.adapters.VersionCatalogLocator.CatalogLocation;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
-import org.fiftieshousewife.cleancode.core.*;
+import org.fiftieshousewife.cleancode.core.Confidence;
+import org.fiftieshousewife.cleancode.core.Finding;
+import org.fiftieshousewife.cleancode.core.FindingSource;
+import org.fiftieshousewife.cleancode.core.FindingSourceException;
+import org.fiftieshousewife.cleancode.core.ProjectContext;
+import org.fiftieshousewife.cleancode.core.Severity;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -25,6 +31,8 @@ public class DependencyUpdatesFindingSource implements FindingSource {
     private static final String TOOL = "dependency-updates";
     private static final String REPORT_FILE = "dependencyUpdates/report.json";
     private static final String VERSION_CATALOG = "gradle/libs.versions.toml";
+
+    private final VersionCatalogLocator catalogLocator = new VersionCatalogLocator();
 
     @Override
     public String id() {
@@ -53,7 +61,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
             return List.of();
         }
 
-        final CatalogLocation location = locateCatalog(context.projectRoot());
+        final CatalogLocation location = catalogLocator.locate(context.projectRoot());
         if (location == CatalogLocation.ANCESTOR) {
             return List.of();
         }
@@ -63,26 +71,6 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         final Set<String> seenCoordinates = new LinkedHashSet<>();
         extractOutdated(root, findings, seenCoordinates, location == CatalogLocation.HERE);
         return findings;
-    }
-
-    private enum CatalogLocation { HERE, ANCESTOR, NONE }
-
-    private CatalogLocation locateCatalog(final Path projectRoot) {
-        if (Files.exists(projectRoot.resolve(VERSION_CATALOG))) {
-            return CatalogLocation.HERE;
-        }
-        Path ancestor = projectRoot.getParent();
-        while (ancestor != null) {
-            if (Files.exists(ancestor.resolve(VERSION_CATALOG))) {
-                return CatalogLocation.ANCESTOR;
-            }
-            if (Files.exists(ancestor.resolve("settings.gradle"))
-                    || Files.exists(ancestor.resolve("settings.gradle.kts"))) {
-                return CatalogLocation.NONE;
-            }
-            ancestor = ancestor.getParent();
-        }
-        return CatalogLocation.NONE;
     }
 
     private JsonObject parseReport(Path report) throws FindingSourceException {
