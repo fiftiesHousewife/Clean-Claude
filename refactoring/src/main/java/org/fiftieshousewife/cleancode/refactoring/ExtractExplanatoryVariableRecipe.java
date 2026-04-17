@@ -5,22 +5,36 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
+import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.marker.Markers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ExtractExplanatoryVariableRecipe extends Recipe {
+
+    private static final int NO_CHAIN = 0;
+    private static final int LEAF_CHAIN = 1;
+    private static final int CHAIN_INCREMENT = 1;
+
+    private static final Map<String, String> NAME_BY_KEYWORD = Map.of(
+            "startsWith", "hasExpectedPrefix",
+            "equals", "isMatch",
+            "contains", "containsTarget");
+    private static final String FALLBACK_NAME = "condition";
 
     private final int minChainDepth;
 
     @JsonCreator
-    public ExtractExplanatoryVariableRecipe(@JsonProperty("minChainDepth") int minChainDepth) {
+    public ExtractExplanatoryVariableRecipe(@JsonProperty("minChainDepth") final int minChainDepth) {
         this.minChainDepth = minChainDepth;
     }
 
@@ -39,86 +53,86 @@ public class ExtractExplanatoryVariableRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
-                final J.Block b = super.visitBlock(block, ctx);
-                final List<Statement> statements = b.getStatements();
-                final List<Statement> newStatements = new ArrayList<>();
+            public J.Block visitBlock(final J.Block block, final ExecutionContext ctx) {
+                final J.Block visited = super.visitBlock(block, ctx);
+                final List<Statement> rewritten = new ArrayList<>();
                 boolean changed = false;
-
-                for (final Statement stmt : statements) {
-                    if (!(stmt instanceof J.If ifStmt)) {
-                        newStatements.add(stmt);
-                        continue;
+                for (final Statement stmt : visited.getStatements()) {
+                    final List<Statement> replacement = tryExtract(stmt);
+                    if (replacement == null) {
+                        rewritten.add(stmt);
+                    } else {
+                        rewritten.addAll(replacement);
+                        changed = true;
                     }
-
-                    final Expression condition = ifStmt.getIfCondition().getTree();
-                    final int depth = chainDepth(condition);
-
-                    if (depth < minChainDepth) {
-                        newStatements.add(stmt);
-                        continue;
-                    }
-
-                    final String condText = condition.toString().trim();
-                    final String varName = generateVariableName(condText);
-                    final String declSource = "class _T { void _m() { final var %s = %s; } }"
-                            .formatted(varName, condText);
-
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(declSource).toList();
-
-                    if (parsed.isEmpty()) {
-                        newStatements.add(stmt);
-                        continue;
-                    }
-
-                    final J.MethodDeclaration method = (J.MethodDeclaration) ((J.CompilationUnit) parsed.getFirst())
-                            .getClasses().getFirst().getBody().getStatements().getFirst();
-                    final Statement varDecl = method.getBody().getStatements().getFirst();
-
-                    newStatements.add(varDecl);
-
-                    final J.Identifier varRef = new J.Identifier(
-                            org.openrewrite.Tree.randomId(),
-                            org.openrewrite.java.tree.Space.EMPTY,
-                            org.openrewrite.marker.Markers.EMPTY,
-                            List.of(), varName, null, null);
-                    newStatements.add(ifStmt.withIfCondition(ifStmt.getIfCondition().withTree(varRef)));
-                    changed = true;
                 }
-
-                return changed ? b.withStatements(newStatements) : b;
+                return changed ? visited.withStatements(rewritten) : visited;
             }
         };
     }
 
-    static int chainDepth(Expression expr) {
+    private List<Statement> tryExtract(final Statement stmt) {
+        if (!(stmt instanceof J.If ifStmt)) {
+            return null;
+        }
+        final Expression condition = ifStmt.getIfCondition().getTree();
+        if (chainDepth(condition) < minChainDepth) {
+            return null;
+        }
+        final String condText = condition.toString().trim();
+        final String varName = generateVariableName(condText);
+        final Statement varDecl = parseVariableDeclaration(varName, condText);
+        if (varDecl == null) {
+            return null;
+        }
+        final J.Identifier varRef = identifier(varName);
+        final J.If updated = ifStmt.withIfCondition(ifStmt.getIfCondition().withTree(varRef));
+        return List.of(varDecl, updated);
+    }
+
+    private static Statement parseVariableDeclaration(final String varName, final String condText) {
+        final String declSource = "class _T { void _m() { final var %s = %s; } }".formatted(varName, condText);
+        final List<SourceFile> parsed = JavaParser.fromJavaVersion()
+                .logCompilationWarningsAndErrors(false)
+                .build().parse(declSource).toList();
+        if (parsed.isEmpty()) {
+            return null;
+        }
+        final J.CompilationUnit cu = (J.CompilationUnit) parsed.getFirst();
+        final J.MethodDeclaration method = (J.MethodDeclaration) cu.getClasses().getFirst()
+                .getBody().getStatements().getFirst();
+        return method.getBody().getStatements().getFirst();
+    }
+
+    private static J.Identifier identifier(final String name) {
+        return new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, List.of(), name, null, null);
+    }
+
+    static int chainDepth(final Expression expr) {
         if (expr instanceof J.MethodInvocation mi) {
-            return mi.getSelect() != null ? 1 + chainDepth(mi.getSelect()) : 1;
+            return chainDepthOfMethodInvocation(mi);
         }
         if (expr instanceof J.FieldAccess fa) {
-            return 1 + chainDepth(fa.getTarget());
+            return CHAIN_INCREMENT + chainDepth(fa.getTarget());
         }
         if (expr instanceof J.Parentheses<?> p && p.getTree() instanceof Expression inner) {
             return chainDepth(inner);
         }
-        if (expr instanceof J.Binary b) {
-            return Math.max(chainDepth(b.getLeft()), chainDepth(b.getRight()));
+        if (expr instanceof J.Binary binary) {
+            return Math.max(chainDepth(binary.getLeft()), chainDepth(binary.getRight()));
         }
-        return 0;
+        return NO_CHAIN;
     }
 
-    private static String generateVariableName(String conditionText) {
-        if (conditionText.contains("startsWith")) {
-            return "hasExpectedPrefix";
-        }
-        if (conditionText.contains("equals")) {
-            return "isMatch";
-        }
-        if (conditionText.contains("contains")) {
-            return "containsTarget";
-        }
-        return "condition";
+    private static int chainDepthOfMethodInvocation(final J.MethodInvocation mi) {
+        return mi.getSelect() == null ? LEAF_CHAIN : CHAIN_INCREMENT + chainDepth(mi.getSelect());
+    }
+
+    private static String generateVariableName(final String conditionText) {
+        return NAME_BY_KEYWORD.entrySet().stream()
+                .filter(entry -> conditionText.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(FALLBACK_NAME);
     }
 }
