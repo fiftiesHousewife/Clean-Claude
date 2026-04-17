@@ -106,6 +106,30 @@ fi
 PROMPT="${PROMPT_HEADER}$(<"$PROMPT_FILE")"
 CLAUDE_TASK_LABEL="$LABEL" claude -p "$PROMPT" --dangerously-skip-permissions
 
+echo "=== Second-pass check ==="
+./gradlew --quiet \
+    --init-script "$REPO/scripts/cleancode-dogfood.init.gradle.kts" \
+    analyseCleanCode cleanCodeFixPlan
+
+REMAINING=$(python3 - <<'PY'
+import glob, json
+total = 0
+for path in glob.glob("**/build/reports/clean-code/findings.json", recursive=True):
+    with open(path) as f:
+        total += len(json.load(f).get("findings", []))
+print(total)
+PY
+)
+
+if [[ "$REMAINING" -gt 0 ]]; then
+    echo "=== $REMAINING finding(s) remain after pass 1. Launching pass 2 (cap at 2 passes) ==="
+    PASS2_HEADER=$'This is PASS 2 of the same experiment. The briefs at build/reports/clean-code/fix-briefs/ now reflect only the findings that survived pass 1. Process them using the same protocol as pass 1. Do not reopen or redo any pass-1 commits. Write the final summary to experiment/<approach>-<n>-summary.md as usual when you are done.\n\n'
+    PASS2_PROMPT="${PASS2_HEADER}$(<"$PROMPT_FILE")"
+    CLAUDE_TASK_LABEL="${LABEL}-pass2" claude -p "$PASS2_PROMPT" --dangerously-skip-permissions
+else
+    echo "=== Pass 1 left zero findings. Skipping pass 2 ==="
+fi
+
 echo "=== Saving outputs ==="
 mkdir -p experiment
 
