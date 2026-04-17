@@ -13,7 +13,6 @@ import org.openrewrite.java.tree.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EncapsulateBoundaryRecipe extends Recipe {
 
