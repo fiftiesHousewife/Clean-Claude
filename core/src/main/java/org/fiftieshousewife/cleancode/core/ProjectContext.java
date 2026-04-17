@@ -13,4 +13,10 @@ public record ProjectContext(
         Path buildDir,
         Path reportsDir,
         List<String> dependencies
-) {}
+) {
+    public ProjectContext {
+        sourceRoots = List.copyOf(sourceRoots);
+        testSourceRoots = List.copyOf(testSourceRoots);
+        dependencies = List.copyOf(dependencies);
+    }
+}
