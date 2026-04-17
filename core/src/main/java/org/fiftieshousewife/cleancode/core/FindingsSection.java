@@ -4,8 +4,6 @@ import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 final class FindingsSection {
 
@@ -16,12 +14,7 @@ final class FindingsSection {
     private FindingsSection() {}
 
     static void append(final StringBuilder out, final List<Finding> findings) {
-        final Map<HeuristicCode, List<Finding>> byCode = findings.stream()
-                .collect(Collectors.groupingBy(Finding::code));
-
-        byCode.entrySet().stream()
-                .sorted(Comparator.comparing(e -> e.getKey().name()))
-                .forEach(entry -> appendCodeGroup(out, entry.getKey(), entry.getValue()));
+        FindingsByCode.forEachSorted(findings, (code, group) -> appendCodeGroup(out, code, group));
     }
 
     private static void appendCodeGroup(final StringBuilder out,
