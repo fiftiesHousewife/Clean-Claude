@@ -13,6 +13,8 @@ import java.util.List;
 public class WhitespaceSplitMethodRecipe extends ScanningRecipe<WhitespaceSplitMethodRecipe.Accumulator> {
 
     private static final int DEFAULT_BLANK_LINE_THRESHOLD = 2;
+    private static final int MIN_LINES_WITH_INTERNAL_CONTENT = 2;
+    private static final String UNKNOWN_CLASS_NAME = "<unknown>";
 
     private final int blankLineThreshold;
 
@@ -51,50 +53,7 @@ public class WhitespaceSplitMethodRecipe extends ScanningRecipe<WhitespaceSplitM
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
-                if (m.getBody() == null) {
-                    return m;
-                }
-
-                final String body = m.getBody().print(getCursor());
-                final List<String> lines = body.lines().toList();
-                final int blankLineCount = countInternalBlankLines(lines);
-                final int totalLines = lines.size();
-
-                if (blankLineCount >= blankLineThreshold) {
-                    acc.rows.add(new Row(
-                            findEnclosingClassName(),
-                            m.getSimpleName(),
-                            blankLineCount,
-                            totalLines,
-                            -1));
-                }
-
-                return m;
-            }
-
-            private int countInternalBlankLines(List<String> lines) {
-                if (lines.size() <= 2) {
-                    return 0;
-                }
-
-                int count = 0;
-                for (int i = 1; i < lines.size() - 1; i++) {
-                    if (lines.get(i).isBlank()) {
-                        count++;
-                    }
-                }
-                return count;
-            }
-
-            private String findEnclosingClassName() {
-                final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
-            }
-        };
+        return new WhitespaceSplitMethodScanner(acc, blankLineThreshold);
     }
 
     @Override
@@ -104,5 +63,49 @@ public class WhitespaceSplitMethodRecipe extends ScanningRecipe<WhitespaceSplitM
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+    }
+
+    private static final class WhitespaceSplitMethodScanner extends JavaIsoVisitor<ExecutionContext> {
+
+        private final Accumulator acc;
+        private final int blankLineThreshold;
+
+        WhitespaceSplitMethodScanner(final Accumulator acc, final int blankLineThreshold) {
+            this.acc = acc;
+            this.blankLineThreshold = blankLineThreshold;
+        }
+
+        @Override
+        public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
+            final J.MethodDeclaration visited = super.visitMethodDeclaration(method, ctx);
+            if (visited.getBody() == null) {
+                return visited;
+            }
+            final List<String> lines = visited.getBody().print(getCursor()).lines().toList();
+            final int blankLineCount = countInternalBlankLines(lines);
+            if (blankLineCount >= blankLineThreshold) {
+                acc.rows.add(new Row(findEnclosingClassName(), visited.getSimpleName(), blankLineCount, lines.size(), -1));
+            }
+            return visited;
+        }
+
+        int countInternalBlankLines(final List<String> lines) {
+            if (lines.size() <= MIN_LINES_WITH_INTERNAL_CONTENT) {
+                return 0;
+            }
+            final int lastInternalIndex = lines.size() - 1;
+            int count = 0;
+            for (int i = 1; i < lastInternalIndex; i++) {
+                if (lines.get(i).isBlank()) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        private String findEnclosingClassName() {
+            final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+            return classDecl != null ? classDecl.getSimpleName() : UNKNOWN_CLASS_NAME;
+        }
     }
 }
