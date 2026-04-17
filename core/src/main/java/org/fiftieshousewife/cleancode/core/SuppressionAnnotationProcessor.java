@@ -5,6 +5,7 @@ import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 
 import java.util.List;
+import java.util.Optional;
 
 final class SuppressionAnnotationProcessor {
 
@@ -36,14 +37,18 @@ final class SuppressionAnnotationProcessor {
     void processSingle(final AnnotationExpr annotation,
                        final ParseContext context,
                        final LineRange range) {
-        if (!(annotation instanceof NormalAnnotationExpr normal)) {
-            return;
-        }
-        final SuppressionFields fields = AnnotationValues.extractSuppressionFields(normal);
-        if (!fields.hasCodes()) {
-            return;
-        }
-        recordMetaFindings(annotation, context.sourceFile(), fields);
+        extractFields(annotation)
+                .filter(SuppressionFields::hasCodes)
+                .ifPresent(fields -> record(annotation, context, range, fields));
+    }
+
+    private void record(final AnnotationExpr annotation,
+                        final ParseContext context,
+                        final LineRange range,
+                        final SuppressionFields fields) {
+        final String sourceFile = context.sourceFile();
+        meta.recordIfExpired(annotation, sourceFile, fields.codes(), fields.until());
+        meta.recordIfBlankReason(annotation, sourceFile, fields.reason());
         suppressions.add(buildSuppression(context, range, fields));
     }
 
@@ -53,24 +58,27 @@ final class SuppressionAnnotationProcessor {
         if (!(annotation instanceof NormalAnnotationExpr normal)) {
             return;
         }
-        for (final MemberValuePair pair : normal.getPairs()) {
-            if (!REPEATABLE_VALUE_FIELD.equals(pair.getNameAsString())) {
-                continue;
-            }
-            pair.getValue().toArrayInitializerExpr().ifPresent(arr ->
-                    arr.getValues().forEach(value -> {
-                        if (value instanceof AnnotationExpr inner) {
-                            processSingle(inner, context, range);
-                        }
-                    }));
-        }
+        normal.getPairs().stream()
+                .filter(pair -> REPEATABLE_VALUE_FIELD.equals(pair.getNameAsString()))
+                .forEach(pair -> processContainerPair(pair, context, range));
     }
 
-    private void recordMetaFindings(final AnnotationExpr annotation,
-                                    final String sourceFile,
-                                    final SuppressionFields fields) {
-        meta.recordIfExpired(annotation, sourceFile, fields.codes(), fields.until());
-        meta.recordIfBlankReason(annotation, sourceFile, fields.reason());
+    private void processContainerPair(final MemberValuePair pair,
+                                      final ParseContext context,
+                                      final LineRange range) {
+        pair.getValue().toArrayInitializerExpr().ifPresent(arr ->
+                arr.getValues().forEach(value -> {
+                    if (value instanceof AnnotationExpr inner) {
+                        processSingle(inner, context, range);
+                    }
+                }));
+    }
+
+    private static Optional<SuppressionFields> extractFields(final AnnotationExpr annotation) {
+        if (annotation instanceof NormalAnnotationExpr normal) {
+            return Optional.of(AnnotationValues.extractSuppressionFields(normal));
+        }
+        return Optional.empty();
     }
 
     private static Suppression buildSuppression(final ParseContext context,
