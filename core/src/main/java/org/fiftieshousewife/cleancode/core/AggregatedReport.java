@@ -21,6 +21,16 @@ public record AggregatedReport(
         coveredCodes = Set.copyOf(coveredCodes);
     }
 
+    @Override
+    public List<Finding> findings() {
+        return List.copyOf(findings);
+    }
+
+    @Override
+    public Set<HeuristicCode> coveredCodes() {
+        return Set.copyOf(coveredCodes);
+    }
+
     public Map<HeuristicCode, List<Finding>> byCode() {
         return findings.stream().collect(
                 Collectors.groupingBy(Finding::code, TreeMap::new, Collectors.toList()));
