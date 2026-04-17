@@ -157,7 +157,8 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new RawGenericRecipe(),
                 new SwallowedExceptionRecipe(),
                 new InconsistentReturnRecipe(),
-                new SuppressedWarningRecipe());
+                new SuppressedWarningRecipe(),
+                new FullyQualifiedReferenceRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -222,8 +223,18 @@ public class OpenRewriteFindingSource implements FindingSource {
             case SwallowedExceptionRecipe r -> mapSwallowedException(r.collectedRows());
             case InconsistentReturnRecipe r -> mapInconsistentReturn(r.collectedRows());
             case SuppressedWarningRecipe r -> mapSuppressedWarning(r.collectedRows());
+            case FullyQualifiedReferenceRecipe r -> mapFullyQualifiedReferences(r.collectedRows());
             default -> List.of();
         };
+    }
+
+    private List<Finding> mapFullyQualifiedReferences(List<FullyQualifiedReferenceRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> Finding.at(HeuristicCode.G12, r.sourceFile(), 0, 0,
+                        "%d inline fully-qualified type reference(s); first: %s — run ShortenFullyQualifiedReferencesRecipe"
+                                .formatted(r.count(), r.samplePreview()),
+                        Severity.WARNING, Confidence.HIGH, TOOL, "FullyQualifiedReferenceRecipe"))
+                .toList();
     }
 
     private List<Finding> mapFlagArgs(List<FlagArgumentRecipe.FlagArgumentRow> rows) {
