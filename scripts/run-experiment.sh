@@ -126,11 +126,14 @@ for part_log in $(ls -v .claude/session-log-part*.jsonl 2>/dev/null); do
 done
 [[ -e .claude/session-log.jsonl ]] && cat .claude/session-log.jsonl >> "$SESSION_OUT"
 
-# Token usage summary across every session id seen in the combined tools log
+# Token usage summary across sessions tagged with this experiment's task label.
+# Filtering by task prevents pollution from unrelated Claude Code sessions
+# (e.g. interactive dev work) whose tool calls landed in the same tool log.
 python3 - "$APPROACH" "$RUN" "$TOOLS_OUT" <<'PY'
 import json, re, sys, os, glob
 
 approach, run, tools_path = sys.argv[1], sys.argv[2], sys.argv[3]
+task_prefix = f"{approach}-fix-{run}"
 
 session_ids = []
 seen_ids = set()
@@ -138,12 +141,17 @@ if os.path.exists(tools_path):
     with open(tools_path) as f:
         for line in f:
             try:
-                sid = json.loads(line).get("session")
+                d = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if sid and sid not in seen_ids:
-                seen_ids.add(sid)
-                session_ids.append(sid)
+            sid = d.get("session")
+            task = d.get("task") or ""
+            if not sid or sid in seen_ids:
+                continue
+            if not task.startswith(task_prefix):
+                continue
+            seen_ids.add(sid)
+            session_ids.append(sid)
 
 totals = {"input": 0, "cache_creation": 0, "cache_read": 0, "output": 0, "turns": 0}
 transcript_bytes = 0
