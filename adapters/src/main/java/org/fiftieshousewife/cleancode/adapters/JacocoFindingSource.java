@@ -1,7 +1,12 @@
 package org.fiftieshousewife.cleancode.adapters;
 
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
-import org.fiftieshousewife.cleancode.core.*;
+import org.fiftieshousewife.cleancode.core.Confidence;
+import org.fiftieshousewife.cleancode.core.Finding;
+import org.fiftieshousewife.cleancode.core.FindingSource;
+import org.fiftieshousewife.cleancode.core.FindingSourceException;
+import org.fiftieshousewife.cleancode.core.ProjectContext;
+import org.fiftieshousewife.cleancode.core.Severity;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -9,7 +14,9 @@ import org.w3c.dom.NodeList;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class JacocoFindingSource implements FindingSource {
 
@@ -37,23 +44,17 @@ public class JacocoFindingSource implements FindingSource {
 
     @Override
     public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
-        Path report = reportPath(context);
+        final Path report = reportPath(context);
 
         if (!Files.exists(report)) {
             return handleMissingReport(context);
         }
 
         try {
-            Document doc = XmlReportParser.parse(report);
-
-            List<Finding> findings = new ArrayList<>();
-
-            // Project-level T1 finding
+            final Document doc = XmlReportParser.parse(report);
+            final List<Finding> findings = new ArrayList<>();
             addProjectLevelCoverage(doc, findings);
-
-            // Per-class T8 findings
             addPerClassFindings(doc, findings);
-
             return findings;
         } catch (Exception e) {
             throw new FindingSourceException("Failed to parse JaCoCo report: " + report, e);
@@ -61,7 +62,7 @@ public class JacocoFindingSource implements FindingSource {
     }
 
     private List<Finding> handleMissingReport(ProjectContext context) {
-        boolean hasTestSources = context.testSourceRoots().stream()
+        final boolean hasTestSources = context.testSourceRoots().stream()
                 .anyMatch(Files::exists);
 
         if (hasTestSources) {
@@ -74,20 +75,19 @@ public class JacocoFindingSource implements FindingSource {
     }
 
     private void addProjectLevelCoverage(Document doc, List<Finding> findings) {
-        // Find the report-level LINE counter (direct child of <report>)
-        Element reportElement = doc.getDocumentElement();
-        NodeList counters = reportElement.getChildNodes();
+        final Element reportElement = doc.getDocumentElement();
+        final NodeList counters = reportElement.getChildNodes();
 
         for (int i = 0; i < counters.getLength(); i++) {
             if (counters.item(i) instanceof Element el
                     && "counter".equals(el.getTagName())
                     && "LINE".equals(el.getAttribute("type"))) {
 
-                int missed = Integer.parseInt(el.getAttribute("missed"));
-                int covered = Integer.parseInt(el.getAttribute("covered"));
-                int total = missed + covered;
-                double percentage = total > 0 ? (covered * 100.0) / total : 0;
-                Severity severity = coverageSeverity(percentage);
+                final int missed = Integer.parseInt(el.getAttribute("missed"));
+                final int covered = Integer.parseInt(el.getAttribute("covered"));
+                final int total = missed + covered;
+                final double percentage = total > 0 ? (covered * 100.0) / total : 0;
+                final Severity severity = coverageSeverity(percentage);
 
                 findings.add(Finding.projectLevel(
                         HeuristicCode.T1,
@@ -100,28 +100,28 @@ public class JacocoFindingSource implements FindingSource {
     }
 
     private void addPerClassFindings(Document doc, List<Finding> findings) {
-        NodeList classNodes = doc.getElementsByTagName("class");
+        final NodeList classNodes = doc.getElementsByTagName("class");
 
         for (int i = 0; i < classNodes.getLength(); i++) {
-            Element classElement = (Element) classNodes.item(i);
-            String className = classElement.getAttribute("name");
-            String sourceFile = classElement.getAttribute("sourcefilename");
+            final Element classElement = (Element) classNodes.item(i);
+            final String className = classElement.getAttribute("name");
+            final String sourceFile = classElement.getAttribute("sourcefilename");
 
-            NodeList counters = classElement.getElementsByTagName("counter");
+            final NodeList counters = classElement.getElementsByTagName("counter");
             for (int j = 0; j < counters.getLength(); j++) {
-                Element counter = (Element) counters.item(j);
+                final Element counter = (Element) counters.item(j);
                 if ("LINE".equals(counter.getAttribute("type"))) {
-                    int missed = Integer.parseInt(counter.getAttribute("missed"));
-                    int covered = Integer.parseInt(counter.getAttribute("covered"));
-                    int total = missed + covered;
+                    final int missed = Integer.parseInt(counter.getAttribute("missed"));
+                    final int covered = Integer.parseInt(counter.getAttribute("covered"));
+                    final int total = missed + covered;
 
                     if (total < MIN_CLASS_LINES) {
                         break;
                     }
 
-                    double percentage = (covered * 100.0) / total;
+                    final double percentage = (covered * 100.0) / total;
                     if (percentage < 50) {
-                        String packagePath = className.substring(0, className.lastIndexOf('/'));
+                        final String packagePath = className.substring(0, className.lastIndexOf('/'));
                         findings.add(Finding.at(
                                 HeuristicCode.T8,
                                 packagePath + "/" + sourceFile,
@@ -139,8 +139,12 @@ public class JacocoFindingSource implements FindingSource {
     }
 
     private Severity coverageSeverity(double percentage) {
-        if (percentage < 50) return Severity.ERROR;
-        if (percentage < 75) return Severity.WARNING;
+        if (percentage < 50) {
+            return Severity.ERROR;
+        }
+        if (percentage < 75) {
+            return Severity.WARNING;
+        }
         return Severity.INFO;
     }
 
