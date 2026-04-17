@@ -48,7 +48,8 @@ final class SurefireTestCaseFinding {
         return findingForSlowTest(testcase, testName, sourceFile);
     }
 
-    static Optional<Finding> findingForSlowTest(final Element testcase, final String testName, final String sourceFile) {
+    static Optional<Finding> findingForSlowTest(
+            final Element testcase, final String testName, final String sourceFile) {
         final double time = Double.parseDouble(testcase.getAttribute("time"));
 
         if (time > SLOW_TEST_ERROR_SECONDS) {
