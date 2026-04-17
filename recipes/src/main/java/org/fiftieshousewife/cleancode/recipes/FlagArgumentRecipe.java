@@ -48,17 +48,17 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
         return new JavaIsoVisitor<>() {
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+                final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (isPrivate(m) || isConstructor(m)) {
                     return m;
                 }
 
-                String className = findEnclosingClassName();
+                final String className = findEnclosingClassName();
 
                 for (Statement param : m.getParameters()) {
                     if (param instanceof J.VariableDeclarations varDecl) {
-                        JavaType type = varDecl.getType();
+                        final JavaType type = varDecl.getType();
                         if (type == JavaType.Primitive.Boolean) {
                             for (J.VariableDeclarations.NamedVariable var : varDecl.getVariables()) {
                                 acc.rows.add(new FlagArgumentRow(
@@ -85,7 +85,7 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
             }
 
             private String findEnclosingClassName() {
-                J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                final J.ClassDeclaration classDecl = getCursor().firstEnclosing(J.ClassDeclaration.class);
                 return classDecl != null ? classDecl.getSimpleName() : "<unknown>";
             }
         };
