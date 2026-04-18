@@ -1,98 +1,178 @@
 # Plan: next session handoff
 
-State at hand-off, outstanding work, and how to pick it up from a clean Claude Code session.
+Post-manual-1 handoff. What's landed since the pilot, what manual-1's audit exposed, and how to drive the next run.
 
-## What's done
+## What's done since the pilot
 
-- **Pilot run complete.** Branch `experiment/manual-pilot` on `origin`, 101 commits, 152 files, 1,395 → 341 findings. Run report at `experiment/manual-pilot-analysis.md` on that branch.
-- **Plans on `main`:**
-  - `docs/experiment-analysis-plan.md` — reusable template for analysing any run
-  - `docs/plan-review-and-severity.md` — Claude Review coverage expansion and severity rebalance
-  - `docs/plan-next-session.md` — this document
-- **Tooling on `main`:**
-  - `scripts/run-experiment.sh` — one-command runner, auto-resumes, filters logs by task label, emits an analysis stub
-  - `scripts/cleancode-dogfood.init.gradle.kts` — self-applies the plugin to the project's modules for analysis
-  - 11 Claude Code skills under `.claude/skills/clean-code-*/SKILL.md`
-  - Per-package `@SuppressCleanCode` on `recipes/` and `refactoring/`
-  - `FixBriefGenerator` → per-class briefs at `build/reports/clean-code/fix-briefs/`
+### Plugin + recipes (on `main`)
 
-## Pilot findings that drive the remaining work
+- E1 deduped and anchored to `gradle/libs.versions.toml`; sub-modules skip. Severity → ERROR.
+- Line-length ≥ 150 chars escalates to ERROR. Threshold now configurable via `cleanCode.thresholds.lineLengthErrorThreshold`.
+- OpenRewrite severity map: `G4`, `Ch7.1`, `F2`, `G8` default to ERROR.
+- Spotless / Google Java Format enforcement (opt-in via `cleanCode.enforceFormatting`).
+- New detection recipe: `FullyQualifiedReferenceRecipe` (G12) — flags inline FQNs per file.
+- New refactoring recipes:
+  - `ShortenFullyQualifiedReferencesRecipe` (G12)
+  - `ExtractClassConstantRecipe` (G35)
+  - `InvertNegativeConditionalRecipe` (G29)
+  - `SplitFlagArgumentRecipe` (F3)
+  - `RenameShortNameRecipe` (N5)
+- Gradle tasks: `updateVersionCatalog` (Ben-Manes → `libs.versions.toml` rewriter) and `cleanCodeSummary` (aggregates module findings into `docs/reports/index.html`).
+- NPE guards: `VerticalSeparationRecipe`, `MissingExplanatoryVariableRecipe`.
+- SpotBugs bundled into plugin jar — consumers need only `mavenLocal()` + `mavenCentral()` in `pluginManagement`.
 
-1. The 93 E1 dep-update findings never got fixed. Briefs were generated at `_project-level.md` and skipped by the driver because of the `_` prefix.
-2. Agents skipped reading the skill file their brief pointed at — brief wording was a hint, not an instruction.
-3. Line-length violations sneaked into the agent output (>120 chars). Checkstyle had it at one level (WARNING); no ERROR escalation and no auto-fix.
-4. G19 detection keeps flagging expressions even after they're extracted to a named variable.
-5. Session 2 was 2× faster than session 1 because the Gradle daemon was warm, not because of Anthropic prompt-cache cross-session inheritance (10 h gap exceeded the 5 min / 1 h TTL).
+### Brief-generation + runner
+
+- Brief preamble: "your first tool calls MUST be Reads of every cited skill file."
+- Per-code section: "You MUST Read this file first — before any Edit or Write tool call."
+- E1 brief: action-first "bump the version, one commit per dep, skip only major-version jumps."
+- Sibling-types block: lists other `.java` classnames in the same directory.
+- Metric-squeezing guard: when a brief contains Ch10.1/G30 + G5, the brief warns "split by responsibility, not LOC."
+- Exit protocol: "before exiting for any reason, write `experiment/<approach>-<n>-summary.md`."
+- Runner pass-2 step: re-analyse after session ends; if findings appeared, spawn another Claude session.
+- Cron wrapper at `~/.local/bin/cron-run-cleanclaude.sh` is branch-independent and handles auto-stash + checkout-main + pull.
+
+### Runs
+
+- `experiment/manual-pilot` on origin — 101 commits, 152 files, analysis at `experiment/manual-pilot-analysis.md`.
+- `experiment/manual-1` on origin — 88 commits, 101 files, analysis at `experiment/manual-1-analysis.md` with addendum critique.
+
+## What manual-1 exposed
+
+The numerical comparison with the pilot is in the analysis. The three qualitative findings that drive this plan:
+
+1. **When the agent creates new classes during a fix, it silently violates the skills it would enforce on existing code.** 51 new main classes on the branch; one new test class. Multiple catch-log-continue (Ch7.1) sites reproduced inside extracted helpers. The fix-brief only describes the *existing* file being fixed — the new code has no brief and no skill-check.
+2. **When a skill offers multiple remediation paths, the commit message doesn't record which one the agent picked.** `fix: Foo (Ch7.1)` doesn't say whether Ch7.1 was addressed by rethrow, translate, TWR, or retry. Auditing the choice requires reading the diff.
+3. **StringBuilder threading + `sb` naming is endemic.** 16 files mutation-thread a `StringBuilder` through private methods as an output-like parameter, typically named `sb`. Both F2 and a naming issue. The agent happily writes new code in this style.
 
 ## Outstanding work
 
-Every item below has a task in the harness task list. Ordered by priority.
+Ordered roughly by leverage per hour. Items marked **(deferred)** predate manual-1 but are still in scope.
 
-### A. High-leverage, ships on `main` before the next run
+### A. Agent-behaviour changes the brief enforces
 
-**A1. Rename `_project-level.md` brief** (task #2)
-- Edit `core/.../FixBriefGenerator.java`: constant `"_project-level.md"` → `"project-level-findings.md"`.
-- Update `FixBriefGeneratorTest` expectations.
-- Update the experiment prompts in `scripts/experiment-*-prompt.txt` to explicitly instruct: *"Every file under `fix-briefs/` other than `_INDEX.md` is an actionable brief. Do not skip any."*
+**A1. "New class you create" checklist injected into every fix brief.**
+When the agent's fix involves creating a new `.java` file, the new file must satisfy every skill that the plugin would scan for:
+- ≥ 1 companion test class in `src/test/java` at the matching path
+- No `catch (…) { log; return empty/null; }` blocks (Ch7.1)
+- Imports, not FQN references (G12)
+- Visibility narrow by default — `final class` with package-private methods unless it needs wider scope
+- No `StringBuilder sb` threading as an output-like parameter (F2)
 
-**A2. G19 over-detection bug** (task #3)
-- Read `recipes/.../MissingExplanatoryVariableRecipe.java`.
-- Hypothesis: the scanner walks the original expression site without checking whether the surrounding statement is now a variable declaration assigned from that expression. Add a check that returns early if the enclosing node is a `VariableDeclarationFragment` whose initialiser IS the flagged expression.
-- Add a fixture test with an already-extracted case; confirm no finding.
+Add this as a dedicated "## If you create new classes" section to `FixBriefGenerator.renderBrief`. Land before the next run.
 
-**A3. Two-level severity for line length** (tasks #5, #6)
-- Checkstyle `LineLength`: emit WARNING at >120 (current), ERROR at >150. Needs a severity map in our Checkstyle adapter since Checkstyle itself only has one severity per rule.
-- Consider enabling Spotless or google-java-format so agents cannot introduce >120 lines in the first place.
-- Also update OpenRewrite severity map per `docs/plan-review-and-severity.md`.
+**A2. Commit-message format evolves to include remediation choice.**
+New format when a skill offered multiple paths:
 
-**A4. Agent preloads skill before editing** (task #7)
-- Edit `FixBriefGenerator.renderBrief` to replace `"> Read X before addressing these."` with `"> **You MUST Read this file first — before any Edit or Write tool call:** X"`.
-- Stronger still: add an opening instruction to the generated brief: *"Your first N tool calls must be Reads of the skill paths cited below. Do not call Edit or Write before every skill has been read in full."*
+```
+fix: Foo (Ch7.1:translate, G30:extract)
 
-**A5. Fully encapsulate SpotBugs** (task #15)
-- Goal: `plugins { id("org.fiftieshousewife.cleancode") version "1.0-SNAPSHOT" }` should work from Maven Local with no extra repo setup in the consumer's `settings.gradle.kts`.
-- Approach: add the Gradle Shadow plugin to `:plugin`, shade `com.github.spotbugs:spotbugs-gradle-plugin` + its runtime deps into the plugin jar, apply programmatically with `project.getPluginManager().apply(SpotBugsPlugin.class)` (already works at runtime if the classes are on our classloader).
-- Preserve `META-INF/gradle-plugins/com.github.spotbugs.properties` so the plugin ID resolves.
-- Remove the "Apply to another project" section from `README.md` once it works; delete `scripts/cleancode-init.gradle.kts` (the one consumers were copying — not to be confused with `scripts/cleancode-dogfood.init.gradle.kts` which stays for our own analysis).
-- Acceptance test: create a fresh throwaway Gradle project with only `mavenLocal()` in `pluginManagement`, apply our plugin, run `./gradlew tasks` — `spotbugsMain` must appear.
+# choice: Ch7.1 → translated to DomainException; skill also lists rethrow
+# and TWR, picked translate because the caller already handles DomainException
+```
 
-### B. Planning + investigation (commit decisions to `main`)
+The header line stays parseable by the existing aggregation scripts (which count codes). The body is new. Update `scripts/experiment-manual-prompt.txt` + `scripts/experiment-recipe-prompt.txt`. Update the agent's brief sections that list multiple paths: "If you pick between paths, document which in the commit body."
 
-**B1. Agent suppression policy** (task #9) — decision required. Recommendation: agents may add `@SuppressCleanCode` only when the skill file explicitly lists the code as "suppressible with reason"; otherwise they must document in the final summary as "intentionally skipped".
+**A3. Single-file experiment harness.**
+New script `scripts/run-single-file.sh <relative/path/To/File.java>`:
+- Creates a scratch branch (`debug/single-<hash>`) from `main`
+- Runs the plugin, takes the existing brief for that file
+- Invokes `claude -p` with the single brief
+- Records commits, tool log, usage, any new files created, test status
+- Returns a summary the operator can read in under a minute
 
-**B2. Second-pass step in runner** (task #8) — after the main loop, re-run `analyseCleanCode + cleanCodeFixPlan`. If new findings appeared (regression from first-round fixes), run one more pass limited to those. Cap at two passes.
+Use cases: iterating on brief wording, testing a new recipe against a known target, reproducing pathological behaviour, piloting A1/A2 before spending a full experiment run on them. Write to `experiment/single/<timestamp>-<File>.md`.
 
-**B3. Import-ordering detection** (task #10) — likely enable Checkstyle `ImportOrder` rather than build a new recipe. One-line config change.
+**A4. Post-commit regression detector.**
+After each commit the agent makes, run a lightweight hook that fails the commit if:
+- The commit creates a new `.java` file with no corresponding test
+- The commit introduces a `catch (…) { log(...); return ...; }` block
+- The commit adds a `StringBuilder sb` parameter
 
-**B4. HEURISTICS.md formal examples** (task #11) — each heuristic gets a violation block + corrected block + false-positive example, matching the template in skill files.
+Implementation: a git hook in `.githooks/pre-commit` that the runner installs at the start of each experiment. Violations turn into test-fail output, the agent re-works.
 
-**B5. Skill body audit** (task #12) — several skill files omit codes that `SkillPathRegistry` routes to them. Walk each skill file, check its declared code list against the registry, fill gaps with worked examples.
+### B. Collapse Anthropic SDK into the `claude -p` CLI
 
-**B6. Ben-Manes upgrade capability** (task #13) — Ben-Manes is detection only; it does not modify files. Options: (a) write a `UpdateVersionCatalogRecipe` that reads the Ben-Manes JSON and rewrites `libs.versions.toml`; (b) adopt `refreshVersions` plugin which DOES auto-update; (c) keep the agent-driven path via `clean-code-dependency-updates` skill. Pick one; (b) is likely the cleanest.
+**B1. Replace `claude-review` module's direct Anthropic SDK calls with `claude -p` subprocess invocations.**
 
-### C. Goes on `experiment/manual-pilot`
+Current state: `claude-review` uses `com.anthropic:anthropic-java` SDK + `ANTHROPIC_API_KEY` env var to call Claude on a per-file basis for design-level heuristics (G6, G20, N4). The rest of the harness already uses `claude -p` via `run-experiment.sh`, which authenticates through the Claude Code login (no API key).
 
-**C1. Pippa reclassification list** (task #17) — add a "Codes Pippa should re-review" section to `experiment/manual-pilot-analysis.md`. List the codes where the agent's output quality differed markedly from the severity currently assigned — candidates for reclassification.
+Target: one auth path, no API key. `ClaudeReviewer.analyseFile` shells out to `claude -p --output-format json < prompt` and parses the JSON response. Drop the Anthropic SDK dependency, delete `anthropic` from `libs.versions.toml`, remove the `ANTHROPIC_API_KEY` plumbing in `CleanCodeExtension` and `AnalyseTask`.
 
-### D. Scheduling
+Open questions to answer before starting:
+- `claude -p` doesn't have built-in output caching the way the SDK does — does the per-file hash-based `ReviewCache` need to work harder?
+- Concurrency: the SDK call path could in principle batch; `claude -p` is per-invocation. Does it matter for a 20-file review?
+- Session-quota accounting: the API bills separately. Moving to CLI means review calls consume the user's Claude Code session budget. Acceptable for dogfooding; may not be for a tool we hand out.
 
-**D1. Schedule experiments at 01:10** (task #14)
-- Clean `manual-1` run: `scripts/run-experiment.sh manual 1`
-- `recipe-1` run: `scripts/run-experiment.sh recipe 1`
-- Use the `schedule` skill (`/schedule create --cron "10 1 * * *" --prompt "run scripts/run-experiment.sh manual 1"`), or `cron` directly. Decide before scheduling whether to run both on the same night or on consecutive nights.
-- Pre-bump the 93 E1 deps manually before scheduling — saves noise in the comparison. `./gradlew dependencyUpdates`, update `libs.versions.toml`, one commit.
+Likely answer: the dogfood value of "no API key setup" beats the lost batching. Ship it; revisit if concurrency becomes a bottleneck.
+
+### C. StringBuilder / `sb` detection + remediation
+
+**C1. Detection recipe `StringBuilderThreadingRecipe`.**
+Flags two patterns:
+- Any local variable declared as `StringBuilder sb` or `StringBuffer sb` (naming)
+- Any method with a parameter of type `StringBuilder` whose body calls `.append(...)` on that parameter (mutation threading → F2 / misplaced responsibility)
+
+Maps to F2 + a new sub-finding under G24 (naming convention).
+
+**C2. Remediation recipe `ReplaceStringBuilderWithTextBlockRecipe`.**
+Targets the most common idiom the audit exposed: a chain of `.append(...)` calls building up an HTML/Markdown fragment. Rewrite as `"""text block""".formatted(...)` when the content is mostly literal, or as a `List<String>` + `String.join("\n", ...)` when the content is mostly computed.
+
+Won't cover every case — intentionally conservative. Agents use the skill for the rest.
+
+**C3. Skill file update.**
+New section in `.claude/skills/clean-code-java-idioms/SKILL.md`: "StringBuilder: when to use, when not to, what to name it." Gives the positive patterns (`html`, `markdown`, `buffer` names; hot-path loops) and the negative ones (mutation threading, `sb` name, sub-10-line builders).
+
+### D. IntelliJ refactoring algorithms → OpenRewrite primitives
+
+**D1. Port "Extract Method".**
+IntelliJ IDEA Community is open source; its extract-method refactoring lives in `java-impl/src/com/intellij/refactoring/extractMethod/`. Read the algorithm (signature inference, variable escape analysis, return-value synthesis) and re-implement as an OpenRewrite recipe that takes a parameter `selection: { file, startLine, endLine, newMethodName }`.
+
+Use this as the foundation for a real `SplitClassRecipe` (for Ch10.1): pick a coherent subset of methods, extract them to a new class, update call sites. Today's class-split brief asks the agent to do this by hand every time.
+
+**D2. Port "Introduce Variable" / "Introduce Parameter".**
+Smaller than D1 but useful: backs a true `ExtractExplanatoryVariableRecipe` that works on any expression, not just if-conditions.
+
+**D3. Port "Rename" (with call-site awareness).**
+OpenRewrite has `org.openrewrite.java.RenameVariable` but it only handles variables; method/class rename with call-site updates is harder and IntelliJ has it. Backs a more robust `RenameShortNameRecipe` for N5.
+
+Scope: **only the algorithms, not the plugin infrastructure.** We're not shipping an IntelliJ plugin; we're translating the algorithmic ideas into OpenRewrite idioms.
+
+### E. Other recipes worth building
+
+In order of estimated leverage (from manual-1's remaining-finding table):
+
+| Code | Remaining | Recipe idea |
+|---|---:|---|
+| G30 (107) | method size | Hard; deliberate semantic split. Agent-driven with better skill prose. |
+| G29 (51) | negative conditionals | Extend `InvertNegativeConditionalRecipe` to cover `!= null` / `!= ""` cases — currently only unary `!` at top level. |
+| G35 (31) | configurable data | Extend `ExtractClassConstantRecipe` to cover String literals that ARE repeated (currently just numbers), with name heuristics (URL → `ENDPOINT_X`, `.properties` key → `PROP_X`). |
+| F2 (27) | output arguments | New `OutputArgumentToReturnRecipe` — detect `void foo(Result r)` where `r` is mutated, rewrite as `Result foo(...)` that returns a fresh Result. Private methods only. |
+| T1 (26) | missing tests | New `GenerateTestScaffoldRecipe` — for every public class/method with no test, create `FooTest.java` with an empty-body placeholder test. The agent fills in the body via the T1 brief. |
+| G10 (25) | vertical separation | Extend `MoveDeclarationRecipe` to cover the common patterns the current version misses. |
+
+### F. Previously deferred (still open)
+
+**F1. B4 from the pilot plan — HEURISTICS.md formal examples.**
+Each heuristic entry gets violation/correction/false-positive code blocks. Mostly content work; can be parallelised across heuristics.
+
+**F2. B5 from the pilot plan — Skill body audit.**
+Walk each `clean-code-*/SKILL.md`, cross-check against `SkillPathRegistry`, fill gaps with worked examples.
+
+**F3. C1 from the pilot plan — Pippa reclassification list on the pilot branch.**
+Add a "Codes Pippa should re-review" section to `experiment/manual-pilot-analysis.md`.
+
+**F4. D1 — Schedule `recipe-1` run.**
+Not yet executed. Once A1–A4 and some of C ship, schedule a `recipe-1` cron so we can compare manual vs recipe-assisted side by side.
 
 ## Branch discipline
 
-- **`main`** — all code fixes, all plans. Push freely.
-- **`experiment/manual-pilot`** — pilot run record. Only analysis updates and logs.
-- When fixes land on `main`, a future experiment branch will naturally pick them up because `run-experiment.sh` creates its branch from `main`.
-- Don't merge the pilot branch into `main`.
+Still the same as the pilot:
+
+- `main` — all plugin code, all plans. Push freely.
+- `experiment/manual-pilot`, `experiment/manual-1` — analysis and run logs only. Pushed; don't merge back.
+- Next runs (`manual-2`, `recipe-1`) — will branch from current main at launch time.
 
 ## How to resume in a fresh session
 
-Paste this into a new Claude Code session:
-
-> Read `docs/plan-next-session.md` in this repo. Start with the items under "High-leverage, ships on `main` before the next run" (A1 through A5), using a `git worktree` on `main` so the `experiment/manual-pilot` branch in the main working tree is not disturbed. After each item: commit with a clear message, push to `origin/main`, mark the corresponding task complete, and tell me before moving on to the next.
-
-That prompt gives the next agent everything it needs.
+Read this document, then `experiment/manual-1-analysis.md` on the `experiment/manual-1` branch for the concrete evidence behind sections A–C. Start with **A1** (new-class checklist) — it's the smallest change that closes the biggest quality leak.
