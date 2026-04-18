@@ -2,7 +2,7 @@
 junit = "5.10.0"
 javaparser = "3.26.2"
 gson = "2.11.0"
-openrewrite = "8.40.2"
+openrewrite = "8.79.5"
 versions = "0.53.0"
 
 anthropic = "2.25.0"
@@ -23,6 +23,7 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 openrewrite-core = { module = "org.openrewrite:rewrite-core", version.ref = "openrewrite" }
 openrewrite-java = { module = "org.openrewrite:rewrite-java", version.ref = "openrewrite" }
 openrewrite-java21 = { module = "org.openrewrite:rewrite-java-21", version.ref = "openrewrite" }
+openrewrite-java25 = { module = "org.openrewrite:rewrite-java-25", version.ref = "openrewrite" }
 openrewrite-test = { module = "org.openrewrite:rewrite-test", version.ref = "openrewrite" }
 ben-manes-versions-plugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versions" }
 

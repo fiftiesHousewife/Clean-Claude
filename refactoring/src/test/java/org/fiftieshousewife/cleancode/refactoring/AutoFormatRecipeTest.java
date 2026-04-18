@@ -11,7 +11,7 @@ class AutoFormatRecipeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new AutoFormat());
+        spec.recipe(new AutoFormat(null));
     }
 
     @Test

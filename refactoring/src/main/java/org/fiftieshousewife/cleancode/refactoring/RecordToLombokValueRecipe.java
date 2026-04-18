@@ -81,7 +81,7 @@ public class RecordToLombokValueRecipe extends Recipe {
                         .withPrimaryConstructor(null)
                         .withBody(c.getBody().withStatements(bodyStatements));
 
-                return (J.ClassDeclaration) new AutoFormat().getVisitor()
+                return (J.ClassDeclaration) new AutoFormat(null).getVisitor()
                         .visit(transformed, ctx, getCursor().getParentOrThrow());
             }
         };
