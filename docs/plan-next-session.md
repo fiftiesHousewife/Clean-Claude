@@ -252,7 +252,17 @@ same failure shape when a new tool ships.
 3. Investigate whether the MCP tool schema can be declared NOT as a
    deferred tool — skipping ToolSearch would reduce the one-time schema-
    load cost. May be a Claude Code configuration detail we don't control.
-4. Measure cache-creation tokens explicitly in the comparison report
+4. Pre-batch target files by finding shape before handing them to the
+   agent. Today `reworkCompare -Pfiles=<csv>` runs one session over the
+   list regardless of shape mismatch; when the batch mixes
+   extraction-heavy and stylistic files, the agent context-switches and
+   extract_method's schema-load cost amortizes poorly. Add a
+   `BatchPlanner` that clusters files by dominant-finding-class
+   (extraction / stylistic / null / mutation), runs one batch per
+   cluster per variant, and writes one combined report. Trade-off is
+   more total sessions (more cache creation) for better per-session
+   tool-fit.
+5. Measure cache-creation tokens explicitly in the comparison report
    (SHIPPED — ComparisonReport now shows every token category plus
    derived metrics like cache-hit rate and cost-per-action).
 
