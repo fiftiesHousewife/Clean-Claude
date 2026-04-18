@@ -44,16 +44,27 @@ public final class PromptBuilder {
     private static String toolsBlock(final boolean includeRecipeTools) {
         if (includeRecipeTools) {
             return """
-                    Available refactoring recipes, each invocable via Gradle:
-                      ./gradlew :refactoring:extractMethod \\
-                          -Pfile=<path> -PstartLine=<N> -PendLine=<M> -PnewMethodName=<name>
-                      ./gradlew :refactoring:moveMethod \\
-                          -Pfile=<path> -PmethodName=<name> -PtargetFqn=<fully-qualified-class>
-                    See docs/extract-method-recipe.md for usage detail and rejection reasons.
+                    Available refactoring tools (via the `cleancode-refactoring` MCP server):
+                      extract_method(file, startLine, endLine, newMethodName)
+                          — extracts a contiguous range of top-level statements into a new
+                            package-private helper. Returns an error when the range contains
+                            break/continue/non-bare return or would need more than one output
+                            variable. See docs/extract-method-recipe.md for detail.
+                      verify_build(module)
+                          — runs `./gradlew :<module>:compileJava` and returns `build OK` or
+                            the first few compiler errors. Use after every source edit.
+                      run_tests(module, testClass?)
+                          — runs `./gradlew :<module>:test` and returns `tests: all passed` or
+                            the first few failed test names. Use after the build is green.
+                      format(module)
+                          — runs `./gradlew :<module>:spotlessApply` once at the end of the
+                            session; individual tools do not format, so call it once after
+                            your final edit rather than after every intermediate change.
 
-                    Workflow: make your changes, run the module's tests, but DO NOT commit or push.
-                    If a recipe rejects, record the rejection in your output and move on rather than
-                    forcing the change by hand — the point of this loop is to learn what the recipes
+                    Workflow: call the MCP tools for each edit + verification step, then call
+                    format once at the end. DO NOT commit or push. If a tool returns an error,
+                    record the rejection in your output and move on rather than forcing the
+                    change by hand — the point of this loop is to learn what the recipes
                     cannot do yet.""";
         }
         return """

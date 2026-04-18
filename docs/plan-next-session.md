@@ -179,6 +179,9 @@ When `ExtractMethodRecipe` creates a new helper, it should also add a placeholde
 **D12. Port "Inline Method" / "Inline Variable" (`InlineMethodProcessor`, `InlineLocalVariableProcessor`).**
 Inverse of extract method and of D2. A pass to kill G9 (dead code) and simplifications where a named local or helper method reads as less expressive than its expansion. Constrained first cut: only inline methods called from exactly one site, and only variables assigned once.
 
+**D15. Expose `move_method` as an MCP tool.**
+The `mcp/` server (shipped in this session) exposes `extract_method`, `verify_build`, `run_tests`, and `format` — but not `move_method` yet. MoveMethodRecipe is wired in-process, but move is a project-wide transform: beyond the source file, it needs to find and rewrite call sites across every CU that references the moved method. Decide the MCP tool's project-scanning shape (read from findings.json? walk the module? take an explicit list of files?) and implement. Default target: same module as source, but accept a `callerModules` argument for cross-module moves.
+
 **D14. De-duplicate `refactoring/` — hoist shared support, kill CPD hits.**
 G5 was formerly suppressed at the package level on the grounds that OpenRewrite visitor scaffolding repeats across recipes. A CPD pass (post-d5c2b0d) with that suppression lifted shows that claim was overclaimed — most duplicated blocks are in the scan+rewrite bodies we authored, not in visitor boilerplate. Seven CPD-confirmed duplications to drive the work, biggest first:
 

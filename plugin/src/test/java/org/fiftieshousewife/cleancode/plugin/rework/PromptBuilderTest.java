@@ -12,14 +12,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PromptBuilderTest {
 
     @Test
-    void withRecipeToolsListsGradleInvocationsAndRecipeWorkflow() {
+    void withRecipeToolsAdvertisesMcpExtractMethodAndWorkflow() {
         final String prompt = PromptBuilder.build("Foo.java",
                 List.of(new Suggestion(HeuristicCode.G30, 10, "long")), true);
         assertAll(
-                () -> assertTrue(prompt.contains(":refactoring:extractMethod"),
-                        "extractMethod invocation is shown when tools are enabled"),
-                () -> assertTrue(prompt.contains(":refactoring:moveMethod")),
-                () -> assertTrue(prompt.contains("rejects, record the rejection"),
+                () -> assertTrue(prompt.contains("extract_method(file, startLine, endLine, newMethodName)"),
+                        "MCP tool signature is shown when tools are enabled"),
+                () -> assertTrue(prompt.contains("cleancode-refactoring` MCP server"),
+                        "the server name matches what `claude mcp add` registers"),
+                () -> assertTrue(prompt.contains("If a tool returns an error"),
                         "the workflow note tells the agent to log rejections instead of forcing"));
     }
 
@@ -28,8 +29,8 @@ class PromptBuilderTest {
         final String prompt = PromptBuilder.build("Foo.java",
                 List.of(new Suggestion(HeuristicCode.G30, 10, "long")), false);
         assertAll(
-                () -> assertFalse(prompt.contains(":refactoring:extractMethod"),
-                        "no recipe CLI when the tools are explicitly excluded"),
+                () -> assertFalse(prompt.contains("extract_method("),
+                        "no MCP tool advertisement when tools are explicitly excluded"),
                 () -> assertTrue(prompt.contains("manually with your Edit"),
                         "fallback instruction present"),
                 () -> assertTrue(prompt.contains("\"Edit\" as the recipe name"),
