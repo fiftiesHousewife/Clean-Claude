@@ -81,6 +81,15 @@ public class CleanCodePlugin implements Plugin<Project> {
                     task.dependsOn(analyse);
                 });
 
+        project.getTasks()
+                .register("reworkCompare", ReworkCompareTask.class, task -> {
+                    task.setDescription(
+                            "Run rework twice (with and without recipe tools) on a sandbox fixture "
+                                    + "and produce a side-by-side comparison with diffs and token cost");
+                    task.setGroup("clean code");
+                    task.dependsOn(analyse);
+                });
+
         if (project.getRootProject().equals(project)) {
             project.getTasks()
                     .register("updateVersionCatalog", UpdateVersionCatalogTask.class, task -> {
