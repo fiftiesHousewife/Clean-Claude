@@ -6,13 +6,15 @@ import java.util.Optional;
 
 /**
  * The return value from a {@link ReworkOrchestrator} run. Carries the
- * suggestions the plugin proposed, the actions and rejections the agent
- * reported back (empty in {@link ReworkMode#SUGGEST_ONLY}), the token
- * accounting when the agent runtime supplied it, and a pre-formatted
- * commit-message body built from those fields.
+ * list of files the session touched (often one, but up to however many
+ * the task handed in), the suggestions the plugin proposed, the actions
+ * and rejections the agent reported back (empty in
+ * {@link ReworkMode#SUGGEST_ONLY}), the token accounting when the agent
+ * runtime supplied it, and a pre-formatted commit-message body built
+ * from those fields.
  */
 public record ReworkReport(
-        Path file,
+        List<Path> files,
         ReworkMode mode,
         List<Suggestion> suggestions,
         List<AgentAction> actionsTaken,

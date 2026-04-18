@@ -94,7 +94,8 @@ public final class DefaultAgentRunner implements AgentRunner {
     private void handleEvent(final StreamEvent event, final Collector collector) {
         switch (event) {
             case StreamEvent.AssistantText t -> progress.accept("text: " + shorten(t.text()));
-            case StreamEvent.ToolUse u -> progress.accept("tool: " + u.name());
+            case StreamEvent.ToolUse u -> progress.accept("tool: " + u.name()
+                    + (u.inputSummary().isBlank() ? "" : " (" + u.inputSummary() + ")"));
             case StreamEvent.ToolResult ignored -> { }
             case StreamEvent.Result r -> collector.capture(r);
             case StreamEvent.Ignored ignored -> { }

@@ -21,7 +21,10 @@ public final class ComparisonReport {
         final StringBuilder body = new StringBuilder();
         body.append("# Rework comparison\n\n");
         if (!runs.isEmpty()) {
-            body.append("Target file: ").append(runs.getFirst().report().file()).append("\n\n");
+            body.append("Target files:\n");
+            runs.getFirst().report().files().forEach(
+                    file -> body.append("  - ").append(file).append('\n'));
+            body.append('\n');
         }
         appendCostTable(body, runs);
         runs.forEach(run -> appendVariantSection(body, run));

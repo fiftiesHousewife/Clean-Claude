@@ -21,14 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runs the rework flow three times against a sandbox fixture — once for
- * each {@link RunVariant} — and writes a three-column comparison of the
- * commit-message bodies, the diffs, and the token accounting. One
- * command, no manual interleave of runs and git restores.
+ * Runs the rework flow once per {@link RunVariant} across one or many
+ * sandbox fixtures. The agent gets all of the batched files in a single
+ * session, reads each lazily, and emits one JSON summary covering every
+ * action. Between variants the target files are restored so each run
+ * starts from the same baseline.
  *
- * <p>Refuses to run unless the target lives under {@code sandbox/} —
- * the task mutates the file in place between runs, so pointing it at
- * real source risks losing work.
+ * <p>Accepts {@code -Pfile=<path>} for a single-file target or
+ * {@code -Pfiles=<csv>} for a batch. Refuses to run unless every target
+ * lives under {@code sandbox/} — the task mutates files in place.
  */
 public abstract class ReworkCompareTask extends DefaultTask {
 
@@ -40,43 +41,40 @@ public abstract class ReworkCompareTask extends DefaultTask {
 
     @TaskAction
     public void compare() throws IOException {
-        final String fileProperty = requiredProperty("file");
-        ensureSandboxPath(fileProperty);
+        final List<String> relativePaths = collectFileProperty();
+        relativePaths.forEach(ReworkCompareTask::ensureSandboxPath);
         final Path projectRoot = getProject().getRootDir().toPath();
-        final Path target = projectRoot.resolve(fileProperty);
+        final List<Path> targets = relativePaths.stream()
+                .map(projectRoot::resolve).toList();
         final GitWorkingTree git = new GitWorkingTree(projectRoot);
-        ensureWorkingTreeClean(git, target);
+        ensureWorkingTreeClean(git, targets);
         final AggregatedReport findings = loadFindings();
         final ReworkOrchestrator orchestrator = new ReworkOrchestrator(
                 new DefaultAgentRunner(line -> getLogger().lifecycle("    {}", line)),
-                Duration.ofMinutes(15));
-        final List<ComparisonReport.VariantRun> runs = runAllVariants(orchestrator, target, projectRoot, findings, git);
-        final Path destination = writeComparison(target, ComparisonReport.format(runs));
+                Duration.ofMinutes(20));
+        final List<ComparisonReport.VariantRun> runs =
+                runAllVariants(orchestrator, targets, projectRoot, findings, git);
+        final Path destination = writeComparison(targets, ComparisonReport.format(runs));
         logSummary(runs, destination);
     }
 
-    private List<ComparisonReport.VariantRun> runAllVariants(final ReworkOrchestrator orchestrator,
-                                                             final Path target, final Path projectRoot,
-                                                             final AggregatedReport findings,
-                                                             final GitWorkingTree git) {
-        final List<ComparisonReport.VariantRun> results = new ArrayList<>();
-        int index = 0;
-        for (final RunVariant variant : VARIANTS) {
-            index++;
-            getLogger().lifecycle("▶ run {} of {} — {}", index, VARIANTS.size(), variant);
-            final ReworkReport report = invokeOrchestrator(orchestrator, target, projectRoot, findings, variant);
-            results.add(new ComparisonReport.VariantRun(variant, report, captureDiff(git, target)));
-            restore(git, target);
+    private List<String> collectFileProperty() {
+        final Object files = getProject().findProperty("files");
+        if (files != null && !files.toString().isBlank()) {
+            final List<String> result = new ArrayList<>();
+            for (final String part : files.toString().split(",")) {
+                final String trimmed = part.trim();
+                if (!trimmed.isEmpty()) {
+                    result.add(trimmed);
+                }
+            }
+            return result;
         }
-        return results;
-    }
-
-    private String requiredProperty(final String name) {
-        final Object value = getProject().findProperty(name);
-        if (value == null || value.toString().isBlank()) {
-            throw new GradleException("missing -P" + name + "=<value>");
+        final Object file = getProject().findProperty("file");
+        if (file == null || file.toString().isBlank()) {
+            throw new GradleException("missing -Pfile=<path> or -Pfiles=<comma-separated>");
         }
-        return value.toString();
+        return List.of(file.toString());
     }
 
     private static void ensureSandboxPath(final String path) {
@@ -85,11 +83,11 @@ public abstract class ReworkCompareTask extends DefaultTask {
         }
     }
 
-    private static void ensureWorkingTreeClean(final GitWorkingTree git, final Path file) {
+    private static void ensureWorkingTreeClean(final GitWorkingTree git, final List<Path> files) {
         try {
-            if (!git.isClean(file)) {
-                throw new GradleException("working tree for " + file
-                        + " is dirty — commit or stash first so the paired runs have a clean baseline");
+            if (!git.isClean(files)) {
+                throw new GradleException("working tree for the targets is dirty — "
+                        + "commit or stash first so the paired runs have a clean baseline");
             }
         } catch (GitWorkingTree.GitException e) {
             throw new GradleException("git precheck failed: " + e.getMessage(), e);
@@ -105,39 +103,58 @@ public abstract class ReworkCompareTask extends DefaultTask {
         return JsonReportReader.read(findings);
     }
 
+    private List<ComparisonReport.VariantRun> runAllVariants(final ReworkOrchestrator orchestrator,
+                                                             final List<Path> targets,
+                                                             final Path projectRoot,
+                                                             final AggregatedReport findings,
+                                                             final GitWorkingTree git) {
+        final List<ComparisonReport.VariantRun> results = new ArrayList<>();
+        int index = 0;
+        for (final RunVariant variant : VARIANTS) {
+            index++;
+            getLogger().lifecycle("▶ run {} of {} — {}", index, VARIANTS.size(), variant);
+            final ReworkReport report = invokeOrchestrator(orchestrator, targets, projectRoot, findings, variant);
+            results.add(new ComparisonReport.VariantRun(variant, report, captureDiff(git, targets)));
+            restore(git, targets);
+        }
+        return results;
+    }
+
     private static ReworkReport invokeOrchestrator(final ReworkOrchestrator orchestrator,
-                                                   final Path target, final Path projectRoot,
+                                                   final List<Path> targets, final Path projectRoot,
                                                    final AggregatedReport findings,
                                                    final RunVariant variant) {
         try {
-            return orchestrator.reworkClass(target, projectRoot, findings,
+            return orchestrator.reworkClasses(targets, projectRoot, findings,
                     ReworkMode.AGENT_DRIVEN, variant);
         } catch (ReworkOrchestrator.ReworkException e) {
             throw new GradleException("rework run failed (" + variant + "): " + e.getMessage(), e);
         }
     }
 
-    private static String captureDiff(final GitWorkingTree git, final Path file) {
+    private static String captureDiff(final GitWorkingTree git, final List<Path> files) {
         try {
-            return git.diff(file);
+            return git.diff(files);
         } catch (GitWorkingTree.GitException e) {
             throw new GradleException("git diff failed: " + e.getMessage(), e);
         }
     }
 
-    private static void restore(final GitWorkingTree git, final Path file) {
+    private static void restore(final GitWorkingTree git, final List<Path> files) {
         try {
-            git.restore(file);
+            git.restore(files);
         } catch (GitWorkingTree.GitException e) {
             throw new GradleException("git restore failed: " + e.getMessage(), e);
         }
     }
 
-    private Path writeComparison(final Path target, final String markdown) throws IOException {
+    private Path writeComparison(final List<Path> targets, final String markdown) throws IOException {
         final Path outputDir = getProject().getLayout().getBuildDirectory()
                 .dir(OUTPUT_DIR).get().getAsFile().toPath();
         Files.createDirectories(outputDir);
-        final String baseName = target.getFileName().toString().replace(".java", "");
+        final String baseName = targets.size() == 1
+                ? targets.getFirst().getFileName().toString().replace(".java", "")
+                : "batch-" + targets.size();
         final Path destination = outputDir.resolve(baseName + "-comparison.md");
         Files.writeString(destination, markdown);
         return destination;

@@ -3,13 +3,15 @@ package org.fiftieshousewife.cleancode.plugin.rework;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Thin wrapper around the handful of {@code git} commands
- * {@link ReworkCompareTask} needs between the paired runs. Kept
- * separate so the comparison task doesn't interleave orchestrator
- * logic with ProcessBuilder ceremony.
+ * {@link ReworkCompareTask} needs between the paired runs. Each
+ * method accepts a single {@link Path} (one-file shortcut) or a
+ * {@link List} (batched runs).
  */
 public final class GitWorkingTree {
 
@@ -22,21 +24,44 @@ public final class GitWorkingTree {
     }
 
     public boolean isClean(final Path file) throws GitException {
-        return run("git", "status", "--porcelain", "--", file.toString()).stdout().isBlank();
+        return isClean(List.of(file));
+    }
+
+    public boolean isClean(final List<Path> files) throws GitException {
+        return run(command("status", List.of("--porcelain"), files)).stdout().isBlank();
     }
 
     public String diff(final Path file) throws GitException {
-        return run("git", "diff", "--", file.toString()).stdout();
+        return diff(List.of(file));
+    }
+
+    public String diff(final List<Path> files) throws GitException {
+        return run(command("diff", List.of(), files)).stdout();
     }
 
     public void restore(final Path file) throws GitException {
-        final CommandResult result = run("git", "restore", "--", file.toString());
+        restore(List.of(file));
+    }
+
+    public void restore(final List<Path> files) throws GitException {
+        final CommandResult result = run(command("restore", List.of(), files));
         if (result.exitCode() != 0) {
             throw new GitException("git restore failed: " + result.stdout());
         }
     }
 
-    private CommandResult run(final String... command) throws GitException {
+    private static String[] command(final String subcommand, final List<String> flags,
+                                    final List<Path> files) {
+        final List<String> cmd = new ArrayList<>();
+        cmd.add("git");
+        cmd.add(subcommand);
+        cmd.addAll(flags);
+        cmd.add("--");
+        files.forEach(file -> cmd.add(file.toString()));
+        return cmd.toArray(new String[0]);
+    }
+
+    private CommandResult run(final String[] command) throws GitException {
         try {
             final Process process = new ProcessBuilder(command)
                     .directory(projectRoot.toFile())

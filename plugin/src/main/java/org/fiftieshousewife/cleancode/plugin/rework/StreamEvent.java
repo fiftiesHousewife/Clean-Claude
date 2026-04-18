@@ -12,7 +12,7 @@ public sealed interface StreamEvent {
 
     record AssistantText(String text) implements StreamEvent {}
 
-    record ToolUse(String name) implements StreamEvent {}
+    record ToolUse(String name, String inputSummary) implements StreamEvent {}
 
     record ToolResult() implements StreamEvent {}
 

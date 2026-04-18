@@ -27,7 +27,37 @@ class DefaultAgentRunnerTest {
 
         final StreamEvent event = StreamJsonEventParser.parseLine(line);
 
-        assertEquals("Bash", assertInstanceOf(StreamEvent.ToolUse.class, event).name());
+        final StreamEvent.ToolUse toolUse = assertInstanceOf(StreamEvent.ToolUse.class, event);
+        assertEquals("Bash", toolUse.name());
+        assertEquals("ls", toolUse.inputSummary());
+    }
+
+    @Test
+    void toolUseInputSummaryPrefersFilePathForReadEditWrite() {
+        final String line = "{\"type\":\"assistant\",\"message\":{\"content\":"
+                + "[{\"type\":\"tool_use\",\"name\":\"Edit\",\"input\":"
+                + "{\"file_path\":\"/path/Foo.java\",\"old_string\":\"a\",\"new_string\":\"b\"}}]}}";
+
+        final StreamEvent.ToolUse toolUse = assertInstanceOf(StreamEvent.ToolUse.class,
+                StreamJsonEventParser.parseLine(line));
+
+        assertEquals("/path/Foo.java", toolUse.inputSummary());
+    }
+
+    @Test
+    void toolUseInputSummaryTruncatesLongBashCommands() {
+        final String longCommand = "./gradlew :module:veryLongTaskName "
+                + "--rerun-tasks --info --warning-mode all --stacktrace --debug-jvm "
+                + "-Pmyflag=true -Panotherflag=false -Pyetanother=some-longer-value";
+        final String line = "{\"type\":\"assistant\",\"message\":{\"content\":"
+                + "[{\"type\":\"tool_use\",\"name\":\"Bash\",\"input\":{\"command\":\""
+                + longCommand + "\"}}]}}";
+
+        final StreamEvent.ToolUse toolUse = assertInstanceOf(StreamEvent.ToolUse.class,
+                StreamJsonEventParser.parseLine(line));
+
+        assertTrue(toolUse.inputSummary().endsWith("…"),
+                "summaries beyond 100 chars end with an ellipsis so the stream stays one-line-per-event");
     }
 
     @Test

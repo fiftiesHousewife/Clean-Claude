@@ -29,6 +29,8 @@ public final class StreamJsonEventParser {
     private static final String USAGE = "usage";
     private static final String TOTAL_COST_USD = "total_cost_usd";
     private static final String NAME = "name";
+    private static final String INPUT = "input";
+    private static final int INPUT_SUMMARY_LIMIT = 100;
 
     private StreamJsonEventParser() {}
 
@@ -66,7 +68,10 @@ public final class StreamJsonEventParser {
                 return new StreamEvent.AssistantText(stringOf(block, TEXT));
             }
             if (TOOL_USE.equals(blockType) && block.has(NAME)) {
-                return new StreamEvent.ToolUse(stringOf(block, NAME));
+                return new StreamEvent.ToolUse(
+                        stringOf(block, NAME),
+                        summariseInput(stringOf(block, NAME), block.has(INPUT)
+                                ? block.get(INPUT) : null));
             }
         }
         return new StreamEvent.Ignored();
@@ -112,6 +117,35 @@ public final class StreamJsonEventParser {
                 intOrZero(usage, "cache_creation_input_tokens"),
                 intOrZero(usage, "cache_read_input_tokens"),
                 costUsd));
+    }
+
+    private static String summariseInput(final String toolName, final JsonElement input) {
+        if (input == null || !input.isJsonObject()) {
+            return "";
+        }
+        final JsonObject object = input.getAsJsonObject();
+        final String primary = primaryFieldFor(toolName, object);
+        return primary.length() <= INPUT_SUMMARY_LIMIT
+                ? primary
+                : primary.substring(0, INPUT_SUMMARY_LIMIT) + "…";
+    }
+
+    private static String primaryFieldFor(final String toolName, final JsonObject input) {
+        for (final String key : fieldsWorthShowing(toolName)) {
+            if (input.has(key) && input.get(key).isJsonPrimitive()) {
+                return input.get(key).getAsString().replace('\n', ' ').strip();
+            }
+        }
+        return input.keySet().stream().findFirst().map(k -> k + "=…").orElse("");
+    }
+
+    private static java.util.List<String> fieldsWorthShowing(final String toolName) {
+        return switch (toolName) {
+            case "Bash" -> java.util.List.of("command");
+            case "Read", "Edit", "Write" -> java.util.List.of("file_path");
+            case "Grep", "Glob" -> java.util.List.of("pattern");
+            default -> java.util.List.of("file", "module", "pattern", "command", "file_path");
+        };
     }
 
     private static String stringOf(final JsonObject object, final String key) {

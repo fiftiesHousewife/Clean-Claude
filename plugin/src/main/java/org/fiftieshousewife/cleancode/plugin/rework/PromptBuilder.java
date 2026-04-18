@@ -6,25 +6,20 @@ import java.util.List;
  * Builds the string written to {@code claude -p}'s stdin. Three prompt
  * variants (see {@link RunVariant}) let {@link ReworkCompareTask}
  * isolate the value of the refactoring recipe from the value of the
- * compact Gradle-wrapping tools.
- *
- * <p>The prompt carries a pointer to the target file plus structured
- * findings — never the file's contents. The agent uses its Read tool
- * to pull the file lazily.
+ * compact Gradle-wrapping tools. Handles batched multi-file sessions:
+ * the agent gets every {@link FileTarget} in one prompt, reads each
+ * with its Read tool, and emits a single JSON summary covering every
+ * action across every file.
  */
 public final class PromptBuilder {
 
     private PromptBuilder() {}
 
-    public static String build(final String relativeFilePath,
-                               final List<Suggestion> suggestions,
-                               final RunVariant variant) {
+    public static String build(final List<FileTarget> targets, final RunVariant variant) {
         return """
-                You are reworking a single Java file to address the findings listed below.
+                You are reworking %d Java file%s to address the findings listed below.
 
-                Target file (relative to project root): %s
-                Read the file with your Read tool before planning the fix. Do NOT embed its
-                contents in your response — the commit diff captures the actual change.
+                %s
 
                 %s
 
@@ -32,16 +27,43 @@ public final class PromptBuilder {
                 schema is:
 
                 {
-                  "actions":  [{"recipe": "<RecipeClass-or-Edit>", "options": {...}, "why": "<one sentence>"}],
-                  "rejected": [{"recipe": "<RecipeClass-or-Edit>", "options": {...}, "why": "<one sentence>"}]
+                  "actions":  [{"file": "<relative-path>", "recipe": "<RecipeClass-or-Edit>",
+                                "options": {...}, "why": "<one sentence>"}],
+                  "rejected": [{"file": "<relative-path>", "recipe": "<RecipeClass-or-Edit>",
+                                "options": {...}, "why": "<one sentence>"}]
                 }
 
-                Findings on this file:
+                Findings:
                 %s
                 """.formatted(
-                        relativeFilePath,
+                        targets.size(),
+                        targets.size() == 1 ? "" : "s",
+                        renderTargets(targets),
                         toolsBlock(variant),
-                        renderSuggestions(suggestions));
+                        renderFindings(targets));
+    }
+
+    private static String renderTargets(final List<FileTarget> targets) {
+        final StringBuilder block = new StringBuilder("Target files (relative to project root):\n");
+        targets.forEach(target -> block.append("  - ").append(target.relativePath()).append('\n'));
+        block.append("""
+                Read each file with your Read tool before planning the fix. Do NOT embed the
+                files' contents in your response — the commit diff captures the actual change.""");
+        return block.toString();
+    }
+
+    private static String renderFindings(final List<FileTarget> targets) {
+        final StringBuilder block = new StringBuilder();
+        targets.forEach(target -> {
+            block.append("### ").append(target.relativePath()).append('\n');
+            if (target.suggestions().isEmpty()) {
+                block.append("  (no findings on this file — leave it unchanged)\n");
+            } else {
+                target.suggestions().forEach(s -> block.append("  - ").append(s.code().name())
+                        .append(" at L").append(s.line()).append(": ").append(s.message()).append('\n'));
+            }
+        });
+        return block.toString().stripTrailing();
     }
 
     private static String toolsBlock(final RunVariant variant) {
@@ -95,15 +117,5 @@ public final class PromptBuilder {
                 Prefer the recipe tool over manual Edit where the shape of the change is
                 an extraction; fall back to Edit only when the recipe rejects. DO NOT
                 commit or push.""";
-    }
-
-    private static String renderSuggestions(final List<Suggestion> suggestions) {
-        if (suggestions.isEmpty()) {
-            return "  (no findings — bail out with empty actions and rejected arrays)";
-        }
-        final StringBuilder rendered = new StringBuilder();
-        suggestions.forEach(s -> rendered.append("  - ").append(s.code().name())
-                .append(" at L").append(s.line()).append(": ").append(s.message()).append('\n'));
-        return rendered.toString().stripTrailing();
     }
 }

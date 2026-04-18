@@ -106,7 +106,7 @@ public abstract class ReworkClassTask extends DefaultTask {
         final Path outputDir = getProject().getLayout().getBuildDirectory()
                 .dir(REWORK_OUTPUT_DIR).get().getAsFile().toPath();
         Files.createDirectories(outputDir);
-        final String baseName = result.file().getFileName().toString().replace(".java", "");
+        final String baseName = result.files().getFirst().getFileName().toString().replace(".java", "");
         final Path destination = outputDir.resolve(baseName + "-rework.md");
         Files.writeString(destination, result.commitMessageBody());
         return destination;
