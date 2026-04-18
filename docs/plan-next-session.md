@@ -179,16 +179,18 @@ When `ExtractMethodRecipe` creates a new helper, it should also add a placeholde
 **D12. Port "Inline Method" / "Inline Variable" (`InlineMethodProcessor`, `InlineLocalVariableProcessor`).**
 Inverse of extract method and of D2. A pass to kill G9 (dead code) and simplifications where a named local or helper method reads as less expressive than its expansion. Constrained first cut: only inline methods called from exactly one site, and only variables assigned once.
 
-**D14. Hoist `AstFragments` and migrate the five existing parse-a-holder-class recipes.**
-Audit (post-d5c2b0d) found five recipes outside D1 that build `"class _T { void _m() { … } }"` and unpack the first statement by hand — ceremony `AstFragments.parseStatement` already does:
+**D14. De-duplicate `refactoring/` — hoist shared support, kill CPD hits.**
+G5 was formerly suppressed at the package level on the grounds that OpenRewrite visitor scaffolding repeats across recipes. A CPD pass (post-d5c2b0d) with that suppression lifted shows that claim was overclaimed — most duplicated blocks are in the scan+rewrite bodies we authored, not in visitor boilerplate. Seven CPD-confirmed duplications to drive the work, biggest first:
 
-- `ExtractExplanatoryVariableRecipe`
-- `WrapAssertAllRecipe`
-- `RemoveNestedTernaryRecipe`
-- `EncapsulateBoundaryRecipe`
-- `ExtractConstantRecipe`
+1. **Constant-extraction pipeline — 50 lines of near-duplicate logic across `ExtractClassConstantRecipe` ↔ `ExtractConstantRecipe` (24 + 17 + 9 line blocks).** They're basically the same recipe parameterised by "literal type". Extract a shared scan→rewrite skeleton; the two surviving subclasses differ only in which J.Literal kinds they accept.
+2. **Parse-a-holder-class + unpack statement** — 10-line block across `ExtractExplanatoryVariableRecipe` ↔ `WrapAssertAllRecipe`; 6-line 3-way with `RemoveNestedTernaryRecipe`. Also hit by `EncapsulateBoundaryRecipe` and `ExtractConstantRecipe`. `AstFragments.parseStatement` already does this — hoist it from `refactoring/.../extractmethod/` to `refactoring/.../support/` and migrate each site to a one-line call. `AstFragments.parseField` (new) covers the constant-recipe use case.
+3. **Statement-list-replace** — 9 lines across `EncapsulateBoundaryRecipe` ↔ `MoveDeclarationRecipe`; 8-9 lines across `ExtractExplanatoryVariableRecipe` ↔ `EncapsulateBoundaryRecipe` ↔ `MoveDeclarationRecipe`. Extract a `Statements.replaceMatching(block, predicate, replacement)` helper into `support/`.
+4. **Modifier-mutation visitor** — 9 lines across `AddFinalRecipe` ↔ `ReduceVisibilityRecipe`. Both add / remove `J.Modifier` entries on matching declarations. Extract a `ModifierEditor` helper.
+5. **Smaller tail** — 8-line duplications across `RecordToLombokValueRecipe` ↔ `SplitFlagArgumentRecipe` and a couple of others. Address only if the surrounding work makes them obvious.
 
-Move `AstFragments` from `refactoring/.../extractmethod/` to `refactoring/.../support/` (shared location), then rewrite each recipe to delegate. Expect ~10 lines gone per site. Low risk — the tests already anchor each recipe's output. No-op on `ExtractMethodRecipe` (already uses it). `AstFragments.parseMethod`, `LineIndex`, and `VariableUsagePatterns` have no reuse candidates today; leave them in the extractmethod package until a second caller surfaces.
+`AstFragments.parseMethod`, `LineIndex`, and `VariableUsagePatterns` have no reuse candidates today; leave them in the extractmethod package until a second caller surfaces.
+
+Acceptance: G5 findings in `refactoring/` drop to zero or are narrowly suppressed at the class level with a specific reason; existing tests stay green without modification.
 
 **D6. Replace `VariableUsagePatterns` regex with real reference resolution.**
 The D1 port analyses reads and writes inside an extracted range via word-boundary regex (see `refactoring/.../extractmethod/VariableUsagePatterns.java`). The compromise is conservative — it over-includes (matches identifiers in comments and string literals) and can't tell the difference between `foo.bar` and `bar`. Rewrite to walk the AST: collect `J.Identifier` nodes and filter by `getFieldType()` / cursor parent / name-reference semantics to resolve each identifier to the right binding. IntelliJ uses `PsiReference.resolve()` for the equivalent job. Acceptance: every extract-method test still passes, plus new tests proving false-positive matches in comments/strings no longer register as reads.
