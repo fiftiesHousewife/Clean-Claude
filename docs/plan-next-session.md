@@ -145,6 +145,9 @@ Walk the IDE's inspection catalogue (Preferences → Editor → Inspections → 
 2. Where safe, a companion refactoring recipe that applies IntelliJ's own quick-fix — same shape as `InvertNegativeConditionalRecipe` (G29), `ShortenFullyQualifiedReferencesRecipe` (G12).
 Ported from IntelliJ IDEA Community when the inspection logic is non-trivial (dataflow, reachability, nullability). Start with the inspections IntelliJ enables by default — those are the set users already trust, so false-positive risk is lowest. Track progress as a checklist under this item; cross off an inspection only when both detection and (if applicable) fix recipes ship with tests.
 
+**D6. Replace `VariableUsagePatterns` regex with real reference resolution.**
+The D1 port analyses reads and writes inside an extracted range via word-boundary regex (see `refactoring/.../extractmethod/VariableUsagePatterns.java`). The compromise is conservative — it over-includes (matches identifiers in comments and string literals) and can't tell the difference between `foo.bar` and `bar`. Rewrite to walk the AST: collect `J.Identifier` nodes and filter by `getFieldType()` / cursor parent / name-reference semantics to resolve each identifier to the right binding. IntelliJ uses `PsiReference.resolve()` for the equivalent job. Acceptance: every extract-method test still passes, plus new tests proving false-positive matches in comments/strings no longer register as reads.
+
 Scope: **only the algorithms, not the plugin infrastructure.** We're not shipping an IntelliJ plugin; we're translating the algorithmic ideas into OpenRewrite idioms.
 
 ### E. Other recipes worth building

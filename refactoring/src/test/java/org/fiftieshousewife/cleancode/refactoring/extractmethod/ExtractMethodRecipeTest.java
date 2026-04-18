@@ -68,6 +68,83 @@ class ExtractMethodRecipeTest {
     }
 
     @Test
+    void extractsAccumulatorLoopViaOuterLocalReassignment() {
+        final String source = """
+                package com.example;
+                import java.util.List;
+                public class Joiner {
+                    public String build(List<String> items) {
+                        String result = "";
+                        for (String item : items) {
+                            result = result + item;
+                        }
+                        return result;
+                    }
+                }
+                """;
+        final String after = runRecipe(source, "Joiner.java", 6, 8, "join");
+        assertAll(
+                () -> assertTrue(after.contains("private String join("),
+                        "extracted method returns the outer local's type"),
+                () -> assertTrue(after.contains("return result;"),
+                        "extracted method returns the updated outer local"),
+                () -> assertTrue(after.contains("result = join("),
+                        "call site re-assigns the existing local — no new declaration"),
+                () -> assertFalse(after.contains("String result = join("),
+                        "outer-write output must not redeclare the local"));
+    }
+
+    @Test
+    void extractsGuardBlockUsingVoidConditionalExit() {
+        final String source = """
+                package com.example;
+                public class Guarded {
+                    public void process(String input) {
+                        if (input == null) {
+                            return;
+                        }
+                        System.out.println(input);
+                    }
+                }
+                """;
+        final String after = runRecipe(source, "Guarded.java", 4, 6, "isMissing");
+        assertAll(
+                () -> assertTrue(after.contains("private boolean isMissing(String input)"),
+                        "void conditional-exit uses boolean sentinel"),
+                () -> assertTrue(after.contains("return true;"),
+                        "bare return in the range is rewritten to `return true;`"),
+                () -> assertTrue(after.contains("return false;"),
+                        "a terminal `return false;` is appended to the extracted body"),
+                () -> assertTrue(after.contains("if (isMissing(input)) return;"),
+                        "call site wraps the invocation in `if (...) return;`"));
+    }
+
+    @Test
+    void rejectsRangeContainingBreak() {
+        final String source = """
+                package com.example;
+                public class Iterating {
+                    public void run() {
+                        for (int i = 0; i < 10; i++) {
+                            if (i > 5) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                """;
+        final var recipe = new ExtractMethodRecipe("Iterating.java", 4, 8, "loop");
+        final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
+                .logCompilationWarningsAndErrors(false)
+                .build().parse(source).toList();
+        final var results = recipe.run(
+                new InMemoryLargeSourceSet(sourceFiles),
+                new InMemoryExecutionContext(Throwable::printStackTrace));
+        assertTrue(results.getChangeset().getAllResults().isEmpty(),
+                "break inside the range is rejected in Phase A (no control-flow graph yet)");
+    }
+
+    @Test
     void rejectsRangeContainingReturn() {
         final String source = """
                 package com.example;
