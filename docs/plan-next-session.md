@@ -136,6 +136,15 @@ Smaller than D1 but useful: backs a true `ExtractExplanatoryVariableRecipe` that
 **D3. Port "Rename" (with call-site awareness).**
 OpenRewrite has `org.openrewrite.java.RenameVariable` but it only handles variables; method/class rename with call-site updates is harder and IntelliJ has it. Backs a more robust `RenameShortNameRecipe` for N5.
 
+**D4. Port the "ConstantConditions" / DataFlow analyser to a detection recipe.**
+IntelliJ flags expressions whose value is provably constant at compile time — `if (alwaysTrue) { … }`, `boolean b = !enabled && true`, `String s = value; s == null ? … : …` where `value` was just assigned a non-null literal. Port the dataflow logic into an OpenRewrite detection recipe that emits a `ConstantCondition` finding when a conditional or expression is provably always true, always false, or always a specific literal. Model the build on `SplitFlagArgumentRecipe` — same shape: pick the IntelliJ logic, translate it to the OpenRewrite primitives we have, surface it as a finding with a skill-backed brief rather than auto-rewriting.
+
+**D5. Sweep every IntelliJ warning and port it.**
+Walk the IDE's inspection catalogue (Preferences → Editor → Inspections → Java) and, for each enabled warning that matches something we care about (not Kotlin-only, not style-trivial that Spotless already handles), produce two artefacts:
+1. A detection recipe that reproduces the warning as a Clean Code finding — same shape as D4 (ConstantConditions), `SplitFlagArgumentRecipe` (flag args), or `FullyQualifiedReferenceRecipe` (G12).
+2. Where safe, a companion refactoring recipe that applies IntelliJ's own quick-fix — same shape as `InvertNegativeConditionalRecipe` (G29), `ShortenFullyQualifiedReferencesRecipe` (G12).
+Ported from IntelliJ IDEA Community when the inspection logic is non-trivial (dataflow, reachability, nullability). Start with the inspections IntelliJ enables by default — those are the set users already trust, so false-positive risk is lowest. Track progress as a checklist under this item; cross off an inspection only when both detection and (if applicable) fix recipes ship with tests.
+
 Scope: **only the algorithms, not the plugin infrastructure.** We're not shipping an IntelliJ plugin; we're translating the algorithmic ideas into OpenRewrite idioms.
 
 ### E. Other recipes worth building
