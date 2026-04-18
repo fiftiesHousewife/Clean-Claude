@@ -12,47 +12,65 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PromptBuilderTest {
 
     @Test
-    void withRecipeToolsAdvertisesMcpExtractMethodAndWorkflow() {
+    void vanillaVariantMentionsNoMcpToolsAndFallsBackToManualEdit() {
         final String prompt = PromptBuilder.build("Foo.java",
-                List.of(new Suggestion(HeuristicCode.G30, 10, "long")), true);
-        assertAll(
-                () -> assertTrue(prompt.contains("extract_method(file, startLine, endLine, newMethodName)"),
-                        "MCP tool signature is shown when tools are enabled"),
-                () -> assertTrue(prompt.contains("cleancode-refactoring` MCP server"),
-                        "the server name matches what `claude mcp add` registers"),
-                () -> assertTrue(prompt.contains("If a tool returns an error"),
-                        "the workflow note tells the agent to log rejections instead of forcing"));
-    }
-
-    @Test
-    void withoutRecipeToolsTellsAgentToEditByHand() {
-        final String prompt = PromptBuilder.build("Foo.java",
-                List.of(new Suggestion(HeuristicCode.G30, 10, "long")), false);
+                List.of(new Suggestion(HeuristicCode.G30, 10, "long")), RunVariant.VANILLA);
         assertAll(
                 () -> assertFalse(prompt.contains("extract_method("),
-                        "no MCP tool advertisement when tools are explicitly excluded"),
-                () -> assertTrue(prompt.contains("manually with your Edit"),
-                        "fallback instruction present"),
-                () -> assertTrue(prompt.contains("\"Edit\" as the recipe name"),
-                        "the schema guidance matches the manual-edit mode"));
+                        "vanilla must not advertise the recipe tool"),
+                () -> assertFalse(prompt.contains("verify_build("),
+                        "vanilla must not advertise the gradle MCP tools"),
+                () -> assertTrue(prompt.contains("No MCP tools are available"),
+                        "vanilla says so explicitly"),
+                () -> assertTrue(prompt.contains("Record each change in the JSON output"),
+                        "vanilla tells the agent how to log its manual edits"));
     }
 
     @Test
-    void bothModesIncludeFilePointerAndSuggestionsAndSchemaButNotContents() {
-        final String withTools = PromptBuilder.build("Bar.java",
-                List.of(new Suggestion(HeuristicCode.G22, 5, "not final")), true);
-        final String withoutTools = PromptBuilder.build("Bar.java",
-                List.of(new Suggestion(HeuristicCode.G22, 5, "not final")), false);
-        for (final String prompt : List.of(withTools, withoutTools)) {
+    void gradleOnlyVariantAdvertisesThreeTools() {
+        final String prompt = PromptBuilder.build("Foo.java",
+                List.of(new Suggestion(HeuristicCode.G30, 10, "long")), RunVariant.MCP_GRADLE_ONLY);
+        assertAll(
+                () -> assertTrue(prompt.contains("verify_build(module)"),
+                        "gradle-only offers verify_build"),
+                () -> assertTrue(prompt.contains("run_tests(module, testClass?)"),
+                        "gradle-only offers run_tests"),
+                () -> assertTrue(prompt.contains("format(module)"),
+                        "gradle-only offers format"),
+                () -> assertTrue(prompt.contains("DO NOT call `extract_method`"),
+                        "gradle-only explicitly forbids extract_method"),
+                () -> assertFalse(prompt.contains("extract_method(file"),
+                        "the recipe signature is not listed"));
+    }
+
+    @Test
+    void recipesVariantAdvertisesAllFourTools() {
+        final String prompt = PromptBuilder.build("Foo.java",
+                List.of(new Suggestion(HeuristicCode.G30, 10, "long")), RunVariant.MCP_RECIPES);
+        assertAll(
+                () -> assertTrue(prompt.contains("extract_method(file, startLine, endLine, newMethodName)"),
+                        "recipes variant lists the full extract_method signature"),
+                () -> assertTrue(prompt.contains("verify_build(module)")),
+                () -> assertTrue(prompt.contains("run_tests(module, testClass?)")),
+                () -> assertTrue(prompt.contains("format(module)")),
+                () -> assertTrue(prompt.contains("Prefer the recipe tool"),
+                        "recipes variant nudges toward the tool over manual edit"));
+    }
+
+    @Test
+    void everyVariantIncludesFilePointerAndFindingsAndSchema() {
+        for (final RunVariant variant : RunVariant.values()) {
+            final String prompt = PromptBuilder.build("Bar.java",
+                    List.of(new Suggestion(HeuristicCode.G22, 5, "not final")), variant);
             assertAll(
                     () -> assertTrue(prompt.contains("Target file (relative to project root): Bar.java"),
-                            "file pointer present so the agent knows what to Read"),
+                            "file pointer present for " + variant),
                     () -> assertTrue(prompt.contains("Read the file with your Read tool"),
-                            "explicit instruction to use the Read tool"),
+                            "Read instruction present for " + variant),
                     () -> assertTrue(prompt.contains("G22 at L5: not final"),
-                            "suggestions appear in both modes"),
+                            "suggestions present for " + variant),
                     () -> assertTrue(prompt.contains("\"actions\""),
-                            "JSON schema is present in both modes"));
+                            "JSON schema present for " + variant));
         }
     }
 }

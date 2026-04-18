@@ -5,6 +5,7 @@ import org.fiftieshousewife.cleancode.core.JsonReportReader;
 import org.fiftieshousewife.cleancode.plugin.rework.ReworkMode;
 import org.fiftieshousewife.cleancode.plugin.rework.ReworkOrchestrator;
 import org.fiftieshousewife.cleancode.plugin.rework.ReworkReport;
+import org.fiftieshousewife.cleancode.plugin.rework.RunVariant;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
@@ -33,17 +34,17 @@ public abstract class ReworkClassTask extends DefaultTask {
     public void rework() throws IOException {
         final String fileProperty = requiredProperty("file");
         final String modeProperty = optionalProperty("mode", ReworkMode.SUGGEST_ONLY.name());
-        final boolean includeRecipes = Boolean.parseBoolean(
-                optionalProperty("includeRecipes", "true"));
+        final String variantProperty = optionalProperty("variant", RunVariant.MCP_RECIPES.name());
         final ReworkMode mode = parseMode(modeProperty);
+        final RunVariant variant = parseVariant(variantProperty);
 
-        final Path projectRoot = getProject().getProjectDir().toPath();
+        final Path projectRoot = getProject().getRootDir().toPath();
         final Path target = resolveTarget(projectRoot, fileProperty);
         final AggregatedReport report = loadReport();
 
-        final ReworkReport result = runOrchestrator(target, projectRoot, report, mode, includeRecipes);
+        final ReworkReport result = runOrchestrator(target, projectRoot, report, mode, variant);
         final Path messageFile = writeMessageBody(result);
-        logSummary(result, messageFile, includeRecipes);
+        logSummary(result, messageFile, variant);
     }
 
     private String requiredProperty(final String name) {
@@ -67,6 +68,15 @@ public abstract class ReworkClassTask extends DefaultTask {
         }
     }
 
+    private static RunVariant parseVariant(final String raw) {
+        try {
+            return RunVariant.valueOf(raw);
+        } catch (IllegalArgumentException e) {
+            throw new GradleException("unknown variant `" + raw
+                    + "` — expected VANILLA, MCP_GRADLE_ONLY, or MCP_RECIPES");
+        }
+    }
+
     private static Path resolveTarget(final Path projectRoot, final String raw) {
         final Path given = Path.of(raw);
         return given.isAbsolute() ? given : projectRoot.resolve(given);
@@ -83,10 +93,10 @@ public abstract class ReworkClassTask extends DefaultTask {
 
     private ReworkReport runOrchestrator(final Path target, final Path projectRoot,
                                          final AggregatedReport report, final ReworkMode mode,
-                                         final boolean includeRecipes) {
+                                         final RunVariant variant) {
         try {
             return new ReworkOrchestrator()
-                    .reworkClass(target, projectRoot, report, mode, includeRecipes);
+                    .reworkClass(target, projectRoot, report, mode, variant);
         } catch (ReworkOrchestrator.ReworkException e) {
             throw new GradleException("rework failed: " + e.getMessage(), e);
         }
@@ -102,13 +112,10 @@ public abstract class ReworkClassTask extends DefaultTask {
         return destination;
     }
 
-    private void logSummary(final ReworkReport result, final Path messageFile,
-                            final boolean includeRecipes) {
+    private void logSummary(final ReworkReport result, final Path messageFile, final RunVariant variant) {
         getLogger().lifecycle("Rework mode: {}{}",
                 result.mode(),
-                result.mode() == ReworkMode.AGENT_DRIVEN
-                        ? (includeRecipes ? " (with recipe tools)" : " (without recipe tools)")
-                        : "");
+                result.mode() == ReworkMode.AGENT_DRIVEN ? " (" + variant + ")" : "");
         getLogger().lifecycle("  suggestions: {}", result.suggestions().size());
         getLogger().lifecycle("  actions    : {}", result.actionsTaken().size());
         getLogger().lifecycle("  rejected   : {}", result.rejected().size());

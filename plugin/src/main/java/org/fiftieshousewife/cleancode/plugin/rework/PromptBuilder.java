@@ -3,11 +3,14 @@ package org.fiftieshousewife.cleancode.plugin.rework;
 import java.util.List;
 
 /**
- * Builds the string written to {@code claude -p}'s stdin. The prompt no
- * longer embeds the target file's contents — {@code claude -p} has the
- * {@code Read} tool and can pull it in lazily, so we hand it the
- * structured findings and a pointer. Keeps the per-run prompt small and
- * lets the agent decide how much of the file to re-read.
+ * Builds the string written to {@code claude -p}'s stdin. Three prompt
+ * variants (see {@link RunVariant}) let {@link ReworkCompareTask}
+ * isolate the value of the refactoring recipe from the value of the
+ * compact Gradle-wrapping tools.
+ *
+ * <p>The prompt carries a pointer to the target file plus structured
+ * findings — never the file's contents. The agent uses its Read tool
+ * to pull the file lazily.
  */
 public final class PromptBuilder {
 
@@ -15,7 +18,7 @@ public final class PromptBuilder {
 
     public static String build(final String relativeFilePath,
                                final List<Suggestion> suggestions,
-                               final boolean includeRecipeTools) {
+                               final RunVariant variant) {
         return """
                 You are reworking a single Java file to address the findings listed below.
 
@@ -37,42 +40,61 @@ public final class PromptBuilder {
                 %s
                 """.formatted(
                         relativeFilePath,
-                        toolsBlock(includeRecipeTools),
+                        toolsBlock(variant),
                         renderSuggestions(suggestions));
     }
 
-    private static String toolsBlock(final boolean includeRecipeTools) {
-        if (includeRecipeTools) {
-            return """
-                    Available refactoring tools (via the `cleancode-refactoring` MCP server):
-                      extract_method(file, startLine, endLine, newMethodName)
-                          — extracts a contiguous range of top-level statements into a new
-                            package-private helper. Returns an error when the range contains
-                            break/continue/non-bare return or would need more than one output
-                            variable. See docs/extract-method-recipe.md for detail.
-                      verify_build(module)
-                          — runs `./gradlew :<module>:compileJava` and returns `build OK` or
-                            the first few compiler errors. Use after every source edit.
-                      run_tests(module, testClass?)
-                          — runs `./gradlew :<module>:test` and returns `tests: all passed` or
-                            the first few failed test names. Use after the build is green.
-                      format(module)
-                          — runs `./gradlew :<module>:spotlessApply` once at the end of the
-                            session; individual tools do not format, so call it once after
-                            your final edit rather than after every intermediate change.
+    private static String toolsBlock(final RunVariant variant) {
+        return switch (variant) {
+            case VANILLA -> vanillaBlock();
+            case MCP_GRADLE_ONLY -> gradleOnlyBlock();
+            case MCP_RECIPES -> recipesBlock();
+        };
+    }
 
-                    Workflow: call the MCP tools for each edit + verification step, then call
-                    format once at the end. DO NOT commit or push. If a tool returns an error,
-                    record the rejection in your output and move on rather than forcing the
-                    change by hand — the point of this loop is to learn what the recipes
-                    cannot do yet.""";
-        }
+    private static String vanillaBlock() {
         return """
-                The refactoring recipes are NOT available for this run. Make every change
-                manually with your Edit / Write tools. Run the module's tests after;
-                DO NOT commit or push. Record each change you made in the JSON output —
-                use \"Edit\" as the recipe name and put a brief description of the change
-                in options (e.g. {\"change\": \"extracted lines 42-67 into logLines()\"}).""";
+                No MCP tools are available for this run. Make every change manually with
+                your Edit / Write tools; run the module's tests and verify the build via
+                Bash (e.g. `./gradlew :<module>:compileJava`, `./gradlew :<module>:test`).
+                DO NOT commit or push. Record each change in the JSON output — use "Edit"
+                as the recipe name with a brief description of the change in options
+                (e.g. {"change": "extracted lines 42-67 into logLines()"}).""";
+    }
+
+    private static String gradleOnlyBlock() {
+        return """
+                Available MCP tools (via the `cleancode-refactoring` server) — use these
+                for build and test; DO NOT call `extract_method` for this run:
+                  verify_build(module)
+                      — `./gradlew :<module>:compileJava` → `build OK` or a compact error.
+                  run_tests(module, testClass?)
+                      — `./gradlew :<module>:test` → `tests: all passed` or failed names.
+                  format(module)
+                      — `./gradlew :<module>:spotlessApply`; call once at the end.
+
+                Make refactorings manually with Edit / Write. The point of this variant is
+                to isolate the value of compact Gradle-wrapping output from the value of
+                the refactoring recipe itself. DO NOT commit or push.""";
+    }
+
+    private static String recipesBlock() {
+        return """
+                Available MCP tools (via the `cleancode-refactoring` server):
+                  extract_method(file, startLine, endLine, newMethodName)
+                      — extracts a contiguous range of top-level statements into a new
+                        package-private helper. Returns an error when the range does not
+                        map cleanly; record the rejection and try a narrower range.
+                  verify_build(module)
+                      — `./gradlew :<module>:compileJava` → `build OK` or a compact error.
+                  run_tests(module, testClass?)
+                      — `./gradlew :<module>:test` → `tests: all passed` or failed names.
+                  format(module)
+                      — `./gradlew :<module>:spotlessApply`; call once at the end.
+
+                Prefer the recipe tool over manual Edit where the shape of the change is
+                an extraction; fall back to Edit only when the recipe rejects. DO NOT
+                commit or push.""";
     }
 
     private static String renderSuggestions(final List<Suggestion> suggestions) {
