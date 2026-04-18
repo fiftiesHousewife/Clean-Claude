@@ -72,6 +72,15 @@ public class CleanCodePlugin implements Plugin<Project> {
                     task.setGroup("help");
                 });
 
+        project.getTasks()
+                .register("reworkClass", ReworkClassTask.class, task -> {
+                    task.setDescription(
+                            "Rework a single class via the ReworkOrchestrator Java API "
+                                    + "(default mode SUGGEST_ONLY; pass -Pmode=AGENT_DRIVEN for claude -p)");
+                    task.setGroup("clean code");
+                    task.dependsOn(analyse);
+                });
+
         if (project.getRootProject().equals(project)) {
             project.getTasks()
                     .register("updateVersionCatalog", UpdateVersionCatalogTask.class, task -> {
