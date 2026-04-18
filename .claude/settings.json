@@ -27,11 +27,15 @@
       "Bash(echo *)",
       "Read",
       "Edit",
-      "Write(*/src/main/java/*)",
-      "Write(*/src/test/java/*)",
+      "Write(*/src/main/java/**)",
+      "Write(*/src/test/java/**)",
       "Glob",
       "Grep",
-      "Agent"
+      "Agent",
+      "mcp__cleancode-refactoring__extract_method",
+      "mcp__cleancode-refactoring__verify_build",
+      "mcp__cleancode-refactoring__run_tests",
+      "mcp__cleancode-refactoring__format"
     ]
   },
   "hooks": {

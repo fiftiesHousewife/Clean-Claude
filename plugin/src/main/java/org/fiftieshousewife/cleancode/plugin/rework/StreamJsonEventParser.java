@@ -28,6 +28,8 @@ public final class StreamJsonEventParser {
     private static final String TOOL_RESULT = "tool_result";
     private static final String USAGE = "usage";
     private static final String TOTAL_COST_USD = "total_cost_usd";
+    private static final String DURATION_MS = "duration_ms";
+    private static final String NUM_TURNS = "num_turns";
     private static final String NAME = "name";
     private static final String INPUT = "input";
     private static final int INPUT_SUMMARY_LIMIT = 100;
@@ -108,15 +110,24 @@ public final class StreamJsonEventParser {
             return Optional.empty();
         }
         final JsonObject usage = root.getAsJsonObject(USAGE);
-        final double costUsd = root.has(TOTAL_COST_USD) && root.get(TOTAL_COST_USD).isJsonPrimitive()
-                ? root.get(TOTAL_COST_USD).getAsDouble()
-                : 0.0;
         return Optional.of(new AgentUsage(
                 intOrZero(usage, "input_tokens"),
                 intOrZero(usage, "output_tokens"),
                 intOrZero(usage, "cache_creation_input_tokens"),
                 intOrZero(usage, "cache_read_input_tokens"),
-                costUsd));
+                longOrZero(root, DURATION_MS),
+                intOrZero(root, NUM_TURNS),
+                doubleOrZero(root, TOTAL_COST_USD)));
+    }
+
+    private static long longOrZero(final JsonObject object, final String key) {
+        return object.has(key) && object.get(key).isJsonPrimitive()
+                ? object.get(key).getAsLong() : 0L;
+    }
+
+    private static double doubleOrZero(final JsonObject object, final String key) {
+        return object.has(key) && object.get(key).isJsonPrimitive()
+                ? object.get(key).getAsDouble() : 0.0;
     }
 
     private static String summariseInput(final String toolName, final JsonElement input) {

@@ -66,7 +66,7 @@ class CommitMessageFormatterTest {
 
     @Test
     void includesUsageSectionWhenSupplied() {
-        final AgentUsage usage = new AgentUsage(1500, 400, 200, 0, 0.0123);
+        final AgentUsage usage = new AgentUsage(1500, 400, 200, 0, 12345L, 7, 0.0123);
         final String body = CommitMessageFormatter.format(
                 List.of(new AgentAction("NoopRecipe", Map.of(), "for coverage")),
                 List.of(), List.of(), Optional.of(usage));

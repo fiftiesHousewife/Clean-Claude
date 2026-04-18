@@ -104,9 +104,32 @@ public final class PromptBuilder {
         return """
                 Available MCP tools (via the `cleancode-refactoring` server):
                   extract_method(file, startLine, endLine, newMethodName)
-                      — extracts a contiguous range of top-level statements into a new
-                        package-private helper. Returns an error when the range does not
-                        map cleanly; record the rejection and try a narrower range.
+                      — extracts a contiguous range of top-level statements from a method
+                        body into a new package-private helper. In-process OpenRewrite, no
+                        Gradle detour. The call site is replaced with an invocation of the
+                        helper; signatures are inferred from the range's free variables.
+
+                        USE extract_method when ALL of these hold:
+                          • The fix is a pure statement-range extraction — pulling a
+                            contiguous run of top-level statements into a helper, with no
+                            other change.
+                          • The range is ≥ 3 statements and a cohesive phase (e.g. a
+                            section of a too-long method, a loop body, a guard block).
+                          • The change does NOT also convert mutation to return, does NOT
+                            introduce a record return type, does NOT change access
+                            modifiers, and does NOT merge stylistic fixes.
+
+                        DO NOT use extract_method when:
+                          • The finding is stylistic: G12 FQN, G18 static-modifier, G22
+                            missing-final, G25 repeated-string, J1 unused-import — those
+                            are one-line Edits.
+                          • The finding calls for converting an output parameter to a
+                            return value (F2) — use Edit, rewrite the signature.
+                          • The finding calls for stream conversion (G30 loop→stream) —
+                            use Edit with a .stream() pipeline.
+                          • The method is already short (< 15 lines) with no clear
+                            sub-phase — there is nothing to extract.
+
                   verify_build(module)
                       — `./gradlew :<module>:compileJava` → `build OK` or a compact error.
                   run_tests(module, testClass?)
@@ -114,8 +137,7 @@ public final class PromptBuilder {
                   format(module)
                       — `./gradlew :<module>:spotlessApply`; call once at the end.
 
-                Prefer the recipe tool over manual Edit where the shape of the change is
-                an extraction; fall back to Edit only when the recipe rejects. DO NOT
-                commit or push.""";
+                Call extract_method whenever its preconditions hold. Fall back to Edit
+                for everything else. DO NOT commit or push.""";
     }
 }

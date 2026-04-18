@@ -46,16 +46,27 @@ public final class McpServer {
 
     public static void main(final String[] args) throws IOException {
         final GradleInvoker gradle = new GradleInvoker(Path.of(System.getProperty("user.dir")));
-        final ToolRegistry registry = new ToolRegistry()
-                .register(new ExtractMethodTool())
-                .register(new VerifyBuildTool(gradle))
-                .register(new RunTestsTool(gradle))
-                .register(new FormatTool(gradle));
-        final McpServer server = new McpServer(registry);
+        final McpServer server = new McpServer(defaultRegistry(gradle));
         try (Reader in = new InputStreamReader(System.in, StandardCharsets.UTF_8);
              Writer out = new OutputStreamWriter(System.out, StandardCharsets.UTF_8)) {
             server.run(new BufferedReader(in), new BufferedWriter(out));
         }
+    }
+
+    /**
+     * The set of tools the production server ships. Public so tests and
+     * permission audits can enumerate them without spawning a process.
+     */
+    public static ToolRegistry defaultRegistry(final GradleInvoker gradle) {
+        return new ToolRegistry()
+                .register(new ExtractMethodTool())
+                .register(new VerifyBuildTool(gradle))
+                .register(new RunTestsTool(gradle))
+                .register(new FormatTool(gradle));
+    }
+
+    public static String serverName() {
+        return SERVER_NAME;
     }
 
     public void run(final BufferedReader in, final BufferedWriter out) throws IOException {

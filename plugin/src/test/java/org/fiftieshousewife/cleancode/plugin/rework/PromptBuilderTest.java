@@ -53,7 +53,10 @@ class PromptBuilderTest {
                 () -> assertTrue(prompt.contains("verify_build(module)")),
                 () -> assertTrue(prompt.contains("run_tests(module, testClass?)")),
                 () -> assertTrue(prompt.contains("format(module)")),
-                () -> assertTrue(prompt.contains("Prefer the recipe tool")));
+                () -> assertTrue(prompt.contains("USE extract_method when ALL of these hold"),
+                        "recipes variant spells out preconditions explicitly"),
+                () -> assertTrue(prompt.contains("DO NOT use extract_method when"),
+                        "recipes variant spells out anti-patterns"));
     }
 
     @Test

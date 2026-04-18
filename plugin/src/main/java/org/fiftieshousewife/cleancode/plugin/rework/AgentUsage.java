@@ -11,4 +11,16 @@ public record AgentUsage(
         int outputTokens,
         int cacheCreationInputTokens,
         int cacheReadInputTokens,
-        double totalCostUsd) {}
+        long durationMs,
+        int numTurns,
+        double totalCostUsd) {
+
+    public int totalInputTokens() {
+        return inputTokens + cacheCreationInputTokens + cacheReadInputTokens;
+    }
+
+    public double cacheHitRate() {
+        final long total = (long) cacheCreationInputTokens + cacheReadInputTokens;
+        return total == 0 ? 0.0 : (double) cacheReadInputTokens / total;
+    }
+}

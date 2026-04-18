@@ -208,6 +208,54 @@ Fix: move `cleancode.java-conventions.gradle.kts` to `JavaLanguageVersion.of(25)
 
 Acceptance: full build + all tests pass without the daemon pin, and `:sandbox:analyseCleanCode` produces findings via OpenRewrite. Do this before the next real experiment run so we're not nursing the JDK-21 daemon pin into every future setup.
 
+### I. Post-MCP-experiment findings and follow-ups
+
+Three-way comparisons on the sandbox fixtures (OrchestratorFixture,
+AccumulatorFixture, GuardFixture) showed **vanilla is consistently cheapest**
+and the MCP variants add ~30-70% cost without producing different output.
+Every variant converges on the same 3 actions of equivalent quality.
+
+**Why MCP costs more, not less.** Cache-creation tokens (not shown in the
+summary) dominate: each variant's prompt shape gets its own cache key →
+three distinct prompts in one benchmark run pays cache-creation ×3. The
+MCP tool descriptions add ~400 prompt tokens → ~80-120K extra cache-
+creation per MCP variant. Compact MCP responses save ~50 tokens per call
+but that's a rounding error at the per-session level. Conclusion: MCP is
+worthwhile only when tool usage is dense within a session and the prompt
+shape is stable across sessions; for paired experiments it's a cost.
+
+**Bash drift is rational.** For tools that are a one-line wrapper over a
+Gradle task (`format(module)` ≡ `./gradlew :<module>:spotlessApply`),
+the agent skips the MCP tool because reaching it costs a ToolSearch
+round-trip, while Bash is on the default surface. Only non-Bash work
+(like `extract_method` which is genuinely in-process OpenRewrite, not
+a Gradle wrapper) has a durable reason to exist on the MCP server.
+
+**Permission denials are silent in non-interactive mode.** The MCP
+extract_method call in the three-way run was denied because the project-
+scope `.claude/settings.json` didn't pre-allow it. Fixed in the same
+commit. McpServerPermissionsTest now enforces that every tool in
+McpServer.defaultRegistry has a matching allow entry — prevents the
+same failure shape when a new tool ships.
+
+**Follow-ups** (roughly ordered by value):
+
+1. Extend `GradleInvoker` to use the Gradle Tooling API instead of
+   `ProcessBuilder`. Daemon connection reused across tool calls in the
+   same MCP session; ~5-10s saved on the first call and ~0.5-2s saved
+   per subsequent call. Also eliminates the daemon-start flakes on
+   contributor machines.
+2. Codify the patterns the vanilla agent produced into MCP recipes:
+   imperative-loop → stream-chain; `Objects.requireNonNull` fail-fast
+   null guards at method entry; void-mutating-parameter → value-
+   returning method + record result type; static-utility conversion.
+3. Investigate whether the MCP tool schema can be declared NOT as a
+   deferred tool — skipping ToolSearch would reduce the one-time schema-
+   load cost. May be a Claude Code configuration detail we don't control.
+4. Measure cache-creation tokens explicitly in the comparison report
+   (SHIPPED — ComparisonReport now shows every token category plus
+   derived metrics like cache-hit rate and cost-per-action).
+
 ### G. Recipe ordering
 
 Recipes are not commutative. Running formatting (Spotless / Google Java Format) before extracting a method means the next extraction re-introduces formatting deltas; running add-final after extract-method means the extracted body needs another pass to become compliant. The agent shouldn't have to figure out the order per-brief — the plugin should orchestrate it.

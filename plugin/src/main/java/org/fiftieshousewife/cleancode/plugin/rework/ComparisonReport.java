@@ -5,11 +5,10 @@ import java.util.Optional;
 
 /**
  * Renders the side-by-side markdown that {@link ReworkCompareTask}
- * produces after N paired rework runs (typically three:
- * {@link RunVariant#VANILLA}, {@link RunVariant#MCP_GRADLE_ONLY},
- * {@link RunVariant#MCP_RECIPES}). Keeps formatting decisions in one
- * place so the output's shape can be tweaked without touching task
- * orchestration.
+ * produces after N paired rework runs. The cost table shows every
+ * token category the agent runtime reports plus a few derived values
+ * (total input, cache hit rate, cost per action) so we can see which
+ * ledger line is driving any cross-variant cost delta.
  */
 public final class ComparisonReport {
 
@@ -35,14 +34,40 @@ public final class ComparisonReport {
         body.append("## Cost\n\n");
         body.append("| |").append(header(runs)).append('\n');
         body.append("|---|").append(alignment(runs)).append('\n');
-        body.append("| input tokens |").append(row(runs, u -> String.valueOf(u.inputTokens()))).append('\n');
-        body.append("| output tokens |").append(row(runs, u -> String.valueOf(u.outputTokens()))).append('\n');
-        body.append("| cache read |").append(row(runs, u -> String.valueOf(u.cacheReadInputTokens()))).append('\n');
-        body.append("| cost (USD) |").append(row(runs, u -> String.format("%.4f", u.totalCostUsd()))).append('\n');
-        body.append("| actions |")
-                .append(countRow(runs, r -> r.actionsTaken().size())).append('\n');
-        body.append("| rejected |")
-                .append(countRow(runs, r -> r.rejected().size())).append('\n');
+        appendRow(body, runs, "input tokens",
+                u -> String.valueOf(u.inputTokens()));
+        appendRow(body, runs, "cache creation",
+                u -> String.valueOf(u.cacheCreationInputTokens()));
+        appendRow(body, runs, "cache read",
+                u -> String.valueOf(u.cacheReadInputTokens()));
+        appendRow(body, runs, "total input",
+                u -> String.valueOf(u.totalInputTokens()));
+        appendRow(body, runs, "output tokens",
+                u -> String.valueOf(u.outputTokens()));
+        appendRow(body, runs, "cache hit rate",
+                u -> String.format("%.1f%%", u.cacheHitRate() * 100));
+        appendRow(body, runs, "turns",
+                u -> String.valueOf(u.numTurns()));
+        appendRow(body, runs, "duration (s)",
+                u -> String.format("%.1f", u.durationMs() / 1000.0));
+        appendRow(body, runs, "cost (USD)",
+                u -> String.format("%.4f", u.totalCostUsd()));
+        appendCountRow(body, runs, "actions", r -> r.actionsTaken().size());
+        appendCountRow(body, runs, "rejected", r -> r.rejected().size());
+        appendCostPerActionRow(body, runs);
+        body.append('\n');
+    }
+
+    private static void appendCostPerActionRow(final StringBuilder body, final List<VariantRun> runs) {
+        body.append("| cost per action |");
+        runs.forEach(run -> {
+            final int actions = run.report().actionsTaken().size();
+            final Optional<AgentUsage> usage = run.report().usage();
+            final String cell = usage.filter(u -> actions > 0)
+                    .map(u -> String.format("%.4f", u.totalCostUsd() / actions))
+                    .orElse("—");
+            body.append(' ').append(cell).append(" |");
+        });
         body.append('\n');
     }
 
@@ -73,13 +98,12 @@ public final class ComparisonReport {
         String apply(AgentUsage usage);
     }
 
-    private static String row(final List<VariantRun> runs, final UsageField accessor) {
-        final StringBuilder cells = new StringBuilder();
-        runs.forEach(run -> {
-            final Optional<AgentUsage> usage = run.report().usage();
-            cells.append(' ').append(usage.map(accessor::apply).orElse("—")).append(" |");
-        });
-        return cells.toString();
+    private static void appendRow(final StringBuilder body, final List<VariantRun> runs,
+                                  final String label, final UsageField accessor) {
+        body.append("| ").append(label).append(" |");
+        runs.forEach(run -> body.append(' ')
+                .append(run.report().usage().map(accessor::apply).orElse("—")).append(" |"));
+        body.append('\n');
     }
 
     @FunctionalInterface
@@ -87,10 +111,11 @@ public final class ComparisonReport {
         int apply(ReworkReport report);
     }
 
-    private static String countRow(final List<VariantRun> runs, final ReportField accessor) {
-        final StringBuilder cells = new StringBuilder();
-        runs.forEach(run -> cells.append(' ').append(accessor.apply(run.report())).append(" |"));
-        return cells.toString();
+    private static void appendCountRow(final StringBuilder body, final List<VariantRun> runs,
+                                       final String label, final ReportField accessor) {
+        body.append("| ").append(label).append(" |");
+        runs.forEach(run -> body.append(' ').append(accessor.apply(run.report())).append(" |"));
+        body.append('\n');
     }
 
     private static String label(final RunVariant variant) {
