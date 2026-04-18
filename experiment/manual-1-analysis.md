@@ -233,3 +233,84 @@ Sampled five commits across the run (5th, 20th, 40th, 60th, 88th):
 Manual-1 is a clean second data point. Same approach as the pilot, different starting tip with every pilot-retro improvement in place. The new skill-read discipline is visible and substantial (2× read volume, skill files dominate the top-read list). Per-file delegation hit 1.40×. Cost is up ~22% in billed tokens for 13 fewer commits, which is the honest price of the new reading regime; whether it buys better quality is answerable once the recipe-1 run exists and we can compare both against the same baseline.
 
 Pre-run total was 466 findings. Post-run is 617 — headline goes the wrong way, but ~114 of the delta is new G12 detection the agent can't be blamed for. Next run's analysis should quote a like-for-like delta that holds the detection surface constant.
+
+---
+
+## Addendum — what the commit-by-commit audit exposes
+
+Re-reading the branch with a sharper lens, focused on the question *"when the agent creates a new class, does it honour the same skills it would enforce on an existing one?"*
+
+### New-class skill violations are systemic
+
+| Statistic | Value |
+|---|---:|
+| New classes added on `experiment/manual-1` | **51** |
+| New test classes | **1** |
+| Ratio | 51 : 1 |
+
+Every skill we enforce on existing code (T1 "insufficient tests", C5 / Ch7.1 exception handling, G12 imports-not-FQN, G8 visibility) is unconditional about *quality of code as it currently stands*. But the fix-brief pattern is built around existing files — it has nothing to say about the code the agent creates during a fix. Result: 51 new classes, one test, and several other silent regressions:
+
+**Sampled commit `403aecd` (`fix: ClaudeReviewFindingSource (F1, G12, G30, Ch10.1)`) extracted four helper classes:**
+
+- `CachedFindings`, `ClaudeReviewer`, `FindingJsonParser`, `SourceFileCollector`
+- Zero tests written for any of them
+- `ClaudeReviewer.analyseFile` contains `catch (AnthropicException e) { LOG.log(...); return ""; }` — catch-log-continue, Ch7.1 anti-pattern
+- `FindingJsonParser.parse` contains `catch (JsonParseException | IllegalStateException e) { LOG.log(...); return List.of(); }` — same anti-pattern
+- `FindingJsonParser.toFinding` has `catch (IllegalArgumentException e) { LOG.log(Level.FINE, ...); return Optional.empty(); }` — same again
+
+The agent addressed the listed codes (F1, G12, G30, Ch10.1) correctly but reproduced a Ch7.1 violation while moving code into the new classes. Ch7.1 wasn't *in the brief* for that file, so the agent didn't think about it. This is a systemic gap, not a one-off: the per-file brief pattern only covers the codes already flagged on the existing file's findings, and any new files produced during the fix are invisible to both the brief and the next analyse run (they get scanned once committed, but by then the pattern is in place).
+
+**What would fix it:** a "new classes you create must satisfy **every** applicable skill, not just the ones in the brief" section on every brief; plus a post-commit detection pass that flags any new `.java` file missing a corresponding `Test.java`, or a `catch` block whose body is only a log call and a return, as a first-class finding.
+
+### StringBuilder is everywhere, and so is `sb`
+
+Sixteen files across the branch use `StringBuilder` or `StringBuffer`. Many of them thread a `StringBuilder` through nested private methods as a mutable parameter:
+
+```java
+// core/ClaudeMdSectionBuilder.java (new file created this run)
+StringBuilder appendPreamble(final StringBuilder sb) { … }
+private StringBuilder appendFrameworksSection(final StringBuilder sb, final List<String> dependencies) { … }
+private StringBuilder appendBaselineDelta(final StringBuilder sb, final Path baselineFile) throws IOException { … }
+```
+
+That's both an F2 violation (output-argument-ish — the method mutates its parameter and returns the same reference) and a naming complaint (`sb` communicates nothing). Modern Java has better tools for every one of these cases:
+
+- Markdown/HTML *section builders* like `ClaudeMdSectionBuilder`, `BriefMarkdown`, `BaselineDeltaTable`, `HtmlFindingsSection`, `SummaryReportHtml`: rewrite as small functions that each return their own `String` (or `List<String>`) and compose with `String.join("\n", parts)` or `Collectors.joining`. No mutable threading.
+- Multi-line literal HTML/Markdown: text blocks with `.formatted(...)`.
+- Concatenation loops: `stream().map(...).collect(Collectors.joining(...))`.
+- Actual performance-critical hot-path string building: keep `StringBuilder`, but name the variable for its role (`html`, `markdown`, `buffer` — never `sb`).
+
+Zero uses of `StringBuffer` survive on this branch — the legacy type is dead in the repo — but a detection recipe should still flag it as a future-proof guard. And a `sb` naming finding would be cheap to detect.
+
+### Counts aren't the whole story: choice-of-remediation isn't recorded
+
+Several skills offer multiple fix paths. The commit messages don't say which path was taken, and sometimes the path chosen is worse than the alternative:
+
+- **Ch7.1** can be fixed by (a) catch-rethrow, (b) translate-to-domain-exception, (c) try-with-resources, (d) retry with backoff. Our skill lists all four. Commit messages only say `fix: X (Ch7.1)`; reading the diff is the only way to know if the agent picked the lazy option.
+- **G30** can be fixed by extracting a new method, or by deleting dead branches, or by restructuring the single responsibility. All three show up as `fix: X (G30)`.
+- **Ch10.1** can be fixed by class split (often the agent's default) OR by deleting unused public API. The agent almost never does the second.
+
+Changing the commit-message format to `fix: X (Ch7.1:translate, G30:extract)` or adding a one-line body `# choice: Ch7.1→translate (throws DomainException); G30→extract` would make the path auditable cheaply.
+
+### A short list of anti-patterns the audit surfaced
+
+| Pattern | Where | Count |
+|---|---|---:|
+| New class, zero tests | everywhere | 50 of 51 |
+| `catch (…) { log; return empty/null; }` (Ch7.1) | `ClaudeReviewer`, `FindingJsonParser`, a few others | at least 4 |
+| `StringBuilder sb` threaded through private methods as output-like parameter | `ClaudeMdSectionBuilder`, `BriefMarkdown`, others | 10+ sites |
+| Extracted helper as `final class` with no visibility above package-private *and* no test — agent can't verify the helper in isolation | every new helper class | 51 |
+
+These are the real quality cost of manual-1. The headline count (617 findings vs 466) masks that the new code itself is the source of the next round of findings the plugin will emit.
+
+### Recommendations rolled into the next-session plan
+
+Tracked in `docs/plan-next-session.md` on `main`:
+
+1. "New class checklist" section injected into every fix brief.
+2. Commit-message format evolves to include the remediation choice when the skill offered multiple.
+3. Single-file experiment harness so we can iterate on brief wording without burning a full-repo run.
+4. Replace Anthropic SDK in `claude-review` with `claude -p` CLI calls — no API key required.
+5. Port selected IntelliJ refactoring algorithms (extract method, rename) into OpenRewrite primitives so class-split recipes actually work.
+6. Detection + remediation recipes for StringBuilder threading and `sb` naming.
+7. Detection recipe for "new main file added without companion test file."
