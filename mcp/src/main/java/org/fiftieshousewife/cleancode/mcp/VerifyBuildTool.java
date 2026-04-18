@@ -67,10 +67,7 @@ public final class VerifyBuildTool implements Tool {
             return result.exitCode() == 0
                     ? ToolResult.ok("build OK")
                     : ToolResult.error("build failed:\n" + summariseErrors(result.output()));
-        } catch (IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (IOException e) {
             return ToolResult.error("gradle invocation failed: " + e.getMessage());
         }
     }

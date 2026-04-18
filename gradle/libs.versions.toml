@@ -4,6 +4,8 @@ javaparser = "3.26.2"
 gson = "2.11.0"
 openrewrite = "8.79.5"
 versions = "0.53.0"
+gradle-tooling = "9.0.0"
+slf4j = "2.0.16"
 
 anthropic = "2.25.0"
 spotbugs-plugin = "6.5.0"
@@ -26,6 +28,8 @@ openrewrite-java21 = { module = "org.openrewrite:rewrite-java-21", version.ref =
 openrewrite-java25 = { module = "org.openrewrite:rewrite-java-25", version.ref = "openrewrite" }
 openrewrite-test = { module = "org.openrewrite:rewrite-test", version.ref = "openrewrite" }
 ben-manes-versions-plugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versions" }
+gradle-tooling-api = { module = "org.gradle:gradle-tooling-api", version.ref = "gradle-tooling" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }

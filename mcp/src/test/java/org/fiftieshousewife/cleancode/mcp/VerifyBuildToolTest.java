@@ -2,7 +2,6 @@ package org.fiftieshousewife.cleancode.mcp;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -14,8 +13,8 @@ class VerifyBuildToolTest {
 
     @Test
     void successfulBuildCollapsesToBuildOk() {
-        final GradleInvoker invoker = new GradleInvoker(Path.of("."),
-                (cmd, dir, to) -> new GradleInvoker.Result(0, "> Task :sandbox:compileJava\nBUILD SUCCESSFUL"));
+        final GradleInvoker invoker = new GradleInvoker(
+                (args, to) -> new GradleInvoker.Result(0, "> Task :sandbox:compileJava\nBUILD SUCCESSFUL"));
 
         final ToolResult result = new VerifyBuildTool(invoker).call(Map.of("module", "sandbox"));
 
@@ -32,8 +31,8 @@ class VerifyBuildToolTest {
                 /path/Foo.java:20: error: ';' expected
                 /path/Foo.java:30: error: class Foo is public, should be declared in a file named Foo.java
                 BUILD FAILED in 2s""";
-        final GradleInvoker invoker = new GradleInvoker(Path.of("."),
-                (cmd, dir, to) -> new GradleInvoker.Result(1, gradleOutput));
+        final GradleInvoker invoker = new GradleInvoker(
+                (args, to) -> new GradleInvoker.Result(1, gradleOutput));
 
         final ToolResult result = new VerifyBuildTool(invoker).call(Map.of("module", "sandbox"));
 
@@ -48,8 +47,8 @@ class VerifyBuildToolTest {
 
     @Test
     void missingModuleArgumentReturnsBadArguments() {
-        final GradleInvoker invoker = new GradleInvoker(Path.of("."),
-                (cmd, dir, to) -> { throw new AssertionError("should not invoke gradle"); });
+        final GradleInvoker invoker = new GradleInvoker(
+                (args, to) -> { throw new AssertionError("should not invoke gradle"); });
 
         final ToolResult result = new VerifyBuildTool(invoker).call(Map.of());
 

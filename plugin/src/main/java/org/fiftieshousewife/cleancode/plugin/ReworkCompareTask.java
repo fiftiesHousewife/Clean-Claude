@@ -36,7 +36,7 @@ public abstract class ReworkCompareTask extends DefaultTask {
     private static final String SANDBOX_PREFIX = "sandbox/";
     private static final String FINDINGS_JSON = "reports/clean-code/findings.json";
     private static final String OUTPUT_DIR = "reports/clean-code";
-    private static final List<RunVariant> VARIANTS = List.of(
+    private static final List<RunVariant> ALL_VARIANTS = List.of(
             RunVariant.VANILLA, RunVariant.MCP_GRADLE_ONLY, RunVariant.MCP_RECIPES);
 
     @TaskAction
@@ -49,11 +49,12 @@ public abstract class ReworkCompareTask extends DefaultTask {
         final GitWorkingTree git = new GitWorkingTree(projectRoot);
         ensureWorkingTreeClean(git, targets);
         final AggregatedReport findings = loadFindings();
+        final List<RunVariant> variants = collectVariantsProperty();
         final ReworkOrchestrator orchestrator = new ReworkOrchestrator(
                 new DefaultAgentRunner(line -> getLogger().lifecycle("    {}", line)),
                 Duration.ofMinutes(20));
         final List<ComparisonReport.VariantRun> runs =
-                runAllVariants(orchestrator, targets, projectRoot, findings, git);
+                runAllVariants(orchestrator, variants, targets, projectRoot, findings, git);
         final Path destination = writeComparison(targets, ComparisonReport.format(runs));
         logSummary(runs, destination);
     }
@@ -103,16 +104,41 @@ public abstract class ReworkCompareTask extends DefaultTask {
         return JsonReportReader.read(findings);
     }
 
+    private List<RunVariant> collectVariantsProperty() {
+        final Object raw = getProject().findProperty("variants");
+        if (raw == null || raw.toString().isBlank()) {
+            return ALL_VARIANTS;
+        }
+        final List<RunVariant> selected = new ArrayList<>();
+        for (final String part : raw.toString().split(",")) {
+            final String trimmed = part.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            try {
+                selected.add(RunVariant.valueOf(trimmed));
+            } catch (IllegalArgumentException e) {
+                throw new GradleException("unknown variant `" + trimmed + "` — expected one of "
+                        + ALL_VARIANTS + " (comma-separated, case-sensitive)");
+            }
+        }
+        if (selected.isEmpty()) {
+            throw new GradleException("-Pvariants must name at least one variant");
+        }
+        return selected;
+    }
+
     private List<ComparisonReport.VariantRun> runAllVariants(final ReworkOrchestrator orchestrator,
+                                                             final List<RunVariant> variants,
                                                              final List<Path> targets,
                                                              final Path projectRoot,
                                                              final AggregatedReport findings,
                                                              final GitWorkingTree git) {
         final List<ComparisonReport.VariantRun> results = new ArrayList<>();
         int index = 0;
-        for (final RunVariant variant : VARIANTS) {
+        for (final RunVariant variant : variants) {
             index++;
-            getLogger().lifecycle("▶ run {} of {} — {}", index, VARIANTS.size(), variant);
+            getLogger().lifecycle("▶ run {} of {} — {}", index, variants.size(), variant);
             final ReworkReport report = invokeOrchestrator(orchestrator, targets, projectRoot, findings, variant);
             results.add(new ComparisonReport.VariantRun(variant, report, captureDiff(git, targets)));
             restore(git, targets);

@@ -49,12 +49,14 @@ class PromptBuilderTest {
         final String prompt = PromptBuilder.build(oneTarget(), RunVariant.MCP_RECIPES);
         assertAll(
                 () -> assertTrue(prompt.contains("extract_method(file, startLine, endLine, newMethodName)"),
-                        "recipes variant lists the full extract_method signature"),
+                        "recipes variant lists the full singular extract_method signature"),
+                () -> assertTrue(prompt.contains("extract_methods(file, ranges="),
+                        "recipes variant lists the batch extract_methods signature"),
                 () -> assertTrue(prompt.contains("verify_build(module)")),
                 () -> assertTrue(prompt.contains("run_tests(module, testClass?)")),
                 () -> assertTrue(prompt.contains("format(module)")),
-                () -> assertTrue(prompt.contains("USE extract_method when ALL of these hold"),
-                        "recipes variant spells out preconditions explicitly"),
+                () -> assertTrue(prompt.contains("USE them when ALL of these hold"),
+                        "recipes variant spells out preconditions explicitly (shared across both tools)"),
                 () -> assertTrue(prompt.contains("DO NOT use extract_method when"),
                         "recipes variant spells out anti-patterns"));
     }

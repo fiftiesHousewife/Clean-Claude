@@ -36,18 +36,13 @@ final class ExtractionSource {
         final String throwsClause = analysis.throwsList().isEmpty()
                 ? ""
                 : " throws " + String.join(", ", analysis.throwsList());
-        final String body = bodyFor(target, analysis);
-        return """
-                %s%s %s(%s)%s {
-                    %s
-                }
-                """.formatted(
-                        staticModifier,
-                        analysis.returnTypeSource(),
-                        newMethodName,
-                        params,
-                        throwsClause,
-                        body);
+        // All lines at column 0. The caller (ExtractMethodRecipe.spliceExtraction)
+        // adds the correct indent per line based on its position in the enclosing
+        // class — signature/close at method-level, body lines at body-level.
+        return staticModifier + analysis.returnTypeSource() + " "
+                + newMethodName + "(" + params + ")" + throwsClause + " {\n"
+                + bodyFor(target, analysis) + "\n"
+                + "}\n";
     }
 
     static String renderCallSite(final String newMethodName,
@@ -65,12 +60,45 @@ final class ExtractionSource {
     }
 
     private static String bodyFor(final ExtractionTarget target, final ExtractionAnalysis analysis) {
-        final String raw = target.extractedText().strip();
+        final String raw = dedent(target.extractedText().stripTrailing());
         if (analysis.exitMode() == ExitMode.VOID_CONDITIONAL_EXIT) {
-            return BARE_RETURN.matcher(raw).replaceAll("return true;") + "\n        return false;";
+            return BARE_RETURN.matcher(raw).replaceAll("return true;") + "\nreturn false;";
         }
         return analysis.outputVariable()
-                .map(v -> raw + "\n        return " + v.name() + ";")
+                .map(v -> raw + "\nreturn " + v.name() + ";")
                 .orElse(raw);
+    }
+
+    /**
+     * Strip the minimum leading whitespace shared by every non-blank line. The
+     * input is line-aligned (see {@link ExtractionTargetFinder}) so all body
+     * lines carry the same source indent, and this reduces to a straight
+     * minimum-indent dedent.
+     */
+    private static String dedent(final String text) {
+        final String[] lines = text.split("\n", -1);
+        int common = Integer.MAX_VALUE;
+        for (final String line : lines) {
+            if (line.isBlank()) {
+                continue;
+            }
+            int i = 0;
+            while (i < line.length() && (line.charAt(i) == ' ' || line.charAt(i) == '\t')) {
+                i++;
+            }
+            common = Math.min(common, i);
+        }
+        if (common == Integer.MAX_VALUE || common == 0) {
+            return text;
+        }
+        final StringBuilder out = new StringBuilder(text.length());
+        for (int i = 0; i < lines.length; i++) {
+            if (i > 0) {
+                out.append('\n');
+            }
+            final String line = lines[i];
+            out.append(line.length() >= common ? line.substring(common) : line);
+        }
+        return out.toString();
     }
 }

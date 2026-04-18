@@ -7,13 +7,26 @@ application {
     mainClass.set("org.fiftieshousewife.cleancode.mcp.McpServer")
 }
 
+repositories {
+    // Gradle publishes tooling-api only to its own libs-releases repo,
+    // not to Maven Central.
+    maven {
+        url = uri("https://repo.gradle.org/gradle/libs-releases")
+        content {
+            includeGroup("org.gradle")
+        }
+    }
+}
+
 dependencies {
     implementation(project(":refactoring"))
     implementation(project(":annotations"))
     implementation(libs.openrewrite.core)
     implementation(libs.openrewrite.java)
     implementation(libs.gson)
+    implementation(libs.gradle.tooling.api)
     runtimeOnly(libs.openrewrite.java21)
+    runtimeOnly(libs.slf4j.nop)
 }
 
 // Bundle runtime deps into the jar so `java -jar mcp.jar` works without

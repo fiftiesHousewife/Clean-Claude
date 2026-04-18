@@ -27,7 +27,10 @@ record ExtractionTarget(
         int firstStatementIndex,
         int lastStatementIndexInclusive,
         String extractedText,
-        String afterRangeText) {
+        String afterRangeText,
+        int extractedStartOffset,
+        int extractedEndOffset,
+        int bodyCloseBraceOffset) {
 
     List<Statement> extractedStatements() {
         return body.getStatements().subList(firstStatementIndex, lastStatementIndexInclusive + 1);

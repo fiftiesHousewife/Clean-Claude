@@ -2,9 +2,9 @@ package org.fiftieshousewife.cleancode.mcp;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,8 +15,8 @@ class RunTestsToolTest {
 
     @Test
     void allPassedCollapsesToOneLine() {
-        final GradleInvoker invoker = new GradleInvoker(Path.of("."),
-                (cmd, dir, to) -> new GradleInvoker.Result(0, "BUILD SUCCESSFUL"));
+        final GradleInvoker invoker = new GradleInvoker(
+                (args, to) -> new GradleInvoker.Result(0, "BUILD SUCCESSFUL"));
 
         final ToolResult result = new RunTestsTool(invoker).call(Map.of("module", "sandbox"));
 
@@ -38,8 +38,8 @@ class RunTestsToolTest {
 
                 5 tests completed, 2 failed
                 BUILD FAILED""";
-        final GradleInvoker invoker = new GradleInvoker(Path.of("."),
-                (cmd, dir, to) -> new GradleInvoker.Result(1, gradleOutput));
+        final GradleInvoker invoker = new GradleInvoker(
+                (args, to) -> new GradleInvoker.Result(1, gradleOutput));
 
         final ToolResult result = new RunTestsTool(invoker).call(Map.of("module", "sandbox"));
 
@@ -51,10 +51,9 @@ class RunTestsToolTest {
 
     @Test
     void testClassArgumentForwardsToGradleFilter() {
-        final java.util.concurrent.atomic.AtomicReference<List<String>> captured =
-                new java.util.concurrent.atomic.AtomicReference<>();
-        final GradleInvoker invoker = new GradleInvoker(Path.of("."), (cmd, dir, to) -> {
-            captured.set(cmd);
+        final AtomicReference<List<String>> captured = new AtomicReference<>();
+        final GradleInvoker invoker = new GradleInvoker((args, to) -> {
+            captured.set(args);
             return new GradleInvoker.Result(0, "BUILD SUCCESSFUL");
         });
 

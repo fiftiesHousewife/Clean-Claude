@@ -2,7 +2,6 @@ package org.fiftieshousewife.cleancode.mcp;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -14,8 +13,8 @@ class FormatToolTest {
 
     @Test
     void successCollapsesToFormatApplied() {
-        final GradleInvoker invoker = new GradleInvoker(Path.of("."),
-                (cmd, dir, to) -> new GradleInvoker.Result(0, "BUILD SUCCESSFUL"));
+        final GradleInvoker invoker = new GradleInvoker(
+                (args, to) -> new GradleInvoker.Result(0, "BUILD SUCCESSFUL"));
 
         final ToolResult result = new FormatTool(invoker).call(Map.of("module", "sandbox"));
 
@@ -26,8 +25,8 @@ class FormatToolTest {
 
     @Test
     void failureReturnsErrorWithOutput() {
-        final GradleInvoker invoker = new GradleInvoker(Path.of("."),
-                (cmd, dir, to) -> new GradleInvoker.Result(1, "spotlessApply could not find style"));
+        final GradleInvoker invoker = new GradleInvoker(
+                (args, to) -> new GradleInvoker.Result(1, "spotlessApply could not find style"));
 
         final ToolResult result = new FormatTool(invoker).call(Map.of("module", "sandbox"));
 

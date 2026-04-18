@@ -34,7 +34,9 @@ class McpServerPermissionsTest {
     void everyServerToolIsAllowedInProjectSettings() throws IOException {
         final Set<String> allowed = loadAllowedPermissions();
         final List<String> toolNames = McpServer
-                .defaultRegistry(new GradleInvoker(Path.of(".")))
+                .defaultRegistry(new GradleInvoker((args, to) -> {
+                    throw new AssertionError("permissions test must not invoke gradle");
+                }))
                 .toolNames();
 
         final java.util.List<String> missing = new java.util.ArrayList<>();

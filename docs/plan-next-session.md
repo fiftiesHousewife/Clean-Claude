@@ -1,5 +1,58 @@
 # Plan: next session handoff
 
+## 2026-04-18 handoff — rework-harness fixes, MCP extract_method, 4-way variant
+
+The three-way harness run has been iterated three times. This session fixed real bugs in `extract_method`, the MCP server, and the prompt. The next session should (1) run the three-way one more time to validate, (2) implement the 4th variant (HARNESS_RECIPES_THEN_AGENT), (3) add soak testing.
+
+### What's landed this session
+
+- **`ExtractMethodTool` uses `parseInputs(Parser.Input.fromString(path, source))`** — old `parse(String)` let OpenRewrite's JavaParser guess the CU's source path by regex-scanning for `class <ident>`, which picked up Javadoc text ("the class holds …" → `holds.java`) and defeated `sourcePathMatches`. Fixed + regression tested.
+- **Textual splicing replaces AST print-back.** `ExtractMethodRecipe.extractTextually` computes the new source by splicing: `source[0..rangeStart) + callSite + source[rangeEnd..methodClose) + newMethod + source[methodClose..]`. Bypasses OpenRewrite's `requirePrintEqualsInput` check, which was firing false positives on PipelineFixture's Javadoc (em-dash + `{@link}` references). Source bytes outside the extraction region are preserved verbatim.
+- **Invariant check: `parsesCleanly`** — the spliced output is re-parsed; if it's not valid Java, the tool errors out instead of writing it. Guards against the "passes print check but corrupts file" class of bug.
+- **Rejection-reason plumbing.** `ExtractMethodRecipe.lastRejectionReason()` surfaces the specific reason (source-path mismatch, alignment, analysis-rejected, reparse-failed). MCP tool returns it in the error payload so agents don't need to guess.
+- **`GradleInvoker` migrated to Gradle Tooling API** — single `ProjectConnection` for the MCP server's lifetime, closed via try-with-resources in `McpServer.main`. No more per-call `./gradlew` wrapper JVM.
+- **Prompt guardrails** (`plugin/.../PromptBuilder.java`):
+  - Shared: "stay within target files; do NOT Read/Edit/Write under `refactoring/`, `mcp/`, `plugin/`, `build-logic/`; if a tool misbehaves, switch strategies rather than investigate."
+  - `recipesBlock()`: "if `extract_method` returns ANY error, fall back to Edit immediately. DO NOT diagnose the recipe or read its source."
+
+### Known issues (backlog)
+
+- **`verify_build` / `run_tests` / `format` MCP tools don't pass `-PcleanCodeSelfApply=true`**, so they can't target the sandbox module. Every sandbox-targeted call falls back to Bash. Fix: either thread the flag through `GradleInvoker`, or auto-detect a sandbox target and opt in.
+- **Splice indentation is hand-rolled.** `ExtractMethodRecipe.indentEachLine` / `outdentOneLevel` / `indentOfLine` plus `ExtractionSource.dedent` — ~30 lines producing reasonable but not pretty output. Proper fix: invoke the project's formatter (spotless) after the splice, OR run OpenRewrite's AutoFormat on the re-parsed spliced tree (risks re-triggering the idempotency issue on Javadoc-heavy files — would need same ctx flag). Currently the agent's prompt calls `format` at the end of a session so this is only visible in intermediate states.
+- **Sandbox has no spotless task wired.** `./gradlew :sandbox:spotlessApply` fails; the `format` MCP tool errors on sandbox. Fix: either wire spotless on sandbox or make the format tool skip modules without it.
+- **Soak-test corpus for recipes.** We found the Javadoc idempotency bug by pure luck during the three-way run. Need a dedicated corpus of real-world Java files (various Javadoc shapes, method lengths, control-flow styles) and a harness that runs every recipe against every file and reports rejections / output diffs / parse failures. Would have caught this bug in 30s.
+
+### How to drive the retry
+
+1. Working tree should be clean except for the source changes listed by `git status` at handoff time. `sandbox/.../PipelineFixture.java` is reset to HEAD.
+2. `./gradlew :plugin:publishToMavenLocal` has been run — the sandbox's `reworkCompare` task sees the updated prompt.
+3. `./gradlew :mcp:jar` has been run — the fat jar at `mcp/build/libs/mcp-1.0-SNAPSHOT.jar` has the textual-splice `extract_method`. `.mcp.json` points at it.
+4. Run: `./gradlew -PcleanCodeSelfApply=true :sandbox:reworkCompare -Pfile=sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/PipelineFixture.java`.
+5. Expectations:
+   - MCP_RECIPES variant calls `extract_method` successfully on at least one phase (lines 64-67 is a known-good range).
+   - If it hits a real recipe limitation (e.g. Phase B outer-field-mutation on the start phase), the error text now names the specific reason and the agent should fall back to Edit without spelunking.
+   - `verify_build` will still fail on sandbox because of the `-PcleanCodeSelfApply` issue; expect 1-2 Bash fallbacks per variant. Don't treat that as a recipe bug.
+
+### 4-way variant spec (from this session's discussion)
+
+Add `HARNESS_RECIPES_THEN_AGENT`:
+1. Before invoking the agent, the harness runs every applicable-and-safe recipe on each target file.
+2. `verify_build` after the recipe pass; rollback the file if it fails (treat it as a recipe bug, record for soak testing).
+3. Hand the partially-fixed file to the agent with a note: "recipes X, Y ran; they fixed findings A, B. Your job is the remaining findings."
+4. Agent runs with the same prompt as MCP_RECIPES but with fewer findings to address.
+
+Rationale: isolates the marginal value of the agent from the marginal value of the recipes. Expected outcome: lower cost than MCP_RECIPES because the deterministic dispatcher is cheaper than an LLM, and same-or-higher quality because the recipes don't make the kind of mistakes LLMs do.
+
+### Backlog additions (from this session)
+
+- Formatter integration for `extract_method` output (see "Splice indentation" above).
+- `-PcleanCodeSelfApply=true` in GradleInvoker for sandbox targets.
+- Recipe soak-test corpus + harness.
+- Spotless wiring on sandbox module.
+- `ExtractMethodRecipe` still has a dual path — the original `attemptExtraction` (AST-based, unused by MCP now) and the new `extractTextually`. Consider collapsing to one path.
+
+---
+
 Post-manual-1 handoff. What's landed since the pilot, what manual-1's audit exposed, and how to drive the next run.
 
 ## What's done since the pilot

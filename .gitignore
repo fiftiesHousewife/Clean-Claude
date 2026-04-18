@@ -5,7 +5,11 @@ build/
 !**/src/test/**/build/
 .kotlin
 .claude/skills/.thresholds-hash
+.claude/scheduled_tasks.lock
 experiment/cron-logs/
+# Per-machine MCP server config (absolute jar path). Developers generate
+# their own via `./gradlew :mcp:jar` and point Claude Code at it.
+.mcp.json
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

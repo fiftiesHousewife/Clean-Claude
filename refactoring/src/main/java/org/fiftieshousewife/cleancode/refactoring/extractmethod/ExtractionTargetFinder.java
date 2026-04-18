@@ -90,10 +90,25 @@ final class ExtractionTargetFinder {
             final int extractedEnd = (range.last + 1 < starts.length)
                     ? starts[range.last + 1]
                     : bodyCloseBrace;
-            final String extractedText = cuText.substring(extractedStart, extractedEnd);
+            // Line-aligned slice: back up to the start of the first line so all
+            // lines share the same leading indent (cheap dedent later), and the
+            // afterRangeText excludes the partial whitespace between the last
+            // statement and the close brace — ExtractionAnalysis uses it only
+            // for identifier-read checks.
+            final int extractedLineStart = lineStartOf(extractedStart);
+            final String extractedText = cuText.substring(extractedLineStart, extractedEnd);
             final String afterRangeText = cuText.substring(extractedEnd, bodyCloseBrace);
             found = new ExtractionTarget(enclosingClass, method, method.getBody(),
-                    range.first, range.last, extractedText, afterRangeText);
+                    range.first, range.last, extractedText, afterRangeText,
+                    extractedLineStart, extractedEnd, bodyCloseBrace);
+        }
+
+        private int lineStartOf(final int offset) {
+            int i = offset;
+            while (i > 0 && cuText.charAt(i - 1) != '\n') {
+                i--;
+            }
+            return i;
         }
 
         private boolean computeStatementOffsets(final List<Statement> statements, final int searchFromOffset,

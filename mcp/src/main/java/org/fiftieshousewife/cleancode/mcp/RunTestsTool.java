@@ -80,10 +80,7 @@ public final class RunTestsTool implements Tool {
             return result.exitCode() == 0
                     ? ToolResult.ok("tests: all passed")
                     : ToolResult.error("tests failed:\n" + summariseFailures(result.output()));
-        } catch (IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (IOException e) {
             return ToolResult.error("gradle invocation failed: " + e.getMessage());
         }
     }

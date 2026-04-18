@@ -65,10 +65,7 @@ public final class FormatTool implements Tool {
             return result.exitCode() == 0
                     ? ToolResult.ok("format applied")
                     : ToolResult.error("spotlessApply failed:\n" + result.output().strip());
-        } catch (IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (IOException e) {
             return ToolResult.error("gradle invocation failed: " + e.getMessage());
         }
     }

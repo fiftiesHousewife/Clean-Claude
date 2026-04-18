@@ -45,10 +45,10 @@ public final class McpServer {
     }
 
     public static void main(final String[] args) throws IOException {
-        final GradleInvoker gradle = new GradleInvoker(Path.of(System.getProperty("user.dir")));
-        final McpServer server = new McpServer(defaultRegistry(gradle));
-        try (Reader in = new InputStreamReader(System.in, StandardCharsets.UTF_8);
+        try (GradleInvoker gradle = new GradleInvoker(Path.of(System.getProperty("user.dir")));
+             Reader in = new InputStreamReader(System.in, StandardCharsets.UTF_8);
              Writer out = new OutputStreamWriter(System.out, StandardCharsets.UTF_8)) {
+            final McpServer server = new McpServer(defaultRegistry(gradle));
             server.run(new BufferedReader(in), new BufferedWriter(out));
         }
     }
@@ -60,6 +60,7 @@ public final class McpServer {
     public static ToolRegistry defaultRegistry(final GradleInvoker gradle) {
         return new ToolRegistry()
                 .register(new ExtractMethodTool())
+                .register(new ExtractMethodsTool())
                 .register(new VerifyBuildTool(gradle))
                 .register(new RunTestsTool(gradle))
                 .register(new FormatTool(gradle));

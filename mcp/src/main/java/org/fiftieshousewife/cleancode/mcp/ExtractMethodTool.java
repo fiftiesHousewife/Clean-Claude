@@ -2,17 +2,19 @@ package org.fiftieshousewife.cleancode.mcp;
 
 import com.google.gson.JsonObject;
 import org.fiftieshousewife.cleancode.refactoring.extractmethod.ExtractMethodRecipe;
+import org.openrewrite.Cursor;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.Result;
+import org.openrewrite.Parser;
 import org.openrewrite.SourceFile;
-import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.J;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * MCP adapter over {@link ExtractMethodRecipe}. Parses the target file,
@@ -81,26 +83,84 @@ public final class ExtractMethodTool implements Tool {
         }
     }
 
+    // OpenRewrite flag (see org.openrewrite.Parser.requirePrintEqualsInput) that
+    // gates a self-check comparing the printed AST to the input bytes. We've
+    // observed false positives on valid Javadoc containing em-dashes and
+    // {@link} references — printAll() produces byte-identical output but the
+    // check's own comparison path reports a mismatch and returns a ParseError.
+    // We disable it and rely on {@link #parsesCleanly} to guarantee we never
+    // write syntactically broken output.
+    private static final String REQUIRE_PRINT_EQUALS_INPUT = "org.openrewrite.requirePrintEqualsInput";
+
     private static ToolResult runExtract(final Path file, final int startLine, final int endLine,
                                          final String newMethodName) throws IOException {
         final String source = Files.readString(file);
         final ExtractMethodRecipe recipe = new ExtractMethodRecipe(
                 file.getFileName().toString(), startLine, endLine, newMethodName);
+        final var ctx = new InMemoryExecutionContext(Throwable::printStackTrace);
+        ctx.putMessage(REQUIRE_PRINT_EQUALS_INPUT, false);
+        final Parser.Input input = Parser.Input.fromString(file, source);
+        final List<SourceFile> parsed = JavaParser.fromJavaVersion()
+                .logCompilationWarningsAndErrors(true)
+                .build()
+                .parseInputs(List.of(input), null, ctx)
+                .toList();
+        final Optional<String> parseError = firstParseError(parsed);
+        if (parseError.isPresent()) {
+            return ToolResult.error("extract_method could not parse file: " + parseError.get());
+        }
+        if (parsed.isEmpty() || !(parsed.getFirst() instanceof J.CompilationUnit cu)) {
+            return ToolResult.error("extract_method: parser did not produce a CompilationUnit");
+        }
+        final Optional<String> after = recipe.extractTextually(cu, source, new Cursor(null, cu));
+        if (after.isEmpty()) {
+            return ToolResult.error("extract_method rejected: " + recipe.lastRejectionReason()
+                    .orElse("range did not produce any change"));
+        }
+        if (!parsesCleanly(file, after.get())) {
+            return ToolResult.error("extract_method aborted: the rewritten source did not re-parse "
+                    + "— refusing to write a file that would not compile");
+        }
+        final String newSource = after.get();
+        Files.writeString(file, newSource);
+        return ToolResult.ok("extracted " + newMethodName + " from lines "
+                + startLine + "-" + endLine + "; file " + countLines(source) + " -> "
+                + countLines(newSource) + " lines "
+                + "(new helper appended after the enclosing method; earlier line numbers unchanged)");
+    }
+
+    static int countLines(final String source) {
+        if (source.isEmpty()) {
+            return 0;
+        }
+        int count = 1;
+        for (int i = 0; i < source.length() - 1; i++) {
+            if (source.charAt(i) == '\n') {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static Optional<String> firstParseError(final List<SourceFile> parsed) {
+        return parsed.stream()
+                .filter(s -> s instanceof org.openrewrite.tree.ParseError)
+                .map(s -> ((org.openrewrite.tree.ParseError) s).getMarkers()
+                        .findFirst(org.openrewrite.ParseExceptionResult.class)
+                        .map(pr -> pr.getExceptionType() + ": " + pr.getMessage())
+                        .orElse("unknown parse error"))
+                .findFirst();
+    }
+
+    private static boolean parsesCleanly(final Path file, final String source) {
+        final var ctx = new InMemoryExecutionContext();
+        ctx.putMessage(REQUIRE_PRINT_EQUALS_INPUT, false);
         final List<SourceFile> parsed = JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)
-                .build().parse(source).toList();
-        final var ctx = new InMemoryExecutionContext(Throwable::printStackTrace);
-        final List<Result> changed = recipe.run(new InMemoryLargeSourceSet(parsed), ctx)
-                .getChangeset().getAllResults();
-        if (changed.isEmpty()) {
-            return ToolResult.error("recipe rejected the range — common reasons: contains "
-                    + "break/continue/non-bare return, more than one output variable, or the "
-                    + "range does not align with top-level statement boundaries. Inspect the "
-                    + "source and try a narrower range.");
-        }
-        Files.writeString(file, changed.getFirst().getAfter().printAll());
-        return ToolResult.ok("extracted " + newMethodName + " from lines "
-                + startLine + "-" + endLine + " of " + file);
+                .build()
+                .parseInputs(List.of(Parser.Input.fromString(file, source)), null, ctx)
+                .toList();
+        return firstParseError(parsed).isEmpty();
     }
 
     private static JsonObject property(final String type, final String description) {

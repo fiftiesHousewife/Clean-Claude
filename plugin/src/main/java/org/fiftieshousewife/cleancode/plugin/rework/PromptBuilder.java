@@ -48,7 +48,12 @@ public final class PromptBuilder {
         targets.forEach(target -> block.append("  - ").append(target.relativePath()).append('\n'));
         block.append("""
                 Read each file with your Read tool before planning the fix. Do NOT embed the
-                files' contents in your response — the commit diff captures the actual change.""");
+                files' contents in your response — the commit diff captures the actual change.
+
+                Stay strictly within the target files listed above. Do NOT Read, Edit, Write,
+                or Glob anywhere under `refactoring/`, `mcp/`, `plugin/`, `build-logic/`, or
+                any other module — those are not part of the fix. If a tool misbehaves, treat
+                that as a signal to switch strategies, not to investigate.""");
         return block.toString();
     }
 
@@ -103,13 +108,20 @@ public final class PromptBuilder {
     private static String recipesBlock() {
         return """
                 Available MCP tools (via the `cleancode-refactoring` server):
-                  extract_method(file, startLine, endLine, newMethodName)
-                      — extracts a contiguous range of top-level statements from a method
-                        body into a new package-private helper. In-process OpenRewrite, no
-                        Gradle detour. The call site is replaced with an invocation of the
-                        helper; signatures are inferred from the range's free variables.
+                  extract_methods(file, ranges=[{startLine, endLine, newMethodName}, ...])
+                      — batch extraction. Applies every range in one tool call,
+                        transactionally (all-or-nothing). Internally bottom-up so the
+                        line numbers you pass always refer to the ORIGINAL file.
+                        PREFER THIS when you have 2+ extractions planned on the same file
+                        — it collapses N turns of context into one and keeps line numbers
+                        mentally stable for you.
 
-                        USE extract_method when ALL of these hold:
+                  extract_method(file, startLine, endLine, newMethodName)
+                      — singular version. Use only when you have exactly one extraction
+                        to do on a file; otherwise use extract_methods.
+
+                      Both extract tools share the same preconditions:
+                        USE them when ALL of these hold:
                           • The fix is a pure statement-range extraction — pulling a
                             contiguous run of top-level statements into a helper, with no
                             other change.
@@ -137,7 +149,14 @@ public final class PromptBuilder {
                   format(module)
                       — `./gradlew :<module>:spotlessApply`; call once at the end.
 
-                Call extract_method whenever its preconditions hold. Fall back to Edit
-                for everything else. DO NOT commit or push.""";
+                Call extract_methods (batch) when you have ≥2 extractions planned on one
+                file; otherwise call extract_method. Fall back to Edit for everything else.
+
+                If either extract tool returns ANY error — including "recipe rejected the
+                range" — fall back to a manual Edit immediately and move on. DO NOT diagnose
+                the recipe, DO NOT read ExtractMethodRecipe.java or any other refactoring/
+                or mcp/ source, DO NOT write debug tests. The recipe is not part of the fix.
+
+                DO NOT commit or push.""";
     }
 }

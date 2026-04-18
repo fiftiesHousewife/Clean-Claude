@@ -5,7 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -82,6 +84,11 @@ public final class JsonRpc {
         }
         if (element.isJsonObject()) {
             return toMap(element.getAsJsonObject());
+        }
+        if (element.isJsonArray()) {
+            final List<Object> list = new ArrayList<>();
+            element.getAsJsonArray().forEach(e -> list.add(unwrap(e)));
+            return list;
         }
         return element.toString();
     }

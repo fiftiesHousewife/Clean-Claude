@@ -30,6 +30,28 @@ final class LineIndex {
         return new LineIndex(Collections.unmodifiableList(starts), text.length());
     }
 
+    /**
+     * Byte offset where the given 1-based line begins (inclusive). Used by the
+     * textual-splice path to compute line-aligned boundaries when inserting
+     * generated source.
+     */
+    int startOfLine(final int oneBasedLine) {
+        final int idx = Math.max(0, Math.min(oneBasedLine - 1, lineStartOffsets.size() - 1));
+        return lineStartOffsets.get(idx);
+    }
+
+    /**
+     * Byte offset just past the newline terminating the given 1-based line.
+     * For the last line without a trailing newline this returns the total
+     * text length.
+     */
+    int endOfLine(final int oneBasedLine) {
+        if (oneBasedLine >= lineStartOffsets.size()) {
+            return textLength;
+        }
+        return lineStartOffsets.get(oneBasedLine);
+    }
+
     int lineOf(final int offset) {
         final int clamped = Math.max(0, Math.min(offset, textLength - 1));
         int lo = 0;
