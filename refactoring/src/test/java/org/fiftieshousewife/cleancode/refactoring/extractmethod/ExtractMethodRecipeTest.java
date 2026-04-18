@@ -32,7 +32,7 @@ class ExtractMethodRecipeTest {
                 """;
         final String after = runRecipe(source, "Greeter.java", 6, 7, "logLines");
         assertAll(
-                () -> assertTrue(after.contains("private void logLines(String heading, String trailing)"),
+                () -> assertTrue(after.contains("void logLines(String heading, String trailing)"),
                         "extracted signature has both read inputs, no return, in declaration order"),
                 () -> assertTrue(after.contains("logLines(heading, trailing);"),
                         "call site replaces the range with the forwarded arguments"),
@@ -57,7 +57,7 @@ class ExtractMethodRecipeTest {
                 """;
         final String after = runRecipe(source, "Calculator.java", 4, 6, "computeSum");
         assertAll(
-                () -> assertTrue(after.contains("private int computeSum(int a, int b)"),
+                () -> assertTrue(after.contains("int computeSum(int a, int b)"),
                         "signature: inputs a,b; return type int from the output local"),
                 () -> assertTrue(after.contains("return sum;"),
                         "extracted method returns the output local"),
@@ -84,7 +84,7 @@ class ExtractMethodRecipeTest {
                 """;
         final String after = runRecipe(source, "Joiner.java", 6, 8, "join");
         assertAll(
-                () -> assertTrue(after.contains("private String join("),
+                () -> assertTrue(after.contains("String join("),
                         "extracted method returns the outer local's type"),
                 () -> assertTrue(after.contains("return result;"),
                         "extracted method returns the updated outer local"),
@@ -109,7 +109,7 @@ class ExtractMethodRecipeTest {
                 """;
         final String after = runRecipe(source, "Guarded.java", 4, 6, "isMissing");
         assertAll(
-                () -> assertTrue(after.contains("private boolean isMissing(String input)"),
+                () -> assertTrue(after.contains("boolean isMissing(String input)"),
                         "void conditional-exit uses boolean sentinel"),
                 () -> assertTrue(after.contains("return true;"),
                         "bare return in the range is rewritten to `return true;`"),

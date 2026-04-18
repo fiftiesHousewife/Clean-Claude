@@ -173,6 +173,9 @@ Detect manual `close()` calls in `finally` blocks or explicit try/finally patter
 **D11. Generate Test Scaffold recipe (T1).**
 For every public class in `src/main/java` with no corresponding file at the matching path under `src/test/java`, create `FooTest.java` with `@Test`-annotated placeholder methods — one per public method of the source class — with bodies that just `fail("TODO: " + methodName)` and a JUnit `@DisplayName` drawn from the method name. Not a real refactor, but removes the "where do I put this test file" friction from every T1 brief. Pure template work, ~80 lines.
 
+**D13. Teach extract / move recipes to update the matching test class.**
+When `ExtractMethodRecipe` creates a new helper, it should also add a placeholder `@Test` method to `<SourceClass>Test.java` at the matching path under `src/test/java` (creating the file if absent), asserting `fail("TODO")` and named after the new method. When `MoveMethodRecipe` moves `Utils.doubleIt` to `Helpers`, any `UtilsTest` method whose body calls `Utils.doubleIt(...)` should move to `HelpersTest`. Drops the manual "don't forget the test" step that every agent brief re-learns. Partial alternative: a post-extraction rejection if the matching test file has no test for the new helper, so the agent is forced to write one in the same commit.
+
 **D12. Port "Inline Method" / "Inline Variable" (`InlineMethodProcessor`, `InlineLocalVariableProcessor`).**
 Inverse of extract method and of D2. A pass to kill G9 (dead code) and simplifications where a named local or helper method reads as less expressive than its expansion. Constrained first cut: only inline methods called from exactly one site, and only variables assigned once.
 
@@ -180,6 +183,24 @@ Inverse of extract method and of D2. A pass to kill G9 (dead code) and simplific
 The D1 port analyses reads and writes inside an extracted range via word-boundary regex (see `refactoring/.../extractmethod/VariableUsagePatterns.java`). The compromise is conservative — it over-includes (matches identifiers in comments and string literals) and can't tell the difference between `foo.bar` and `bar`. Rewrite to walk the AST: collect `J.Identifier` nodes and filter by `getFieldType()` / cursor parent / name-reference semantics to resolve each identifier to the right binding. IntelliJ uses `PsiReference.resolve()` for the equivalent job. Acceptance: every extract-method test still passes, plus new tests proving false-positive matches in comments/strings no longer register as reads.
 
 Scope: **only the algorithms, not the plugin infrastructure.** We're not shipping an IntelliJ plugin; we're translating the algorithmic ideas into OpenRewrite idioms.
+
+### G. Recipe ordering
+
+Recipes are not commutative. Running formatting (Spotless / Google Java Format) before extracting a method means the next extraction re-introduces formatting deltas; running add-final after extract-method means the extracted body needs another pass to become compliant. The agent shouldn't have to figure out the order per-brief — the plugin should orchestrate it.
+
+Proposed passes, earliest first, each an ordered list of recipes. Later passes only start once the previous pass has produced no new findings:
+
+1. **Architectural overhauls (semantic, widest blast radius).** ExtractMethodRecipe (D1), MoveMethodRecipe (D7), ExtractClassRecipe (D8), IntroduceParameterObjectRecipe (D9), InlineMethodRecipe (D12). Each can invalidate the others — an extraction might expose an obvious rename; a class split might make some methods inlineable. Run to fixpoint *within* this pass before advancing.
+
+2. **Mechanical refactors (narrow, predictable).** InvertNegativeConditionalRecipe (G29), ShortenFullyQualifiedReferencesRecipe (G12), ExtractClassConstantRecipe (G35), EncapsulateBoundaryRecipe (G33), SplitFlagArgumentRecipe (F3), RemoveNestedTernaryRecipe (G19/G28), RenameShortNameRecipe (N5), MoveDeclarationRecipe (G10), UseTryWithResourcesRecipe (D10). Each is local and idempotent; ordering within this pass is independent but running to fixpoint is cheap.
+
+3. **Housekeeping (near-tokens).** AddFinalRecipe (G22), DeleteUnusedImportRecipe (J1), WrapAssertAllRecipe (T1), version-catalog bumps.
+
+4. **Formatting (always last).** Spotless / Google Java Format. Any earlier pass produces formatting noise; the final pass normalises. Never re-triggers previous passes.
+
+Implementation: a new `CleanCodeOrchestrate` Gradle task that runs passes 1 → 4 in sequence, stopping each pass only when a full iteration produces zero edits. Skips passes when the plugin isn't configured to enforce formatting (`cleanCode.enforceFormatting = false`). Each pass emits a delta report so the user can see which phase did what.
+
+Open question: does the agent still get per-file briefs, or does the orchestrator hide everything below the architectural layer? Candidate answer: agent briefs target pass 1 only; passes 2-4 are plugin-driven and the agent never sees those findings because they auto-fix.
 
 ### E. Other recipes worth building
 

@@ -38,7 +38,7 @@ final class ExtractionSource {
                 : " throws " + String.join(", ", analysis.throwsList());
         final String body = bodyFor(target, analysis);
         return """
-                private %s%s %s(%s)%s {
+                %s%s %s(%s)%s {
                     %s
                 }
                 """.formatted(
