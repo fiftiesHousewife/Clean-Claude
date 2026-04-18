@@ -13,7 +13,7 @@ class PromptBuilderTest {
 
     @Test
     void withRecipeToolsListsGradleInvocationsAndRecipeWorkflow() {
-        final String prompt = PromptBuilder.build("Foo.java", "class Foo {}",
+        final String prompt = PromptBuilder.build("Foo.java",
                 List.of(new Suggestion(HeuristicCode.G30, 10, "long")), true);
         assertAll(
                 () -> assertTrue(prompt.contains(":refactoring:extractMethod"),
@@ -25,7 +25,7 @@ class PromptBuilderTest {
 
     @Test
     void withoutRecipeToolsTellsAgentToEditByHand() {
-        final String prompt = PromptBuilder.build("Foo.java", "class Foo {}",
+        final String prompt = PromptBuilder.build("Foo.java",
                 List.of(new Suggestion(HeuristicCode.G30, 10, "long")), false);
         assertAll(
                 () -> assertFalse(prompt.contains(":refactoring:extractMethod"),
@@ -37,15 +37,17 @@ class PromptBuilderTest {
     }
 
     @Test
-    void bothModesIncludeFileContentsAndSuggestionsAndSchema() {
-        final String withTools = PromptBuilder.build("Bar.java", "class Bar {}",
+    void bothModesIncludeFilePointerAndSuggestionsAndSchemaButNotContents() {
+        final String withTools = PromptBuilder.build("Bar.java",
                 List.of(new Suggestion(HeuristicCode.G22, 5, "not final")), true);
-        final String withoutTools = PromptBuilder.build("Bar.java", "class Bar {}",
+        final String withoutTools = PromptBuilder.build("Bar.java",
                 List.of(new Suggestion(HeuristicCode.G22, 5, "not final")), false);
         for (final String prompt : List.of(withTools, withoutTools)) {
             assertAll(
-                    () -> assertTrue(prompt.contains("class Bar"),
-                            "file contents appear in both modes"),
+                    () -> assertTrue(prompt.contains("Target file (relative to project root): Bar.java"),
+                            "file pointer present so the agent knows what to Read"),
+                    () -> assertTrue(prompt.contains("Read the file with your Read tool"),
+                            "explicit instruction to use the Read tool"),
                     () -> assertTrue(prompt.contains("G22 at L5: not final"),
                             "suggestions appear in both modes"),
                     () -> assertTrue(prompt.contains("\"actions\""),

@@ -87,7 +87,7 @@ class ReworkOrchestratorSelfTest {
         final String[] capturedPrompt = {""};
         final AgentRunner fakeAgent = (prompt, timeout) -> {
             capturedPrompt[0] = prompt;
-            return """
+            return AgentResult.textOnly("""
                     I looked at analyse() and the content-classification block stood out.
                     ```json
                     {"actions":[{"recipe":"ExtractMethodRecipe",
@@ -97,7 +97,7 @@ class ReworkOrchestratorSelfTest {
                                  "why":"that eight-line list of finding sources is one concept"}],
                      "rejected":[]}
                     ```
-                    """;
+                    """);
         };
         final ReworkOrchestrator orchestrator = new ReworkOrchestrator(
                 fakeAgent, Duration.ofMinutes(1));
@@ -105,8 +105,10 @@ class ReworkOrchestratorSelfTest {
                 file, projectRoot, report, ReworkMode.AGENT_DRIVEN);
 
         assertAll(
-                () -> assertTrue(capturedPrompt[0].contains("class AnalyseTask"),
-                        "the full source of the fixture made it into the prompt"),
+                () -> assertTrue(capturedPrompt[0].contains(RELATIVE_PATH),
+                        "the file's relative path points the agent at what to read"),
+                () -> assertFalse(capturedPrompt[0].contains("class AnalyseTask"),
+                        "file contents are NOT embedded — the agent reads via its Read tool"),
                 () -> assertTrue(capturedPrompt[0].contains("G30 at L20"),
                         "the finding appears in the prompt's findings block"),
                 () -> assertEquals(1, result.actionsTaken().size()),

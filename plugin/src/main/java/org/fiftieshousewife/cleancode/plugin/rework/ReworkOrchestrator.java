@@ -2,11 +2,10 @@ package org.fiftieshousewife.cleancode.plugin.rework;
 
 import org.fiftieshousewife.cleancode.core.AggregatedReport;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Java API for reworking a single class. Orchestrates the three pieces
@@ -15,9 +14,13 @@ import java.util.List;
  * and {@link AgentResponseParser} + {@link CommitMessageFormatter}
  * (what do we return to the caller for the commit message body?).
  *
- * <p>Invoked from the {@code :plugin:reworkClass} Gradle task so users
- * can drive it with one command; the task is the only public surface.
+ * <p>Invoked from the {@code :reworkClass} Gradle task so users can
+ * drive it with one command; the task is the only public surface.
  * There is intentionally no per-feature shell script.
+ *
+ * <p>The agent reads the target file itself via its Read tool — we
+ * hand it only the relative path and the structured findings, not the
+ * file contents.
  */
 public final class ReworkOrchestrator {
 
@@ -54,37 +57,29 @@ public final class ReworkOrchestrator {
     }
 
     private ReworkReport suggestOnly(final Path file, final List<Suggestion> suggestions) {
-        final String body = CommitMessageFormatter.format(List.of(), List.of(), suggestions);
+        final String body = CommitMessageFormatter.format(
+                List.of(), List.of(), suggestions, Optional.empty());
         return new ReworkReport(file, ReworkMode.SUGGEST_ONLY, suggestions,
-                List.of(), List.of(), body);
+                List.of(), List.of(), Optional.empty(), body);
     }
 
     private ReworkReport agentDriven(final Path file, final String relativePath,
                                      final List<Suggestion> suggestions,
                                      final boolean includeRecipeTools) throws ReworkException {
-        final String contents = readContents(file);
-        final String prompt = PromptBuilder.build(relativePath, contents, suggestions, includeRecipeTools);
-        final String stdout = runAgent(prompt);
-        final AgentResponseParser.Parsed parsed = AgentResponseParser.parse(stdout);
+        final String prompt = PromptBuilder.build(relativePath, suggestions, includeRecipeTools);
+        final AgentResult result = runAgent(prompt);
+        final AgentResponseParser.Parsed parsed = AgentResponseParser.parse(result.text());
         final String body = CommitMessageFormatter.format(
-                parsed.actions(), parsed.rejected(), suggestions);
+                parsed.actions(), parsed.rejected(), suggestions, result.usage());
         return new ReworkReport(file, ReworkMode.AGENT_DRIVEN, suggestions,
-                parsed.actions(), parsed.rejected(), body);
+                parsed.actions(), parsed.rejected(), result.usage(), body);
     }
 
-    private String runAgent(final String prompt) throws ReworkException {
+    private AgentResult runAgent(final String prompt) throws ReworkException {
         try {
             return agentRunner.run(prompt, agentTimeout);
         } catch (AgentRunner.AgentRunnerException e) {
             throw new ReworkException("agent invocation failed: " + e.getMessage(), e);
-        }
-    }
-
-    private static String readContents(final Path file) throws ReworkException {
-        try {
-            return Files.readString(file);
-        } catch (IOException e) {
-            throw new ReworkException("could not read " + file, e);
         }
     }
 

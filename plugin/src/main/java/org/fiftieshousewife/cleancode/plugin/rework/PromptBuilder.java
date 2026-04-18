@@ -3,19 +3,25 @@ package org.fiftieshousewife.cleancode.plugin.rework;
 import java.util.List;
 
 /**
- * Builds the string written to {@code claude -p}'s stdin. Keeps the
- * instructions, the target file, the findings, and the required JSON
- * response schema in one place so the prompt can be eyeballed without
- * digging through the orchestrator. Pure; tests drive it directly.
+ * Builds the string written to {@code claude -p}'s stdin. The prompt no
+ * longer embeds the target file's contents — {@code claude -p} has the
+ * {@code Read} tool and can pull it in lazily, so we hand it the
+ * structured findings and a pointer. Keeps the per-run prompt small and
+ * lets the agent decide how much of the file to re-read.
  */
 public final class PromptBuilder {
 
     private PromptBuilder() {}
 
-    public static String build(final String relativeFilePath, final String fileContents,
-                               final List<Suggestion> suggestions, final boolean includeRecipeTools) {
+    public static String build(final String relativeFilePath,
+                               final List<Suggestion> suggestions,
+                               final boolean includeRecipeTools) {
         return """
                 You are reworking a single Java file to address the findings listed below.
+
+                Target file (relative to project root): %s
+                Read the file with your Read tool before planning the fix. Do NOT embed its
+                contents in your response — the commit diff captures the actual change.
 
                 %s
 
@@ -27,17 +33,12 @@ public final class PromptBuilder {
                   "rejected": [{"recipe": "<RecipeClass-or-Edit>", "options": {...}, "why": "<one sentence>"}]
                 }
 
-                Target file (relative to project root): %s
-
-                ---
-                %s
-                ---
-
                 Findings on this file:
                 %s
                 """.formatted(
+                        relativeFilePath,
                         toolsBlock(includeRecipeTools),
-                        relativeFilePath, fileContents, renderSuggestions(suggestions));
+                        renderSuggestions(suggestions));
     }
 
     private static String toolsBlock(final boolean includeRecipeTools) {

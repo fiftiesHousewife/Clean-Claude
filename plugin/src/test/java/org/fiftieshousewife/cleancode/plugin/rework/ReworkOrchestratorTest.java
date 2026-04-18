@@ -58,8 +58,9 @@ class ReworkOrchestratorTest {
                 """;
         final AgentRunner canned = (prompt, timeout) -> {
             assertTrue(prompt.contains("Foo.java"), "prompt carries the relative file path");
-            assertTrue(prompt.contains("class Foo"), "prompt includes the file contents");
-            return cannedResponse;
+            assertTrue(prompt.contains("Read the file with your Read tool"),
+                    "prompt tells the agent to Read rather than embedding contents");
+            return AgentResult.textOnly(cannedResponse);
         };
         final ReworkOrchestrator orchestrator = new ReworkOrchestrator(canned, Duration.ofSeconds(1));
 

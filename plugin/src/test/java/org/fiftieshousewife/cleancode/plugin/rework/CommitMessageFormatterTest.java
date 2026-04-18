@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,7 +18,7 @@ class CommitMessageFormatterTest {
                 "ExtractMethodRecipe",
                 Map.of("file", "Foo.java", "startLine", 42, "endLine", 67, "newMethodName", "computeThing"),
                 "groups the metrics table build");
-        final String body = CommitMessageFormatter.format(List.of(action), List.of(), List.of());
+        final String body = CommitMessageFormatter.format(List.of(action), List.of(), List.of(), Optional.empty());
         assertAll(
                 () -> assertTrue(body.contains("## Actions"),
                         "actions get their own section so reviewers can scan"),
@@ -35,7 +36,7 @@ class CommitMessageFormatterTest {
                 "ExtractMethodRecipe",
                 Map.of("startLine", 70, "endLine", 90),
                 "range contains throw");
-        final String body = CommitMessageFormatter.format(List.of(), List.of(rejection), List.of());
+        final String body = CommitMessageFormatter.format(List.of(), List.of(rejection), List.of(), Optional.empty());
         assertAll(
                 () -> assertTrue(body.contains("## Not attempted")),
                 () -> assertTrue(body.contains("range contains throw")));
@@ -45,19 +46,34 @@ class CommitMessageFormatterTest {
     void omitsRejectionsSectionWhenEmpty() {
         final String body = CommitMessageFormatter.format(
                 List.of(new AgentAction("NoopRecipe", Map.of(), "for coverage")),
-                List.of(), List.of());
+                List.of(), List.of(), Optional.empty());
         assertFalse(body.contains("Not attempted"),
                 "empty sections are noise in a commit message");
     }
 
     @Test
     void includesSuggestionsWhenNoAgentInvoked() {
-        final String body = CommitMessageFormatter.format(List.of(), List.of(), List.of(
-                new Suggestion(org.fiftieshousewife.cleancode.annotations.HeuristicCode.G30,
-                        42, "method too long")));
+        final String body = CommitMessageFormatter.format(List.of(), List.of(),
+                List.of(new Suggestion(
+                        org.fiftieshousewife.cleancode.annotations.HeuristicCode.G30,
+                        42, "method too long")),
+                Optional.empty());
         assertAll(
                 () -> assertTrue(body.contains("## Suggestions")),
                 () -> assertTrue(body.contains("G30")),
                 () -> assertTrue(body.contains("method too long")));
+    }
+
+    @Test
+    void includesUsageSectionWhenSupplied() {
+        final AgentUsage usage = new AgentUsage(1500, 400, 200, 0, 0.0123);
+        final String body = CommitMessageFormatter.format(
+                List.of(new AgentAction("NoopRecipe", Map.of(), "for coverage")),
+                List.of(), List.of(), Optional.of(usage));
+        assertAll(
+                () -> assertTrue(body.contains("## Agent usage")),
+                () -> assertTrue(body.contains("input tokens : 1500")),
+                () -> assertTrue(body.contains("output tokens: 400")),
+                () -> assertTrue(body.contains("cost (USD)   : 0.0123")));
     }
 }

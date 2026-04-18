@@ -2,31 +2,35 @@ package org.fiftieshousewife.cleancode.plugin.rework;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Builds the Markdown body that goes underneath the subject line of a
  * rework commit. Each action becomes a bullet with the recipe name, a
  * compact {@code key=value} option rendering, and the agent's one-line
- * {@code why}. Rejections and suggestions get their own sections —
- * omitted entirely when empty, so the output never carries blank
- * headings.
+ * {@code why}. Rejections, suggestions, and token accounting get their
+ * own sections — omitted entirely when empty, so the output never
+ * carries blank headings.
  */
 public final class CommitMessageFormatter {
 
     private static final String ACTIONS_HEADER = "## Actions";
     private static final String REJECTED_HEADER = "## Not attempted";
     private static final String SUGGESTIONS_HEADER = "## Suggestions";
+    private static final String USAGE_HEADER = "## Agent usage";
 
     private CommitMessageFormatter() {}
 
     public static String format(final List<AgentAction> actions,
                                 final List<AgentRejection> rejected,
-                                final List<Suggestion> suggestions) {
+                                final List<Suggestion> suggestions,
+                                final Optional<AgentUsage> usage) {
         final StringBuilder body = new StringBuilder();
         appendActions(body, actions);
         appendRejections(body, rejected);
         appendSuggestions(body, suggestions);
+        usage.ifPresent(u -> appendUsage(body, u));
         return body.toString().stripTrailing();
     }
 
@@ -67,5 +71,14 @@ public final class CommitMessageFormatter {
         return options.entrySet().stream()
                 .map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining(", "));
+    }
+
+    private static void appendUsage(final StringBuilder body, final AgentUsage usage) {
+        body.append(USAGE_HEADER).append('\n')
+                .append("- input tokens : ").append(usage.inputTokens()).append('\n')
+                .append("- output tokens: ").append(usage.outputTokens()).append('\n')
+                .append("- cache read   : ").append(usage.cacheReadInputTokens()).append('\n')
+                .append("- cost (USD)   : ").append(String.format("%.4f", usage.totalCostUsd())).append('\n')
+                .append('\n');
     }
 }

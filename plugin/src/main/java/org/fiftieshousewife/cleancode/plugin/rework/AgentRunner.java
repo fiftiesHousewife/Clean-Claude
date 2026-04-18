@@ -10,7 +10,7 @@ import java.time.Duration;
  */
 public interface AgentRunner {
 
-    String run(String prompt, Duration timeout) throws AgentRunnerException;
+    AgentResult run(String prompt, Duration timeout) throws AgentRunnerException;
 
     final class AgentRunnerException extends Exception {
         private static final long serialVersionUID = 1L;
