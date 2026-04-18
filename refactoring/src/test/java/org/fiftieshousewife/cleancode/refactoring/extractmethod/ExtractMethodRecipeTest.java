@@ -120,7 +120,31 @@ class ExtractMethodRecipeTest {
     }
 
     @Test
-    void rejectsRangeContainingBreak() {
+    void extractsLoopContainingInternalContinue() {
+        final String source = """
+                package com.example;
+                import java.util.List;
+                public class Skip {
+                    public void process(List<String> rows) {
+                        for (String row : rows) {
+                            if (row == null) {
+                                continue;
+                            }
+                            System.out.println(row.trim());
+                        }
+                    }
+                }
+                """;
+        final String after = runRecipe(source, "Skip.java", 5, 10, "printRows");
+        assertAll(
+                () -> assertTrue(after.contains("void printRows("),
+                        "Phase G: a continue that targets a loop inside the range is safe"),
+                () -> assertTrue(after.contains("printRows(rows);"),
+                        "call site forwards the outer local to the helper"));
+    }
+
+    @Test
+    void extractsLoopContainingInternalBreak() {
         final String source = """
                 package com.example;
                 public class Iterating {
@@ -133,15 +157,12 @@ class ExtractMethodRecipeTest {
                     }
                 }
                 """;
-        final var recipe = new ExtractMethodRecipe("Iterating.java", 4, 8, "loop");
-        final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
-                .logCompilationWarningsAndErrors(false)
-                .build().parse(source).toList();
-        final var results = recipe.run(
-                new InMemoryLargeSourceSet(sourceFiles),
-                new InMemoryExecutionContext(Throwable::printStackTrace));
-        assertTrue(results.getChangeset().getAllResults().isEmpty(),
-                "break inside the range is rejected in Phase A (no control-flow graph yet)");
+        final String after = runRecipe(source, "Iterating.java", 4, 8, "loop");
+        assertAll(
+                () -> assertTrue(after.contains("void loop("),
+                        "Phase G: a break that targets a loop already inside the range is safe"),
+                () -> assertTrue(after.contains("loop();"),
+                        "call site replaces the for-loop with the new helper invocation"));
     }
 
     @Test

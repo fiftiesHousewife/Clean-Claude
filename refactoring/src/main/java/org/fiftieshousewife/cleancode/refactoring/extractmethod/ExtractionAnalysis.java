@@ -49,7 +49,8 @@ record ExtractionAnalysis(
         }
         final String rangeText = target.extractedText();
         final String afterText = target.afterRangeText();
-        final Optional<ExitMode> maybeMode = ExitMode.classify(rangeText, target.enclosingMethod(), cursor);
+        final Optional<ExitMode> maybeMode = ExitMode.classify(
+                rangeText, target.extractedStatements(), target.enclosingMethod(), cursor);
         if (maybeMode.isEmpty()) {
             return reject("control-flow escape other than void conditional-exit is not supported yet");
         }
