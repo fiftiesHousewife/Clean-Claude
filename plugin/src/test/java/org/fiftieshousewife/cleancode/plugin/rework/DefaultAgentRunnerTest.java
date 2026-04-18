@@ -4,32 +4,60 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultAgentRunnerTest {
 
     @Test
-    void parsesClaudeJsonEnvelopeIntoTextAndUsage() {
-        final String envelope = """
-                {"type":"result","subtype":"success","is_error":false,
-                 "session_id":"abc","num_turns":1,
-                 "result":"the agent's textual response\\n{\\"actions\\":[]}",
+    void parsesAssistantTextEventAsProgressSource() {
+        final String line = """
+                {"type":"assistant","message":{"content":[{"type":"text","text":"I'll extract the guard block"}]}}""";
+
+        final StreamEvent event = StreamJsonEventParser.parseLine(line);
+
+        final StreamEvent.AssistantText text = assertInstanceOf(StreamEvent.AssistantText.class, event);
+        assertEquals("I'll extract the guard block", text.text());
+    }
+
+    @Test
+    void parsesToolUseEventAsToolName() {
+        final String line = "{\"type\":\"assistant\",\"message\":{\"content\":"
+                + "[{\"type\":\"tool_use\",\"name\":\"Bash\",\"input\":{\"command\":\"ls\"}}]}}";
+
+        final StreamEvent event = StreamJsonEventParser.parseLine(line);
+
+        assertEquals("Bash", assertInstanceOf(StreamEvent.ToolUse.class, event).name());
+    }
+
+    @Test
+    void parsesToolResultEventAsToolResultSignal() {
+        final String line = "{\"type\":\"user\",\"message\":{\"content\":"
+                + "[{\"type\":\"tool_result\",\"content\":\"file contents\",\"tool_use_id\":\"...\"}]}}";
+
+        final StreamEvent event = StreamJsonEventParser.parseLine(line);
+
+        assertInstanceOf(StreamEvent.ToolResult.class, event);
+    }
+
+    @Test
+    void parsesResultEventAsTextAndUsage() {
+        final String line = """
+                {"type":"result","subtype":"success","result":"the agent response with {\\"actions\\":[]}",
                  "total_cost_usd":0.0123,
                  "usage":{"input_tokens":1500,"output_tokens":400,
                           "cache_creation_input_tokens":0,
-                          "cache_read_input_tokens":200},
-                 "duration_ms":456}
-                """;
+                          "cache_read_input_tokens":200}}""";
 
-        final AgentResult result = DefaultAgentRunner.parseEnvelope(envelope);
+        final StreamEvent event = StreamJsonEventParser.parseLine(line);
 
+        final StreamEvent.Result result = assertInstanceOf(StreamEvent.Result.class, event);
         assertAll(
-                () -> assertTrue(result.text().contains("the agent's textual response"),
-                        "the inner `result` field is surfaced as the agent's text"),
+                () -> assertTrue(result.text().contains("the agent response"),
+                        "the inner result field surfaces as the agent text"),
                 () -> assertTrue(result.text().contains("\"actions\":[]"),
-                        "embedded JSON inside `result` survives unescaping"),
-                () -> assertTrue(result.usage().isPresent(),
-                        "usage envelope turns into an AgentUsage"),
+                        "embedded JSON escaping roundtrips"),
+                () -> assertTrue(result.usage().isPresent()),
                 () -> assertEquals(1500, result.usage().get().inputTokens()),
                 () -> assertEquals(400, result.usage().get().outputTokens()),
                 () -> assertEquals(200, result.usage().get().cacheReadInputTokens()),
@@ -37,26 +65,18 @@ class DefaultAgentRunnerTest {
     }
 
     @Test
-    void missingUsageFieldStillYieldsText() {
-        final String envelope = "{\"type\":\"result\",\"result\":\"some reply\"}";
-
-        final AgentResult result = DefaultAgentRunner.parseEnvelope(envelope);
-
-        assertAll(
-                () -> assertEquals("some reply", result.text()),
-                () -> assertTrue(result.usage().isEmpty(),
-                        "older claude versions without usage still return a usable result"));
+    void nonJsonLineIsIgnored() {
+        assertInstanceOf(StreamEvent.Ignored.class, StreamJsonEventParser.parseLine("not json"));
     }
 
     @Test
-    void nonJsonStdoutFallsBackToTextOnly() {
-        final String stdout = "claude: command not found";
+    void unknownEventTypeIsIgnored() {
+        final String line = "{\"type\":\"system\",\"subtype\":\"init\"}";
+        assertInstanceOf(StreamEvent.Ignored.class, StreamJsonEventParser.parseLine(line));
+    }
 
-        final AgentResult result = DefaultAgentRunner.parseEnvelope(stdout);
-
-        assertAll(
-                () -> assertEquals(stdout, result.text(),
-                        "when the envelope is not JSON, surface the raw output so the caller can log it"),
-                () -> assertTrue(result.usage().isEmpty()));
+    @Test
+    void blankLineIsIgnored() {
+        assertInstanceOf(StreamEvent.Ignored.class, StreamJsonEventParser.parseLine(""));
     }
 }

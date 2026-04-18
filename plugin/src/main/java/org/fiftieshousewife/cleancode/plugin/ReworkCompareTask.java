@@ -3,6 +3,7 @@ package org.fiftieshousewife.cleancode.plugin;
 import org.fiftieshousewife.cleancode.core.AggregatedReport;
 import org.fiftieshousewife.cleancode.core.JsonReportReader;
 import org.fiftieshousewife.cleancode.plugin.rework.ComparisonReport;
+import org.fiftieshousewife.cleancode.plugin.rework.DefaultAgentRunner;
 import org.fiftieshousewife.cleancode.plugin.rework.GitWorkingTree;
 import org.fiftieshousewife.cleancode.plugin.rework.ReworkMode;
 import org.fiftieshousewife.cleancode.plugin.rework.ReworkOrchestrator;
@@ -14,6 +15,7 @@ import org.gradle.api.tasks.TaskAction;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 
 /**
  * Runs the rework flow twice against a sandbox fixture — once with the
@@ -43,12 +45,16 @@ public abstract class ReworkCompareTask extends DefaultTask {
         ensureWorkingTreeClean(git, target);
 
         final AggregatedReport findings = loadFindings();
-        final ReworkOrchestrator orchestrator = new ReworkOrchestrator();
+        final ReworkOrchestrator orchestrator = new ReworkOrchestrator(
+                new DefaultAgentRunner(line -> getLogger().lifecycle("    {}", line)),
+                Duration.ofMinutes(15));
 
+        getLogger().lifecycle("▶ run 1 of 2 — with recipe tools");
         final ReworkReport withTools = runAndCaptureDiff(orchestrator, target, projectRoot, findings, true, git);
         final String diffWithTools = captureDiff(git, target);
         restore(git, target);
 
+        getLogger().lifecycle("▶ run 2 of 2 — without recipe tools");
         final ReworkReport withoutTools = runAndCaptureDiff(orchestrator, target, projectRoot, findings, false, git);
         final String diffWithoutTools = captureDiff(git, target);
         restore(git, target);
