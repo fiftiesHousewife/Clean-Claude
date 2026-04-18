@@ -197,6 +197,14 @@ The D1 port analyses reads and writes inside an extracted range via word-boundar
 
 Scope: **only the algorithms, not the plugin infrastructure.** We're not shipping an IntelliJ plugin; we're translating the algorithmic ideas into OpenRewrite idioms.
 
+### H. Urgent — move the whole build to JDK 25
+
+Today's `gradle/gradle-daemon-jvm.properties` pins the daemon to JDK 21 because OpenRewrite's `rewrite-java-21` module references `com.sun.tools.javac.code.Type$UnknownType`, which moved/disappeared in JDK 25. That pin works but ages badly — contributors on machines with only JDK 25 need to install 21, and we lose every JDK 22-25 language feature across the build.
+
+Fix: move `cleancode.java-conventions.gradle.kts` to `JavaLanguageVersion.of(25)`, switch every module's `runtimeOnly(libs.openrewrite.java21)` to `libs.openrewrite.java25`, and delete `gradle-daemon-jvm.properties`. The TestKit-subproject failure observed during the 8.79.5 bump (`Unsupported class file major version 69`) came from mixing JDK 21 subprocess runtimes with JDK 25 jars on the parent classpath — once everything is consistently 25, that conflict disappears.
+
+Acceptance: full build + all tests pass without the daemon pin, and `:sandbox:analyseCleanCode` produces findings via OpenRewrite. Do this before the next real experiment run so we're not nursing the JDK-21 daemon pin into every future setup.
+
 ### G. Recipe ordering
 
 Recipes are not commutative. Running formatting (Spotless / Google Java Format) before extracting a method means the next extraction re-introduces formatting deltas; running add-final after extract-method means the extracted body needs another pass to become compliant. The agent shouldn't have to figure out the order per-brief — the plugin should orchestrate it.
