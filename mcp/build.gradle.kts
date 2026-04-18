@@ -20,6 +20,10 @@ dependencies {
 // needing a Gradle classpath. Matches the plugin module's bundling pattern;
 // duplicate META-INF entries are excluded so the merged jar stays loadable.
 tasks.jar {
+    // Gradle 9 requires the fat-jar's implicit dependencies on sibling
+    // project jars to be declared explicitly; resolving runtimeClasspath
+    // here pulls in annotations/refactoring/etc so declare each explicitly.
+    dependsOn(configurations.runtimeClasspath)
     manifest {
         attributes["Main-Class"] = "org.fiftieshousewife.cleancode.mcp.McpServer"
     }
