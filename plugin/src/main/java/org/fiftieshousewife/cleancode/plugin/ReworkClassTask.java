@@ -33,15 +33,17 @@ public abstract class ReworkClassTask extends DefaultTask {
     public void rework() throws IOException {
         final String fileProperty = requiredProperty("file");
         final String modeProperty = optionalProperty("mode", ReworkMode.SUGGEST_ONLY.name());
+        final boolean includeRecipes = Boolean.parseBoolean(
+                optionalProperty("includeRecipes", "true"));
         final ReworkMode mode = parseMode(modeProperty);
 
         final Path projectRoot = getProject().getProjectDir().toPath();
         final Path target = resolveTarget(projectRoot, fileProperty);
         final AggregatedReport report = loadReport();
 
-        final ReworkReport result = runOrchestrator(target, projectRoot, report, mode);
+        final ReworkReport result = runOrchestrator(target, projectRoot, report, mode, includeRecipes);
         final Path messageFile = writeMessageBody(result);
-        logSummary(result, messageFile);
+        logSummary(result, messageFile, includeRecipes);
     }
 
     private String requiredProperty(final String name) {
@@ -80,9 +82,11 @@ public abstract class ReworkClassTask extends DefaultTask {
     }
 
     private ReworkReport runOrchestrator(final Path target, final Path projectRoot,
-                                         final AggregatedReport report, final ReworkMode mode) {
+                                         final AggregatedReport report, final ReworkMode mode,
+                                         final boolean includeRecipes) {
         try {
-            return new ReworkOrchestrator().reworkClass(target, projectRoot, report, mode);
+            return new ReworkOrchestrator()
+                    .reworkClass(target, projectRoot, report, mode, includeRecipes);
         } catch (ReworkOrchestrator.ReworkException e) {
             throw new GradleException("rework failed: " + e.getMessage(), e);
         }
@@ -98,8 +102,13 @@ public abstract class ReworkClassTask extends DefaultTask {
         return destination;
     }
 
-    private void logSummary(final ReworkReport result, final Path messageFile) {
-        getLogger().lifecycle("Rework mode: {}", result.mode());
+    private void logSummary(final ReworkReport result, final Path messageFile,
+                            final boolean includeRecipes) {
+        getLogger().lifecycle("Rework mode: {}{}",
+                result.mode(),
+                result.mode() == ReworkMode.AGENT_DRIVEN
+                        ? (includeRecipes ? " (with recipe tools)" : " (without recipe tools)")
+                        : "");
         getLogger().lifecycle("  suggestions: {}", result.suggestions().size());
         getLogger().lifecycle("  actions    : {}", result.actionsTaken().size());
         getLogger().lifecycle("  rejected   : {}", result.rejected().size());

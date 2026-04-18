@@ -13,28 +13,18 @@ public final class PromptBuilder {
     private PromptBuilder() {}
 
     public static String build(final String relativeFilePath, final String fileContents,
-                               final List<Suggestion> suggestions) {
+                               final List<Suggestion> suggestions, final boolean includeRecipeTools) {
         return """
                 You are reworking a single Java file to address the findings listed below.
 
-                Available recipes, each invocable via Gradle:
-                  ./gradlew :refactoring:extractMethod \\
-                      -Pfile=<path> -PstartLine=<N> -PendLine=<M> -PnewMethodName=<name>
-                  ./gradlew :refactoring:moveMethod \\
-                      -Pfile=<path> -PmethodName=<name> -PtargetFqn=<fully-qualified-class>
-                See docs/extract-method-recipe.md for usage detail and rejection reasons.
-
-                Workflow: make your changes, run the module's tests, but DO NOT commit or push.
-                If a recipe rejects, record the rejection in your output and move on rather than
-                forcing the change by hand — the point of this loop is to learn what the recipes
-                cannot do yet.
+                %s
 
                 Before exiting, emit EXACTLY ONE JSON object as the last thing you write. The
                 schema is:
 
                 {
-                  "actions":  [{"recipe": "<RecipeClass>", "options": {...}, "why": "<one sentence>"}],
-                  "rejected": [{"recipe": "<RecipeClass>", "options": {...}, "why": "<one sentence>"}]
+                  "actions":  [{"recipe": "<RecipeClass-or-Edit>", "options": {...}, "why": "<one sentence>"}],
+                  "rejected": [{"recipe": "<RecipeClass-or-Edit>", "options": {...}, "why": "<one sentence>"}]
                 }
 
                 Target file (relative to project root): %s
@@ -45,7 +35,32 @@ public final class PromptBuilder {
 
                 Findings on this file:
                 %s
-                """.formatted(relativeFilePath, fileContents, renderSuggestions(suggestions));
+                """.formatted(
+                        toolsBlock(includeRecipeTools),
+                        relativeFilePath, fileContents, renderSuggestions(suggestions));
+    }
+
+    private static String toolsBlock(final boolean includeRecipeTools) {
+        if (includeRecipeTools) {
+            return """
+                    Available refactoring recipes, each invocable via Gradle:
+                      ./gradlew :refactoring:extractMethod \\
+                          -Pfile=<path> -PstartLine=<N> -PendLine=<M> -PnewMethodName=<name>
+                      ./gradlew :refactoring:moveMethod \\
+                          -Pfile=<path> -PmethodName=<name> -PtargetFqn=<fully-qualified-class>
+                    See docs/extract-method-recipe.md for usage detail and rejection reasons.
+
+                    Workflow: make your changes, run the module's tests, but DO NOT commit or push.
+                    If a recipe rejects, record the rejection in your output and move on rather than
+                    forcing the change by hand — the point of this loop is to learn what the recipes
+                    cannot do yet.""";
+        }
+        return """
+                The refactoring recipes are NOT available for this run. Make every change
+                manually with your Edit / Write tools. Run the module's tests after;
+                DO NOT commit or push. Record each change you made in the JSON output —
+                use \"Edit\" as the recipe name and put a brief description of the change
+                in options (e.g. {\"change\": \"extracted lines 42-67 into logLines()\"}).""";
     }
 
     private static String renderSuggestions(final List<Suggestion> suggestions) {

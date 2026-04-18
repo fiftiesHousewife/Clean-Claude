@@ -38,11 +38,18 @@ public final class ReworkOrchestrator {
     public ReworkReport reworkClass(final Path file, final Path projectRoot,
                                     final AggregatedReport report, final ReworkMode mode)
             throws ReworkException {
+        return reworkClass(file, projectRoot, report, mode, true);
+    }
+
+    public ReworkReport reworkClass(final Path file, final Path projectRoot,
+                                    final AggregatedReport report, final ReworkMode mode,
+                                    final boolean includeRecipeTools)
+            throws ReworkException {
         final String relativePath = projectRoot.relativize(file).toString();
         final List<Suggestion> suggestions = SuggestionDetector.suggestionsFor(report, relativePath);
         return switch (mode) {
             case SUGGEST_ONLY -> suggestOnly(file, suggestions);
-            case AGENT_DRIVEN -> agentDriven(file, relativePath, suggestions);
+            case AGENT_DRIVEN -> agentDriven(file, relativePath, suggestions, includeRecipeTools);
         };
     }
 
@@ -53,9 +60,10 @@ public final class ReworkOrchestrator {
     }
 
     private ReworkReport agentDriven(final Path file, final String relativePath,
-                                     final List<Suggestion> suggestions) throws ReworkException {
+                                     final List<Suggestion> suggestions,
+                                     final boolean includeRecipeTools) throws ReworkException {
         final String contents = readContents(file);
-        final String prompt = PromptBuilder.build(relativePath, contents, suggestions);
+        final String prompt = PromptBuilder.build(relativePath, contents, suggestions, includeRecipeTools);
         final String stdout = runAgent(prompt);
         final AgentResponseParser.Parsed parsed = AgentResponseParser.parse(stdout);
         final String body = CommitMessageFormatter.format(
