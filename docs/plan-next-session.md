@@ -125,10 +125,23 @@ New section in `.claude/skills/clean-code-java-idioms/SKILL.md`: "StringBuilder:
 
 ### D. IntelliJ refactoring algorithms → OpenRewrite primitives
 
-**D1. Port "Extract Method".**
-IntelliJ IDEA Community is open source; its extract-method refactoring lives in `java-impl/src/com/intellij/refactoring/extractMethod/`. Read the algorithm (signature inference, variable escape analysis, return-value synthesis) and re-implement as an OpenRewrite recipe that takes a parameter `selection: { file, startLine, endLine, newMethodName }`.
+**D1. Port "Extract Method" — remaining phases.**
+Shipped as of `f0e6c78`: Phases A (void conditional-exit), B (outer-local reassignment → output), and F (Gradle task + CLI + docs). See `docs/extract-method-recipe.md` for usage. The following phases are deferred — each one lifts a specific rejection currently documented in `ExtractMethodRecipe`'s class javadoc:
 
-Use this as the foundation for a real `SplitClassRecipe` (for Ch10.1): pick a coherent subset of methods, extract them to a new class, update call sites. Today's class-split brief asks the agent to do this by hand every time.
+1. **Phase C — reference-type conditional exit.** Range contains `return expr;` inside a method that returns a nullable reference type. IntelliJ picks `null` as the "no early return" sentinel; call site becomes `T r = newMethod(args); if (r != null) return r;`. Blocked today by `ExitMode.classify` returning empty for any non-bare return.
+2. **Phase D — `var`-typed output resolution.** Today we reject when the output local was declared with `var`. Fix: read `nv.getVariableType().getType()` and map the `JavaType` to a source name (`Primitive.getKeyword()` for primitives; simple name for `JavaType.Class` when in scope, FQN otherwise). Unblocks every modern-Java accumulator.
+3. **Phase E — generic enclosing method propagation.** Today rejects if the enclosing method declares type parameters. Fix: copy `method.getTypeParameters()` into the extracted method's signature and into the call site's type arguments when inference can't resolve. Medium value — our codebase uses generics sparingly.
+4. **Phase G — real control-flow graph for break/continue.** Port IntelliJ's `ControlFlowWrapper` / `ControlFlowUtil` in enough detail to tell a loop-internal `break` from a method-escaping one. Replaces the conservative "any break/continue rejects" rule with the correct "only escaping exits need sentinel handling."
+5. **Phase H — `throw` when the enclosing method declares the exception.** Allow `throw` inside the range when the enclosing method's `throws` clause already propagates the thrown type. Until we have a CFG (G), this is a textual check against the throws list.
+6. **Phase I — multi-output via wrapper record.** IntelliJ arrays the outputs when > 1. We could synthesise an inline record per extraction: `record Result1(int a, String b) {}`; extracted returns `Result1`; call site decomposes. Low frequency, but cleaner than rejecting.
+7. **Phase J — duplicate detection.** IntelliJ scans the rest of the file for blocks equivalent to the extracted one and offers to replace them. For our agent use case this is gold — a single extraction can remove several G5 findings in one pass. Port `JavaDuplicatesExtractMethodProcessor` (already in `java-impl-refactorings/`).
+8. **Phase K — post-extraction formatter pass.** The smoke-test output in `f0e6c78` had under-indented lines in the new method. Extend `ExtractMethodCli` to run Spotless (or equivalent) across the touched ranges before writing the file back. Roughly 10 lines in the CLI class.
+9. **Phase L — name suggestion.** IntelliJ suggests names from the extracted statements (`ExtractMethodProcessor.suggestInitialMethodName`). Non-essential: the agent already supplies a name today. Defer.
+10. **Phase M — expression-level selection.** Today only runs of complete top-level statements extract. IntelliJ also extracts sub-expressions. Agent use case never needs this; defer.
+
+Phases C–H, J, K are the ones that unblock concrete agent workflows. See also D6 below — the regex-based variable-usage detection that underpins A and B should be replaced with AST reference resolution before expanding the surface area further.
+
+Use extract method as the foundation for a real `SplitClassRecipe` (for Ch10.1): pick a coherent subset of methods, extract them to a new class, update call sites. Today's class-split brief asks the agent to do this by hand every time.
 
 **D2. Port "Introduce Variable" / "Introduce Parameter".**
 Smaller than D1 but useful: backs a true `ExtractExplanatoryVariableRecipe` that works on any expression, not just if-conditions.
@@ -144,6 +157,24 @@ Walk the IDE's inspection catalogue (Preferences → Editor → Inspections → 
 1. A detection recipe that reproduces the warning as a Clean Code finding — same shape as D4 (ConstantConditions), `SplitFlagArgumentRecipe` (flag args), or `FullyQualifiedReferenceRecipe` (G12).
 2. Where safe, a companion refactoring recipe that applies IntelliJ's own quick-fix — same shape as `InvertNegativeConditionalRecipe` (G29), `ShortenFullyQualifiedReferencesRecipe` (G12).
 Ported from IntelliJ IDEA Community when the inspection logic is non-trivial (dataflow, reachability, nullability). Start with the inspections IntelliJ enables by default — those are the set users already trust, so false-positive risk is lowest. Track progress as a checklist under this item; cross off an inspection only when both detection and (if applicable) fix recipes ship with tests.
+
+**D7. Port "Move Method" (`MoveInstanceMethodProcessor` + `MoveStaticMemberHandler`).**
+Move a single method from one class to another and rewrite every call site. Parameters: `(file, methodName, targetType)`. Foundation for D8. Narrow first cut: static methods only, or instance methods whose body references exactly one field of `this` (move into that field's class). Broader scope later: visibility widening, conflict detection, generic-parameter propagation, duplicate-match folding. Fixes G14 (feature envy), G17 (misplaced responsibility), G18 (inappropriate static).
+
+**D8. Port "Extract Class" (`ExtractClassProcessor`).**
+Move N methods and M fields from an existing class into a new class; rewrite call sites either via a held reference or static delegation. Uses D7 as the primitive — extract class is "new target type + N × move method + constructor wiring". Parameters: `(file, methodNames[], fieldNames[], newClassName)`. Fixes Ch10.1 (class too large), Ch10.2 (SRP). Highest-leverage architectural lever we don't have.
+
+**D9. Port "Introduce Parameter Object" (`IntroduceParameterObjectProcessor`).**
+When a method has ≥ 4 parameters that are frequently passed together, collect them into an inline `record` (or Lombok `@Value`) and rewrite every call site. Parameters: `(file, methodName, parameterNames[], newTypeName)`. Fixes F1 (too many arguments). Mechanical once a record-synthesis helper exists.
+
+**D10. Port "Use Try-With-Resources" (`UseTryWithResourcesInspection`).**
+Detect manual `close()` calls in `finally` blocks or explicit try/finally patterns that should be `try-with-resources`, then auto-fix. IntelliJ has both inspection and quick-fix. Fixes the biggest cluster of Ch7.1 findings mechanically. Needs a simple dataflow to recognise the pattern, nothing as deep as ConstantConditions (D4).
+
+**D11. Generate Test Scaffold recipe (T1).**
+For every public class in `src/main/java` with no corresponding file at the matching path under `src/test/java`, create `FooTest.java` with `@Test`-annotated placeholder methods — one per public method of the source class — with bodies that just `fail("TODO: " + methodName)` and a JUnit `@DisplayName` drawn from the method name. Not a real refactor, but removes the "where do I put this test file" friction from every T1 brief. Pure template work, ~80 lines.
+
+**D12. Port "Inline Method" / "Inline Variable" (`InlineMethodProcessor`, `InlineLocalVariableProcessor`).**
+Inverse of extract method and of D2. A pass to kill G9 (dead code) and simplifications where a named local or helper method reads as less expressive than its expansion. Constrained first cut: only inline methods called from exactly one site, and only variables assigned once.
 
 **D6. Replace `VariableUsagePatterns` regex with real reference resolution.**
 The D1 port analyses reads and writes inside an extracted range via word-boundary regex (see `refactoring/.../extractmethod/VariableUsagePatterns.java`). The compromise is conservative — it over-includes (matches identifiers in comments and string literals) and can't tell the difference between `foo.bar` and `bar`. Rewrite to walk the AST: collect `J.Identifier` nodes and filter by `getFieldType()` / cursor parent / name-reference semantics to resolve each identifier to the right binding. IntelliJ uses `PsiReference.resolve()` for the equivalent job. Acceptance: every extract-method test still passes, plus new tests proving false-positive matches in comments/strings no longer register as reads.
