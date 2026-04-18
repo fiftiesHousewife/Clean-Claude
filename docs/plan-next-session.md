@@ -179,6 +179,17 @@ When `ExtractMethodRecipe` creates a new helper, it should also add a placeholde
 **D12. Port "Inline Method" / "Inline Variable" (`InlineMethodProcessor`, `InlineLocalVariableProcessor`).**
 Inverse of extract method and of D2. A pass to kill G9 (dead code) and simplifications where a named local or helper method reads as less expressive than its expansion. Constrained first cut: only inline methods called from exactly one site, and only variables assigned once.
 
+**D14. Hoist `AstFragments` and migrate the five existing parse-a-holder-class recipes.**
+Audit (post-d5c2b0d) found five recipes outside D1 that build `"class _T { void _m() { … } }"` and unpack the first statement by hand — ceremony `AstFragments.parseStatement` already does:
+
+- `ExtractExplanatoryVariableRecipe`
+- `WrapAssertAllRecipe`
+- `RemoveNestedTernaryRecipe`
+- `EncapsulateBoundaryRecipe`
+- `ExtractConstantRecipe`
+
+Move `AstFragments` from `refactoring/.../extractmethod/` to `refactoring/.../support/` (shared location), then rewrite each recipe to delegate. Expect ~10 lines gone per site. Low risk — the tests already anchor each recipe's output. No-op on `ExtractMethodRecipe` (already uses it). `AstFragments.parseMethod`, `LineIndex`, and `VariableUsagePatterns` have no reuse candidates today; leave them in the extractmethod package until a second caller surfaces.
+
 **D6. Replace `VariableUsagePatterns` regex with real reference resolution.**
 The D1 port analyses reads and writes inside an extracted range via word-boundary regex (see `refactoring/.../extractmethod/VariableUsagePatterns.java`). The compromise is conservative — it over-includes (matches identifiers in comments and string literals) and can't tell the difference between `foo.bar` and `bar`. Rewrite to walk the AST: collect `J.Identifier` nodes and filter by `getFieldType()` / cursor parent / name-reference semantics to resolve each identifier to the right binding. IntelliJ uses `PsiReference.resolve()` for the equivalent job. Acceptance: every extract-method test still passes, plus new tests proving false-positive matches in comments/strings no longer register as reads.
 
