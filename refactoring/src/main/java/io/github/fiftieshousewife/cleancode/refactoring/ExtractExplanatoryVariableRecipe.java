@@ -3,6 +3,7 @@ package io.github.fiftieshousewife.cleancode.refactoring;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
+import io.github.fiftieshousewife.cleancode.refactoring.support.Statements;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -11,7 +12,6 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,45 +41,29 @@ public class ExtractExplanatoryVariableRecipe extends Recipe {
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
-                final List<Statement> statements = b.getStatements();
-                final List<Statement> newStatements = new ArrayList<>();
-                boolean changed = false;
-
-                for (final Statement stmt : statements) {
+                return Statements.rebuild(b, stmt -> {
                     if (!(stmt instanceof J.If ifStmt)) {
-                        newStatements.add(stmt);
-                        continue;
+                        return List.of(stmt);
                     }
-
                     final Expression condition = ifStmt.getIfCondition().getTree();
-                    final int depth = chainDepth(condition);
-
-                    if (depth < minChainDepth) {
-                        newStatements.add(stmt);
-                        continue;
+                    if (chainDepth(condition) < minChainDepth) {
+                        return List.of(stmt);
                     }
-
                     final String condText = condition.toString().trim();
                     final String varName = generateVariableName(condText);
                     final Optional<Statement> varDecl = AstFragments.parseStatement(
                             "final var %s = %s;".formatted(varName, condText));
                     if (varDecl.isEmpty()) {
-                        newStatements.add(stmt);
-                        continue;
+                        return List.of(stmt);
                     }
-
-                    newStatements.add(varDecl.get());
-
                     final J.Identifier varRef = new J.Identifier(
                             org.openrewrite.Tree.randomId(),
                             org.openrewrite.java.tree.Space.EMPTY,
                             org.openrewrite.marker.Markers.EMPTY,
                             List.of(), varName, null, null);
-                    newStatements.add(ifStmt.withIfCondition(ifStmt.getIfCondition().withTree(varRef)));
-                    changed = true;
-                }
-
-                return changed ? b.withStatements(newStatements) : b;
+                    return List.of(varDecl.get(),
+                            ifStmt.withIfCondition(ifStmt.getIfCondition().withTree(varRef)));
+                });
             }
         };
     }

@@ -1,6 +1,7 @@
 package io.github.fiftieshousewife.cleancode.refactoring;
 
 import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
+import io.github.fiftieshousewife.cleancode.refactoring.support.Statements;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -8,7 +9,6 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RemoveNestedTernaryRecipe extends Recipe {
@@ -29,31 +29,22 @@ public class RemoveNestedTernaryRecipe extends Recipe {
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
-                final List<Statement> statements = b.getStatements();
-                final List<Statement> newStatements = new ArrayList<>();
-                boolean changed = false;
-
-                for (final Statement stmt : statements) {
+                return Statements.rebuild(b, stmt -> {
                     if (!(stmt instanceof J.Return ret) || ret.getExpression() == null
                             || !(ret.getExpression() instanceof J.Ternary ternary)
                             || !hasNestedTernary(ternary)) {
-                        newStatements.add(stmt);
-                        continue;
+                        return List.of(stmt);
                     }
-
                     final String ifElse = ternaryToIfElse(ternary, "result");
                     final List<Statement> parsed = AstFragments.parseStatements(
                             "Object result; %s return result;".formatted(ifElse));
                     if (parsed.isEmpty()) {
-                        newStatements.add(stmt);
-                        continue;
+                        return List.of(stmt);
                     }
-
-                    parsed.forEach(s -> newStatements.add(s.withPrefix(stmt.getPrefix())));
-                    changed = true;
-                }
-
-                return changed ? b.withStatements(newStatements) : b;
+                    return parsed.stream()
+                            .map(s -> (Statement) s.withPrefix(stmt.getPrefix()))
+                            .toList();
+                });
             }
         };
     }

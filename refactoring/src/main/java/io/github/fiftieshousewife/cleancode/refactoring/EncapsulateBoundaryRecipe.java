@@ -1,6 +1,7 @@
 package io.github.fiftieshousewife.cleancode.refactoring;
 
 import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
+import io.github.fiftieshousewife.cleancode.refactoring.support.Statements;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -34,30 +35,18 @@ public class EncapsulateBoundaryRecipe extends Recipe {
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
-                final List<Statement> statements = b.getStatements();
-                final List<Statement> newStatements = new ArrayList<>();
-                boolean changed = false;
-
-                for (final Statement stmt : statements) {
+                return Statements.rebuild(b, stmt -> {
                     final String boundaryExpr = extractBoundaryText(stmt);
                     if (boundaryExpr == null) {
-                        newStatements.add(stmt);
-                        continue;
+                        return List.of(stmt);
                     }
-
                     final Optional<Statement> decl = AstFragments.parseStatement(
                             "final int lastIndex = %s;".formatted(boundaryExpr));
                     if (decl.isEmpty()) {
-                        newStatements.add(stmt);
-                        continue;
+                        return List.of(stmt);
                     }
-
-                    newStatements.add(decl.get().withPrefix(stmt.getPrefix()));
-                    newStatements.add(stmt);
-                    changed = true;
-                }
-
-                return changed ? b.withStatements(newStatements) : b;
+                    return List.of(decl.get().withPrefix(stmt.getPrefix()), stmt);
+                });
             }
         };
     }
