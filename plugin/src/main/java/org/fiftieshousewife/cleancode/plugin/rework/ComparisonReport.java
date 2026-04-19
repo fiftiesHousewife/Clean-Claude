@@ -5,14 +5,16 @@ import java.util.Optional;
 
 /**
  * Renders the side-by-side markdown that {@link ReworkCompareTask}
- * produces after N paired rework runs. The cost table shows every
- * token category the agent runtime reports plus a few derived values
- * (total input, cache hit rate, cost per action) so we can see which
- * ledger line is driving any cross-variant cost delta.
+ * produces after N paired rework runs. Three tables per report: a cost
+ * table covering every token category the agent runtime reports plus
+ * derived values (total input, cache hit rate, cost per action), a
+ * findings table (baseline / fixed / introduced / final) that shows
+ * what each variant actually moved on the target files, and per-variant
+ * diff + commit-message sections underneath.
  */
 public final class ComparisonReport {
 
-    public record VariantRun(RunVariant variant, ReworkReport report, String diff) {}
+    public record VariantRun(RunVariant variant, ReworkReport report, String diff, FindingsSnapshot findings) {}
 
     private ComparisonReport() {}
 
@@ -26,6 +28,7 @@ public final class ComparisonReport {
             body.append('\n');
         }
         appendCostTable(body, runs);
+        appendFindingsTable(body, runs);
         runs.forEach(run -> appendVariantSection(body, run));
         return body.toString();
     }
@@ -55,6 +58,17 @@ public final class ComparisonReport {
         appendCountRow(body, runs, "actions", r -> r.actionsTaken().size());
         appendCountRow(body, runs, "rejected", r -> r.rejected().size());
         appendCostPerActionRow(body, runs);
+        body.append('\n');
+    }
+
+    private static void appendFindingsTable(final StringBuilder body, final List<VariantRun> runs) {
+        body.append("## Findings\n\n");
+        body.append("| |").append(header(runs)).append('\n');
+        body.append("|---|").append(alignment(runs)).append('\n');
+        appendFindingsRow(body, runs, "baseline", FindingsSnapshot::baseline);
+        appendFindingsRow(body, runs, "fixed", FindingsSnapshot::fixed);
+        appendFindingsRow(body, runs, "introduced", FindingsSnapshot::introduced);
+        appendFindingsRow(body, runs, "final", FindingsSnapshot::finalCount);
         body.append('\n');
     }
 
@@ -115,6 +129,18 @@ public final class ComparisonReport {
                                        final String label, final ReportField accessor) {
         body.append("| ").append(label).append(" |");
         runs.forEach(run -> body.append(' ').append(accessor.apply(run.report())).append(" |"));
+        body.append('\n');
+    }
+
+    @FunctionalInterface
+    private interface FindingsField {
+        int apply(FindingsSnapshot snapshot);
+    }
+
+    private static void appendFindingsRow(final StringBuilder body, final List<VariantRun> runs,
+                                          final String label, final FindingsField accessor) {
+        body.append("| ").append(label).append(" |");
+        runs.forEach(run -> body.append(' ').append(accessor.apply(run.findings())).append(" |"));
         body.append('\n');
     }
 

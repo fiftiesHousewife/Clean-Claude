@@ -1,18 +1,17 @@
 package org.fiftieshousewife.cleancode.plugin;
 
-import org.fiftieshousewife.cleancode.adapters.*;
 import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
-import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewConfig;
-import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewFindingSource;
-import org.fiftieshousewife.cleancode.core.*;
+import org.fiftieshousewife.cleancode.core.AggregatedReport;
+import org.fiftieshousewife.cleancode.core.BaselineManager;
+import org.fiftieshousewife.cleancode.core.BuildOutputFormatter;
+import org.fiftieshousewife.cleancode.core.HtmlReportWriter;
+import org.fiftieshousewife.cleancode.core.JsonReportWriter;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class AnalyseTask extends DefaultTask {
 
@@ -20,49 +19,9 @@ public abstract class AnalyseTask extends DefaultTask {
     public void analyse() throws Exception {
         final Path projectRoot = getProject().getProjectDir().toPath();
         final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
-        final Path reportsDir = buildDir.resolve("reports");
+        final AggregatedReport report = SandboxAnalysis.analyse(getProject());
 
         final CleanCodeExtension ext = getProject().getExtensions().getByType(CleanCodeExtension.class);
-        final RecipeThresholds thresholds = ext.buildRecipeThresholds();
-        final String anthropicApiKey = resolveApiKey();
-        final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig(anthropicApiKey);
-        final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
-        final PackageSuppression packageSuppression = PackageSuppression.of(ext.getPackageSuppressions().get());
-
-        final List<String> dependencies = getProject().getConfigurations().stream()
-                .filter(c -> "runtimeClasspath".equals(c.getName()))
-                .flatMap(c -> c.getResolvedConfiguration().getResolvedArtifacts().stream())
-                .map(a -> a.getModuleVersion().getId().getGroup()
-                        + ":" + a.getModuleVersion().getId().getName())
-                .distinct()
-                .toList();
-
-        final ProjectContext context = new ProjectContext(
-                projectRoot,
-                getProject().getName(),
-                getProject().getVersion().toString(),
-                "21",
-                List.of(projectRoot.resolve("src/main/java")),
-                List.of(projectRoot.resolve("src/test/java")),
-                buildDir,
-                reportsDir,
-                dependencies);
-
-        final List<FindingSource> sources = List.of(
-                new PmdFindingSource(),
-                new CheckstyleFindingSource(thresholds),
-                new SpotBugsFindingSource(),
-                new CpdFindingSource(),
-                new JacocoFindingSource(),
-                new SurefireFindingSource(),
-                new DependencyUpdatesFindingSource(),
-                new OpenRewriteFindingSource(thresholds),
-                new ClaudeReviewFindingSource(claudeConfig));
-
-        final AggregatedReport fullReport = FindingAggregator.aggregate(sources, context);
-        final AggregatedReport filteredByCode = filterDisabledRecipes(fullReport, disabledRecipes);
-        final AggregatedReport report = filterSuppressions(filteredByCode, projectRoot, packageSuppression);
-
         final String baseRepoUrl = ext.getRepositoryUrl().get();
         final String modulePath = getProject().getRootDir().toPath().relativize(projectRoot).toString();
         final String repositoryUrl = baseRepoUrl.isBlank() ? ""
@@ -79,42 +38,5 @@ public abstract class AnalyseTask extends DefaultTask {
 
         getLogger().lifecycle(BuildOutputFormatter.format(report, deltas));
         getLogger().lifecycle("\n  Report: file://" + htmlReport.toAbsolutePath());
-    }
-
-    private AggregatedReport filterDisabledRecipes(final AggregatedReport report,
-                                                   final Set<String> disabledRecipes) {
-        if (disabledRecipes.isEmpty()) {
-            return report;
-        }
-        final List<Finding> filtered = report.findings().stream()
-                .filter(f -> !disabledRecipes.contains(f.code().name()))
-                .toList();
-        return withFindings(report, filtered);
-    }
-
-    private AggregatedReport filterSuppressions(final AggregatedReport report,
-                                                final Path projectRoot,
-                                                final PackageSuppression packageSuppression) {
-        final SuppressionIndex index = SuppressionIndex.build(projectRoot.resolve("src/main/java"));
-        final FindingFilter.Result result = FindingFilter.apply(report.findings(), index, packageSuppression);
-        return withFindings(report, result.findings());
-    }
-
-    private static AggregatedReport withFindings(final AggregatedReport report, final List<Finding> findings) {
-        return new AggregatedReport(
-                findings,
-                report.coveredCodes(),
-                report.generatedAt(),
-                report.projectName(),
-                report.projectVersion());
-    }
-
-    private String resolveApiKey() {
-        final Object prop = getProject().findProperty("ANTHROPIC_API_KEY");
-        if (prop != null && !prop.toString().isBlank()) {
-            return prop.toString();
-        }
-        final String env = System.getenv("ANTHROPIC_API_KEY");
-        return env != null ? env : "";
     }
 }

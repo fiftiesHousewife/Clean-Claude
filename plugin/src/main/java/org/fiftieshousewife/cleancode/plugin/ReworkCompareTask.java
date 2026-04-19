@@ -1,9 +1,11 @@
 package org.fiftieshousewife.cleancode.plugin;
 
 import org.fiftieshousewife.cleancode.core.AggregatedReport;
+import org.fiftieshousewife.cleancode.core.FindingSourceException;
 import org.fiftieshousewife.cleancode.core.JsonReportReader;
 import org.fiftieshousewife.cleancode.plugin.rework.ComparisonReport;
 import org.fiftieshousewife.cleancode.plugin.rework.DefaultAgentRunner;
+import org.fiftieshousewife.cleancode.plugin.rework.FindingsSnapshot;
 import org.fiftieshousewife.cleancode.plugin.rework.GitWorkingTree;
 import org.fiftieshousewife.cleancode.plugin.rework.ReworkMode;
 import org.fiftieshousewife.cleancode.plugin.rework.ReworkOrchestrator;
@@ -18,7 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Runs the rework flow once per {@link RunVariant} across one or many
@@ -47,15 +51,18 @@ public abstract class ReworkCompareTask extends DefaultTask {
         final Path projectRoot = getProject().getRootDir().toPath();
         final List<Path> targets = relativePaths.stream()
                 .map(projectRoot::resolve).toList();
+        final Set<Path> targetSet = new HashSet<>(targets);
+        final Path sandboxDir = getProject().getProjectDir().toPath();
         final GitWorkingTree git = new GitWorkingTree(projectRoot);
         ensureWorkingTreeClean(git, targets);
-        final AggregatedReport findings = loadFindings();
+        final AggregatedReport baselineFindings = loadFindings();
         final List<RunVariant> variants = collectVariantsProperty();
         final ReworkOrchestrator orchestrator = new ReworkOrchestrator(
                 new DefaultAgentRunner(line -> getLogger().lifecycle("    {}", line)),
                 Duration.ofMinutes(20));
-        final List<ComparisonReport.VariantRun> runs =
-                runAllVariants(orchestrator, variants, targets, projectRoot, findings, git);
+        final List<ComparisonReport.VariantRun> runs = runAllVariants(
+                orchestrator, variants, targets, targetSet, sandboxDir,
+                projectRoot, baselineFindings, git);
         final Path destination = writeComparison(targets, ComparisonReport.format(runs));
         logSummary(runs, destination);
     }
@@ -132,19 +139,36 @@ public abstract class ReworkCompareTask extends DefaultTask {
     private List<ComparisonReport.VariantRun> runAllVariants(final ReworkOrchestrator orchestrator,
                                                              final List<RunVariant> variants,
                                                              final List<Path> targets,
+                                                             final Set<Path> targetSet,
+                                                             final Path sandboxDir,
                                                              final Path projectRoot,
-                                                             final AggregatedReport findings,
+                                                             final AggregatedReport baselineFindings,
                                                              final GitWorkingTree git) {
         final List<ComparisonReport.VariantRun> results = new ArrayList<>();
         int index = 0;
         for (final RunVariant variant : variants) {
             index++;
             getLogger().lifecycle("▶ run {} of {} — {}", index, variants.size(), variant);
-            final ReworkReport report = invokeOrchestrator(orchestrator, targets, projectRoot, findings, variant);
-            results.add(new ComparisonReport.VariantRun(variant, report, captureDiff(git, targets)));
+            final ReworkReport report = invokeOrchestrator(orchestrator, targets, projectRoot, baselineFindings, variant);
+            final FindingsSnapshot snapshot = computeSnapshot(baselineFindings, targetSet, sandboxDir, variant);
+            results.add(new ComparisonReport.VariantRun(variant, report, captureDiff(git, targets), snapshot));
             restore(git, targets);
         }
         return results;
+    }
+
+    private FindingsSnapshot computeSnapshot(final AggregatedReport baseline,
+                                             final Set<Path> targetSet,
+                                             final Path sandboxDir,
+                                             final RunVariant variant) {
+        try {
+            final AggregatedReport current = SandboxAnalysis.analyse(getProject());
+            return FindingsSnapshot.compute(
+                    baseline.findings(), current.findings(), targetSet, sandboxDir);
+        } catch (FindingSourceException | RuntimeException e) {
+            throw new GradleException(
+                    "re-analysis failed after variant " + variant + ": " + e.getMessage(), e);
+        }
     }
 
     private static ReworkReport invokeOrchestrator(final ReworkOrchestrator orchestrator,
@@ -189,8 +213,25 @@ public abstract class ReworkCompareTask extends DefaultTask {
 
     private void logSummary(final List<ComparisonReport.VariantRun> runs, final Path destination) {
         getLogger().lifecycle("Comparison written to: {}", destination);
-        runs.forEach(run -> getLogger().lifecycle(
-                "  {} — actions: {}  rejected: {}",
-                run.variant(), run.report().actionsTaken().size(), run.report().rejected().size()));
+        runs.forEach(run -> getLogger().lifecycle(summaryLine(run)));
+    }
+
+    private static String summaryLine(final ComparisonReport.VariantRun run) {
+        final ReworkReport report = run.report();
+        final FindingsSnapshot findings = run.findings();
+        final StringBuilder line = new StringBuilder(120);
+        line.append("  ").append(run.variant())
+                .append(" — actions: ").append(report.actionsTaken().size())
+                .append("  rejected: ").append(report.rejected().size())
+                .append("  findings: ").append(findings.baseline()).append("→").append(findings.finalCount())
+                .append(" (fixed ").append(findings.fixed())
+                .append(", introduced ").append(findings.introduced()).append(')');
+        report.usage().ifPresent(usage -> line
+                .append("  wall: ").append(String.format("%.1fs", usage.durationMs() / 1000.0))
+                .append("  cost: ").append(String.format("$%.4f", usage.totalCostUsd()))
+                .append("  tokens: ").append(usage.totalInputTokens()).append(" in / ")
+                .append(usage.outputTokens()).append(" out")
+                .append("  turns: ").append(usage.numTurns()));
+        return line.toString();
     }
 }
