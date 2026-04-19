@@ -2,18 +2,18 @@ package io.github.fiftieshousewife.cleancode.refactoring;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
-import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ExtractExplanatoryVariableRecipe extends Recipe {
 
@@ -61,23 +61,14 @@ public class ExtractExplanatoryVariableRecipe extends Recipe {
 
                     final String condText = condition.toString().trim();
                     final String varName = generateVariableName(condText);
-                    final String declSource = "class _T { void _m() { final var %s = %s; } }"
-                            .formatted(varName, condText);
-
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(declSource).toList();
-
-                    if (parsed.isEmpty()) {
+                    final Optional<Statement> varDecl = AstFragments.parseStatement(
+                            "final var %s = %s;".formatted(varName, condText));
+                    if (varDecl.isEmpty()) {
                         newStatements.add(stmt);
                         continue;
                     }
 
-                    final J.MethodDeclaration method = (J.MethodDeclaration) ((J.CompilationUnit) parsed.getFirst())
-                            .getClasses().getFirst().getBody().getStatements().getFirst();
-                    final Statement varDecl = method.getBody().getStatements().getFirst();
-
-                    newStatements.add(varDecl);
+                    newStatements.add(varDecl.get());
 
                     final J.Identifier varRef = new J.Identifier(
                             org.openrewrite.Tree.randomId(),

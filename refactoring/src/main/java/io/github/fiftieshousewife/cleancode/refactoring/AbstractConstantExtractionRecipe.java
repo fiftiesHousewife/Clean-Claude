@@ -1,11 +1,10 @@
 package io.github.fiftieshousewife.cleancode.refactoring;
 
+import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
-import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
@@ -120,21 +119,14 @@ public abstract class AbstractConstantExtractionRecipe<V>
     }
 
     /**
-     * Parses a holder class like {@code "class _Tmp { private static final ... }"}
-     * and returns the first statement inside it — the field declaration the
-     * caller wants to splice into another class. Shared between the numeric
-     * and string constant recipes; a future pass (D14-2) will move this to
-     * the {@code support/} package alongside {@code AstFragments.parseStatement}.
+     * Parses a field declaration from a holder class literal. Delegates
+     * to {@link AstFragments#parseField(String)}; subclasses call this
+     * so the test set stays indirectly covered by the abstract base.
      */
     protected static Statement parseFieldFromHolder(final String classSource) {
-        final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                .logCompilationWarningsAndErrors(false)
-                .build()
-                .parse(classSource)
-                .toList();
-        final J.ClassDeclaration tmpClass = ((J.CompilationUnit) parsed.getFirst())
-                .getClasses().getFirst();
-        return tmpClass.getBody().getStatements().getFirst();
+        return AstFragments.parseField(classSource)
+                .orElseThrow(() -> new IllegalStateException(
+                        "holder class did not yield a field: " + classSource));
     }
 
     protected static boolean isStaticFinal(final J.VariableDeclarations varDecl) {

@@ -1,19 +1,18 @@
 package io.github.fiftieshousewife.cleancode.refactoring;
 
+import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
-import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EncapsulateBoundaryRecipe extends Recipe {
 
@@ -46,22 +45,14 @@ public class EncapsulateBoundaryRecipe extends Recipe {
                         continue;
                     }
 
-                    final String declSource = "class _T { void _m() { final int lastIndex = %s; } }"
-                            .formatted(boundaryExpr);
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(declSource).toList();
-
-                    if (parsed.isEmpty()) {
+                    final Optional<Statement> decl = AstFragments.parseStatement(
+                            "final int lastIndex = %s;".formatted(boundaryExpr));
+                    if (decl.isEmpty()) {
                         newStatements.add(stmt);
                         continue;
                     }
 
-                    final J.MethodDeclaration method = (J.MethodDeclaration)
-                            ((J.CompilationUnit) parsed.getFirst())
-                                    .getClasses().getFirst().getBody().getStatements().getFirst();
-                    newStatements.add(method.getBody().getStatements().getFirst()
-                            .withPrefix(stmt.getPrefix()));
+                    newStatements.add(decl.get().withPrefix(stmt.getPrefix()));
                     newStatements.add(stmt);
                     changed = true;
                 }

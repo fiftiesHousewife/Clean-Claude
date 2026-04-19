@@ -1,4 +1,4 @@
-package io.github.fiftieshousewife.cleancode.refactoring.extractmethod;
+package io.github.fiftieshousewife.cleancode.refactoring.support;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.java.tree.J;
@@ -54,5 +54,21 @@ class AstFragmentsTest {
         assertTrue(parsed.isPresent());
         assertTrue(parsed.get() instanceof J.VariableDeclarations,
                 "assignment-from-call should round-trip as a variable declaration statement");
+    }
+
+    @Test
+    void parsesFieldDeclarationFromHolderClass() {
+        final Optional<Statement> parsed = AstFragments.parseField(
+                "class _Tmp { private static final String GREETING = \"hi\"; }");
+        assertTrue(parsed.isPresent());
+        assertTrue(parsed.get() instanceof J.VariableDeclarations,
+                "field declarations round-trip as variable-declaration statements");
+    }
+
+    @Test
+    void parseFieldReturnsEmptyWhenHolderIsMalformed() {
+        final Optional<Statement> parsed = AstFragments.parseField("not a class");
+        assertTrue(parsed.isEmpty(),
+                "malformed input returns empty so callers can fall back");
     }
 }

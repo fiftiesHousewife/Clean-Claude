@@ -2,17 +2,17 @@ package io.github.fiftieshousewife.cleancode.refactoring;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
-import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -71,19 +71,12 @@ public class WrapAssertAllRecipe extends Recipe {
                             .map(s -> "() -> " + s.toString().trim())
                             .collect(Collectors.joining(",\n                "));
 
-                    final String assertAllSource = "class _T { void _m() { assertAll(\n                %s\n        ); } }"
-                            .formatted(lambdas);
+                    final Optional<Statement> assertAllStmt = AstFragments.parseStatement(
+                            "assertAll(\n                %s\n        );".formatted(lambdas));
 
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(assertAllSource).toList();
-
-                    if (!parsed.isEmpty()) {
-                        final J.MethodDeclaration method = (J.MethodDeclaration)
-                                ((J.CompilationUnit) parsed.getFirst())
-                                        .getClasses().getFirst().getBody().getStatements().getFirst();
-                        final Statement assertAllStmt = method.getBody().getStatements().getFirst();
-                        newStatements.add(assertAllStmt.withPrefix(statements.get(run.startIndex()).getPrefix()));
+                    if (assertAllStmt.isPresent()) {
+                        newStatements.add(assertAllStmt.get()
+                                .withPrefix(statements.get(run.startIndex()).getPrefix()));
                     } else {
                         for (int j = run.startIndex(); j < run.endIndex(); j++) {
                             newStatements.add(statements.get(j));

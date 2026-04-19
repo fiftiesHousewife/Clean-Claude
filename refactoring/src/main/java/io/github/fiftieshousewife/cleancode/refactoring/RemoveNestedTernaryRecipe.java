@@ -1,11 +1,10 @@
 package io.github.fiftieshousewife.cleancode.refactoring;
 
+import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
-import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
@@ -43,23 +42,14 @@ public class RemoveNestedTernaryRecipe extends Recipe {
                     }
 
                     final String ifElse = ternaryToIfElse(ternary, "result");
-                    final String wrapper = "class _T { Object _m() { Object result; %s return result; } }"
-                            .formatted(ifElse);
-
-                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                            .logCompilationWarningsAndErrors(false)
-                            .build().parse(wrapper).toList();
-
+                    final List<Statement> parsed = AstFragments.parseStatements(
+                            "Object result; %s return result;".formatted(ifElse));
                     if (parsed.isEmpty()) {
                         newStatements.add(stmt);
                         continue;
                     }
 
-                    final J.MethodDeclaration method = (J.MethodDeclaration)
-                            ((J.CompilationUnit) parsed.getFirst())
-                                    .getClasses().getFirst().getBody().getStatements().getFirst();
-                    method.getBody().getStatements()
-                            .forEach(s -> newStatements.add(s.withPrefix(stmt.getPrefix())));
+                    parsed.forEach(s -> newStatements.add(s.withPrefix(stmt.getPrefix())));
                     changed = true;
                 }
 
