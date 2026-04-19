@@ -1,5 +1,113 @@
 # Plan: next session handoff
 
+## 2026-04-19 late-session handoff — 4-way measured, stale-findings + feedback-loop + F2 recipe + G18-detector fix landed
+
+### What shipped tonight (after the morning handoff below)
+
+- **4-way measured** (`074232d`) — first full 4-way run completed in 35m 20s.
+  Raw comparison markdown + analysis write-up archived to
+  `docs/sessions/2026-04-19-four-way-comparison-{raw,analysis}.md`. All
+  three pre-run hypotheses **falsified**: HARNESS did not beat MCP_RECIPES
+  on cost ($3.17 vs $3.17), quality tied at 23/24 final findings across
+  variants, duration did not drop. Headline: every variant introduced 7-10
+  new findings while fixing 27-30 — net improvement ~20 but real tech debt
+  was left behind.
+- **Stale findings fix for HARNESS** (`cf29324`) — the agent was reading
+  the baseline findings list even after the recipe pass had fixed many of
+  them; wasted turns rejecting "already done" findings. `ReworkOrchestrator`
+  now threads an optional re-analyser; for HARNESS_RECIPES_THEN_AGENT it
+  re-analyses between recipes and agent so the agent sees residuals only.
+- **Findings measurement wired into the harness** (`b6d623d`) — previously
+  the comparison report showed cost/tokens but not findings counts. Now
+  every variant reports baseline / fixed / introduced / final (scoped to
+  target files). Lifecycle stdout line also upgraded to show wall/cost/tokens
+  per variant so the numbers are visible without opening the markdown.
+  New `SandboxAnalysis` helper (extracted from `AnalyseTask`) lets the
+  rework harness re-run analysis in-process without a nested Gradle build.
+- **Prompt fix: stylistic findings don't block extract_method** (`7d93e26`)
+  — earlier prompt wording coupled two independent rules; agent was
+  falling back to Edit unnecessarily on files with stylistic findings.
+- **Post-agent feedback loop + new-class checklist** (`f49426f`) —
+  `ReworkOrchestrator.Options` carries a re-analyser + `maxRetries`; after
+  the agent runs, if introduced findings exist we invoke the agent once
+  more with a RETRY PASS banner and only those findings. Default
+  `maxRetries=1`, override via `-PfeedbackRetries=N`. Shared prompt
+  checklist tells the agent that any new class/helper it creates is held
+  to the same standards (no catch-log-continue, no StringBuilder sb
+  threading, no if-not-null as control flow, no System.err, no FQN,
+  companion test for new top-level classes).
+- **G18 detector fix + F2 recipe** (`5ab68f2`) — the `InappropriateStaticRecipe`
+  detector missed unqualified instance-field writes like `rowsParsed++`,
+  producing 5-8 identical false positives per variant. Now catches them.
+  New `ReturnInsteadOfMutateArgRecipe` rewrites the pure-accumulator F2
+  shape (private/package-private `void` method with sole `List<T> arg`
+  mutated only via `.add()`) to return the list instead; wired into
+  `HarnessRecipePass` so variant 4 applies it deterministically.
+
+### State at end of session
+
+- Working tree clean on `main`; 13 commits ahead of origin/main.
+- All tests green: `./gradlew test` completes in ~1m, all modules pass.
+- mavenLocal updated: refactoring + plugin jars include all new recipes
+  and orchestrator changes (run `:refactoring:publishToMavenLocal
+  :plugin:publishToMavenLocal` before any rework run if publishing
+  was done externally).
+
+### Next morning — run the 4-way again against tonight's numbers
+
+Same 10-file batch as today, same command. This run exercises three things
+that tonight's first 4-way did not:
+
+1. **Feedback loop** — all four variants now default to `maxRetries=1`;
+   expect introduced count to drop from 7-10 to 0-3.
+2. **F2 recipe** — variant 4's recipe pass should auto-fix
+   `UserAccountService.validate` (and any similar shape in the batch).
+3. **G18 detector** — should eliminate the 5-8 false-positive rejections
+   every variant produced last run.
+
+```bash
+FILES="sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/AccumulatorFixture.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/GuardFixture.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/OrchestratorFixture.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/CsvParser.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/HttpRetryPolicy.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/InventoryBalancer.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/NotificationDispatcher.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/ReportTemplate.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/SessionStore.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/UserAccountService.java"
+./gradlew :refactoring:publishToMavenLocal :plugin:publishToMavenLocal
+./gradlew -PcleanCodeSelfApply=true :sandbox:reworkCompare -Pfiles="$FILES"
+```
+
+Hypotheses for the next run:
+1. **Introduced count drops** across every variant (primary feedback-loop signal).
+2. **VANILLA benefits most** from the feedback loop (today it introduced 10, highest).
+3. **HARNESS variant's rejected count** drops toward 0 (G18 false positives gone).
+4. **Total cost** rises 10-20% across variants (one retry adds tokens; the quality trade is what we're paying for).
+5. **Final findings** drops across all variants, ideally to 15-20 from tonight's 23-24.
+
+Mini-backlog for the run-up:
+- Capture the introduced-findings breakdown **by code** per variant, not just the count. Would let us see which specific patterns the feedback loop actually fixes.
+- Decide whether `maxRetries=1` or `=2` is the right default. `=1` is cheap insurance; `=2` converges harder but doubles retry cost at worst.
+
+### New backlog item — IDE warnings sweep
+
+Walk every IDE warning this codebase generates (IntelliJ → Inspect Code; or
+`./gradlew check` output), and for each class of warning that's not already
+covered by an existing finding: propose a detection recipe + (where safe) a
+remediation recipe, then fix the instances in this repo. Use the same
+shape as existing recipes — IntelliJ's inspection catalogue is the source,
+OpenRewrite is the sink. Track under D5 ("Sweep every IntelliJ warning
+and port it") below.
+
+### Unchanged from morning handoff
+
+Everything under the morning handoff section below still applies except the
+"To measure in the morning" block, which is now complete.
+
+---
+
 ## 2026-04-19 handoff — 7 deterministic recipes + 4th variant wired, ready to measure
 
 Following the 2026-04-18 cost-reduction session (below), tonight's arc shipped:
@@ -403,7 +511,7 @@ In order of estimated leverage (from manual-1's remaining-finding table):
 | G30 (107) | method size | Hard; deliberate semantic split. Agent-driven with better skill prose. |
 | G29 (51) | negative conditionals | Extend `InvertNegativeConditionalRecipe` to cover `!= null` / `!= ""` cases — currently only unary `!` at top level. |
 | G35 (31) | configurable data | Extend `ExtractClassConstantRecipe` to cover String literals that ARE repeated (currently just numbers), with name heuristics (URL → `ENDPOINT_X`, `.properties` key → `PROP_X`). |
-| F2 (27) | output arguments | New `OutputArgumentToReturnRecipe` — detect `void foo(Result r)` where `r` is mutated, rewrite as `Result foo(...)` that returns a fresh Result. Private methods only. |
+| F2 (27) | output arguments | **Partially shipped** (`5ab68f2`): `ReturnInsteadOfMutateArgRecipe` handles `void foo(List<T> out, ...)` with `.add()`-only mutation. Still to do: `Map`/`Set` accumulators, public visibility, cross-module callers. |
 | T1 (26) | missing tests | New `GenerateTestScaffoldRecipe` — for every public class/method with no test, create `FooTest.java` with an empty-body placeholder test. The agent fills in the body via the T1 brief. |
 | G10 (25) | vertical separation | Extend `MoveDeclarationRecipe` to cover the common patterns the current version misses. |
 

@@ -1,5 +1,11 @@
 # 2026-04-19 — Recipe candidates from the 4-way run
 
+> **Status update (same session):** priority-1 items are landed — commit
+> `5ab68f2` shipped `ReturnInsteadOfMutateArgRecipe` for F2 and fixed the
+> G18 detector. The remaining list below is still open for future sessions.
+
+
+
 Cross-variant pattern analysis of what the agent actually did on the 10-file
 batch. Anything that recurred across ≥3 of the 4 variants is a candidate
 because "the LLM does this the same way every time" is the precise shape of
@@ -21,7 +27,7 @@ preceding comment, nearby identifier).
 Notes: name-suggestion is the hard part. Safe fallback: generate
 `CONSTANT_<line>` if no heuristic fires, let the agent rename later.
 
-### 2. `ReturnInsteadOfMutateArgRecipe` (F2)
+### 2. `ReturnInsteadOfMutateArgRecipe` (F2) — **SHIPPED** (`5ab68f2`)
 **Every variant** converted `void settleOrders(Map<String,Integer> stock, ...)`
 to `Map<String,Integer> settleOrders(...)` returning a new map, and the same
 pattern on `void validate(List<String> errors, ...)`. This is one of the two
@@ -77,7 +83,7 @@ Recurred in InventoryBalancer-style fixes.
 
 ## Recipe improvements (existing)
 
-### A. `MakeMethodStaticRecipe` — improve the G18 **detection**, not the fix
+### A. `MakeMethodStaticRecipe` — improve the G18 **detection**, not the fix — **SHIPPED** (`5ab68f2`)
 Variants rejected G18 on `parseRow`, `execute`, `userIdFor`, `lookupOrNull`,
 `open`, `close`, `activeSessionCount` — **every variant produced the same
 rejection text with the same reason**. The recipe correctly refused all of
