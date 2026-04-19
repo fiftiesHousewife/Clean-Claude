@@ -163,13 +163,19 @@ public final class PromptBuilder {
                           • The range is ≥ 3 statements and a cohesive phase (e.g. a
                             section of a too-long method, a loop body, a guard block).
                           • The change does NOT also convert mutation to return, does NOT
-                            introduce a record return type, does NOT change access
-                            modifiers, and does NOT merge stylistic fixes.
+                            introduce a record return type, and does NOT change access
+                            modifiers.
 
-                        DO NOT use extract_method when:
-                          • The finding is stylistic: G12 FQN, G18 static-modifier, G22
-                            missing-final, G25 repeated-string, J1 unused-import — those
-                            are one-line Edits.
+                        The presence of stylistic findings on the SAME file is NOT a reason
+                        to skip the extraction — do the extraction with the recipe, then fix
+                        the stylistic findings with Edit on the resulting file. Treat the two
+                        independently.
+
+                        DO NOT use extract_method when the finding ITSELF is stylistic:
+                          • G12 FQN, G18 static-modifier, G22 missing-final, G25
+                            repeated-string, J1 unused-import — those are one-line Edits.
+                            (Stylistic findings don't call for extraction on their own; but
+                            their presence on a file doesn't block an unrelated extraction.)
                           • The finding calls for converting an output parameter to a
                             return value (F2) — use Edit, rewrite the signature.
                           • The finding calls for stream conversion (G30 loop→stream) —
