@@ -493,8 +493,8 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapSystemOut(List<SystemOutRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G12, r.className(),
-                        "'%s' is dev-time clutter in production code — delete or route through structured logging".formatted(r.call())))
+                .map(r -> finding(HeuristicCode.G17, r.className(),
+                        "'%s' belongs in a logger, not in business code — move to a structured log call".formatted(r.call())))
                 .toList();
     }
 

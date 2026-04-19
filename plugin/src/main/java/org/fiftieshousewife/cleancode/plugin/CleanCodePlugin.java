@@ -180,7 +180,10 @@ public class CleanCodePlugin implements Plugin<Project> {
     private void configureSpotBugs(Project project) {
         project.getExtensions().configure(SpotBugsExtension.class, sb -> {
             sb.getIgnoreFailures().set(true);
-            sb.getToolVersion().set("4.9.3");
+            // SpotBugs 4.9.7 added support for class file major version 69
+            // (JDK 25). Earlier versions throw IllegalArgumentException
+            // when scanning JDK 25 bytecode.
+            sb.getToolVersion().set("4.9.8");
         });
         project.getTasks().withType(SpotBugsTask.class).configureEach(task -> {
             final var xmlReport = task.getReports().create("xml");
@@ -193,7 +196,6 @@ public class CleanCodePlugin implements Plugin<Project> {
     private void registerCpdTask(Project project, CleanCodeExtension ext) {
         final var cpdConfig = project.getConfigurations().create("cpd", conf -> {
             conf.setDescription("CPD classpath");
-            conf.setVisible(false);
             conf.setCanBeConsumed(false);
         });
 

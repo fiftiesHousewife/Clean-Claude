@@ -9,5 +9,5 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.openrewrite.core)
     implementation(libs.openrewrite.java)
-    runtimeOnly(libs.openrewrite.java21)
+    runtimeOnly(libs.openrewrite.java25)
 }

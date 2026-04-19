@@ -25,7 +25,7 @@ dependencies {
     implementation(libs.openrewrite.java)
     implementation(libs.gson)
     implementation(libs.gradle.tooling.api)
-    runtimeOnly(libs.openrewrite.java21)
+    runtimeOnly(libs.openrewrite.java25)
     runtimeOnly(libs.slf4j.nop)
 }
 

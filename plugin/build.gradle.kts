@@ -32,7 +32,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.spotless.gradle.plugin)
     "bundled"(libs.spotbugs.gradle.plugin)
-    runtimeOnly(libs.openrewrite.java21)
+    runtimeOnly(libs.openrewrite.java25)
 }
 
 tasks.jar {
