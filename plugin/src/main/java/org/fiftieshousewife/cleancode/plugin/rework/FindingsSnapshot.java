@@ -33,6 +33,34 @@ public record FindingsSnapshot(int baseline, int fixed, int introduced, int fina
         return new FindingsSnapshot(keysBefore.size(), fixed, introduced, keysAfter.size());
     }
 
+    /**
+     * Returns the findings from {@code currentFindings} that fall on one of
+     * {@code targetFiles} and do NOT correspond (by code + file + startLine)
+     * to any finding in {@code beforeFindings}. Used by the post-agent
+     * feedback loop to hand the agent a focused "you introduced these" list.
+     */
+    public static List<Finding> introducedFindings(final List<Finding> beforeFindings,
+                                                   final List<Finding> currentFindings,
+                                                   final Set<Path> targetFiles,
+                                                   final Path sandboxProjectDir) {
+        final Set<String> beforeKeys = keysInTargets(beforeFindings, targetFiles, sandboxProjectDir);
+        final java.util.List<Finding> introduced = new java.util.ArrayList<>();
+        for (final Finding finding : currentFindings) {
+            if (finding.sourceFile() == null) {
+                continue;
+            }
+            final Path absolute = absolutise(finding.sourceFile(), sandboxProjectDir);
+            if (!targetFiles.contains(absolute)) {
+                continue;
+            }
+            final String key = finding.code().name() + '\u0000' + absolute + '\u0000' + finding.startLine();
+            if (!beforeKeys.contains(key)) {
+                introduced.add(finding);
+            }
+        }
+        return introduced;
+    }
+
     private static Set<String> keysInTargets(final List<Finding> findings,
                                              final Set<Path> targetFiles,
                                              final Path sandboxProjectDir) {

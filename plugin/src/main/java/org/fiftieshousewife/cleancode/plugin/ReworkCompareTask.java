@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * Runs the rework flow once per {@link RunVariant} across one or many
@@ -44,6 +43,7 @@ public abstract class ReworkCompareTask extends DefaultTask {
     private static final List<RunVariant> ALL_VARIANTS = List.of(
             RunVariant.VANILLA, RunVariant.MCP_GRADLE_ONLY,
             RunVariant.MCP_RECIPES, RunVariant.HARNESS_RECIPES_THEN_AGENT);
+    private static final int DEFAULT_MAX_RETRIES = 1;
 
     @TaskAction
     public void compare() throws IOException {
@@ -145,13 +145,16 @@ public abstract class ReworkCompareTask extends DefaultTask {
                                                              final Path projectRoot,
                                                              final AggregatedReport baselineFindings,
                                                              final GitWorkingTree git) {
+        final int maxRetries = maxRetriesProperty();
+        final ReworkOrchestrator.Options options = ReworkOrchestrator.Options.withFeedbackLoop(
+                this::analyseFresh, maxRetries, sandboxDir);
         final List<ComparisonReport.VariantRun> results = new ArrayList<>();
         int index = 0;
         for (final RunVariant variant : variants) {
             index++;
             getLogger().lifecycle("▶ run {} of {} — {}", index, variants.size(), variant);
             final ReworkReport report = invokeOrchestrator(
-                    orchestrator, targets, projectRoot, baselineFindings, variant, this::analyseFresh);
+                    orchestrator, targets, projectRoot, baselineFindings, variant, options);
             final FindingsSnapshot snapshot = computeSnapshot(baselineFindings, targetSet, sandboxDir, variant);
             results.add(new ComparisonReport.VariantRun(variant, report, captureDiff(git, targets), snapshot));
             restore(git, targets);
@@ -159,11 +162,23 @@ public abstract class ReworkCompareTask extends DefaultTask {
         return results;
     }
 
+    private int maxRetriesProperty() {
+        final Object raw = getProject().findProperty("feedbackRetries");
+        if (raw == null || raw.toString().isBlank()) {
+            return DEFAULT_MAX_RETRIES;
+        }
+        try {
+            return Integer.parseInt(raw.toString().trim());
+        } catch (NumberFormatException e) {
+            throw new GradleException("-PfeedbackRetries must be a non-negative integer; got: " + raw, e);
+        }
+    }
+
     private AggregatedReport analyseFresh() {
         try {
             return SandboxAnalysis.analyse(getProject());
         } catch (FindingSourceException e) {
-            throw new GradleException("post-recipe re-analysis failed: " + e.getMessage(), e);
+            throw new GradleException("re-analysis failed: " + e.getMessage(), e);
         }
     }
 
@@ -185,10 +200,10 @@ public abstract class ReworkCompareTask extends DefaultTask {
                                                    final List<Path> targets, final Path projectRoot,
                                                    final AggregatedReport findings,
                                                    final RunVariant variant,
-                                                   final Supplier<AggregatedReport> postRecipeAnalyser) {
+                                                   final ReworkOrchestrator.Options options) {
         try {
             return orchestrator.reworkClasses(targets, projectRoot, findings,
-                    ReworkMode.AGENT_DRIVEN, variant, postRecipeAnalyser);
+                    ReworkMode.AGENT_DRIVEN, variant, options);
         } catch (ReworkOrchestrator.ReworkException e) {
             throw new GradleException("rework run failed (" + variant + "): " + e.getMessage(), e);
         }

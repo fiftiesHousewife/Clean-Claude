@@ -94,7 +94,7 @@ class ReworkOrchestratorTest {
 
         orchestrator.reworkClasses(List.of(file), projectRoot, baseline,
                 ReworkMode.AGENT_DRIVEN, RunVariant.HARNESS_RECIPES_THEN_AGENT,
-                () -> afterRecipes);
+                ReworkOrchestrator.Options.withFeedbackLoop(() -> afterRecipes, 0, projectRoot));
 
         assertAll(
                 () -> assertTrue(capturedPrompt[0].contains("output arg (still residual)"),
@@ -118,10 +118,62 @@ class ReworkOrchestratorTest {
 
         orchestrator.reworkClasses(List.of(file), projectRoot, baseline,
                 ReworkMode.AGENT_DRIVEN, RunVariant.MCP_RECIPES,
-                () -> { throw new AssertionError("supplier must not be invoked for MCP_RECIPES"); });
+                ReworkOrchestrator.Options.withFeedbackLoop(() -> {
+                    throw new AssertionError("supplier must not be invoked for MCP_RECIPES pre-agent");
+                }, 0, projectRoot));
 
         assertTrue(capturedPrompt[0].contains("make static (baseline)"),
                 "non-harness variants use the baseline findings unchanged");
+    }
+
+    @Test
+    void feedbackLoopHandsIntroducedFindingsBackToAgent()
+            throws ReworkOrchestrator.ReworkException, IOException {
+        final Path file = seedFile("Foo.java", "class Foo {}");
+        final AggregatedReport baseline = reportWith(
+                findingOn("Foo.java", HeuristicCode.G18, 1, "pre-agent finding"));
+        final AggregatedReport afterAgent = reportWith(
+                findingOn("Foo.java", HeuristicCode.G18, 1, "pre-agent finding"),
+                findingOn("Foo.java", HeuristicCode.Ch7_1, 5, "agent introduced a catch-log-continue"));
+        final List<String> prompts = new java.util.ArrayList<>();
+        final AgentRunner capturing = (prompt, timeout) -> {
+            prompts.add(prompt);
+            return AgentResult.textOnly("{\"actions\":[],\"rejected\":[]}");
+        };
+        final ReworkOrchestrator orchestrator = new ReworkOrchestrator(capturing, Duration.ofSeconds(1));
+
+        orchestrator.reworkClasses(List.of(file), projectRoot, baseline,
+                ReworkMode.AGENT_DRIVEN, RunVariant.VANILLA,
+                ReworkOrchestrator.Options.withFeedbackLoop(() -> afterAgent, 1, projectRoot));
+
+        assertAll(
+                () -> assertEquals(2, prompts.size(), "one initial call plus one retry"),
+                () -> assertTrue(prompts.get(1).contains("RETRY PASS"),
+                        "retry prompt carries the retry banner"),
+                () -> assertTrue(prompts.get(1).contains("agent introduced a catch-log-continue"),
+                        "retry prompt lists the introduced finding"),
+                () -> assertFalse(prompts.get(1).contains("pre-agent finding"),
+                        "retry prompt does NOT re-list findings that existed before the agent ran"));
+    }
+
+    @Test
+    void feedbackLoopStopsEarlyWhenNoIntroducedFindings()
+            throws ReworkOrchestrator.ReworkException, IOException {
+        final Path file = seedFile("Foo.java", "class Foo {}");
+        final AggregatedReport baseline = reportWith(
+                findingOn("Foo.java", HeuristicCode.G18, 1, "pre-agent finding"));
+        final int[] invocations = {0};
+        final AgentRunner counting = (prompt, timeout) -> {
+            invocations[0]++;
+            return AgentResult.textOnly("{\"actions\":[],\"rejected\":[]}");
+        };
+        final ReworkOrchestrator orchestrator = new ReworkOrchestrator(counting, Duration.ofSeconds(1));
+
+        orchestrator.reworkClasses(List.of(file), projectRoot, baseline,
+                ReworkMode.AGENT_DRIVEN, RunVariant.VANILLA,
+                ReworkOrchestrator.Options.withFeedbackLoop(() -> baseline, 3, projectRoot));
+
+        assertEquals(1, invocations[0], "no retry when re-analysis finds no introduced findings");
     }
 
     @Test

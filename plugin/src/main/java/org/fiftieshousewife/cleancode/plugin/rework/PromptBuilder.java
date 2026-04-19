@@ -16,8 +16,13 @@ public final class PromptBuilder {
     private PromptBuilder() {}
 
     public static String build(final List<FileTarget> targets, final RunVariant variant) {
+        return build(targets, variant, false);
+    }
+
+    public static String build(final List<FileTarget> targets, final RunVariant variant,
+                               final boolean isRetry) {
         return """
-                You are reworking %d Java file%s to address the findings listed below.
+                %sYou are reworking %d Java file%s to address the findings listed below.
 
                 %s
 
@@ -36,11 +41,23 @@ public final class PromptBuilder {
                 Findings:
                 %s
                 """.formatted(
+                        isRetry ? retryBanner() : "",
                         targets.size(),
                         targets.size() == 1 ? "" : "s",
                         renderTargets(targets),
                         toolsBlock(variant),
                         renderFindings(targets));
+    }
+
+    private static String retryBanner() {
+        return """
+                RETRY PASS — You already edited these files in a prior turn. The clean-code
+                analysis has been re-run against your output, and the findings listed at the
+                bottom of this prompt are NEW — they did not exist before your edits. Fix
+                only those new findings. Do NOT undo your prior work; do NOT hunt for issues
+                not listed.
+
+                """;
     }
 
     private static String renderTargets(final List<FileTarget> targets) {
@@ -53,7 +70,24 @@ public final class PromptBuilder {
                 Stay strictly within the target files listed above. Do NOT Read, Edit, Write,
                 or Glob anywhere under `refactoring/`, `mcp/`, `plugin/`, `build-logic/`, or
                 any other module — those are not part of the fix. If a tool misbehaves, treat
-                that as a signal to switch strategies, not to investigate.""");
+                that as a signal to switch strategies, not to investigate.
+
+                If your fix creates a NEW class or NEW helper method, it is held to the same
+                standards as the code you are fixing. Specifically, do NOT:
+                  • catch an exception to log-and-return (Ch7.1) — rethrow, translate, or
+                    use try-with-resources; bare catch-log-continue is the anti-pattern.
+                  • thread a mutable parameter like `StringBuilder sb` through helpers to
+                    accumulate output (F2) — return a value or use a local buffer.
+                  • guard with `if (x != null)` as control flow (Ch7.2) — use
+                    Objects.requireNonNull at the boundary, or Map.getOrDefault, or an
+                    Optional if the value is genuinely optional.
+                  • write `System.err.println` or `e.printStackTrace()` — sandbox has no
+                    SLF4J on the classpath; append to an existing audit List<String> or
+                    fold the error into the return type.
+                  • use fully-qualified type references inside a method body (G12) — add
+                    the import.
+                  • declare a top-level helper class without at least one companion test
+                    scaffold in `src/test/java` at the matching path.""");
         return block.toString();
     }
 
