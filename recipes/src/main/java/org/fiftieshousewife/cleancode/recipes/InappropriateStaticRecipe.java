@@ -117,7 +117,20 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
         new JavaIsoVisitor<AtomicBoolean>() {
             @Override
             public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean flag) {
-                if ("this".equals(identifier.getSimpleName())) {
+                if ("this".equals(identifier.getSimpleName()) || "super".equals(identifier.getSimpleName())) {
+                    flag.set(true);
+                    return identifier;
+                }
+                // Unqualified reference that resolves to an instance field on
+                // the enclosing class (e.g. `rowsParsed++`, `sessions.get(id)`).
+                // Before this check we only caught literal `this.field` and
+                // unqualified instance method calls — which meant a method that
+                // wrote `this.rowsParsed++` as `rowsParsed++` passed the "no
+                // instance state" test and was a false-positive G18.
+                final org.openrewrite.java.tree.JavaType.Variable fieldType = identifier.getFieldType();
+                if (fieldType != null
+                        && fieldType.getOwner() instanceof org.openrewrite.java.tree.JavaType.FullyQualified
+                        && !fieldType.hasFlags(org.openrewrite.java.tree.Flag.Static)) {
                     flag.set(true);
                 }
                 return identifier;

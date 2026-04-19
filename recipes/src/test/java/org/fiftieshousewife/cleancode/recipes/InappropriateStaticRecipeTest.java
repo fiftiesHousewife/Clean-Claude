@@ -131,6 +131,66 @@ class InappropriateStaticRecipeTest {
     }
 
     @Test
+    void ignoresMethodWritingUnqualifiedInstanceField() {
+        final var recipe = new InappropriateStaticRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class CsvParser {
+                    private int rowsParsed;
+                    public int parseRow(String row) {
+                        int count = 0;
+                        for (int i = 0; i < row.length(); i++) count++;
+                        rowsParsed++;
+                        return count;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "writing `rowsParsed++` without `this.` still counts as instance state");
+    }
+
+    @Test
+    void ignoresMethodReadingUnqualifiedInstanceField() {
+        final var recipe = new InappropriateStaticRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.Map;
+                public class SessionStore {
+                    private final Map<String, String> sessions;
+                    public SessionStore(Map<String, String> sessions) { this.sessions = sessions; }
+                    public String lookupOrNull(String id) {
+                        String normalised = id.trim();
+                        String result = sessions.get(normalised);
+                        return result;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "reading `sessions.get(...)` without `this.` still counts as instance state");
+    }
+
+    @Test
+    void stillFlagsMethodUsingOnlyStaticFieldOfSameClass() {
+        final var recipe = new InappropriateStaticRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Calculator {
+                    private static final int MULTIPLIER = 2;
+                    public int doubled(int x) {
+                        int step = x + 0;
+                        int result = step * MULTIPLIER;
+                        return result;
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "reading a static field of the same class does NOT count as instance state");
+    }
+
+    @Test
     void ignoresClassesImplementingInterfaces() {
         final var recipe = new InappropriateStaticRecipe();
         RecipeTestHelper.runAgainst(recipe, """

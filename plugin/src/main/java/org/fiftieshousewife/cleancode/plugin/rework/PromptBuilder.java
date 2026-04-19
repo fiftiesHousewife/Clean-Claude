@@ -130,6 +130,9 @@ public final class PromptBuilder {
                   • G31 consecutive fluent-builder calls on the same receiver are chained.
                   • G34 `// Phase N:` and `// Step N:` section markers are gone.
                   • Ch7.1 `catch (InterruptedException)` blocks now restore the interrupt flag.
+                  • F2 `private`/package-private `void` methods whose sole mutation was
+                    `list.add(x)` on a List parameter already return `List<T>` instead,
+                    and same-class call sites have been updated.
 
                 Your job is the REMAINING findings — the ones the recipes can't do:
                   • Converting output-argument mutations to return values (F2).

@@ -9,6 +9,7 @@ import org.fiftieshousewife.cleancode.refactoring.MakeMethodStaticRecipe;
 import org.fiftieshousewife.cleancode.refactoring.MathMinCapRecipe;
 import org.fiftieshousewife.cleancode.refactoring.ReplaceForAddNCopiesRecipe;
 import org.fiftieshousewife.cleancode.refactoring.RestoreInterruptFlagRecipe;
+import org.fiftieshousewife.cleancode.refactoring.ReturnInsteadOfMutateArgRecipe;
 import org.fiftieshousewife.cleancode.refactoring.ShortenFullyQualifiedReferencesRecipe;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
@@ -47,6 +48,7 @@ public final class HarnessRecipePass {
             new MathMinCapRecipe(),
             new ReplaceForAddNCopiesRecipe(),
             new CollapseSiblingGuardsRecipe(),
+            new ReturnInsteadOfMutateArgRecipe(),
             new AddFinalRecipe(),
             new InvertNegativeConditionalRecipe(),
             new ShortenFullyQualifiedReferencesRecipe());
