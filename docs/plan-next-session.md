@@ -1,5 +1,62 @@
 # Plan: next session handoff
 
+## 2026-04-19 handoff — 7 deterministic recipes + 4th variant wired, ready to measure
+
+Following the 2026-04-18 cost-reduction session (below), tonight's arc shipped:
+
+- Seven deterministic refactoring recipes derived from the transformation catalogue the agents produced on the 10-file batch: `MakeMethodStaticRecipe`, `RestoreInterruptFlagRecipe`, `DeleteSectionCommentsRecipe`, `ChainConsecutiveBuilderCallsRecipe`, `MathMinCapRecipe`, `ReplaceForAddNCopiesRecipe`, `CollapseSiblingGuardsRecipe`. Each with TDD tests.
+- `HARNESS_RECIPES_THEN_AGENT` wired as a 4th rework variant. The harness applies all deterministic recipes (the 7 above plus `AddFinalRecipe`, `InvertNegativeConditionalRecipe`, `ShortenFullyQualifiedReferencesRecipe`) in-process to every target file BEFORE the agent runs. Agent sees a prompt listing which finding classes are already done and focuses on residuals (F2, F3, G23, stream conversion, naming).
+- `HarnessRecipePass` helper + tests. `ReworkCompareTask.ALL_VARIANTS` now runs all 4 variants by default.
+- Plugin gains refactoring + openrewrite runtime deps.
+- `./gradlew build` green. `plugin:publishToMavenLocal` done. `.claude/settings.json` already allows all the needed tools.
+
+### To measure in the morning
+
+Not yet run: the 4-way cost comparison against the same 10-file batch from commit `a498332`. Expected shape:
+
+```bash
+FILES="sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/AccumulatorFixture.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/GuardFixture.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/OrchestratorFixture.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/CsvParser.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/HttpRetryPolicy.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/InventoryBalancer.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/NotificationDispatcher.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/ReportTemplate.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/SessionStore.java,\
+sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/UserAccountService.java"
+./gradlew -PcleanCodeSelfApply=true :sandbox:reworkCompare -Pfiles="$FILES"
+```
+
+This runs all 4 variants. Expected cost: previous 3-way was $9.19 (wall 23m 52s). Adding the 4th variant adds roughly another $1–$3 depending on how much the agent has to do after the harness pass strips the easy findings. Full 4-way probably $11–$14.
+
+### Hypotheses to test
+
+1. **HARNESS_RECIPES_THEN_AGENT beats MCP_RECIPES on cost** by 20–40% because the agent has fewer findings to address per file (deterministic recipes land the G18/G29/G31/G34 cluster upfront).
+2. **Quality matches** because the deterministic transforms are exactly what the agent would have done, minus the variance.
+3. **Duration drops more than cost** because fewer turns = less wall time.
+
+### If the 4th variant underperforms, known risks
+
+- **Recipes may land edits the agent wouldn't have** — e.g. `MakeMethodStaticRecipe` on a method the agent would have judged "doesn't need to be static". The prompt warns the agent these are done. If the diff quality is worse, inspect which recipe landed the contentious change.
+- **Recipe interactions** — none tested pairwise. The pass runs recipes sequentially to fixpoint per file; if Recipe A's output breaks Recipe B's preconditions we may see missed opportunities.
+- **Comparison report shape** — the harness pass adds "HarnessRecipePass" pseudo-actions to the action list. The comparison renders them in the usual Actions section; the existing `cost per action` metric is therefore diluted (more actions, same cost). Treat that metric skeptically for this variant.
+
+### Commits tonight
+
+- `f12af1e` Four deterministic recipes (MakeMethodStatic, RestoreInterruptFlag, DeleteSectionComments, ChainConsecutiveBuilderCalls)
+- `<next>` Three more recipes (MathMinCap, ReplaceForAddNCopies, CollapseSiblingGuards) + JavaTemplate/cursor idioms noted in commit body
+- `<last>` Wire HARNESS_RECIPES_THEN_AGENT 4th variant
+
+### OpenRewrite idioms learned (for future recipes)
+
+1. **Never construct `new Cursor(null, node)` for `printTrimmed`** — it has no SourceFile ancestor so the printer throws `IllegalStateException`. Use the visitor's own `getCursor()`, thread it into helpers.
+2. **When `template.apply` will return a different statement type than the one being visited** (e.g. replacing `J.If` with `J.MethodInvocation`), use `JavaVisitor<ExecutionContext>` not `JavaIsoVisitor` — the iso visitor's return type is fixed to the input type, triggering `ClassCastException`.
+3. **To construct a standalone `J.Binary` expression without hand-building the Space/Markers**, use the variable-declaration-holder trick: `boolean __tmp__ = #{any(boolean)} || #{any(boolean)};` via JavaTemplate, then pull `.getInitializer()` off the VariableDeclarations. Remember to strip prefix whitespace via `.withPrefix(Space.EMPTY)`.
+4. **JavaTemplate's `contextSensitive()` is almost always needed** — without it, it defaults to standalone parsing and loses ambient imports / type info.
+
+---
+
 ## 2026-04-18 handoff — rework-harness fixes, MCP extract_method, 4-way variant
 
 The three-way harness run has been iterated three times. This session fixed real bugs in `extract_method`, the MCP server, and the prompt. The next session should (1) run the three-way one more time to validate, (2) implement the 4th variant (HARNESS_RECIPES_THEN_AGENT), (3) add soak testing.
