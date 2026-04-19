@@ -2,6 +2,7 @@ package io.github.fiftieshousewife.cleancode.refactoring;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.github.fiftieshousewife.cleancode.refactoring.support.ModifierEditor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -37,7 +38,7 @@ public class ReduceVisibilityRecipe extends Recipe {
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
-                if (!isPrivate(m) || m.getBody() == null) {
+                if (!ModifierEditor.has(m.getModifiers(), J.Modifier.Type.Private) || m.getBody() == null) {
                     return m;
                 }
 
@@ -45,9 +46,8 @@ public class ReduceVisibilityRecipe extends Recipe {
                     return m;
                 }
 
-                final List<J.Modifier> withoutPrivate = m.getModifiers().stream()
-                        .filter(mod -> mod.getType() != J.Modifier.Type.Private)
-                        .toList();
+                final List<J.Modifier> withoutPrivate = ModifierEditor.remove(
+                        m.getModifiers(), J.Modifier.Type.Private);
 
                 final J.MethodDeclaration updated = m.withModifiers(withoutPrivate);
                 if (m.getReturnTypeExpression() != null) {
@@ -60,7 +60,4 @@ public class ReduceVisibilityRecipe extends Recipe {
         };
     }
 
-    private static boolean isPrivate(J.MethodDeclaration m) {
-        return m.getModifiers().stream().anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
-    }
 }

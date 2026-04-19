@@ -1,5 +1,6 @@
 package io.github.fiftieshousewife.cleancode.refactoring;
 
+import io.github.fiftieshousewife.cleancode.refactoring.support.ModifierEditor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -89,16 +90,13 @@ public class AddFinalRecipe extends Recipe {
     }
 
     private static boolean isField(J.VariableDeclarations varDecls) {
-        return varDecls.getModifiers().stream()
-                .anyMatch(m -> m.getType() == J.Modifier.Type.Static
-                        || m.getType() == J.Modifier.Type.Private
-                        || m.getType() == J.Modifier.Type.Protected
-                        || m.getType() == J.Modifier.Type.Public);
+        return ModifierEditor.hasAny(varDecls.getModifiers(),
+                J.Modifier.Type.Static, J.Modifier.Type.Private,
+                J.Modifier.Type.Protected, J.Modifier.Type.Public);
     }
 
     private static boolean isAlreadyFinal(J.VariableDeclarations varDecls) {
-        return varDecls.getModifiers().stream()
-                .anyMatch(m -> m.getType() == J.Modifier.Type.Final);
+        return ModifierEditor.has(varDecls.getModifiers(), J.Modifier.Type.Final);
     }
 
     private static boolean isIncrementOrDecrement(J.Unary unary) {
@@ -109,18 +107,8 @@ public class AddFinalRecipe extends Recipe {
     }
 
     private static J.VariableDeclarations addFinalModifier(J.VariableDeclarations varDecls) {
-        final var finalMod = new J.Modifier(
-                org.openrewrite.Tree.randomId(),
-                Space.EMPTY,
-                org.openrewrite.marker.Markers.EMPTY,
-                null,
-                J.Modifier.Type.Final,
-                java.util.List.of());
-
-        final var newModifiers = new java.util.ArrayList<>(varDecls.getModifiers());
-        newModifiers.add(finalMod);
-
-        final J.VariableDeclarations withMod = varDecls.withModifiers(newModifiers);
+        final J.VariableDeclarations withMod = varDecls.withModifiers(
+                ModifierEditor.append(varDecls.getModifiers(), J.Modifier.Type.Final));
 
         if (varDecls.getTypeExpression() != null
                 && varDecls.getTypeExpression().getPrefix().getWhitespace().isEmpty()) {
