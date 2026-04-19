@@ -38,6 +38,13 @@ public final class PromptBuilder {
                                 "options": {...}, "why": "<one sentence>"}]
                 }
 
+                When a finding's skill lists more than one remediation path (e.g. Ch7.1 →
+                rethrow / translate / try-with-resources / retry), prefix the `why` with
+                `<code>:<choice> — ` so downstream audits can tell which path you took
+                without reading the diff. Example: `"why": "Ch7.1:translate — caller
+                already handles DomainException"`. Omit the prefix when the code has a
+                single canonical fix.
+
                 Findings:
                 %s
                 """.formatted(

@@ -107,6 +107,8 @@ public final class FixBriefGenerator {
         }
         sb.append('\n');
 
+        appendNewClassChecklist(sb);
+
         final Map<HeuristicCode, List<Finding>> byCode = new LinkedHashMap<>();
         findings.stream()
                 .sorted(Comparator.comparing((Finding f) -> f.severity().ordinal())
@@ -146,6 +148,29 @@ public final class FixBriefGenerator {
         } catch (IOException e) {
             return List.of();
         }
+    }
+
+    private static void appendNewClassChecklist(final StringBuilder sb) {
+        sb.append("## If you create new classes\n");
+        sb.append("Any `.java` file you create as part of this fix is held to the same standards the "
+                + "plugin enforces on existing code. Before you commit, verify:\n\n");
+        sb.append("- **Companion test.** Every new top-level class under `src/main/java` needs a matching "
+                + "test class at `src/test/java/<same-package>/<ClassName>Test.java` covering at least the "
+                + "public surface you added.\n");
+        sb.append("- **No catch-log-continue (Ch7.1).** Do not paste `catch (… e) { log.error(…); "
+                + "return null/empty/false; }` into extracted helpers. Translate the exception, rethrow, "
+                + "or let it propagate — never swallow.\n");
+        sb.append("- **Imports, not FQNs (G12).** New files should import types, not reference them by "
+                + "fully qualified name inline.\n");
+        sb.append("- **Narrow visibility by default.** Prefer `final class` with package-private methods. "
+                + "Widen to `public`/`protected` only when a caller in another package actually needs it.\n");
+        sb.append("- **No StringBuilder threading (F2 + naming).** Do not add a `StringBuilder sb` "
+                + "parameter and mutate it inside the helper. Return the `String` (or a `List<String>` "
+                + "the caller joins) instead. If the helper genuinely needs a builder, declare it "
+                + "locally and give it a name that describes the content (`html`, `markdown`, `buffer`).\n");
+        sb.append("- **Fail fast on null (Ch7.2).** Use `Objects.requireNonNull` at method entry rather "
+                + "than `if (x != null)` as control flow.\n");
+        sb.append('\n');
     }
 
     private static boolean triggersMetricSqueezingWarning(final List<Finding> findings) {

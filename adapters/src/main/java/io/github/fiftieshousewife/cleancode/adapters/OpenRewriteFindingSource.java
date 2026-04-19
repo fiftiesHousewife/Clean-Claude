@@ -50,7 +50,7 @@ public class OpenRewriteFindingSource implements FindingSource {
             HeuristicCode.G4, HeuristicCode.G8,
             HeuristicCode.G10, HeuristicCode.G11, HeuristicCode.G14,
             HeuristicCode.G16, HeuristicCode.G19,
-            HeuristicCode.G23, HeuristicCode.G25, HeuristicCode.G26,
+            HeuristicCode.G23, HeuristicCode.G24, HeuristicCode.G25, HeuristicCode.G26,
             HeuristicCode.G28, HeuristicCode.G29,
             HeuristicCode.G30, HeuristicCode.G33, HeuristicCode.G34, HeuristicCode.G36,
             HeuristicCode.J2, HeuristicCode.J3,
@@ -159,7 +159,8 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new SwallowedExceptionRecipe(),
                 new InconsistentReturnRecipe(),
                 new SuppressedWarningRecipe(),
-                new FullyQualifiedReferenceRecipe());
+                new FullyQualifiedReferenceRecipe(),
+                new StringBuilderThreadingRecipe());
     }
 
     @SuppressWarnings("unchecked")
@@ -226,8 +227,22 @@ public class OpenRewriteFindingSource implements FindingSource {
             case InconsistentReturnRecipe r -> mapInconsistentReturn(r.collectedRows());
             case SuppressedWarningRecipe r -> mapSuppressedWarning(r.collectedRows());
             case FullyQualifiedReferenceRecipe r -> mapFullyQualifiedReferences(r.collectedRows());
+            case StringBuilderThreadingRecipe r -> mapStringBuilderThreading(r.collectedRows());
             default -> List.of();
         };
+    }
+
+    private List<Finding> mapStringBuilderThreading(List<StringBuilderThreadingRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> switch (r.kind()) {
+                    case NAMING -> finding(HeuristicCode.G24, r.className(),
+                            "Local StringBuilder named '%s' in '%s' — name it after what it builds (html, markdown, buffer)"
+                                    .formatted(r.variableName(), r.methodName()));
+                    case THREADING -> finding(HeuristicCode.F2, r.className(),
+                            "Method '%s' mutates StringBuilder parameter '%s' via .append() — return the string instead"
+                                    .formatted(r.methodName(), r.variableName()));
+                })
+                .toList();
     }
 
     private List<Finding> mapFullyQualifiedReferences(List<FullyQualifiedReferenceRecipe.Row> rows) {

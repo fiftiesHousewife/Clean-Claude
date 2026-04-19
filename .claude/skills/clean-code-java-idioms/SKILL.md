@@ -283,6 +283,99 @@ representation with I/O operations. Always use `java.nio.file`.
 
 ---
 
+## StringBuilder — when to use, when not to, what to name it
+
+`StringBuilder` has a narrow role. Most Java string construction that
+looks like it needs one actually doesn't, and the cases that do usually
+use the wrong name.
+
+### Positive patterns
+
+**Hot-path loops accumulating ≥ 1KB.** Building a large response body,
+a CSV stream, or a bulk SQL statement inside a loop that runs many
+times. Here, the allocator pressure of repeated `+=` concatenation is
+real. Declare the builder locally and name it after what it contains.
+
+```java
+final StringBuilder html = new StringBuilder(pages.size() * 512);
+for (final Page page : pages) {
+    html.append("<section>").append(page.render()).append("</section>");
+}
+return html.toString();
+```
+
+**Short-lived per-call assembly.** Same rule — local, descriptive name,
+never a parameter.
+
+### Negative patterns
+
+**Don't name it `sb`.** The plugin's detection recipe flags every local
+`StringBuilder sb` / `StringBuffer sb`. Name it after the content:
+`html`, `markdown`, `csv`, `buffer`, `message`. `sb` is an encoding of
+the type, not a description of the value (see N6: avoid encodings).
+
+**Don't thread a `StringBuilder` parameter through helpers.** Passing
+a `StringBuilder` into a helper that calls `.append()` on it is the
+output-argument anti-pattern (F2) in disguise. Two fixes:
+
+```java
+// Bad — threaded output argument
+private void renderRow(StringBuilder out, Row row) {
+    out.append(row.label()).append(": ").append(row.value());
+}
+
+// Good — return the value
+private String renderRow(Row row) {
+    return row.label() + ": " + row.value();
+}
+
+// Also good when there are many pieces — return a List, join at the top
+private List<String> renderLines(Section section) {
+    return section.items().stream()
+            .map(this::renderRow)
+            .toList();
+}
+```
+
+**Don't reach for `StringBuilder` when a text block works.** For mostly
+literal content with a few interpolations, prefer
+`"""<text-block>""".formatted(...)` — it reads as the thing it produces.
+
+```java
+// Bad — every reader has to mentally execute the appends
+final StringBuilder sb = new StringBuilder();
+sb.append("<table>\n");
+sb.append("  <tr><td>").append(name).append("</td></tr>\n");
+sb.append("</table>\n");
+return sb.toString();
+
+// Good — the shape of the output is visible in the source
+return """
+        <table>
+          <tr><td>%s</td></tr>
+        </table>
+        """.formatted(name);
+```
+
+**Don't build a sub-10-line constant with `StringBuilder`.** Plain `+`
+concatenation is fine and the JIT fuses it. The builder adds noise
+without saving anything.
+
+### Decision rule
+
+1. Content is mostly literal with ≤ 3 interpolations → text block.
+2. Content is a fixed list of lines with no branching →
+   `String.join("\n", ...)` over a `List<String>`.
+3. Content is built across branching logic in one method → local
+   builder with a descriptive name (never `sb`).
+4. Content is built by helpers collaborating through an accumulator →
+   refactor each helper to return its piece; caller joins them.
+
+Only pattern 3 legitimately uses `StringBuilder`. Patterns 1, 2, and 4
+are the ones the detection recipe is catching.
+
+---
+
 ## Do not
 
 - Name a constant after its value: `FIFTY = 50`, `THREE = 3`,

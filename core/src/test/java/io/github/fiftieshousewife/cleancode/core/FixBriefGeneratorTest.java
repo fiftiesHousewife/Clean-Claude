@@ -174,6 +174,30 @@ class FixBriefGeneratorTest {
     }
 
     @Test
+    void briefIncludesNewClassChecklistForEveryFile() throws IOException {
+        final AggregatedReport report = reportWith(
+                Finding.at(HeuristicCode.G22, "core/src/main/java/com/example/Foo.java",
+                        10, 10, "missing final", Severity.WARNING, Confidence.HIGH, "checkstyle", "r"));
+
+        FixBriefGenerator.generate(report, outputDir);
+
+        final String content = Files.readString(outputDir.resolve("Foo.md"));
+        assertAll(
+                () -> assertTrue(content.contains("## If you create new classes"),
+                        "every brief must carry the new-class checklist header"),
+                () -> assertTrue(content.contains("Companion test"),
+                        "checklist must require a companion test for any new top-level class"),
+                () -> assertTrue(content.contains("Ch7.1"),
+                        "checklist must call out catch-log-continue (Ch7.1)"),
+                () -> assertTrue(content.contains("G12"),
+                        "checklist must call out FQN use instead of imports (G12)"),
+                () -> assertTrue(content.contains("StringBuilder"),
+                        "checklist must call out StringBuilder threading (F2)"),
+                () -> assertTrue(content.contains("package-private"),
+                        "checklist must prefer narrow visibility by default"));
+    }
+
+    @Test
     void indexLinksEveryBrief() throws IOException {
         final AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.G22, "core/src/main/java/com/example/Foo.java",

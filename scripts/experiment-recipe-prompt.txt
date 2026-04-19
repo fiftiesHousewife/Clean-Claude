@@ -10,7 +10,7 @@ Step 4: Run the analysis one last time and report the remaining count.
 
 Protocol:
 - Run `./gradlew :<module>:test` after each batch.
-- Commit after each recipe and after each file fix. Message includes the codes addressed.
+- Commit after each recipe and after each file fix. Header format: `fix: <ClassName> (<code>:<choice>, …)`. The `:<choice>` suffix records which remediation path you picked when a skill offered more than one — e.g. `fix: PetController (Ch7.1:translate, G30:extract)`. Omit the suffix when the code has only one canonical fix (or when a recipe ran deterministically). Put a short body below the header explaining each non-trivial choice: `# choice: Ch7.1 → translated to DomainException; skill also lists rethrow and TWR, picked translate because the caller already handles DomainException`.
 - Stop only when analyseCleanCode reports zero non-suppressed findings, OR when every remaining finding is documented as intentionally skipped.
 
 Anti-goal:

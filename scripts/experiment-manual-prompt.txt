@@ -6,7 +6,7 @@ Protocol:
 - For every brief, invoke the Agent tool whose prompt IS the brief. One agent per brief. You (the driver) MUST NOT call Edit or Write on source files. The only file you may Write is the final summary described in the Exit protocol. If a finding requires something an agent cannot do (e.g. cross-file refactor), record it in the summary as "skipped: driver-only change" rather than editing it yourself.
 - Do NOT use refactoring module recipes — each agent fixes its findings manually.
 - Run `./gradlew :<module>:test` after each batch of agent commits.
-- Commit after each file is done. Message format: "fix: <ClassName> (<codes>)".
+- Commit after each file is done. Message format: `fix: <ClassName> (<code>:<choice>, <code>:<choice>, …)`. The `:<choice>` suffix records which remediation path you picked when a skill offered more than one — e.g. `fix: PetController (Ch7.1:translate, G30:extract)`. Omit the suffix when the code has only one canonical fix. Put a short body below the header explaining each non-trivial choice: `# choice: Ch7.1 → translated to DomainException; skill also lists rethrow and TWR, picked translate because the caller already handles DomainException`.
 - Stop only when `./gradlew analyseCleanCode` reports zero non-suppressed findings, OR when every remaining finding is documented in a final summary as "intentionally skipped because <reason>".
 
 Anti-goal:
