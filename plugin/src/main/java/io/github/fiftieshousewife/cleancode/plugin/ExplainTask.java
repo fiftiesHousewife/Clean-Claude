@@ -5,11 +5,13 @@ import io.github.fiftieshousewife.cleancode.core.SkillPathRegistry;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@DisableCachingByDefault(because = "prints a skill-file lookup to stdout; pure side-effect with no cacheable output")
 public abstract class ExplainTask extends DefaultTask {
 
     private String finding = "";

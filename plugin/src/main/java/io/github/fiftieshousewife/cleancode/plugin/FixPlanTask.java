@@ -5,10 +5,12 @@ import io.github.fiftieshousewife.cleancode.core.FixBriefGenerator;
 import io.github.fiftieshousewife.cleancode.core.JsonReportReader;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.nio.file.Path;
 import java.util.List;
 
+@DisableCachingByDefault(because = "reads findings.json and walks project source via convention paths resolved at runtime")
 public abstract class FixPlanTask extends DefaultTask {
 
     @TaskAction

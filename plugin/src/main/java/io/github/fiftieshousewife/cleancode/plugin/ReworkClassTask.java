@@ -9,6 +9,7 @@ import io.github.fiftieshousewife.cleancode.plugin.rework.RunVariant;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,6 +26,7 @@ import java.nio.file.Path;
  * {@code rework} sub-package — one user-facing task, no proliferation
  * of shell scripts.
  */
+@DisableCachingByDefault(because = "invokes claude -p against the live project; every run is a fresh outbound call")
 public abstract class ReworkClassTask extends DefaultTask {
 
     private static final String FINDINGS_JSON = "reports/clean-code/findings.json";

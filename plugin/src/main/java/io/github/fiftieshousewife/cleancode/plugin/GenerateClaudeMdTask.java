@@ -5,10 +5,12 @@ import io.github.fiftieshousewife.cleancode.core.JsonReportReader;
 import io.github.fiftieshousewife.cleancode.core.AggregatedReport;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.nio.file.Path;
 import java.util.List;
 
+@DisableCachingByDefault(because = "writes CLAUDE.md using findings.json and the baseline; reads via convention paths resolved at runtime")
 public abstract class GenerateClaudeMdTask extends DefaultTask {
 
     @TaskAction

@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@DisableCachingByDefault(because = "aggregates every submodule's latest findings.json via convention paths resolved at runtime")
 public abstract class SummaryReportTask extends DefaultTask {
 
     private record Counts(int errors, int warnings, int info) {

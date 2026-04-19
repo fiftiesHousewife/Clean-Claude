@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@DisableCachingByDefault(because = "rewrites gradle/libs.versions.toml in place from Ben-Manes dependency updates JSON")
 public abstract class UpdateVersionCatalogTask extends DefaultTask {
 
     private static final Pattern VERSION_REF_LINE =

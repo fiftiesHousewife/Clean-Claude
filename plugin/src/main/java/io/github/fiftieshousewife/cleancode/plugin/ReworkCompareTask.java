@@ -14,6 +14,7 @@ import io.github.fiftieshousewife.cleancode.plugin.rework.RunVariant;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,6 +36,7 @@ import java.util.Set;
  * {@code -Pfiles=<csv>} for a batch. Refuses to run unless every target
  * lives under {@code sandbox/} — the task mutates files in place.
  */
+@DisableCachingByDefault(because = "runs the rework harness against live sandbox files with outbound claude -p calls; never cacheable")
 public abstract class ReworkCompareTask extends DefaultTask {
 
     private static final String SANDBOX_PREFIX = "sandbox/";

@@ -8,11 +8,13 @@ import io.github.fiftieshousewife.cleancode.core.HtmlReportWriter;
 import io.github.fiftieshousewife.cleancode.core.JsonReportWriter;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+@DisableCachingByDefault(because = "reads every module's findings via convention paths resolved at runtime, not declared task inputs")
 public abstract class AnalyseTask extends DefaultTask {
 
     @TaskAction

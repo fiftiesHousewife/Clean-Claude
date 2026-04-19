@@ -5,9 +5,11 @@ import io.github.fiftieshousewife.cleancode.core.BaselineManager;
 import io.github.fiftieshousewife.cleancode.core.JsonReportReader;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.nio.file.Path;
 
+@DisableCachingByDefault(because = "one-shot baseline writer reading the latest findings.json; no stable cache key")
 public abstract class BaselineTask extends DefaultTask {
 
     @TaskAction
