@@ -26,9 +26,13 @@ dependencies {
     implementation(project(":adapters"))
     implementation(project(":claude-review"))
     implementation(project(":annotations"))
+    implementation(project(":refactoring"))
+    implementation(libs.openrewrite.core)
+    implementation(libs.openrewrite.java)
     implementation(libs.gson)
     implementation(libs.spotless.gradle.plugin)
     "bundled"(libs.spotbugs.gradle.plugin)
+    runtimeOnly(libs.openrewrite.java21)
 }
 
 tasks.jar {

@@ -37,7 +37,8 @@ public abstract class ReworkCompareTask extends DefaultTask {
     private static final String FINDINGS_JSON = "reports/clean-code/findings.json";
     private static final String OUTPUT_DIR = "reports/clean-code";
     private static final List<RunVariant> ALL_VARIANTS = List.of(
-            RunVariant.VANILLA, RunVariant.MCP_GRADLE_ONLY, RunVariant.MCP_RECIPES);
+            RunVariant.VANILLA, RunVariant.MCP_GRADLE_ONLY,
+            RunVariant.MCP_RECIPES, RunVariant.HARNESS_RECIPES_THEN_AGENT);
 
     @TaskAction
     public void compare() throws IOException {

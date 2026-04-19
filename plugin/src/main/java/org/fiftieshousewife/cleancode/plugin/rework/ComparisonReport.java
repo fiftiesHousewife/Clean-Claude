@@ -123,6 +123,7 @@ public final class ComparisonReport {
             case VANILLA -> "vanilla";
             case MCP_GRADLE_ONLY -> "mcp gradle only";
             case MCP_RECIPES -> "mcp + recipes";
+            case HARNESS_RECIPES_THEN_AGENT -> "harness + agent";
         };
     }
 }

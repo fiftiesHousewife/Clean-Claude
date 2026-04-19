@@ -76,7 +76,42 @@ public final class PromptBuilder {
             case VANILLA -> vanillaBlock();
             case MCP_GRADLE_ONLY -> gradleOnlyBlock();
             case MCP_RECIPES -> recipesBlock();
+            case HARNESS_RECIPES_THEN_AGENT -> harnessRecipesThenAgentBlock();
         };
+    }
+
+    private static String harnessRecipesThenAgentBlock() {
+        return """
+                IMPORTANT CONTEXT — this file has ALREADY been processed by the deterministic
+                refactoring recipes before you received it. Expect that the following classes
+                of change are already done and do NOT need to be addressed:
+                  • G18 methods with no instance state have already been made static.
+                  • G29 sibling guard clauses with identical bodies have already been merged.
+                  • G30/G33 `if (v > CAP) v = CAP;` idioms are already `Math.min(v, CAP);`.
+                  • G30 retry-style `for` loops that append a constant have already been
+                    rewritten as `list.addAll(Collections.nCopies(n, x));`.
+                  • G31 consecutive fluent-builder calls on the same receiver are chained.
+                  • G34 `// Phase N:` and `// Step N:` section markers are gone.
+                  • Ch7.1 `catch (InterruptedException)` blocks now restore the interrupt flag.
+
+                Your job is the REMAINING findings — the ones the recipes can't do:
+                  • Converting output-argument mutations to return values (F2).
+                  • Splitting flag-argument methods that dispatch on a boolean (F3).
+                  • Replacing if/else-if string ladders with enums (G23).
+                  • Converting imperative loops to streams where the body does more than
+                    a constant add (G30).
+                  • Naming extracted helpers, choosing record shapes, and any finding
+                    that is a judgement call.
+
+                Available MCP tools (via the `cleancode-refactoring` server): extract_methods,
+                extract_method, verify_build, run_tests, format. Same preconditions as the
+                recipes variant: extract_methods when ≥2 extractions in one file.
+
+                If extract_method / extract_methods returns ANY error, fall back to Edit
+                immediately. DO NOT diagnose the recipe. DO NOT read under refactoring/,
+                mcp/, plugin/, build-logic/.
+
+                DO NOT commit or push.""";
     }
 
     private static String vanillaBlock() {
