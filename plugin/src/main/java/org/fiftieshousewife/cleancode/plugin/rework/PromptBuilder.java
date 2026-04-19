@@ -83,8 +83,11 @@ public final class PromptBuilder {
     private static String harnessRecipesThenAgentBlock() {
         return """
                 IMPORTANT CONTEXT — this file has ALREADY been processed by the deterministic
-                refactoring recipes before you received it. Expect that the following classes
-                of change are already done and do NOT need to be addressed:
+                refactoring recipes before you received it. The Findings section at the bottom
+                of this prompt has been RE-GENERATED after the recipe pass, so every finding
+                listed is still live. You will not see findings for changes the recipes
+                already made; do not spend turns looking for work that isn't there. The
+                following classes of change are done already:
                   • G18 methods with no instance state have already been made static.
                   • G29 sibling guard clauses with identical bodies have already been merged.
                   • G30/G33 `if (v > CAP) v = CAP;` idioms are already `Math.min(v, CAP);`.

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * Runs the rework flow once per {@link RunVariant} across one or many
@@ -149,12 +150,21 @@ public abstract class ReworkCompareTask extends DefaultTask {
         for (final RunVariant variant : variants) {
             index++;
             getLogger().lifecycle("▶ run {} of {} — {}", index, variants.size(), variant);
-            final ReworkReport report = invokeOrchestrator(orchestrator, targets, projectRoot, baselineFindings, variant);
+            final ReworkReport report = invokeOrchestrator(
+                    orchestrator, targets, projectRoot, baselineFindings, variant, this::analyseFresh);
             final FindingsSnapshot snapshot = computeSnapshot(baselineFindings, targetSet, sandboxDir, variant);
             results.add(new ComparisonReport.VariantRun(variant, report, captureDiff(git, targets), snapshot));
             restore(git, targets);
         }
         return results;
+    }
+
+    private AggregatedReport analyseFresh() {
+        try {
+            return SandboxAnalysis.analyse(getProject());
+        } catch (FindingSourceException e) {
+            throw new GradleException("post-recipe re-analysis failed: " + e.getMessage(), e);
+        }
     }
 
     private FindingsSnapshot computeSnapshot(final AggregatedReport baseline,
@@ -174,10 +184,11 @@ public abstract class ReworkCompareTask extends DefaultTask {
     private static ReworkReport invokeOrchestrator(final ReworkOrchestrator orchestrator,
                                                    final List<Path> targets, final Path projectRoot,
                                                    final AggregatedReport findings,
-                                                   final RunVariant variant) {
+                                                   final RunVariant variant,
+                                                   final Supplier<AggregatedReport> postRecipeAnalyser) {
         try {
             return orchestrator.reworkClasses(targets, projectRoot, findings,
-                    ReworkMode.AGENT_DRIVEN, variant);
+                    ReworkMode.AGENT_DRIVEN, variant, postRecipeAnalyser);
         } catch (ReworkOrchestrator.ReworkException e) {
             throw new GradleException("rework run failed (" + variant + "): " + e.getMessage(), e);
         }

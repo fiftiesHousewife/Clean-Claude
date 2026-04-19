@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Java API for reworking Java classes via a single {@code claude -p}
@@ -49,10 +50,26 @@ public final class ReworkOrchestrator {
                                       final AggregatedReport report, final ReworkMode mode,
                                       final RunVariant variant)
             throws ReworkException {
+        return reworkClasses(files, projectRoot, report, mode, variant, null);
+    }
+
+    /**
+     * Re-analysis variant: after the harness recipe pass mutates the target
+     * files, {@code postRecipeAnalyser} is invoked and the fresh findings are
+     * used to build the agent's prompt. Only consulted for
+     * {@link RunVariant#HARNESS_RECIPES_THEN_AGENT}; ignored (or null) for
+     * every other variant. The supplier may throw any runtime exception —
+     * it is wrapped as a {@link ReworkException}.
+     */
+    public ReworkReport reworkClasses(final List<Path> files, final Path projectRoot,
+                                      final AggregatedReport report, final ReworkMode mode,
+                                      final RunVariant variant,
+                                      final Supplier<AggregatedReport> postRecipeAnalyser)
+            throws ReworkException {
         final List<FileTarget> targets = toTargets(files, projectRoot, report);
         return switch (mode) {
             case SUGGEST_ONLY -> suggestOnly(targets);
-            case AGENT_DRIVEN -> agentDriven(targets, variant);
+            case AGENT_DRIVEN -> agentDriven(targets, files, projectRoot, variant, postRecipeAnalyser);
         };
     }
 
@@ -75,18 +92,38 @@ public final class ReworkOrchestrator {
                 List.of(), List.of(), Optional.empty(), body);
     }
 
-    private ReworkReport agentDriven(final List<FileTarget> targets, final RunVariant variant)
+    private ReworkReport agentDriven(final List<FileTarget> targets, final List<Path> files,
+                                     final Path projectRoot, final RunVariant variant,
+                                     final Supplier<AggregatedReport> postRecipeAnalyser)
             throws ReworkException {
         final HarnessRecipePass.PassSummary harnessPass = maybeRunHarnessRecipes(targets, variant);
-        final String prompt = PromptBuilder.build(targets, variant);
+        final List<FileTarget> promptTargets =
+                refreshTargetsAfterRecipePass(targets, files, projectRoot, variant, postRecipeAnalyser);
+        final String prompt = PromptBuilder.build(promptTargets, variant);
         final AgentResult result = runAgent(prompt);
         final AgentResponseParser.Parsed parsed = AgentResponseParser.parse(result.text());
-        final List<Suggestion> aggregated = aggregateSuggestions(targets);
+        final List<Suggestion> aggregated = aggregateSuggestions(promptTargets);
         final List<AgentAction> combined = prefixHarnessActions(harnessPass, parsed.actions());
         final String body = CommitMessageFormatter.format(
                 combined, parsed.rejected(), aggregated, result.usage());
         return new ReworkReport(paths(targets), ReworkMode.AGENT_DRIVEN, aggregated,
                 combined, parsed.rejected(), result.usage(), body);
+    }
+
+    private static List<FileTarget> refreshTargetsAfterRecipePass(
+            final List<FileTarget> originalTargets, final List<Path> files, final Path projectRoot,
+            final RunVariant variant, final Supplier<AggregatedReport> postRecipeAnalyser)
+            throws ReworkException {
+        if (variant != RunVariant.HARNESS_RECIPES_THEN_AGENT || postRecipeAnalyser == null) {
+            return originalTargets;
+        }
+        try {
+            final AggregatedReport fresh = postRecipeAnalyser.get();
+            return toTargets(files, projectRoot, fresh);
+        } catch (RuntimeException e) {
+            throw new ReworkException(
+                    "post-recipe re-analysis failed: " + e.getMessage(), e);
+        }
     }
 
     private static HarnessRecipePass.PassSummary maybeRunHarnessRecipes(

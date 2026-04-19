@@ -19,6 +19,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReworkOrchestratorTest {
@@ -73,6 +74,54 @@ class ReworkOrchestratorTest {
                 () -> assertEquals("ExtractMethodRecipe", report.actionsTaken().getFirst().recipe()),
                 () -> assertTrue(report.commitMessageBody().contains("demonstrates the round trip"),
                         "agent's why is echoed into the commit message body"));
+    }
+
+    @Test
+    void harnessVariantUsesPostRecipeFindingsInPromptNotBaseline()
+            throws ReworkOrchestrator.ReworkException, IOException {
+        final Path file = seedFile("Foo.java", "class Foo { void x() {} }");
+        final AggregatedReport baseline = reportWith(
+                findingOn("Foo.java", HeuristicCode.G18, 1, "make static (baseline)"),
+                findingOn("Foo.java", HeuristicCode.F2, 5, "output arg (baseline)"));
+        final AggregatedReport afterRecipes = reportWith(
+                findingOn("Foo.java", HeuristicCode.F2, 5, "output arg (still residual)"));
+        final String[] capturedPrompt = {null};
+        final AgentRunner capturing = (prompt, timeout) -> {
+            capturedPrompt[0] = prompt;
+            return AgentResult.textOnly("{\"actions\":[],\"rejected\":[]}");
+        };
+        final ReworkOrchestrator orchestrator = new ReworkOrchestrator(capturing, Duration.ofSeconds(1));
+
+        orchestrator.reworkClasses(List.of(file), projectRoot, baseline,
+                ReworkMode.AGENT_DRIVEN, RunVariant.HARNESS_RECIPES_THEN_AGENT,
+                () -> afterRecipes);
+
+        assertAll(
+                () -> assertTrue(capturedPrompt[0].contains("output arg (still residual)"),
+                        "post-recipe residual findings reach the agent"),
+                () -> assertFalse(capturedPrompt[0].contains("make static (baseline)"),
+                        "baseline findings the recipes fixed must NOT reach the agent"));
+    }
+
+    @Test
+    void nonHarnessVariantsIgnorePostRecipeAnalyser()
+            throws ReworkOrchestrator.ReworkException, IOException {
+        final Path file = seedFile("Foo.java", "class Foo {}");
+        final AggregatedReport baseline = reportWith(
+                findingOn("Foo.java", HeuristicCode.G18, 1, "make static (baseline)"));
+        final String[] capturedPrompt = {null};
+        final AgentRunner capturing = (prompt, timeout) -> {
+            capturedPrompt[0] = prompt;
+            return AgentResult.textOnly("{\"actions\":[],\"rejected\":[]}");
+        };
+        final ReworkOrchestrator orchestrator = new ReworkOrchestrator(capturing, Duration.ofSeconds(1));
+
+        orchestrator.reworkClasses(List.of(file), projectRoot, baseline,
+                ReworkMode.AGENT_DRIVEN, RunVariant.MCP_RECIPES,
+                () -> { throw new AssertionError("supplier must not be invoked for MCP_RECIPES"); });
+
+        assertTrue(capturedPrompt[0].contains("make static (baseline)"),
+                "non-harness variants use the baseline findings unchanged");
     }
 
     @Test
