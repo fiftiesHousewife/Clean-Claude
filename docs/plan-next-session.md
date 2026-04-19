@@ -21,19 +21,29 @@
 - `./gradlew :sandbox:analyseCleanCode` produces 55 findings across 17 codes including 3 G17 sites for the System.err calls in HttpRetryPolicy + UserAccountService.
 - mavenLocal updated: every module's jar is current.
 
-### Next morning — kick off the 5-way
+### Next morning — DON'T auto-run the 5-way
+
+The 5-way costs ~$15-20 and ~1h. Do NOT kick it off without explicit
+sign-off — even though the new automation makes it a one-liner:
 
 ```bash
+# only when Pippa says go:
 ./scripts/nightly-compare.sh
 ```
 
-That single command publishes all modules, runs the 5-way comparison
+Cron status as of 2026-04-19 evening: **clean — empty crontab**.
+Removed the lingering one-shot entry that ran the old
+`scripts/run-experiment.sh` annually on April 18. No LaunchAgents,
+no remote-trigger schedules. Nothing fires the rework harness
+without an explicit human invocation.
+
+When you do run it, the script publishes all modules, runs the 5-way
 on the standard 10-file batch with a 30s heartbeat, archives the raw
 report under `docs/sessions/<date>-rework-runN-raw.md`, and prints a
-side-by-side diff of cost/duration/turns/findings vs the previous
-archive (today's `2026-04-19-four-way-comparison-run2-raw.md`).
+side-by-side diff vs the previous archive
+(`2026-04-19-four-way-comparison-run2-raw.md`).
 
-### Hypotheses for the 5-way
+### Hypotheses for the 5-way (when it eventually runs)
 
 The morning run-2 had 4 variants; this run adds a 5th and several
 recipes. Hypotheses worth testing:
