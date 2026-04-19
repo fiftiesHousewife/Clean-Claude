@@ -48,37 +48,30 @@
 
 - Working tree clean on `main`; 13 commits ahead of origin/main.
 - All tests green: `./gradlew test` completes in ~1m, all modules pass.
-- mavenLocal updated: refactoring + plugin jars include all new recipes
-  and orchestrator changes (run `:refactoring:publishToMavenLocal
-  :plugin:publishToMavenLocal` before any rework run if publishing
-  was done externally).
+- mavenLocal updated: run the **root** `./gradlew publishToMavenLocal`
+  before any rework run. The run-2 comparison on 2026-04-19 used a
+  stale `recipes-1.0-SNAPSHOT.jar` because the handoff only published
+  `refactoring` + `plugin`; G18 detector fix was in the source but
+  never in the jar the analyser loaded. Always publish all 8 modules.
 
-### Next morning — run the 4-way again against tonight's numbers
+### Next morning — run the 4-way
 
-Same 10-file batch as today, same command. This run exercises three things
-that tonight's first 4-way did not:
-
-1. **Feedback loop** — all four variants now default to `maxRetries=1`;
-   expect introduced count to drop from 7-10 to 0-3.
-2. **F2 recipe** — variant 4's recipe pass should auto-fix
-   `UserAccountService.validate` (and any similar shape in the batch).
-3. **G18 detector** — should eliminate the 5-8 false-positive rejections
-   every variant produced last run.
+One command, no manual batch:
 
 ```bash
-FILES="sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/AccumulatorFixture.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/GuardFixture.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/OrchestratorFixture.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/CsvParser.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/HttpRetryPolicy.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/InventoryBalancer.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/NotificationDispatcher.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/ReportTemplate.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/SessionStore.java,\
-sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/UserAccountService.java"
-./gradlew :refactoring:publishToMavenLocal :plugin:publishToMavenLocal
-./gradlew -PcleanCodeSelfApply=true :sandbox:reworkCompare -Pfiles="$FILES"
+./scripts/nightly-compare.sh
 ```
+
+The script (1) publishes ALL modules to mavenLocal, (2) runs
+`:sandbox:reworkCompare` against the standard 10-file batch baked in,
+(3) streams a 30s heartbeat via `watch-rework-run.sh`, (4) archives
+`batch-10-comparison.md` under `docs/sessions/<date>-rework-runN-raw.md`,
+and (5) prints a side-by-side diff of cost / duration / turns /
+findings against the previous archived run.
+
+Pass an optional suffix for a labeled run:
+`./scripts/nightly-compare.sh post-g18-fix` → archives as
+`docs/sessions/<date>-rework-run1-post-g18-fix-raw.md`.
 
 Hypotheses for the next run:
 1. **Introduced count drops** across every variant (primary feedback-loop signal).
