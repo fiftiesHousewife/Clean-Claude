@@ -86,12 +86,12 @@ backlog in this order:
    - Any META-INF/services or rewrite YAML files (none today, but
      worth grepping)
 
-   Open question (decide before running): straight prefix swap
-   (`org.fiftieshousewife.cleancode.X` → `io.github.fiftieshousewife.cleancode.X`)
-   or collapse the middle segment (`io.github.fiftieshousewife.X`).
-   Maven Central only requires the leading `io.github.<user>` —
-   layout below it is our call. Collapsing is cleaner; straight swap
-   is one less thing to think about. **TBD by Pippa.**
+   **Decided 2026-04-19 evening: straight prefix swap.**
+   `org.fiftieshousewife.cleancode.X` → `io.github.fiftieshousewife.cleancode.X`
+   for every X. Keeps the `.cleancode` middle segment so existing
+   imports stay structurally identical apart from the leading two
+   segments. No discussion needed about which sub-package each class
+   belongs in — pure mechanical replace.
 
 1. **Tier 3 — close the known quality leaks** (in any internal order):
    - **A1** New-class checklist injected into every fix brief.
