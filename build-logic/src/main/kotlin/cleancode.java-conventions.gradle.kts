@@ -3,7 +3,7 @@ plugins {
     id("com.github.ben-manes.versions")
 }
 
-group = "org.fiftieshousewife.cleancode"
+group = "io.github.fiftieshousewife.cleancode"
 version = rootProject.version
 
 java {

@@ -4,5 +4,5 @@
 )
 package com.example.pkgsuppressed;
 
-import org.fiftieshousewife.cleancode.annotations.SuppressCleanCode;
-import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
+import io.github.fiftieshousewife.cleancode.annotations.SuppressCleanCode;
+import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;

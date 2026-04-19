@@ -1,10 +1,10 @@
-package org.fiftieshousewife.cleancode.plugin;
+package io.github.fiftieshousewife.cleancode.plugin;
 
-import org.fiftieshousewife.cleancode.adapters.*;
-import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
-import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewConfig;
-import org.fiftieshousewife.cleancode.claudereview.ClaudeReviewFindingSource;
-import org.fiftieshousewife.cleancode.core.*;
+import io.github.fiftieshousewife.cleancode.adapters.*;
+import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
+import io.github.fiftieshousewife.cleancode.claudereview.ClaudeReviewConfig;
+import io.github.fiftieshousewife.cleancode.claudereview.ClaudeReviewFindingSource;
+import io.github.fiftieshousewife.cleancode.core.*;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 

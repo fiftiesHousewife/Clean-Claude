@@ -1,7 +1,7 @@
 package com.example;
 
-import org.fiftieshousewife.cleancode.annotations.SuppressCleanCode;
-import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
+import io.github.fiftieshousewife.cleancode.annotations.SuppressCleanCode;
+import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
 public class ExpiredSuppression {
 

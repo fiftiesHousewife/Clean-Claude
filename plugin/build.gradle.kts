@@ -55,8 +55,8 @@ tasks.named<ProcessResources>("processResources") {
 gradlePlugin {
     plugins {
         create("cleanCode") {
-            id = "org.fiftieshousewife.cleancode"
-            implementationClass = "org.fiftieshousewife.cleancode.plugin.CleanCodePlugin"
+            id = "io.github.fiftieshousewife.cleancode"
+            implementationClass = "io.github.fiftieshousewife.cleancode.plugin.CleanCodePlugin"
         }
     }
 }

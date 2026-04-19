@@ -27,7 +27,7 @@ Check ``~/.gradle/init.d/cleancode.init.gradle.kts`` exists. If you don't have t
 2. Add the plugin to the target's top-level `build.gradle.kts`:
    ```kotlin
    plugins {
-       id("org.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
+       id("io.github.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
    }
    ```
    If the project is multi-module, apply to every submodule that has Java sources. Using a convention plugin in `build-logic/` is preferable to copy-pasting.

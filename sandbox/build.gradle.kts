@@ -1,6 +1,6 @@
 plugins {
     id("cleancode.java-library")
-    id("org.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
+    id("io.github.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
 }
 
 // Fixture module for the rework harness. Only included in the build when

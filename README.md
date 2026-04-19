@@ -125,7 +125,7 @@ cleanCode {
     disabledRecipes = listOf("G36", "G10")
 
     packageSuppressions = mapOf(
-        "org.fiftieshousewife.cleancode.recipes" to listOf("G5", "Ch7_2")
+        "io.github.fiftieshousewife.cleancode.recipes" to listOf("G5", "Ch7_2")
     )
 
     claudeReview {                             // opt-in LLM assessment (requires ANTHROPIC_API_KEY)
@@ -158,10 +158,10 @@ Example — suppress CPD duplication and null-density across a whole package:
     reason = "OpenRewrite visitor pattern produces structurally similar scanners and "
             + "relies on null returns to signal no-change — API-imposed, not design flaws"
 )
-package org.fiftieshousewife.cleancode.recipes;
+package io.github.fiftieshousewife.cleancode.recipes;
 
-import org.fiftieshousewife.cleancode.annotations.HeuristicCode;
-import org.fiftieshousewife.cleancode.annotations.SuppressCleanCode;
+import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
+import io.github.fiftieshousewife.cleancode.annotations.SuppressCleanCode;
 ```
 
 This repo applies exactly that to `recipes/` and `refactoring/`, together with JSpecify `@NullMarked` at the package level so IDE nullability inspections match the OpenRewrite API contract.
@@ -191,7 +191,7 @@ CleanClaude/
 
 ```kotlin
 plugins {
-    id("org.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
+    id("io.github.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
 }
 ```
 
@@ -236,7 +236,7 @@ In the target project's `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    id("org.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
+    id("io.github.fiftieshousewife.cleancode") version "1.0-SNAPSHOT"
 }
 ```
 

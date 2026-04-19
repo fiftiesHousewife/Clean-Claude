@@ -16,7 +16,7 @@ initscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.fiftieshousewife.cleancode:plugin:1.0-SNAPSHOT")
+        classpath("io.github.fiftieshousewife.cleancode:plugin:1.0-SNAPSHOT")
         classpath("com.github.ben-manes:gradle-versions-plugin:0.53.0")
     }
 }
@@ -45,5 +45,5 @@ allprojects {
             }
         }
     }
-    apply<org.fiftieshousewife.cleancode.plugin.CleanCodePlugin>()
+    apply<io.github.fiftieshousewife.cleancode.plugin.CleanCodePlugin>()
 }

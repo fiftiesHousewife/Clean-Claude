@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass.set("org.fiftieshousewife.cleancode.mcp.McpServer")
+    mainClass.set("io.github.fiftieshousewife.cleancode.mcp.McpServer")
 }
 
 repositories {
@@ -38,7 +38,7 @@ tasks.jar {
     // here pulls in annotations/refactoring/etc so declare each explicitly.
     dependsOn(configurations.runtimeClasspath)
     manifest {
-        attributes["Main-Class"] = "org.fiftieshousewife.cleancode.mcp.McpServer"
+        attributes["Main-Class"] = "io.github.fiftieshousewife.cleancode.mcp.McpServer"
     }
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }) {
         exclude("META-INF/MANIFEST.MF", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA",

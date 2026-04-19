@@ -1,0 +1,112 @@
+package io.github.fiftieshousewife.cleancode.refactoring;
+
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Recipe;
+import org.openrewrite.SourceFile;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Statement;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class EncapsulateBoundaryRecipe extends Recipe {
+
+    private static final Set<String> BOUNDARY_METHODS = Set.of("length", "size");
+
+    @Override
+    public String getDisplayName() {
+        return "Encapsulate boundary conditions into named variables";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Adds a named variable for boundary arithmetic like array.length - 1. Fixes G33.";
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        return new JavaIsoVisitor<>() {
+            @Override
+            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+                final J.Block b = super.visitBlock(block, ctx);
+                final List<Statement> statements = b.getStatements();
+                final List<Statement> newStatements = new ArrayList<>();
+                boolean changed = false;
+
+                for (final Statement stmt : statements) {
+                    final String boundaryExpr = extractBoundaryText(stmt);
+                    if (boundaryExpr == null) {
+                        newStatements.add(stmt);
+                        continue;
+                    }
+
+                    final String declSource = "class _T { void _m() { final int lastIndex = %s; } }"
+                            .formatted(boundaryExpr);
+                    final List<SourceFile> parsed = JavaParser.fromJavaVersion()
+                            .logCompilationWarningsAndErrors(false)
+                            .build().parse(declSource).toList();
+
+                    if (parsed.isEmpty()) {
+                        newStatements.add(stmt);
+                        continue;
+                    }
+
+                    final J.MethodDeclaration method = (J.MethodDeclaration)
+                            ((J.CompilationUnit) parsed.getFirst())
+                                    .getClasses().getFirst().getBody().getStatements().getFirst();
+                    newStatements.add(method.getBody().getStatements().getFirst()
+                            .withPrefix(stmt.getPrefix()));
+                    newStatements.add(stmt);
+                    changed = true;
+                }
+
+                return changed ? b.withStatements(newStatements) : b;
+            }
+        };
+    }
+
+    static String extractBoundaryText(Statement stmt) {
+        final List<J.Binary> matches = new ArrayList<>();
+        new JavaIsoVisitor<List<J.Binary>>() {
+            @Override
+            public J.Binary visitBinary(J.Binary binary, List<J.Binary> out) {
+                if (isBoundaryMinusOne(binary)) {
+                    out.add(binary);
+                }
+                return super.visitBinary(binary, out);
+            }
+        }.visit(stmt, matches);
+        if (matches.isEmpty()) {
+            return null;
+        }
+        final J.Binary match = matches.getFirst();
+        final String left = match.getLeft().toString().trim();
+        return left + " - 1";
+    }
+
+    private static boolean isBoundaryMinusOne(J.Binary binary) {
+        if (binary.getOperator() != J.Binary.Type.Subtraction) {
+            return false;
+        }
+        if (!(binary.getRight() instanceof J.Literal lit) || !(lit.getValue() instanceof Integer i) || i != 1) {
+            return false;
+        }
+        return isBoundaryAccess(binary.getLeft());
+    }
+
+    private static boolean isBoundaryAccess(Expression expr) {
+        if (expr instanceof J.FieldAccess fa) {
+            return BOUNDARY_METHODS.contains(fa.getSimpleName());
+        }
+        if (expr instanceof J.MethodInvocation mi) {
+            return BOUNDARY_METHODS.contains(mi.getSimpleName());
+        }
+        return false;
+    }
+}

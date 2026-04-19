@@ -1,7 +1,7 @@
 # ExtractMethodRecipe — usage
 
 First-cut port of IntelliJ IDEA Community's `ExtractMethodProcessor`,
-living at `refactoring/src/main/java/org/fiftieshousewife/cleancode/refactoring/extractmethod/`.
+living at `refactoring/src/main/java/io/github/fiftieshousewife/cleancode/refactoring/extractmethod/`.
 Full class-level Javadoc on `ExtractMethodRecipe` describes the supported
 extraction shapes and the known rejection reasons.
 

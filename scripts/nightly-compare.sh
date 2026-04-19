@@ -20,16 +20,16 @@ PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 cd "$PROJECT_ROOT"
 
 STANDARD_BATCH=(
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/AccumulatorFixture.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/GuardFixture.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/OrchestratorFixture.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/CsvParser.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/HttpRetryPolicy.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/InventoryBalancer.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/NotificationDispatcher.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/ReportTemplate.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/SessionStore.java
-  sandbox/src/main/java/org/fiftieshousewife/cleancode/sandbox/UserAccountService.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/AccumulatorFixture.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/GuardFixture.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/OrchestratorFixture.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/CsvParser.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/HttpRetryPolicy.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/InventoryBalancer.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/NotificationDispatcher.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/ReportTemplate.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/SessionStore.java
+  sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/UserAccountService.java
 )
 FILES=$(IFS=,; echo "${STANDARD_BATCH[*]}")
 
