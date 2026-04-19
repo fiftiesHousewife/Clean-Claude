@@ -3,6 +3,7 @@ junit = "5.10.0"
 javaparser = "3.26.2"
 gson = "2.11.0"
 openrewrite = "8.79.5"
+fifties-recipes = "0.2"
 versions = "0.53.0"
 gradle-tooling = "9.0.0"
 slf4j = "2.0.16"
@@ -27,6 +28,7 @@ openrewrite-java = { module = "org.openrewrite:rewrite-java", version.ref = "ope
 openrewrite-java21 = { module = "org.openrewrite:rewrite-java-21", version.ref = "openrewrite" }
 openrewrite-java25 = { module = "org.openrewrite:rewrite-java-25", version.ref = "openrewrite" }
 openrewrite-test = { module = "org.openrewrite:rewrite-test", version.ref = "openrewrite" }
+fifties-system-out-to-lombok-log4j = { module = "io.github.fiftieshousewife:system-out-to-lombok-log4j", version.ref = "fifties-recipes" }
 ben-manes-versions-plugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versions" }
 gradle-tooling-api = { module = "org.gradle:gradle-tooling-api", version.ref = "gradle-tooling" }
 slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }

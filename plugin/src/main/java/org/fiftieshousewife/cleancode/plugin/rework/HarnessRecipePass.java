@@ -3,6 +3,7 @@ package org.fiftieshousewife.cleancode.plugin.rework;
 import org.fiftieshousewife.cleancode.refactoring.AddFinalRecipe;
 import org.fiftieshousewife.cleancode.refactoring.ChainConsecutiveBuilderCallsRecipe;
 import org.fiftieshousewife.cleancode.refactoring.CollapseSiblingGuardsRecipe;
+import org.fiftieshousewife.cleancode.refactoring.DeleteMumblingLogRecipe;
 import org.fiftieshousewife.cleancode.refactoring.DeleteSectionCommentsRecipe;
 import org.fiftieshousewife.cleancode.refactoring.InvertNegativeConditionalRecipe;
 import org.fiftieshousewife.cleancode.refactoring.MakeMethodStaticRecipe;
@@ -17,6 +18,7 @@ import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
 import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
+import org.openrewrite.config.Environment;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
 
@@ -40,11 +42,22 @@ import java.util.Map;
  */
 public final class HarnessRecipePass {
 
+    /**
+     * Recipe ID for the published Lombok-Log4j2 conversion recipe.
+     * Loaded via OpenRewrite's declarative recipe Environment because
+     * the recipe is composed in YAML rather than published as a Java
+     * Recipe class. The deps variant adds Lombok + Log4j2 dependencies
+     * to the build file so the rewritten code actually compiles.
+     */
+    private static final String SYSTEM_OUT_TO_LOMBOK_RECIPE =
+            "io.github.fiftieshousewife.SystemOutToLombokLog4jRecipe";
+
     /** Keeps the recipe list in one place so the variant prompt stays in sync. */
     private static final List<Recipe> DETERMINISTIC_RECIPES = List.of(
             new MakeMethodStaticRecipe(),
             new RestoreInterruptFlagRecipe(),
             new DeleteSectionCommentsRecipe(),
+            new DeleteMumblingLogRecipe(),
             new ChainConsecutiveBuilderCallsRecipe(),
             new MathMinCapRecipe(),
             new ReplaceForAddNCopiesRecipe(),
@@ -53,7 +66,15 @@ public final class HarnessRecipePass {
             new ReturnInsteadOfMutateArgRecipe(),
             new AddFinalRecipe(),
             new InvertNegativeConditionalRecipe(),
-            new ShortenFullyQualifiedReferencesRecipe());
+            new ShortenFullyQualifiedReferencesRecipe(),
+            loadDeclarativeRecipe(SYSTEM_OUT_TO_LOMBOK_RECIPE));
+
+    private static Recipe loadDeclarativeRecipe(final String recipeId) {
+        return Environment.builder()
+                .scanRuntimeClasspath()
+                .build()
+                .activateRecipes(recipeId);
+    }
 
     private HarnessRecipePass() {}
 
@@ -109,9 +130,20 @@ public final class HarnessRecipePass {
         }
         final InMemoryLargeSourceSet sourceSet = new InMemoryLargeSourceSet(parsed);
         final List<Result> results = recipe.run(sourceSet, ctx).getChangeset().getAllResults();
-        if (results.isEmpty() || results.get(0).getAfter() == null) {
-            return source;
+        // Recipes can produce results for files OTHER than our input — for
+        // example SystemOutToLombokLog4jRecipe creates a fresh log4j2.xml.
+        // Filter to the result whose source path matches our input file so
+        // we don't blow our Java fixture away with someone else's output.
+        for (final Result result : results) {
+            final SourceFile after = result.getAfter();
+            if (after == null) {
+                continue;
+            }
+            if (after.getSourcePath().equals(file)
+                    || after.getSourcePath().endsWith(file.getFileName())) {
+                return after.printAll();
+            }
         }
-        return results.get(0).getAfter().printAll();
+        return source;
     }
 }

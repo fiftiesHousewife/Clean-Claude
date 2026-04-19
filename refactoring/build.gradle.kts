@@ -6,6 +6,14 @@ dependencies {
     implementation(project(":annotations"))
     implementation(libs.openrewrite.core)
     implementation(libs.openrewrite.java)
+    implementation(libs.fifties.system.out.to.lombok.log4j) {
+        // The published recipe pulls rewrite-java-25 transitively (Java 25
+        // bytecode). The Gradle daemon is currently pinned to JDK 21 and
+        // can't analyse those class files. We already provide rewrite-java-21
+        // for parsing, which is sufficient for the recipe's transforms.
+        // Drop the exclusion as part of the JDK 25 upgrade.
+        exclude(group = "org.openrewrite", module = "rewrite-java-25")
+    }
     runtimeOnly(libs.openrewrite.java21)
     testImplementation(libs.openrewrite.test)
 }
