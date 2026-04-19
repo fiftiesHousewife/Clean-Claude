@@ -62,6 +62,39 @@ recipes. Hypotheses worth testing:
    HARNESS retry-pass agent invocations to skip entirely when recipes
    clear all introduced findings — should drop HARNESS cost meaningfully.
 
+### Priority order for the next sprint (set 2026-04-19 evening)
+
+After the morning's 5-way validates the recent landings, work the
+backlog in this order:
+
+1. **Tier 3 — close the known quality leaks** (in any internal order):
+   - **A1** New-class checklist injected into every fix brief.
+     The agent silently violates skills it would enforce on existing
+     code — 51 new main classes on the manual-1 branch had Ch7.1
+     catches in extracted helpers, no companion tests, etc.
+   - **A2** Commit-message format with remediation choice
+     (`fix: Foo (Ch7.1:translate)`). Makes audits cheap.
+   - **C1-C3** StringBuilder-`sb` threading detection + remediation +
+     skill update. 16 sandbox files have this anti-pattern; the
+     agent keeps creating more.
+2. **D10 UseTryWithResourcesRecipe** — detect manual `close()` in
+   `finally` / explicit try/finally that should be try-with-resources;
+   auto-fix. Clears the biggest Ch7.1 cluster mechanically.
+3. **A3 Single-file experiment harness** — `scripts/run-single-file.sh`
+   that runs the plugin on one file, takes the brief, invokes
+   `claude -p`, and writes a sub-minute summary. Used to iterate on
+   brief wording (A1) without paying for a full run, and to pilot
+   recipes against a known target.
+4. **D6 Replace VariableUsagePatterns regex with AST resolution** —
+   the extract-method recipe analyses reads/writes via word-boundary
+   regex, which over-includes (matches identifiers in comments and
+   string literals). Rewrite to walk the AST and resolve identifiers
+   via `getFieldType()` / cursor parent. Unblocks the deferred extract-
+   method phases (C, D, G expansion).
+
+Defer everything else (Tier 2's big architectural levers,
+Tier 5 content) until this priority list is complete.
+
 ### Mini-backlog for the run-up
 
 - The earlier backlog item "introduced-findings breakdown by code per variant"
