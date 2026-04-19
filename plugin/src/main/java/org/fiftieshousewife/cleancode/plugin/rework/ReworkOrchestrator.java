@@ -110,6 +110,14 @@ public final class ReworkOrchestrator {
                                      final Options options)
             throws ReworkException {
         final HarnessRecipePass.PassSummary harnessPass = maybeRunHarnessRecipes(initialTargets, variant);
+        if (variant == RunVariant.RECIPES_ONLY) {
+            final List<Suggestion> aggregated = aggregateSuggestions(initialTargets);
+            final List<AgentAction> recipeActions = prefixHarnessActions(harnessPass, List.of());
+            final String body = CommitMessageFormatter.format(
+                    recipeActions, List.of(), aggregated, Optional.empty());
+            return new ReworkReport(paths(initialTargets), ReworkMode.AGENT_DRIVEN, aggregated,
+                    recipeActions, List.of(), Optional.empty(), body);
+        }
         final List<FileTarget> promptTargets = refreshTargetsAfterRecipePass(
                 initialTargets, files, projectRoot, variant, options);
 
@@ -157,6 +165,13 @@ public final class ReworkOrchestrator {
 
         List<Finding> priorFindings = preAgentFindings;
         for (int attempt = 0; attempt < options.maxRetries(); attempt++) {
+            // HARNESS retry: rerun the deterministic recipes on the agent's output
+            // before spending another agent turn. If the recipes clear every new
+            // finding, we skip the agent call entirely.
+            final HarnessRecipePass.PassSummary retryRecipes = runRecipesOnRetry(files, variant);
+            if (!retryRecipes.recipeNamesByFile().isEmpty()) {
+                extraActions.addAll(0, harnessPassActions(retryRecipes));
+            }
             final AggregatedReport fresh = invokeAnalyser(options);
             final List<Finding> introduced = FindingsSnapshot.introducedFindings(
                     priorFindings, fresh.findings(), targetSet, options.moduleProjectDir());
@@ -176,6 +191,19 @@ public final class ReworkOrchestrator {
             priorFindings = fresh.findings();
         }
         return new RetryOutcome(extraActions, extraRejected, extraUsage);
+    }
+
+    private static HarnessRecipePass.PassSummary runRecipesOnRetry(final List<Path> files,
+                                                                   final RunVariant variant)
+            throws ReworkException {
+        if (variant != RunVariant.HARNESS_RECIPES_THEN_AGENT) {
+            return new HarnessRecipePass.PassSummary(Map.of());
+        }
+        try {
+            return HarnessRecipePass.apply(files);
+        } catch (IOException e) {
+            throw new ReworkException("harness retry recipe pass failed: " + e.getMessage(), e);
+        }
     }
 
     private static List<Finding> flattenSuggestionsToFindings(final List<FileTarget> targets) {
@@ -255,7 +283,8 @@ public final class ReworkOrchestrator {
 
     private static HarnessRecipePass.PassSummary maybeRunHarnessRecipes(
             final List<FileTarget> targets, final RunVariant variant) throws ReworkException {
-        if (variant != RunVariant.HARNESS_RECIPES_THEN_AGENT) {
+        if (variant != RunVariant.HARNESS_RECIPES_THEN_AGENT
+                && variant != RunVariant.RECIPES_ONLY) {
             return new HarnessRecipePass.PassSummary(Map.of());
         }
         try {
@@ -286,15 +315,20 @@ public final class ReworkOrchestrator {
         if (pass.recipeNamesByFile().isEmpty()) {
             return agentActions;
         }
-        final List<AgentAction> combined = new ArrayList<>();
-        pass.recipeNamesByFile().forEach((file, recipeNames) -> combined.add(new AgentAction(
+        final List<AgentAction> combined = new ArrayList<>(harnessPassActions(pass));
+        combined.addAll(agentActions);
+        return combined;
+    }
+
+    private static List<AgentAction> harnessPassActions(final HarnessRecipePass.PassSummary pass) {
+        final List<AgentAction> actions = new ArrayList<>();
+        pass.recipeNamesByFile().forEach((file, recipeNames) -> actions.add(new AgentAction(
                 "HarnessRecipePass",
                 Map.of("file", file.getFileName().toString(),
                         "recipes", String.join(", ", recipeNames)),
                 "Harness applied " + String.join(", ", recipeNames) + " deterministically "
                         + "before handing off to the agent")));
-        combined.addAll(agentActions);
-        return combined;
+        return actions;
     }
 
     private AgentResult runAgent(final String prompt) throws ReworkException {

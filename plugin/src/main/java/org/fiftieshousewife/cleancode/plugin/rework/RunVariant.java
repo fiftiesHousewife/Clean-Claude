@@ -3,7 +3,7 @@ package org.fiftieshousewife.cleancode.plugin.rework;
 /**
  * Which subset of the refactoring toolset a rework run exposes to the
  * agent. Lets {@link ReworkCompareTask} decompose the cost/quality
- * signal into four axes.
+ * signal into five axes.
  *
  * <ul>
  *   <li>{@link #VANILLA} — no MCP tools advertised. The agent uses
@@ -20,14 +20,19 @@ package org.fiftieshousewife.cleancode.plugin.rework;
  *       deterministic refactoring recipes to every target file FIRST,
  *       then hands the partially-fixed file to the agent (with the
  *       MCP_RECIPES tool surface) for the remaining judgement-call
- *       findings. Isolates recipe value from agent-selected-recipe
- *       value: when the LLM declines to call a recipe but the recipe
- *       would have fired, this variant runs it anyway.</li>
+ *       findings.</li>
+ *   <li>{@link #RECIPES_ONLY} — the harness applies every deterministic
+ *       recipe and stops. No agent, no cost, no tokens. Establishes
+ *       the lower bound on findings-removed-by-pure-OpenRewrite and
+ *       the upper bound on how much recipe coverage we currently have.
+ *       A variant with "final findings ≈ HARNESS's final findings"
+ *       means the agent is adding no durable quality on top of recipes.</li>
  * </ul>
  */
 public enum RunVariant {
     VANILLA,
     MCP_GRADLE_ONLY,
     MCP_RECIPES,
-    HARNESS_RECIPES_THEN_AGENT
+    HARNESS_RECIPES_THEN_AGENT,
+    RECIPES_ONLY
 }

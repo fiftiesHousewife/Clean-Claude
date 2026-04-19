@@ -11,8 +11,10 @@ import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Converts {@code void foo(List<T> out, ...) { ... out.add(x); ... }} into
@@ -89,7 +91,62 @@ public final class ReturnInsteadOfMutateArgRecipe extends Recipe {
             if (candidatesByName.isEmpty()) {
                 return classDecl;
             }
+            // Drop any candidate whose call sites include shapes we can't
+            // safely rewrite. If a caller passes the list inline, to another
+            // method, or into a non-adjacent statement, rewriting the
+            // signature without updating that caller produces broken code.
+            disqualifyUnrewritableCallSites(classDecl);
+            if (candidatesByName.isEmpty()) {
+                return classDecl;
+            }
             return super.visitClassDeclaration(classDecl, ctx);
+        }
+
+        private void disqualifyUnrewritableCallSites(final J.ClassDeclaration classDecl) {
+            if (classDecl.getBody() == null) {
+                return;
+            }
+            // Collect the (method-name, identity) of every call site inside the
+            // adjacent-declare-then-call shape we know how to rewrite.
+            final Set<J.MethodInvocation> rewritable = new HashSet<>();
+            for (final Statement stmt : classDecl.getBody().getStatements()) {
+                if (!(stmt instanceof J.MethodDeclaration method) || method.getBody() == null) {
+                    continue;
+                }
+                final List<Statement> stmts = method.getBody().getStatements();
+                for (int i = 0; i < stmts.size() - 1; i++) {
+                    if (!(stmts.get(i) instanceof J.VariableDeclarations vd)
+                            || !isListConstructorInit(vd)) {
+                        continue;
+                    }
+                    final String listVar = vd.getVariables().getFirst().getSimpleName();
+                    final J.MethodInvocation call = extractInvocation(stmts.get(i + 1));
+                    if (call == null || call.getSelect() != null) {
+                        continue;
+                    }
+                    final MethodCandidate candidate = candidatesByName.get(call.getSimpleName());
+                    if (candidate != null && argAtIndexIs(call, candidate.paramIndex(), listVar)) {
+                        rewritable.add(call);
+                    }
+                }
+            }
+
+            // Walk the class again; any unqualified invocation of a candidate
+            // that isn't in the rewritable set disqualifies that candidate.
+            final Set<String> disqualified = new HashSet<>();
+            new JavaIsoVisitor<Object>() {
+                @Override
+                public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation mi,
+                                                                final Object unused) {
+                    if (candidatesByName.containsKey(mi.getSimpleName())
+                            && mi.getSelect() == null
+                            && !rewritable.contains(mi)) {
+                        disqualified.add(mi.getSimpleName());
+                    }
+                    return super.visitMethodInvocation(mi, unused);
+                }
+            }.visit(classDecl.getBody(), null);
+            disqualified.forEach(candidatesByName::remove);
         }
 
         @Override
@@ -166,10 +223,12 @@ public final class ReturnInsteadOfMutateArgRecipe extends Recipe {
                 return method;
             }
             final String remainingParams = renderParamsExcluding(method, candidate.paramName());
-            final String templateSource = ("%s %s(%s) {\n"
+            final String leadingModifiers = renderModifiers(method);
+            final String templateSource = ("%s%s %s(%s) {\n"
                     + "    final %s %s = new ArrayList<>();\n"
                     + "    return %s;\n"
                     + "}").formatted(
+                            leadingModifiers,
                             candidate.paramTypeDeclaration(), candidate.methodName(),
                             remainingParams,
                             candidate.paramTypeDeclaration(), candidate.paramName(),
@@ -188,6 +247,19 @@ public final class ReturnInsteadOfMutateArgRecipe extends Recipe {
             return scaffold
                     .withPrefix(method.getPrefix())
                     .withBody(scaffold.getBody().withStatements(newBody));
+        }
+
+        private static String renderModifiers(final J.MethodDeclaration method) {
+            final StringBuilder sb = new StringBuilder();
+            for (final J.Modifier mod : method.getModifiers()) {
+                switch (mod.getType()) {
+                    case Static -> sb.append("static ");
+                    case Final -> sb.append("final ");
+                    case Synchronized -> sb.append("synchronized ");
+                    default -> { /* public/protected are filtered by classify(); skip others */ }
+                }
+            }
+            return sb.toString();
         }
 
         private static boolean stillMatchesCandidate(final J.MethodDeclaration method,

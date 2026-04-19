@@ -81,7 +81,7 @@ echo "  archived: $RAW"
 echo "[4/4] summary"
 echo ""
 echo "  lifecycle lines:"
-grep -E "^\s+(VANILLA|MCP_GRADLE_ONLY|MCP_RECIPES|HARNESS)" "$LOG" | sed 's/^/    /'
+grep -E "^\s+(VANILLA|MCP_GRADLE_ONLY|MCP_RECIPES|HARNESS_RECIPES_THEN_AGENT|RECIPES_ONLY) " "$LOG" | sed 's/^/    /'
 
 PREV=$(ls -t docs/sessions/*-rework-run*-raw.md 2>/dev/null \
        | grep -Fv "$RAW" | head -1 || true)

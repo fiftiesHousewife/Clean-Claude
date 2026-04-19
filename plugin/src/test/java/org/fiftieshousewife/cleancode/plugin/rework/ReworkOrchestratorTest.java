@@ -177,6 +177,66 @@ class ReworkOrchestratorTest {
     }
 
     @Test
+    void harnessRetryReinvokesRecipePassOnTheAgentsOutput()
+            throws ReworkOrchestrator.ReworkException, IOException {
+        // Seed a file whose shape will ALSO match a recipe after the retry boundary.
+        // MakeMethodStaticRecipe is deterministic and fires whenever a non-static
+        // method with no instance-state references exists.
+        final Path file = seedFile("com/example/Foo.java", """
+                package com.example;
+                public final class Foo {
+                    public int add(final int a, final int b) {
+                        final int s = a + b;
+                        final int d = s * 2;
+                        return d;
+                    }
+                }
+                """);
+        final AggregatedReport baseline = reportWith(
+                findingOn("com/example/Foo.java", HeuristicCode.G18, 1, "add is static-able"));
+        final AggregatedReport postFirstPass = reportWith(
+                findingOn("com/example/Foo.java", HeuristicCode.G29, 1,
+                        "residual introduced by agent"));
+        final AgentRunner noopAgent = (prompt, timeout) ->
+                AgentResult.textOnly("{\"actions\":[],\"rejected\":[]}");
+        final ReworkOrchestrator orchestrator = new ReworkOrchestrator(noopAgent, Duration.ofSeconds(1));
+
+        final ReworkReport report = orchestrator.reworkClasses(List.of(file), projectRoot, baseline,
+                ReworkMode.AGENT_DRIVEN, RunVariant.HARNESS_RECIPES_THEN_AGENT,
+                ReworkOrchestrator.Options.withFeedbackLoop(() -> postFirstPass, 1, projectRoot));
+
+        final long harnessPassCount = report.actionsTaken().stream()
+                .filter(a -> "HarnessRecipePass".equals(a.recipe()))
+                .count();
+        assertTrue(harnessPassCount >= 1,
+                "main pass must record at least one HarnessRecipePass action; got "
+                        + report.actionsTaken());
+        assertTrue(Files.readString(file).contains("static"),
+                "MakeMethodStaticRecipe should have made `add` static during the pass");
+    }
+
+    @Test
+    void recipesOnlyVariantSkipsTheAgentEntirely()
+            throws ReworkOrchestrator.ReworkException, IOException {
+        final Path file = seedFile("Foo.java", "class Foo {}");
+        final AgentRunner mustNotRun = (prompt, timeout) -> {
+            throw new AssertionError("RECIPES_ONLY must not invoke the agent");
+        };
+        final ReworkOrchestrator orchestrator = new ReworkOrchestrator(mustNotRun, Duration.ofSeconds(1));
+
+        final ReworkReport report = orchestrator.reworkClasses(List.of(file), projectRoot,
+                reportWith(findingOn("Foo.java", HeuristicCode.G18, 1, "make static")),
+                ReworkMode.AGENT_DRIVEN, RunVariant.RECIPES_ONLY);
+
+        assertAll(
+                () -> assertEquals(ReworkMode.AGENT_DRIVEN, report.mode()),
+                () -> assertTrue(report.usage().isEmpty(),
+                        "RECIPES_ONLY has no agent invocation, so no usage to record"),
+                () -> assertTrue(report.rejected().isEmpty(),
+                        "RECIPES_ONLY cannot reject findings — the recipe either fires or doesn't"));
+    }
+
+    @Test
     void agentFailureSurfacesAsReworkException() throws IOException {
         final Path file = seedFile("Foo.java", "class Foo {}");
         final AgentRunner failing = (prompt, timeout) -> {

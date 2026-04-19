@@ -42,7 +42,8 @@ public abstract class ReworkCompareTask extends DefaultTask {
     private static final String OUTPUT_DIR = "reports/clean-code";
     private static final List<RunVariant> ALL_VARIANTS = List.of(
             RunVariant.VANILLA, RunVariant.MCP_GRADLE_ONLY,
-            RunVariant.MCP_RECIPES, RunVariant.HARNESS_RECIPES_THEN_AGENT);
+            RunVariant.MCP_RECIPES, RunVariant.HARNESS_RECIPES_THEN_AGENT,
+            RunVariant.RECIPES_ONLY);
     private static final int DEFAULT_MAX_RETRIES = 1;
 
     @TaskAction

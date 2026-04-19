@@ -111,6 +111,8 @@ public final class PromptBuilder {
             case MCP_GRADLE_ONLY -> gradleOnlyBlock();
             case MCP_RECIPES -> recipesBlock();
             case HARNESS_RECIPES_THEN_AGENT -> harnessRecipesThenAgentBlock();
+            case RECIPES_ONLY -> throw new IllegalStateException(
+                    "RECIPES_ONLY runs no agent — PromptBuilder.build should never be called for it");
         };
     }
 

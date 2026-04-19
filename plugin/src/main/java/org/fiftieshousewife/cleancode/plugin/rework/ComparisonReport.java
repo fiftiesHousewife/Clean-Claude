@@ -150,6 +150,7 @@ public final class ComparisonReport {
             case MCP_GRADLE_ONLY -> "mcp gradle only";
             case MCP_RECIPES -> "mcp + recipes";
             case HARNESS_RECIPES_THEN_AGENT -> "harness + agent";
+            case RECIPES_ONLY -> "recipes only";
         };
     }
 }
