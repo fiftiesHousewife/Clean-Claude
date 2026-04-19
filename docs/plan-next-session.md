@@ -67,6 +67,32 @@ recipes. Hypotheses worth testing:
 After the morning's 5-way validates the recent landings, work the
 backlog in this order:
 
+0. **Rename root package to `io.github.fiftieshousewife`** so we can
+   publish to Maven Central (which only accepts `io.github.<user>`
+   for unverified groups). Use OpenRewrite's
+   `org.openrewrite.java.ChangePackage` recipe — handles every
+   `package` declaration, every import, every FQN reference, and
+   moves files between directories in one pass. Already on our
+   classpath; a one-shot CLI in `refactoring/` (similar to
+   `ExtractMethodCli`) is ~30 lines.
+
+   Java-only — also need a small sweep for non-Java references:
+   - `mainClass` strings in `mcp/build.gradle.kts` and
+     `refactoring/build.gradle.kts` (`McpServer`, `ExtractMethodCli`)
+   - Plugin id in `plugin/build.gradle.kts`
+     (`gradlePlugin { plugins.create.id = "org.fiftieshousewife.cleancode" }`)
+   - `group = "org.fiftieshousewife.cleancode"` in
+     `build-logic/src/main/kotlin/cleancode.java-conventions.gradle.kts`
+   - Any META-INF/services or rewrite YAML files (none today, but
+     worth grepping)
+
+   Open question (decide before running): straight prefix swap
+   (`org.fiftieshousewife.cleancode.X` → `io.github.fiftieshousewife.cleancode.X`)
+   or collapse the middle segment (`io.github.fiftieshousewife.X`).
+   Maven Central only requires the leading `io.github.<user>` —
+   layout below it is our call. Collapsing is cleaner; straight swap
+   is one less thing to think about. **TBD by Pippa.**
+
 1. **Tier 3 — close the known quality leaks** (in any internal order):
    - **A1** New-class checklist injected into every fix brief.
      The agent silently violates skills it would enforce on existing
