@@ -1,5 +1,82 @@
 # Plan: next session handoff
 
+## 2026-04-19 evening handoff — 5th variant, 3 new recipes, published Lombok recipe, JDK 25, full automation
+
+### What shipped this session (commits `c333675` → `5e02d15`)
+
+| Commit | Scope |
+|---|---|
+| `c333675` | `scripts/watch-rework-run.sh` — 30s heartbeat for any rework run |
+| `7b8bf41` | `scripts/nightly-compare.sh` + `scripts/compare-runs.py` — one-command handoff (publishes ALL modules; archives raw report; diffs vs previous archive). Closes the stale-jar trap that broke the morning run. |
+| `ea340e5` | RECIPES_ONLY 5th variant (no agent — pure recipe baseline); HARNESS retry now reruns `HarnessRecipePass` before the agent on each retry; F2 recipe hardened (preserves `static`/`final` modifiers; refuses to rewrite when any caller is in an unsafe shape). |
+| `eb6d1c5` | `MergeInlineValidationRecipe` — folds inline `if (x == null) errors.add(MSG)` validation in caller methods into an existing `void validate(..., List<String> errors)` on the same class. Expands validate's parameters as needed. |
+| `3b84f2f` | `FixedStringLogRecipe` (G12 detection) — flags `log.info("starting up")` shapes that carry no runtime info. |
+| `e607cba` | Wired published `io.github.fiftieshousewife:system-out-to-lombok-log4j:0.2` (deps variant) via `Environment.scanRuntimeClasspath`. New `DeleteMumblingLogRecipe` (refactoring twin to FixedStringLogRecipe). `HarnessRecipePass.runOne` now filters multi-result outputs by source path so a recipe that creates `log4j2.xml` doesn't overwrite the input Java. |
+| `5e02d15` | JDK 25 + Gradle 9.4.1 + SpotBugs 4.9.8. Daemon JVM pin deleted. `openrewrite-java21` → `openrewrite-java25` everywhere. `Configuration.setVisible()` deprecation cleared. SystemOutRecipe finding remapped from G12 (Clutter) to **G17 (Misplaced Responsibility)**. |
+
+### State at end of session
+
+- Working tree clean on `main`; well ahead of origin/main.
+- `./gradlew clean test` green end-to-end on JDK 25 + Gradle 9.4.1.
+- `./gradlew :sandbox:analyseCleanCode` produces 55 findings across 17 codes including 3 G17 sites for the System.err calls in HttpRetryPolicy + UserAccountService.
+- mavenLocal updated: every module's jar is current.
+
+### Next morning — kick off the 5-way
+
+```bash
+./scripts/nightly-compare.sh
+```
+
+That single command publishes all modules, runs the 5-way comparison
+on the standard 10-file batch with a 30s heartbeat, archives the raw
+report under `docs/sessions/<date>-rework-runN-raw.md`, and prints a
+side-by-side diff of cost/duration/turns/findings vs the previous
+archive (today's `2026-04-19-four-way-comparison-run2-raw.md`).
+
+### Hypotheses for the 5-way
+
+The morning run-2 had 4 variants; this run adds a 5th and several
+recipes. Hypotheses worth testing:
+
+1. **G18 false positives drop to 0 across variants** (the detector fix
+   was always correct; the morning run loaded a stale `recipes` jar).
+   `nightly-compare.sh` publishes everything, so this should hold.
+2. **F2 recipe fires on `UserAccountService.validate`** in HARNESS's
+   recipe pass list (it didn't in run-2 because the published-jar bug
+   masked it). After the fix, expect the recipes column for
+   UserAccountService.java to include `ReturnInsteadOfMutateArgRecipe`.
+3. **`MergeInlineValidationRecipe` fires on `UserAccountService.createAccount`**
+   — the inline 5-check validation should fold into the existing
+   `validate()` method, expanding it from 2 params to 3.
+4. **System.err / System.out converted to `@Log4j2`** by the published
+   recipe in the HARNESS variant. HttpRetryPolicy's `System.err.println`
+   becomes `log.error(...)`. Sandbox build will gain Lombok + Log4j2
+   deps automatically.
+5. **Mumbling logs deleted** if any sandbox file has them (the current
+   sandbox doesn't, so this stays quiet — coverage is unit tests).
+6. **RECIPES_ONLY baseline**: final-findings count should be the lower
+   bound for what pure deterministic OpenRewrite achieves. Cost = $0,
+   wall < 30s. If HARNESS's final findings ≈ RECIPES_ONLY's, the agent
+   isn't adding much durable quality on top.
+7. **HARNESS retry cost**: now reruns recipes before the agent. Expect
+   HARNESS retry-pass agent invocations to skip entirely when recipes
+   clear all introduced findings — should drop HARNESS cost meaningfully.
+
+### Mini-backlog for the run-up
+
+- The earlier backlog item "introduced-findings breakdown by code per variant"
+  is still open — without it we can't tell which patterns the feedback
+  loop and the new recipes actually fix.
+- Decide whether `maxRetries=1` or `=2` is the right default after
+  observing the new HARNESS-retry-with-recipes behaviour.
+- Sandbox module currently has no Lombok dep declared. The published
+  recipe's deps variant SHOULD add them on first run; verify.
+- `Lombok permits Unsafe::objectFieldOffset` warning prints on every
+  test run under JDK 25. Annoying but harmless. Lombok 1.18.45+ should
+  fix it; bump when available.
+
+---
+
 ## 2026-04-19 late-session handoff — 4-way measured, stale-findings + feedback-loop + F2 recipe + G18-detector fix landed
 
 ### What shipped tonight (after the morning handoff below)
