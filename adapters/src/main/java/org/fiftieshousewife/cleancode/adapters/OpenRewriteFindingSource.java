@@ -139,6 +139,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new InconsistentNamingRecipe(),
                 new BadClassNameRecipe(),
                 new SystemOutRecipe(),
+                new FixedStringLogRecipe(),
                 new LegacyFileApiRecipe(),
                 new MultipleAssertRecipe(),
                 new LargeConstructorRecipe(thresholds.recordComponentCount()),
@@ -204,6 +205,7 @@ public class OpenRewriteFindingSource implements FindingSource {
             case InconsistentNamingRecipe r -> mapInconsistentNaming(r.collectedRows());
             case BadClassNameRecipe r -> mapBadClassName(r.collectedRows());
             case SystemOutRecipe r -> mapSystemOut(r.collectedRows());
+            case FixedStringLogRecipe r -> mapFixedStringLog(r.collectedRows());
             case LegacyFileApiRecipe r -> mapLegacyFileApi(r.collectedRows());
             case MultipleAssertRecipe r -> mapMultipleAssert(r.collectedRows());
             case LargeConstructorRecipe r -> mapLargeConstructor(r.collectedRows());
@@ -491,9 +493,21 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapSystemOut(List<SystemOutRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G4, r.className(),
-                        "'%s' bypasses structured logging — use @Slf4j instead".formatted(r.call())))
+                .map(r -> finding(HeuristicCode.G12, r.className(),
+                        "'%s' is dev-time clutter in production code — delete or route through structured logging".formatted(r.call())))
                 .toList();
+    }
+
+    private List<Finding> mapFixedStringLog(List<FixedStringLogRecipe.Row> rows) {
+        return rows.stream()
+                .map(r -> finding(HeuristicCode.G12, r.className(),
+                        "log.%s(\"%s\") has no runtime variables — delete the log line or upgrade it to a structured event".formatted(
+                                r.level(), abbreviate(r.literal()))))
+                .toList();
+    }
+
+    private static String abbreviate(final String s) {
+        return s.length() <= 60 ? s : s.substring(0, 57) + "...";
     }
 
     private List<Finding> mapLegacyFileApi(List<LegacyFileApiRecipe.Row> rows) {
