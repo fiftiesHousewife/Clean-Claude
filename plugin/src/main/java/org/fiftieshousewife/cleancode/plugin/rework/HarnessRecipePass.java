@@ -7,6 +7,7 @@ import org.fiftieshousewife.cleancode.refactoring.DeleteSectionCommentsRecipe;
 import org.fiftieshousewife.cleancode.refactoring.InvertNegativeConditionalRecipe;
 import org.fiftieshousewife.cleancode.refactoring.MakeMethodStaticRecipe;
 import org.fiftieshousewife.cleancode.refactoring.MathMinCapRecipe;
+import org.fiftieshousewife.cleancode.refactoring.MergeInlineValidationRecipe;
 import org.fiftieshousewife.cleancode.refactoring.ReplaceForAddNCopiesRecipe;
 import org.fiftieshousewife.cleancode.refactoring.RestoreInterruptFlagRecipe;
 import org.fiftieshousewife.cleancode.refactoring.ReturnInsteadOfMutateArgRecipe;
@@ -48,6 +49,7 @@ public final class HarnessRecipePass {
             new MathMinCapRecipe(),
             new ReplaceForAddNCopiesRecipe(),
             new CollapseSiblingGuardsRecipe(),
+            new MergeInlineValidationRecipe(),
             new ReturnInsteadOfMutateArgRecipe(),
             new AddFinalRecipe(),
             new InvertNegativeConditionalRecipe(),
