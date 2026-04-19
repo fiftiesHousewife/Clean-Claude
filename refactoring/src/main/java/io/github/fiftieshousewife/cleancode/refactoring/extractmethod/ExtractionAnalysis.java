@@ -48,7 +48,6 @@ record ExtractionAnalysis(
             return reject("enclosing method is generic; first-cut port does not propagate type parameters");
         }
         final String rangeText = target.extractedText();
-        final String afterText = target.afterRangeText();
         final Optional<ExitMode> maybeMode = ExitMode.classify(
                 rangeText, target.extractedStatements(), target.enclosingMethod(), cursor);
         if (maybeMode.isEmpty()) {
@@ -56,8 +55,8 @@ record ExtractionAnalysis(
         }
         final ExitMode exitMode = maybeMode.get();
         final Map<String, String> externalNames = collectExternalNames(target, cursor);
-        final List<Parameter> params = collectParameters(rangeText, externalNames);
-        final List<OutputVariable> outputs = collectOutputs(target, cursor, rangeText, afterText, externalNames);
+        final List<Parameter> params = collectParameters(target.extractedStatements(), externalNames);
+        final List<OutputVariable> outputs = collectOutputs(target, cursor, externalNames);
         if (outputs.size() > 1) {
             return reject("more than one output value is needed — cannot encode in a Java return");
         }
@@ -76,11 +75,11 @@ record ExtractionAnalysis(
                 isStatic(target), throwsList(target, cursor), exitMode, true, "");
     }
 
-    private static List<Parameter> collectParameters(final String rangeText,
+    private static List<Parameter> collectParameters(final List<Statement> rangeStatements,
                                                      final Map<String, String> externalNames) {
         final List<Parameter> params = new ArrayList<>();
         externalNames.forEach((name, type) -> {
-            if (VariableUsagePatterns.isRead(rangeText, name)) {
+            if (VariableUsageAnalyzer.isRead(rangeStatements, name)) {
                 params.add(new Parameter(name, type));
             }
         });
@@ -88,17 +87,18 @@ record ExtractionAnalysis(
     }
 
     private static List<OutputVariable> collectOutputs(final ExtractionTarget target, final Cursor cursor,
-                                                       final String rangeText, final String afterText,
                                                        final Map<String, String> externalNames) {
+        final List<Statement> rangeStatements = target.extractedStatements();
+        final List<Statement> afterStatements = target.statementsAfterRange();
         final List<OutputVariable> outputs = new ArrayList<>();
         collectInternalDecls(target, cursor).forEach(ov -> {
-            if (VariableUsagePatterns.isRead(afterText, ov.name())) {
+            if (VariableUsageAnalyzer.isRead(afterStatements, ov.name())) {
                 outputs.add(ov);
             }
         });
         externalNames.forEach((name, type) -> {
-            if (VariableUsagePatterns.isWritten(rangeText, name)
-                    && VariableUsagePatterns.isRead(afterText, name)) {
+            if (VariableUsageAnalyzer.isWritten(rangeStatements, name)
+                    && VariableUsageAnalyzer.isRead(afterStatements, name)) {
                 outputs.add(new OutputVariable(name, type, true));
             }
         });
