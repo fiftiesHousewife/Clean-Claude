@@ -139,6 +139,8 @@ public final class PromptBuilder {
                   • G31 consecutive fluent-builder calls on the same receiver are chained.
                   • G34 `// Phase N:` and `// Step N:` section markers are gone.
                   • Ch7.1 `catch (InterruptedException)` blocks now restore the interrupt flag.
+                  • Ch7.1 `Foo r = …; try { … } finally { r.close(); }` (with or without a
+                    `if (r != null)` guard) has been lifted to try-with-resources.
                   • F2 `private`/package-private `void` methods whose sole mutation was
                     `list.add(x)` on a List parameter already return `List<T>` instead,
                     and same-class call sites have been updated.

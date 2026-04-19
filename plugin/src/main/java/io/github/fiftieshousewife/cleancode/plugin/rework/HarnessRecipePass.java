@@ -13,6 +13,7 @@ import io.github.fiftieshousewife.cleancode.refactoring.ReplaceForAddNCopiesReci
 import io.github.fiftieshousewife.cleancode.refactoring.RestoreInterruptFlagRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.ReturnInsteadOfMutateArgRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.ShortenFullyQualifiedReferencesRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.UseTryWithResourcesRecipe;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
@@ -64,6 +65,7 @@ public final class HarnessRecipePass {
             new CollapseSiblingGuardsRecipe(),
             new MergeInlineValidationRecipe(),
             new ReturnInsteadOfMutateArgRecipe(),
+            new UseTryWithResourcesRecipe(),
             new AddFinalRecipe(),
             new InvertNegativeConditionalRecipe(),
             new ShortenFullyQualifiedReferencesRecipe(),
