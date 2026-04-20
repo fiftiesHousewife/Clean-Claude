@@ -19,7 +19,6 @@ import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
 import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
-import org.openrewrite.config.Environment;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
 
@@ -43,23 +42,16 @@ import java.util.Map;
  */
 public final class HarnessRecipePass {
 
-    /**
-     * Recipe ID for the published Lombok-Log4j2 conversion recipe.
-     * Loaded via OpenRewrite's declarative recipe Environment because
-     * the recipe is composed in YAML rather than published as a Java
-     * Recipe class.
-     *
-     * <p>We use the {@code NoDeps} variant because HarnessRecipePass
-     * applies each .java file in its own in-memory source set — the
-     * Gradle-build-file dep injection in the default variant has
-     * nothing to modify here and would silently no-op. Leaving the
-     * module's Lombok + Log4j2 dependencies out of scope means the
-     * caller is expected to add them to the target module's build
-     * file when they want the resulting {@code @Log4j2}-annotated
-     * code to compile.
-     */
-    private static final String SYSTEM_OUT_TO_LOMBOK_RECIPE =
-            "io.github.fiftieshousewife.SystemOutToLombokLog4jRecipeNoDeps";
+    // The published Lombok/Log4j2 recipe is paused as of 2026-04-20.
+    // HarnessRecipePass runs per-file, so the default variant's
+    // Gradle-build-file dep injection silently no-ops while the Java
+    // transform still inserts @Log4j2 + log4j imports. The NoDeps variant
+    // has the same problem (still does the Java transform, still assumes
+    // Lombok on the classpath). Reintroduce once the recipe ships a
+    // variant that either (a) adds Lombok to the calling module's build
+    // out-of-band or (b) only fires when the module already declares it.
+    // private static final String SYSTEM_OUT_TO_LOMBOK_RECIPE =
+    //         "io.github.fiftieshousewife.SystemOutToLombokLog4jRecipeNoDeps";
 
     /** Keeps the recipe list in one place so the variant prompt stays in sync. */
     private static final List<Recipe> DETERMINISTIC_RECIPES = List.of(
@@ -76,15 +68,7 @@ public final class HarnessRecipePass {
             new UseTryWithResourcesRecipe(),
             new AddFinalRecipe(),
             new InvertNegativeConditionalRecipe(),
-            new ShortenFullyQualifiedReferencesRecipe(),
-            loadDeclarativeRecipe(SYSTEM_OUT_TO_LOMBOK_RECIPE));
-
-    private static Recipe loadDeclarativeRecipe(final String recipeId) {
-        return Environment.builder()
-                .scanRuntimeClasspath()
-                .build()
-                .activateRecipes(recipeId);
-    }
+            new ShortenFullyQualifiedReferencesRecipe());
 
     private HarnessRecipePass() {}
 

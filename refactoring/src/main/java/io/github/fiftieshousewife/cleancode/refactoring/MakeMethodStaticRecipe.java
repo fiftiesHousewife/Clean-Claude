@@ -87,22 +87,23 @@ public final class MakeMethodStaticRecipe extends Recipe {
                 // picks up implicit outer references.
                 final Set<String> instanceFields = new HashSet<>(collectInstanceFieldNames(cd));
                 final Set<String> instanceMethods = new HashSet<>(collectInstanceMethodNames(cd));
-                addEnclosingClassState(getCursor(), instanceFields, instanceMethods);
+                final Set<String> staticMethods = new HashSet<>(collectStaticMethodNames(cd));
+                addEnclosingClassState(getCursor(), instanceFields, instanceMethods, staticMethods);
                 final Set<String> superCalled = superCalledFromCursor(getCursor());
                 return cd.withBody(cd.getBody().withStatements(
                         rewriteMethods(cd.getBody().getStatements(), instanceFields,
-                                instanceMethods, superCalled)));
+                                instanceMethods, staticMethods, superCalled)));
             }
 
             private List<org.openrewrite.java.tree.Statement> rewriteMethods(
                     final List<org.openrewrite.java.tree.Statement> statements,
                     final Set<String> fields, final Set<String> instanceMethods,
-                    final Set<String> superCalled) {
+                    final Set<String> staticMethods, final Set<String> superCalled) {
                 final List<org.openrewrite.java.tree.Statement> out = new ArrayList<>(statements.size());
                 for (final var statement : statements) {
                     if (statement instanceof J.MethodDeclaration method
                             && !superCalled.contains(method.getSimpleName())
-                            && shouldMakeStatic(method, fields, instanceMethods)) {
+                            && shouldMakeStatic(method, fields, instanceMethods, staticMethods)) {
                         out.add(addStaticModifier(method));
                     } else {
                         out.add(statement);
@@ -121,14 +122,16 @@ public final class MakeMethodStaticRecipe extends Recipe {
 
     private static void addEnclosingClassState(final Cursor classCursor,
                                                 final Set<String> fields,
-                                                final Set<String> methods) {
+                                                final Set<String> instanceMethods,
+                                                final Set<String> staticMethods) {
         classCursor.getPathAsStream(J.ClassDeclaration.class::isInstance)
                 .map(J.ClassDeclaration.class::cast)
                 .skip(1)
                 .filter(enclosing -> enclosing.getBody() != null)
                 .forEach(enclosing -> {
                     fields.addAll(collectInstanceFieldNames(enclosing));
-                    methods.addAll(collectInstanceMethodNames(enclosing));
+                    instanceMethods.addAll(collectInstanceMethodNames(enclosing));
+                    staticMethods.addAll(collectStaticMethodNames(enclosing));
                 });
     }
 
@@ -169,9 +172,38 @@ public final class MakeMethodStaticRecipe extends Recipe {
         return names;
     }
 
+    private static Set<String> collectStaticMethodNames(final J.ClassDeclaration classDecl) {
+        final Set<String> names = new HashSet<>();
+        for (final var statement : classDecl.getBody().getStatements()) {
+            if (statement instanceof J.MethodDeclaration method
+                    && isStatic(method.getModifiers())
+                    && !method.isConstructor()) {
+                names.add(method.getSimpleName());
+            }
+        }
+        return names;
+    }
+
+    /**
+     * A bare method invocation (no select) is provably static when it
+     * matches a known static method of this class or an enclosing class,
+     * or when OpenRewrite's resolved type for the call is explicitly
+     * flagged as {@link Flag#Static}. Anything else — including calls
+     * whose type resolution failed — is treated as instance-bound.
+     */
+    private static boolean isProvablyStatic(final J.MethodInvocation m,
+                                            final Set<String> sameOrEnclosingStaticMethods) {
+        if (sameOrEnclosingStaticMethods.contains(m.getSimpleName())) {
+            return true;
+        }
+        final JavaType.Method mt = m.getMethodType();
+        return mt != null && mt.hasFlags(Flag.Static);
+    }
+
     private static boolean shouldMakeStatic(final J.MethodDeclaration method,
                                             final Set<String> instanceFields,
-                                            final Set<String> instanceMethods) {
+                                            final Set<String> instanceMethods,
+                                            final Set<String> staticMethods) {
         if (method.isConstructor() || method.getBody() == null) {
             return false;
         }
@@ -181,7 +213,7 @@ public final class MakeMethodStaticRecipe extends Recipe {
         if (hasSkipAnnotation(method)) {
             return false;
         }
-        return !usesInstanceState(method, instanceFields, instanceMethods);
+        return !usesInstanceState(method, instanceFields, instanceMethods, staticMethods);
     }
 
     private static boolean hasSkipAnnotation(final J.MethodDeclaration method) {
@@ -191,7 +223,8 @@ public final class MakeMethodStaticRecipe extends Recipe {
 
     private static boolean usesInstanceState(final J.MethodDeclaration method,
                                              final Set<String> fields,
-                                             final Set<String> instanceMethods) {
+                                             final Set<String> instanceMethods,
+                                             final Set<String> staticMethods) {
         final AtomicBoolean uses = new AtomicBoolean(false);
         new JavaIsoVisitor<AtomicBoolean>() {
             @Override
@@ -222,11 +255,15 @@ public final class MakeMethodStaticRecipe extends Recipe {
                 if (flag.get()) {
                     return super.visitMethodInvocation(m, flag);
                 }
-                // Bare call + instance method — either declared in this
-                // class or inherited (getClass, hashCode, toString, …).
-                if (m.getSelect() == null
-                        && (instanceMethods.contains(m.getSimpleName())
-                                || isInstanceMethodByType(m.getMethodType()))) {
+                // Bare call. Conservative rule: unless we can prove it
+                // resolves to a static method (same-class or enclosing-
+                // class static sibling, or resolved JavaType marked
+                // Flag.Static), assume it is an instance call. OpenRewrite
+                // type resolution sometimes fails silently on inherited
+                // calls like getCursor() from a JavaIsoVisitor subclass;
+                // without the conservative fallback the recipe marks the
+                // method static and produces a compile error.
+                if (m.getSelect() == null && !isProvablyStatic(m, staticMethods)) {
                     flag.set(true);
                 }
                 // Explicit `this.foo()` / `super.foo()`.
@@ -259,13 +296,6 @@ public final class MakeMethodStaticRecipe extends Recipe {
             }
         }.visit(method.getBody(), uses);
         return uses.get();
-    }
-
-    private static boolean isInstanceMethodByType(final JavaType.Method methodType) {
-        if (methodType == null) {
-            return false;
-        }
-        return !methodType.hasFlags(Flag.Static);
     }
 
     private static boolean needsEnclosingInstance(final JavaType type) {
