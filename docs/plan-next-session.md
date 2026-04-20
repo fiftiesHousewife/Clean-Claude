@@ -1,5 +1,93 @@
 # Plan: next session handoff
 
+## 2026-04-20 morning handoff — full P0→P4 sprint + recipe hardening + whole-codebase sweep verified
+
+### What shipped this session (commits `8329e2e` → `6ae0adc`)
+
+| Commit | Scope |
+|---|---|
+| `8329e2e` | **P0** — Root package `org.fiftieshousewife.cleancode` → `io.github.fiftieshousewife.cleancode` across 347 files. Maven Central requires `io.github.<user>` for unverified groups. |
+| `57bbfb2` | **P1 partial** — A1 new-class checklist in every fix brief; A2 `fix: Class (Code:choice)` commit-message protocol in experiment prompts + PromptBuilder; C1 `StringBuilderThreadingRecipe` (G24 + F2 detection); C3 skill section in `clean-code-java-idioms/SKILL.md`. **C2 deferred.** |
+| `eb73f36` | **CI hotfix** — `java-version: 25` in `.github/workflows/ci.yml`; `@DisableCachingByDefault` on 9 Gradle tasks (validatePlugins now passes under Gradle 9.4). |
+| `2af95e3` | **P2** — `UseTryWithResourcesRecipe` (D10). Rewrites `Foo r = …; try {…} finally { r.close(); }` (and the null-guarded variant) to try-with-resources. Wired into HarnessRecipePass. |
+| `6f5889a` | **P3** — `scripts/run-single-file.sh`: scratch-branch + claude -p on one brief, writes sub-minute summary to `experiment/single/<ts>-<Class>.md`. |
+| `f77877a` | **P4** — `VariableUsageAnalyzer` (AST) replaces `VariableUsagePatterns` (regex). Filters identifiers in comments/strings; distinguishes `foo.bar` from bare `bar`. |
+| `69a2224` | **D14-1** — `AbstractConstantExtractionRecipe<V>` skeleton; `ExtractConstantRecipe`/`ExtractClassConstantRecipe` reduce to three policy methods. |
+| `71bc663` | **D14-2** — `AstFragments` hoisted to `refactoring/support/` with new `parseField` + `parseStatements`. 6 holder-class parse sites migrated. |
+| `791e768` | **D14-3** — `Statements.rebuild(block, Function<Statement, List<Statement>>)` helper. 3 recipes migrated. |
+| `aaad887` | **D14-4** — `ModifierEditor` helper (create/append/remove/has/hasAny). `AddFinalRecipe` + `ReduceVisibilityRecipe` migrated. |
+| `f50fa51` | **Recipe-sweep fix wave 1** — MakeMethodStatic skips @Override + JUnit lifecycle; AddFinal skips lambda/catch/TWR/foreach params with proper whitespace; ChainConsecutiveBuilderCalls splices into leftmost receiver (no more dropped appends); `HarnessRecipePassParseCheckTest` (15 samples). |
+| `53263cb` | **Recipe-sweep fix wave 2** — `support/ClassKinds` helper gates every class-body-modifying recipe. MakeMethodStatic skips interfaces/records/annotations, catches `this`/`super`/`this::`/`new Inner()`, threads enclosing-class state through the cursor path, scans for same-CU super calls. ChainConsecutiveBuilderCalls gets `FLUENT_METHOD_NAMES` allow-list. ReduceVisibility + AbstractConstantExtraction get ClassKinds gates. |
+| `76a966b` | **Lombok recipe paused + conservative static** — removed `SystemOutToLombokLog4jRecipe` from DETERMINISTIC_RECIPES (per-file pass can't inject Gradle deps; waiting for 0.5 variant that gates on module). `isProvablyStatic(m, staticMethods)` flips burden of proof: only mark static when proven (matches known-static sibling OR resolved method type has Flag.Static); everything else treated as instance-bound (catches inherited `getCursor()` calls whose type resolution fails silently). |
+| `6ae0adc` | `runHarnessPass` task committed to plugin/build.gradle.kts; sandbox added to CLI EXCLUDE_DIRS so sweep-induced line shifts don't break MCP line-number tests. |
+
+### State at end of session
+
+- Working tree clean on `main`; well ahead of origin/main (all pushed).
+- `./gradlew build` green end-to-end (JDK 25, Gradle 9.4.1).
+- CI green on last push.
+- Whole-codebase sweep verified: `./gradlew :plugin:runHarnessPass -Pdir=<root>` modifies 176 non-sandbox files with 226 recipe hits and leaves `./gradlew build` green.
+- mavenLocal updated: all 8 modules published under the new coordinates.
+
+### Whole-codebase sweep stats (2026-04-20)
+
+Recipe-hit breakdown across the codebase (sandbox excluded):
+
+| Recipe | Files touched |
+|---|---:|
+| AddFinalRecipe | 147 |
+| CollapseSiblingGuardsRecipe | 32 |
+| MakeMethodStaticRecipe | 31 |
+| ShortenFullyQualifiedReferencesRecipe | 9 |
+| ChainConsecutiveBuilderCallsRecipe | 6 |
+| InvertNegativeConditionalRecipe | 1 |
+
+Token-level deltas: +1,419 `final` keywords, +199 `static` keywords; net −412 lines (1,558 insertions / 1,970 deletions).
+
+The sweep result was NOT committed — it's a one-liner to reproduce when desired:
+```bash
+./gradlew :plugin:runHarnessPass -Pdir=/Users/pippanewbold/CleanClaude
+```
+
+### Priority order for the next sprint (set 2026-04-20 morning)
+
+1. **P1-C2 — ReplaceStringBuilderWithTextBlockRecipe.** Detection (C1) + skill (C3) shipped; C2 is the refactoring recipe that rewrites `StringBuilder sb = new StringBuilder(); sb.append(literal)…; return sb.toString();` to either a `""".text block""".formatted(…)` return (mostly literal) or a `List<String>` + `String.join("\n", …)` return (mostly computed). Intentionally conservative: target the exact shape, let the skill catch the rest.
+
+2. **Findings-count measurement for non-sandbox modules.** Only `sandbox` currently applies the clean-code plugin for self-analysis (59 findings baseline). We can count recipe hits across the codebase but can't get true before/after finding-count numbers for plugin/, refactoring/, etc. Options:
+   - Apply the plugin to every module via root-level configuration (noisy).
+   - Add a `self-analyse` convention plugin in `build-logic/` that opt-in-applies analyseCleanCode to each module.
+   - Add a one-off `wholeCodebaseSummary` task that walks every `src/main/java` and runs the adapter chain.
+   Without this we can't publish "recipe sweep fixed N of M findings" numbers.
+
+3. **fifties-recipes 0.5 watch.** Reintroduce `SystemOutToLombokLog4jRecipe` once 0.5 ships a variant that either (a) is gated on the module already declaring Lombok or (b) handles dep injection per-module. The recipe ID is commented out in `HarnessRecipePass.java` with a note pointing at the 0.4 behaviour gap.
+
+4. **Decision: deps-upgrade recipe integration.** Currently `DependencyUpdatesFindingSource` (E1 detection) + `UpdateVersionCatalogTask` (Ben-Manes → `libs.versions.toml` rewrite) run outside the sweep. Pick: (a) wire `updateVersionCatalog` as a pre-step in a full sweep command, (b) integrate OpenRewrite's `UpgradeDependencyVersion`, or (c) leave it standalone.
+
+5. **Monster-OR chains from CollapseSiblingGuards.** Semantically correct but aesthetically ugly — a 6+-predicate `||` chain is technically legal but hard to read. Consider an operand-count / char-length threshold above which the recipe leaves the guards as separate `if` blocks.
+
+6. **`super.X()` detection is same-CU-only.** Multi-file inheritance chains (Parent in one file, Child in another) can still produce a broken super call when MakeMethodStatic transforms the parent. Future: project-wide scan (expensive) or a visitor that runs BEFORE the static-detection pass and feeds names into the skip set.
+
+### Hypotheses / measurements worth running
+
+The `scripts/nightly-compare.sh` 5-way run **has not been re-run since the pre-sweep baseline** (raw archive at `docs/sessions/2026-04-19-four-way-comparison-run2-raw.md`). A post-hardening run would test:
+
+1. **RECIPES_ONLY variant improves** — second wave fix should let more recipes fire cleanly on sandbox files without the Log4j/static breakage from the first sweep.
+2. **HARNESS_RECIPES_THEN_AGENT rejected-count drops** — agent should see fewer "already-done" findings now that the recipe pass produces cleaner intermediate output.
+3. **Overall cost remains similar or drops** — recipes doing more work up front should shrink the agent's turn count.
+
+Only run this when explicitly requested; it costs ~$15-20 and ~1h.
+
+### Known-quality gaps (not blockers, worth noting)
+
+- `MergeInlineValidationRecipe` and `ReturnInsteadOfMutateArgRecipe` both use the `private` visibility on helper methods — sweep catches them via AddFinalRecipe but their own static-methods were identified as a risk area in manual review. The conservative `isProvablyStatic` check now protects them at runtime but structural improvements (moving shared helpers to `support/`) would be cleaner.
+- `HarnessRecipePassCli` is reachable as `./gradlew :plugin:runHarnessPass` — not documented in README. Worth a line if we expect contributors to sweep manually.
+
+### Backlog items (unchanged from prior handoff unless noted)
+
+Everything below is unchanged from the 2026-04-19 evening handoff. Reordered sections have been preserved. See below for the full existing backlog.
+
+---
+
 ## 2026-04-19 evening handoff — 5th variant, 3 new recipes, published Lombok recipe, JDK 25, full automation
 
 ### What shipped this session (commits `c333675` → `5e02d15`)
