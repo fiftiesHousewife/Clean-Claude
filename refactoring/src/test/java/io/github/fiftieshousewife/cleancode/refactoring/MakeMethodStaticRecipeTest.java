@@ -168,6 +168,122 @@ class MakeMethodStaticRecipeTest implements RewriteTest {
     }
 
     @Test
+    void leavesOverrideMethodAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Child extends Object {
+                            @Override
+                            public String toString() {
+                                return "child";
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesJUnitTestMethodAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        import org.junit.jupiter.api.Test;
+                        class FooTest {
+                            @Test
+                            void addsTwoAndTwo() {
+                                int result = 2 + 2;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesJUnitLifecycleMethodsAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        import org.junit.jupiter.api.BeforeEach;
+                        import org.junit.jupiter.api.AfterEach;
+                        class LifecycleTest {
+                            @BeforeEach
+                            void setUp() {
+                                int x = 1;
+                            }
+                            @AfterEach
+                            void tearDown() {
+                                int y = 2;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesNestedOverrideFromAnonymousClass() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Host {
+                            Runnable task() {
+                                return new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        int n = 1;
+                                    }
+                                };
+                            }
+                        }
+                        """,
+                        """
+                        package com.example;
+                        public class Host {
+                            static Runnable task() {
+                                return new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        int n = 1;
+                                    }
+                                };
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void insertsStaticBeforeReturnTypeWhenNoVisibilityModifier() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class H {
+                            int identity(int x) {
+                                return x;
+                            }
+                        }
+                        """,
+                        """
+                        package com.example;
+                        public class H {
+                            static int identity(int x) {
+                                return x;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
     void insertsStaticAfterVisibilityModifier() {
         rewriteRun(
                 java(

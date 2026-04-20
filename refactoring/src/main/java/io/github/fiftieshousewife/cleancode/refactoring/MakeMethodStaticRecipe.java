@@ -15,6 +15,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// Simple-name allow-list of annotations that prevent the recipe from marking a
+// method static: @Override (static can't override), and the JUnit 5 lifecycle
+// annotations (@Test/@BeforeEach/@AfterEach/@BeforeAll/@AfterAll/@ParameterizedTest/
+// @RepeatedTest/@TestFactory/@Disabled), all of which require instance methods
+// when declared at the top level of a non-static test class.
+
 /**
  * Adds {@code static} to instance methods that don't read or write any
  * instance state — the G18 "does not use instance state" finding. The
@@ -28,6 +34,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * {@code this.foo()} with {@code foo()} as a stylistic pass.
  */
 public final class MakeMethodStaticRecipe extends Recipe {
+
+    private static final Set<String> SKIP_ANNOTATIONS = Set.of(
+            "Override",
+            "Test", "ParameterizedTest", "RepeatedTest", "TestFactory", "TestTemplate",
+            "BeforeEach", "AfterEach", "BeforeAll", "AfterAll", "Disabled");
 
     @Override
     public String getDisplayName() {
@@ -105,7 +116,15 @@ public final class MakeMethodStaticRecipe extends Recipe {
         if (isStatic(method.getModifiers()) || isAbstract(method.getModifiers())) {
             return false;
         }
+        if (hasSkipAnnotation(method)) {
+            return false;
+        }
         return !usesInstanceState(method, instanceFields, instanceMethods);
+    }
+
+    private static boolean hasSkipAnnotation(final J.MethodDeclaration method) {
+        return method.getLeadingAnnotations().stream()
+                .anyMatch(a -> SKIP_ANNOTATIONS.contains(a.getSimpleName()));
     }
 
     private static boolean usesInstanceState(final J.MethodDeclaration method,
@@ -148,13 +167,6 @@ public final class MakeMethodStaticRecipe extends Recipe {
     }
 
     private static J.MethodDeclaration addStaticModifier(final J.MethodDeclaration method) {
-        final var staticMod = new J.Modifier(
-                Tree.randomId(),
-                Space.SINGLE_SPACE,
-                Markers.EMPTY,
-                null,
-                J.Modifier.Type.Static,
-                List.of());
         final List<J.Modifier> newModifiers = new ArrayList<>(method.getModifiers());
         // Place `static` after visibility, before return type — conventional order.
         int insertAt = 0;
@@ -163,8 +175,37 @@ public final class MakeMethodStaticRecipe extends Recipe {
                 insertAt = i + 1;
             }
         }
+        // Whitespace bookkeeping: when we insert at position 0 and there were no
+        // prior modifiers, the return type's original prefix is the space between
+        // the method's leading whitespace and the return type. That prefix (whatever
+        // it is — usually EMPTY when there are no modifiers) now belongs to `static`;
+        // the return type must pick up a single space as the separator between
+        // `static` and its type name.
+        final J.Modifier staticMod;
+        final J.MethodDeclaration withReturnTypeAdjusted;
+        if (insertAt == 0 && newModifiers.isEmpty() && method.getReturnTypeExpression() != null) {
+            final Space originalReturnPrefix = method.getReturnTypeExpression().getPrefix();
+            staticMod = new J.Modifier(
+                    Tree.randomId(),
+                    originalReturnPrefix,
+                    Markers.EMPTY,
+                    null,
+                    J.Modifier.Type.Static,
+                    List.of());
+            withReturnTypeAdjusted = method.withReturnTypeExpression(
+                    method.getReturnTypeExpression().withPrefix(Space.SINGLE_SPACE));
+        } else {
+            staticMod = new J.Modifier(
+                    Tree.randomId(),
+                    Space.SINGLE_SPACE,
+                    Markers.EMPTY,
+                    null,
+                    J.Modifier.Type.Static,
+                    List.of());
+            withReturnTypeAdjusted = method;
+        }
         newModifiers.add(insertAt, staticMod);
-        return method.withModifiers(newModifiers);
+        return withReturnTypeAdjusted.withModifiers(newModifiers);
     }
 
     private static boolean isStatic(final List<J.Modifier> modifiers) {

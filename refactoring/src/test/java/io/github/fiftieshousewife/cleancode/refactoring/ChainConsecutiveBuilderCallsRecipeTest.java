@@ -181,4 +181,63 @@ class ChainConsecutiveBuilderCallsRecipeTest implements RewriteTest {
                 )
         );
     }
+
+    @Test
+    void chainsIntoLeftmostReceiverWhenMergingExistingChains() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Merge {
+                            public String render(int n) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("hello ").append(n);
+                                sb.append('\\n');
+                                sb.append("extra").append("-done");
+                                return sb.toString();
+                            }
+                        }
+                        """,
+                        """
+                        package com.example;
+                        public class Merge {
+                            public String render(int n) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("hello ").append(n).append('\\n').append("extra").append("-done");
+                                return sb.toString();
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void preservesConditionalArgumentsWhenMerging() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Cond {
+                            public String render(int n) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("count=").append(n).append(n == 1 ? "" : "s");
+                                sb.append(" done");
+                                return sb.toString();
+                            }
+                        }
+                        """,
+                        """
+                        package com.example;
+                        public class Cond {
+                            public String render(int n) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("count=").append(n).append(n == 1 ? "" : "s").append(" done");
+                                return sb.toString();
+                            }
+                        }
+                        """
+                )
+        );
+    }
 }

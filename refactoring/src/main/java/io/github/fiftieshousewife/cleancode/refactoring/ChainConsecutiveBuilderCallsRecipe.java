@@ -102,9 +102,25 @@ public final class ChainConsecutiveBuilderCallsRecipe extends Recipe {
         J.MethodInvocation chained = methodInvocationOf(statements.get(start));
         for (int j = start + 1; j <= end; j++) {
             final J.MethodInvocation next = methodInvocationOf(statements.get(j));
-            chained = next.withSelect(chained.withPrefix(Space.EMPTY));
+            chained = spliceIntoLeftmostReceiver(next, chained.withPrefix(Space.EMPTY));
         }
         return chained.withPrefix(statements.get(start).getPrefix());
+    }
+
+    /**
+     * Replaces the leftmost receiver of {@code target} with {@code newReceiver}.
+     * Walks down the select chain so that a {@code next} statement of the form
+     * {@code sb.append(a).append(b)} has its bare {@code sb} receiver swapped
+     * out for the previously-chained expression — without losing any of the
+     * intermediate {@code .append(...)} calls that live between the leftmost
+     * receiver and the outer invocation.
+     */
+    private static J.MethodInvocation spliceIntoLeftmostReceiver(
+            final J.MethodInvocation target, final Expression newReceiver) {
+        if (target.getSelect() instanceof J.MethodInvocation inner) {
+            return target.withSelect(spliceIntoLeftmostReceiver(inner, newReceiver));
+        }
+        return target.withSelect(newReceiver);
     }
 
     private static String receiverIdentifierName(final Statement statement) {
