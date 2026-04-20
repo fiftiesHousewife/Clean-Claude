@@ -60,3 +60,9 @@ gradlePlugin {
         }
     }
 }
+
+tasks.register<JavaExec>("runHarnessPass") {
+    mainClass.set("io.github.fiftieshousewife.cleancode.plugin.rework.HarnessRecipePassCli")
+    classpath = sourceSets.main.get().runtimeClasspath
+    args = listOf(project.findProperty("dir")?.toString() ?: rootProject.projectDir.absolutePath)
+}

@@ -29,9 +29,12 @@ public final class HarnessRecipePassCli {
 
     private static final PrintStream OUT = System.out;
 
+    // Sandbox holds deliberately-bad fixtures that the MCP tests verify
+    // against fixed line numbers. Let the sweep skip them so whole-codebase
+    // runs do not shift the fixtures' line numbers and break those tests.
     private static final Set<String> EXCLUDE_DIRS = Set.of(
             "build", ".gradle", ".git", "node_modules", "experiment",
-            "build-logic", "docs", "gradle");
+            "build-logic", "docs", "gradle", "sandbox");
 
     private HarnessRecipePassCli() {}
 
