@@ -47,11 +47,19 @@ public final class HarnessRecipePass {
      * Recipe ID for the published Lombok-Log4j2 conversion recipe.
      * Loaded via OpenRewrite's declarative recipe Environment because
      * the recipe is composed in YAML rather than published as a Java
-     * Recipe class. The deps variant adds Lombok + Log4j2 dependencies
-     * to the build file so the rewritten code actually compiles.
+     * Recipe class.
+     *
+     * <p>We use the {@code NoDeps} variant because HarnessRecipePass
+     * applies each .java file in its own in-memory source set — the
+     * Gradle-build-file dep injection in the default variant has
+     * nothing to modify here and would silently no-op. Leaving the
+     * module's Lombok + Log4j2 dependencies out of scope means the
+     * caller is expected to add them to the target module's build
+     * file when they want the resulting {@code @Log4j2}-annotated
+     * code to compile.
      */
     private static final String SYSTEM_OUT_TO_LOMBOK_RECIPE =
-            "io.github.fiftieshousewife.SystemOutToLombokLog4jRecipe";
+            "io.github.fiftieshousewife.SystemOutToLombokLog4jRecipeNoDeps";
 
     /** Keeps the recipe list in one place so the variant prompt stays in sync. */
     private static final List<Recipe> DETERMINISTIC_RECIPES = List.of(

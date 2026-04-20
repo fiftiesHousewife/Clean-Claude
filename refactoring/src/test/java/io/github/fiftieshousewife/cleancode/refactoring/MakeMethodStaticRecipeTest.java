@@ -284,6 +284,270 @@ class MakeMethodStaticRecipeTest implements RewriteTest {
     }
 
     @Test
+    void leavesInterfaceDefaultMethodAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public interface Hasher {
+                            int hash(String s);
+                            default boolean accepts(String s) {
+                                return true;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesInterfaceAbstractMethodAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public interface Signer {
+                            byte[] sign(byte[] payload);
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesInterfacePrivateHelperMethodAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public interface Gate {
+                            default boolean ok() {
+                                return helper();
+                            }
+                            private boolean helper() {
+                                return true;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesRecordCompactMethodAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public record Sum(int a, int b) {
+                            public int total() {
+                                return a + b;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesAnnotationAttributesAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public @interface Note {
+                            String value() default "";
+                            int priority() default 0;
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesMethodCallingInheritedGetClassAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Named {
+                            public String describe() {
+                                return getClass().getSimpleName();
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesMethodCallingInheritedHashCodeAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Hasher {
+                            public int quickHash() {
+                                return hashCode() * 31;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesMethodCallingInheritedToStringAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Labelled {
+                            public String describe() {
+                                return "[" + toString() + "]";
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesMethodReferencingBareThisAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Link {
+                            public Link self() {
+                                return this;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesMethodPassingThisAsArgumentAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        import java.util.function.Consumer;
+                        public class Self {
+                            public void register(Consumer<Self> sink) {
+                                sink.accept(this);
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesSuperCallAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Child extends Parent {
+                            public String describe() {
+                                return super.describe() + " child";
+                            }
+                        }
+                        class Parent {
+                            public String describe() {
+                                return "parent";
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesExplicitThisMethodCallAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Wrap {
+                            private final String name = "x";
+                            public String label() {
+                                return this.name;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesThisMethodReferenceAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        import java.util.function.Supplier;
+                        public class Factory {
+                            public Supplier<Factory> supplier() {
+                                return this::self;
+                            }
+                            public Factory self() {
+                                return this;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesMethodInstantiatingNonStaticInnerClassAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Outer {
+                            private String label = "x";
+                            class Inner {
+                                String tag() {
+                                    return label;
+                                }
+                            }
+                            public Inner make() {
+                                return new Inner();
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesMethodWithAnonymousClassCapturingOuterFieldAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Host {
+                            private final String label = "x";
+                            public Runnable task() {
+                                return new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        System.out.println(label);
+                                    }
+                                };
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
     void insertsStaticAfterVisibilityModifier() {
         rewriteRun(
                 java(

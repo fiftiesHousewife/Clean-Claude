@@ -44,6 +44,15 @@ public final class ChainConsecutiveBuilderCallsRecipe extends Recipe {
     private static final Set<String> FLUENT_RECEIVER_TYPES = Set.of(
             "java.lang.StringBuilder", "java.lang.StringBuffer");
 
+    // Methods on StringBuilder/StringBuffer that return the receiver and
+    // therefore compose into a chain. Every other method (setLength,
+    // trimToSize, ensureCapacity, setCharAt, getChars, deleteCharAt-or-
+    // delete overloads that return void on older JDKs, etc.) returns
+    // void or a non-receiver type and cannot be followed by .append(…).
+    private static final Set<String> FLUENT_METHOD_NAMES = Set.of(
+            "append", "appendCodePoint", "insert", "delete", "deleteCharAt",
+            "replace", "reverse");
+
     @Override
     public String getDisplayName() {
         return "Chain consecutive fluent-builder calls on the same receiver";
@@ -125,7 +134,7 @@ public final class ChainConsecutiveBuilderCallsRecipe extends Recipe {
 
     private static String receiverIdentifierName(final Statement statement) {
         final J.MethodInvocation mi = methodInvocationOf(statement);
-        if (mi == null) {
+        if (mi == null || !everyCallInChainIsFluent(mi)) {
             return null;
         }
         final Expression receiver = leftmostReceiver(mi);
@@ -136,6 +145,23 @@ public final class ChainConsecutiveBuilderCallsRecipe extends Recipe {
             return null;
         }
         return id.getSimpleName();
+    }
+
+    /**
+     * Walks the select chain to confirm every hop is a fluent receiver-
+     * returning method ({@code append}, {@code insert}, …). A single
+     * non-fluent hop — e.g. {@code sb.setLength(0)} which returns void —
+     * disqualifies the whole statement from being merged into a chain:
+     * you can't follow {@code .setLength(...)} with {@code .append(…)}.
+     */
+    private static boolean everyCallInChainIsFluent(final J.MethodInvocation mi) {
+        if (!FLUENT_METHOD_NAMES.contains(mi.getSimpleName())) {
+            return false;
+        }
+        if (mi.getSelect() instanceof J.MethodInvocation inner) {
+            return everyCallInChainIsFluent(inner);
+        }
+        return true;
     }
 
     private static Expression leftmostReceiver(final J.MethodInvocation mi) {

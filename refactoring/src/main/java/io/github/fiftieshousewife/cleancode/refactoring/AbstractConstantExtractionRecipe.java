@@ -1,6 +1,7 @@
 package io.github.fiftieshousewife.cleancode.refactoring;
 
 import io.github.fiftieshousewife.cleancode.refactoring.support.AstFragments;
+import io.github.fiftieshousewife.cleancode.refactoring.support.ClassKinds;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
@@ -108,6 +109,14 @@ public abstract class AbstractConstantExtractionRecipe<V>
             public J.ClassDeclaration visitClassDeclaration(
                     final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
+                // Prepending `private static final` only makes sense in a
+                // regular class or enum: interfaces forbid `private` on
+                // fields (they are implicitly public static final), and
+                // records by convention carry only their components as
+                // state — extra static constants are noise.
+                if (!ClassKinds.isRegularClass(c)) {
+                    return c;
+                }
 
                 final List<Statement> newStatements = new ArrayList<>();
                 toExtract.forEach((value, name) -> newStatements.add(buildConstantField(name, value)));

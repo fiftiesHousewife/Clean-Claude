@@ -1,11 +1,15 @@
 package io.github.fiftieshousewife.cleancode.refactoring;
 
+import io.github.fiftieshousewife.cleancode.refactoring.support.ClassKinds;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 
@@ -57,24 +61,48 @@ public final class MakeMethodStaticRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
+            public J.CompilationUnit visitCompilationUnit(final J.CompilationUnit cu,
+                                                          final ExecutionContext ctx) {
+                // Scan the whole compilation unit once for method names
+                // referenced via `super.xxx()` from any class in it — those
+                // are overrides and the super-chain method cannot be made
+                // static without breaking the call.
+                final Set<String> superCalled = collectSuperCalledMethods(cu);
+                getCursor().putMessage("cleanCode.superCalled", superCalled);
+                return super.visitCompilationUnit(cu, ctx);
+            }
+
+            @Override
             public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl,
                                                             final ExecutionContext ctx) {
                 final J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-                if (cd.getBody() == null) {
+                if (cd.getBody() == null || !ClassKinds.isRegularClass(cd)) {
                     return cd;
                 }
-                final Set<String> instanceFields = collectInstanceFieldNames(cd);
-                final Set<String> instanceMethods = collectInstanceMethodNames(cd);
+                // Non-static inner classes can reference the enclosing
+                // class's fields implicitly (e.g. `return label;` where
+                // `label` is declared on the enclosing class). Collect the
+                // union of this class's fields and every enclosing
+                // regular-class's fields so the instance-state check
+                // picks up implicit outer references.
+                final Set<String> instanceFields = new HashSet<>(collectInstanceFieldNames(cd));
+                final Set<String> instanceMethods = new HashSet<>(collectInstanceMethodNames(cd));
+                addEnclosingClassState(getCursor(), instanceFields, instanceMethods);
+                final Set<String> superCalled = superCalledFromCursor(getCursor());
                 return cd.withBody(cd.getBody().withStatements(
-                        rewriteMethods(cd.getBody().getStatements(), instanceFields, instanceMethods)));
+                        rewriteMethods(cd.getBody().getStatements(), instanceFields,
+                                instanceMethods, superCalled)));
             }
 
             private List<org.openrewrite.java.tree.Statement> rewriteMethods(
                     final List<org.openrewrite.java.tree.Statement> statements,
-                    final Set<String> fields, final Set<String> instanceMethods) {
+                    final Set<String> fields, final Set<String> instanceMethods,
+                    final Set<String> superCalled) {
                 final List<org.openrewrite.java.tree.Statement> out = new ArrayList<>(statements.size());
                 for (final var statement : statements) {
-                    if (statement instanceof J.MethodDeclaration method && shouldMakeStatic(method, fields, instanceMethods)) {
+                    if (statement instanceof J.MethodDeclaration method
+                            && !superCalled.contains(method.getSimpleName())
+                            && shouldMakeStatic(method, fields, instanceMethods)) {
                         out.add(addStaticModifier(method));
                     } else {
                         out.add(statement);
@@ -83,6 +111,40 @@ public final class MakeMethodStaticRecipe extends Recipe {
                 return out;
             }
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Set<String> superCalledFromCursor(final Cursor cursor) {
+        final Object msg = cursor.getNearestMessage("cleanCode.superCalled");
+        return msg instanceof Set<?> set ? (Set<String>) set : Set.of();
+    }
+
+    private static void addEnclosingClassState(final Cursor classCursor,
+                                                final Set<String> fields,
+                                                final Set<String> methods) {
+        classCursor.getPathAsStream(J.ClassDeclaration.class::isInstance)
+                .map(J.ClassDeclaration.class::cast)
+                .skip(1)
+                .filter(enclosing -> enclosing.getBody() != null)
+                .forEach(enclosing -> {
+                    fields.addAll(collectInstanceFieldNames(enclosing));
+                    methods.addAll(collectInstanceMethodNames(enclosing));
+                });
+    }
+
+    private static Set<String> collectSuperCalledMethods(final J.CompilationUnit cu) {
+        final Set<String> names = new HashSet<>();
+        new JavaIsoVisitor<Set<String>>() {
+            @Override
+            public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation m,
+                                                            final Set<String> out) {
+                if (m.getSelect() instanceof J.Identifier sel && "super".equals(sel.getSimpleName())) {
+                    out.add(m.getSimpleName());
+                }
+                return super.visitMethodInvocation(m, out);
+            }
+        }.visit(cu, names);
+        return names;
     }
 
     private static Set<String> collectInstanceFieldNames(final J.ClassDeclaration classDecl) {
@@ -134,13 +196,13 @@ public final class MakeMethodStaticRecipe extends Recipe {
         new JavaIsoVisitor<AtomicBoolean>() {
             @Override
             public J.Identifier visitIdentifier(final J.Identifier ident, final AtomicBoolean flag) {
-                if (!flag.get() && fields.contains(ident.getSimpleName())) {
-                    // Need parent context to distinguish field read from a local with same name.
-                    // If the cursor's parent is a J.FieldAccess of a J.Identifier("this"/"super"),
-                    // it's a field. Otherwise fall back to the field-name set: our collectors are
-                    // limited to the immediate enclosing class, so false positives (local shadowing)
-                    // only cause us to leave the method instance-bound — safe-conservative.
-                    flag.set(true);
+                if (!flag.get()) {
+                    final String name = ident.getSimpleName();
+                    // `this` / `super` in any expression position, or a
+                    // bare identifier that resolves to an instance field.
+                    if ("this".equals(name) || "super".equals(name) || fields.contains(name)) {
+                        flag.set(true);
+                    }
                 }
                 return super.visitIdentifier(ident, flag);
             }
@@ -157,13 +219,63 @@ public final class MakeMethodStaticRecipe extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation m,
                                                             final AtomicBoolean flag) {
-                if (!flag.get() && m.getSelect() == null && instanceMethods.contains(m.getSimpleName())) {
+                if (flag.get()) {
+                    return super.visitMethodInvocation(m, flag);
+                }
+                // Bare call + instance method — either declared in this
+                // class or inherited (getClass, hashCode, toString, …).
+                if (m.getSelect() == null
+                        && (instanceMethods.contains(m.getSimpleName())
+                                || isInstanceMethodByType(m.getMethodType()))) {
+                    flag.set(true);
+                }
+                // Explicit `this.foo()` / `super.foo()`.
+                if (m.getSelect() instanceof J.Identifier sel
+                        && ("this".equals(sel.getSimpleName()) || "super".equals(sel.getSimpleName()))) {
                     flag.set(true);
                 }
                 return super.visitMethodInvocation(m, flag);
             }
+
+            @Override
+            public J.MemberReference visitMemberReference(final J.MemberReference ref,
+                                                           final AtomicBoolean flag) {
+                // `this::method`, `super::method` — capture the enclosing instance.
+                if (!flag.get() && ref.getContaining() instanceof J.Identifier id
+                        && ("this".equals(id.getSimpleName()) || "super".equals(id.getSimpleName()))) {
+                    flag.set(true);
+                }
+                return super.visitMemberReference(ref, flag);
+            }
+
+            @Override
+            public J.NewClass visitNewClass(final J.NewClass nc, final AtomicBoolean flag) {
+                // `new Inner()` where Inner is a non-static inner class of
+                // an enclosing class captures `this` implicitly.
+                if (!flag.get() && nc.getEnclosing() == null && needsEnclosingInstance(nc.getType())) {
+                    flag.set(true);
+                }
+                return super.visitNewClass(nc, flag);
+            }
         }.visit(method.getBody(), uses);
         return uses.get();
+    }
+
+    private static boolean isInstanceMethodByType(final JavaType.Method methodType) {
+        if (methodType == null) {
+            return false;
+        }
+        return !methodType.hasFlags(Flag.Static);
+    }
+
+    private static boolean needsEnclosingInstance(final JavaType type) {
+        if (!(type instanceof JavaType.Class clazz)) {
+            return false;
+        }
+        if (clazz.getOwningClass() == null) {
+            return false;
+        }
+        return !clazz.hasFlags(Flag.Static);
     }
 
     private static J.MethodDeclaration addStaticModifier(final J.MethodDeclaration method) {

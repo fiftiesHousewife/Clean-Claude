@@ -2,6 +2,7 @@ package io.github.fiftieshousewife.cleancode.refactoring;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.github.fiftieshousewife.cleancode.refactoring.support.ClassKinds;
 import io.github.fiftieshousewife.cleancode.refactoring.support.ModifierEditor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
@@ -39,6 +40,18 @@ public class ReduceVisibilityRecipe extends Recipe {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (!ModifierEditor.has(m.getModifiers(), J.Modifier.Type.Private) || m.getBody() == null) {
+                    return m;
+                }
+                // Interface private methods (Java 9+) exist precisely so
+                // default/static methods can share helpers without
+                // exposing them in the public API. Removing `private`
+                // would promote them to `public` — a visibility
+                // expansion, the opposite of the recipe's intent. Records
+                // likewise use private helpers to keep their implementation
+                // concealed from the public accessor surface.
+                final J.ClassDeclaration enclosingClass =
+                        getCursor().firstEnclosing(J.ClassDeclaration.class);
+                if (enclosingClass == null || !ClassKinds.isRegularClass(enclosingClass)) {
                     return m;
                 }
 
