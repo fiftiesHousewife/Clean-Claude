@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.Set;
+
 import static org.openrewrite.java.Assertions.java;
 
 class MakeMethodStaticRecipeTest implements RewriteTest {
@@ -564,6 +566,48 @@ class MakeMethodStaticRecipeTest implements RewriteTest {
                         public class G {
                             private static int identity(int x) {
                                 return x;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesMethodProtectedByExternalSuperCallSetAlone() {
+        rewriteRun(
+                spec -> spec.recipe(new MakeMethodStaticRecipe(Set.of("describe"))),
+                java(
+                        """
+                        package com.example;
+                        public class Parent {
+                            public String describe() {
+                                return "parent";
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void emptyExternalSuperCallSetBehavesLikeDefault() {
+        rewriteRun(
+                spec -> spec.recipe(new MakeMethodStaticRecipe(Set.of())),
+                java(
+                        """
+                        package com.example;
+                        public class Standalone {
+                            public int doubleIt(int x) {
+                                return x * 2;
+                            }
+                        }
+                        """,
+                        """
+                        package com.example;
+                        public class Standalone {
+                            public static int doubleIt(int x) {
+                                return x * 2;
                             }
                         }
                         """

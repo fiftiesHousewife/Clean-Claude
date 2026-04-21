@@ -66,3 +66,11 @@ tasks.register<JavaExec>("runHarnessPass") {
     classpath = sourceSets.main.get().runtimeClasspath
     args = listOf(project.findProperty("dir")?.toString() ?: rootProject.projectDir.absolutePath)
 }
+
+tasks.register<JavaExec>("wholeCodebaseSummary") {
+    description = "Counts OpenRewrite findings across every module; use before/after a sweep for deltas."
+    group = "verification"
+    mainClass.set("io.github.fiftieshousewife.cleancode.plugin.rework.WholeCodebaseSummaryCli")
+    classpath = sourceSets.main.get().runtimeClasspath
+    args = listOf(project.findProperty("dir")?.toString() ?: rootProject.projectDir.absolutePath)
+}

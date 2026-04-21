@@ -36,6 +36,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * and {@code Owner.foo()} when {@code foo} is static, so existing
  * callers continue to compile. A follow-up recipe can replace
  * {@code this.foo()} with {@code foo()} as a stylistic pass.
+ *
+ * <p><b>Cross-file super-call protection.</b> The per-CU scan catches
+ * {@code super.X()} callers that live in the same file as the target
+ * method. Callers in a different file are invisible to a single-CU
+ * visitor. To close that gap, construct the recipe with an externally
+ * aggregated set of simple method names via
+ * {@link #MakeMethodStaticRecipe(Set)}; any name in that set is skipped
+ * even if no intra-CU {@code super} call references it. Drivers that
+ * sweep a whole codebase (see {@code HarnessRecipePass}) populate this
+ * set with a project-wide regex scan of every target file.
  */
 public final class MakeMethodStaticRecipe extends Recipe {
 
@@ -43,6 +53,16 @@ public final class MakeMethodStaticRecipe extends Recipe {
             "Override",
             "Test", "ParameterizedTest", "RepeatedTest", "TestFactory", "TestTemplate",
             "BeforeEach", "AfterEach", "BeforeAll", "AfterAll", "Disabled");
+
+    private final Set<String> externalSuperCalledNames;
+
+    public MakeMethodStaticRecipe() {
+        this(Set.of());
+    }
+
+    public MakeMethodStaticRecipe(final Set<String> externalSuperCalledNames) {
+        this.externalSuperCalledNames = Set.copyOf(externalSuperCalledNames);
+    }
 
     @Override
     public String getDisplayName() {
@@ -66,9 +86,12 @@ public final class MakeMethodStaticRecipe extends Recipe {
                 // Scan the whole compilation unit once for method names
                 // referenced via `super.xxx()` from any class in it — those
                 // are overrides and the super-chain method cannot be made
-                // static without breaking the call.
-                final Set<String> superCalled = collectSuperCalledMethods(cu);
-                getCursor().putMessage("cleanCode.superCalled", superCalled);
+                // static without breaking the call. Union with the
+                // externally-aggregated set so cross-file super callers
+                // in other CUs still protect this CU's methods.
+                final Set<String> superCalled = new HashSet<>(collectSuperCalledMethods(cu));
+                superCalled.addAll(externalSuperCalledNames);
+                getCursor().putMessage("cleanCode.superCalled", Set.copyOf(superCalled));
                 return super.visitCompilationUnit(cu, ctx);
             }
 

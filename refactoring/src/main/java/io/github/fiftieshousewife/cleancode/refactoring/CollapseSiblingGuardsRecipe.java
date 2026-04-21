@@ -31,8 +31,34 @@ import java.util.List;
  * Bodies are compared via {@link J#printTrimmed(Cursor)} using the
  * visitor's own cursor; runs of 2+ guards collapse into a single N-way
  * OR. Fixes G29.
+ *
+ * <p><b>Readability cap.</b> A run longer than
+ * {@link #MAX_MERGED_PREDICATES} identical-body guards is left alone: a
+ * 6-plus-operand {@code ||} chain is semantically correct but hard to
+ * scan, and usually signals the underlying code has too many independent
+ * preconditions for one guard anyway. A merged condition whose printed
+ * width would exceed {@link #MAX_MERGED_CONDITION_WIDTH} characters is
+ * skipped for the same reason — we respect the CLAUDE.md 120-char limit.
  */
 public final class CollapseSiblingGuardsRecipe extends Recipe {
+
+    /**
+     * Upper bound on the number of guards the recipe will merge into a
+     * single OR'd condition. 4 keeps the common 2-3 guard cases (which
+     * read better merged) while dropping the 5-plus runs into human
+     * review territory.
+     */
+    static final int MAX_MERGED_PREDICATES = 4;
+
+    /**
+     * Upper bound on the estimated printed width of the merged condition
+     * (sum of each operand's {@code printTrimmed} width plus the
+     * {@code " || "} separators between them). Runs above this are left
+     * as separate guards even when the predicate count is in range.
+     */
+    static final int MAX_MERGED_CONDITION_WIDTH = 120;
+
+    private static final String OR_SEPARATOR = " || ";
 
     @Override
     public String getDisplayName() {
@@ -59,9 +85,17 @@ public final class CollapseSiblingGuardsRecipe extends Recipe {
                 int i = 0;
                 while (i < source.size()) {
                     final int runEnd = findRunEnd(source, i, blockCursor);
-                    if (runEnd > i) {
+                    if (runEnd > i && isWithinReadabilityBudget(source, i, runEnd, blockCursor)) {
                         rewritten.add(mergeRun(source, i, runEnd, blockCursor));
                         changed = true;
+                        i = runEnd + 1;
+                    } else if (runEnd > i) {
+                        // Mergeable run exists but over the readability budget — emit every
+                        // guard in the run unchanged and skip past, so we don't chip away
+                        // at one end and end up collapsing a 4-of-6 sub-run.
+                        for (int j = i; j <= runEnd; j++) {
+                            rewritten.add(source.get(j));
+                        }
                         i = runEnd + 1;
                     } else {
                         rewritten.add(source.get(i));
@@ -127,5 +161,21 @@ public final class CollapseSiblingGuardsRecipe extends Recipe {
             return null;
         }
         return body.printTrimmed(cursor).trim();
+    }
+
+    private static boolean isWithinReadabilityBudget(final List<Statement> statements,
+                                                     final int start, final int end,
+                                                     final Cursor cursor) {
+        final int predicateCount = end - start + 1;
+        if (predicateCount > MAX_MERGED_PREDICATES) {
+            return false;
+        }
+        int width = 0;
+        for (int j = start; j <= end; j++) {
+            final J.If guard = (J.If) statements.get(j);
+            width += guard.getIfCondition().getTree().printTrimmed(cursor).trim().length();
+        }
+        width += OR_SEPARATOR.length() * (predicateCount - 1);
+        return width <= MAX_MERGED_CONDITION_WIDTH;
     }
 }

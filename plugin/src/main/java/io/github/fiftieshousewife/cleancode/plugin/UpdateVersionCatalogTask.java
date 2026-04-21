@@ -20,6 +20,31 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Rewrites {@code gradle/libs.versions.toml} in place with non-major
+ * updates from the Ben-Manes {@code dependencyUpdates} report. Produces
+ * the same edits that an {@code UpgradeDependencyVersion} OpenRewrite
+ * recipe would, but against a version catalog (which the OpenRewrite
+ * recipe does not handle natively).
+ *
+ * <p><b>Standalone by design.</b> This task deliberately does not hook
+ * into {@code runHarnessPass} or any other code-rewrite sweep:
+ * <ul>
+ *   <li>Dependency bumps carry transitive-version and API-break risk a
+ *       recipe sweep does not. Reviewers want them in isolated PRs.</li>
+ *   <li>{@code HarnessRecipePass} runs per-{@code .java}-file in-process;
+ *       pulling in a Gradle-task dependency ({@code dependencyUpdates})
+ *       couples layers without a reader-facing benefit.</li>
+ *   <li>OpenRewrite's {@code UpgradeDependencyVersion} can edit inline
+ *       Gradle declarations but does not traverse version catalogs
+ *       cleanly, so switching to it would just reimplement this logic
+ *       in a different framework.</li>
+ * </ul>
+ *
+ * <p>Flow: run {@code :dependencyUpdates} (generates
+ * {@code build/dependencyUpdates/report.json}) then {@code :updateVersionCatalog}.
+ * Both tasks only live at the root project.
+ */
 @DisableCachingByDefault(because = "rewrites gradle/libs.versions.toml in place from Ben-Manes dependency updates JSON")
 public abstract class UpdateVersionCatalogTask extends DefaultTask {
 

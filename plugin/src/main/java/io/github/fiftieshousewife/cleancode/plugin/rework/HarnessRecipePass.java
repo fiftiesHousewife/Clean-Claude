@@ -10,10 +10,12 @@ import io.github.fiftieshousewife.cleancode.refactoring.MakeMethodStaticRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.MathMinCapRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.MergeInlineValidationRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.ReplaceForAddNCopiesRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.ReplaceStringBuilderWithTextBlockRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.RestoreInterruptFlagRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.ReturnInsteadOfMutateArgRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.ShortenFullyQualifiedReferencesRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.UseTryWithResourcesRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.support.SuperCallScanner;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Applies every deterministic refactoring recipe to each target file
@@ -50,25 +53,43 @@ public final class HarnessRecipePass {
     // Lombok on the classpath). Reintroduce once the recipe ships a
     // variant that either (a) adds Lombok to the calling module's build
     // out-of-band or (b) only fires when the module already declares it.
-    // private static final String SYSTEM_OUT_TO_LOMBOK_RECIPE =
-    //         "io.github.fiftieshousewife.SystemOutToLombokLog4jRecipeNoDeps";
+    //
+    // 2026-04-21 check against 0.5: the 0.5 bundle renames the recipe to
+    // `io.github.fiftieshousewife.SystemOutToSlf4jRecipe(NoDeps)` and
+    // introduces `ConvertManualLoggerToSlf4jRecipe` + a standalone
+    // `AddLombokDependency`. The per-module classpath-gating gap is NOT
+    // closed: NoDeps still unconditionally adds `@Slf4j` + imports. Stays
+    // paused until we either add a target-module Lombok sniff here or
+    // upstream grows a classpath gate.
+    // private static final String SYSTEM_OUT_TO_SLF4J_RECIPE =
+    //         "io.github.fiftieshousewife.SystemOutToSlf4jRecipeNoDeps";
 
-    /** Keeps the recipe list in one place so the variant prompt stays in sync. */
-    private static final List<Recipe> DETERMINISTIC_RECIPES = List.of(
-            new MakeMethodStaticRecipe(),
-            new RestoreInterruptFlagRecipe(),
-            new DeleteSectionCommentsRecipe(),
-            new DeleteMumblingLogRecipe(),
-            new ChainConsecutiveBuilderCallsRecipe(),
-            new MathMinCapRecipe(),
-            new ReplaceForAddNCopiesRecipe(),
-            new CollapseSiblingGuardsRecipe(),
-            new MergeInlineValidationRecipe(),
-            new ReturnInsteadOfMutateArgRecipe(),
-            new UseTryWithResourcesRecipe(),
-            new AddFinalRecipe(),
-            new InvertNegativeConditionalRecipe(),
-            new ShortenFullyQualifiedReferencesRecipe());
+    /**
+     * Builds the recipe pipeline for a given sweep. The only per-sweep
+     * input is {@code externalSuperCalledNames} — aggregated once from
+     * every target file so {@link MakeMethodStaticRecipe} can protect
+     * methods whose {@code super.X()} caller lives in another file.
+     * Everything else is stateless and would be a constant list if not
+     * for this one piece of context.
+     */
+    private static List<Recipe> deterministicRecipes(final Set<String> externalSuperCalledNames) {
+        return List.of(
+                new MakeMethodStaticRecipe(externalSuperCalledNames),
+                new RestoreInterruptFlagRecipe(),
+                new DeleteSectionCommentsRecipe(),
+                new DeleteMumblingLogRecipe(),
+                new ChainConsecutiveBuilderCallsRecipe(),
+                new ReplaceStringBuilderWithTextBlockRecipe(),
+                new MathMinCapRecipe(),
+                new ReplaceForAddNCopiesRecipe(),
+                new CollapseSiblingGuardsRecipe(),
+                new MergeInlineValidationRecipe(),
+                new ReturnInsteadOfMutateArgRecipe(),
+                new UseTryWithResourcesRecipe(),
+                new AddFinalRecipe(),
+                new InvertNegativeConditionalRecipe(),
+                new ShortenFullyQualifiedReferencesRecipe());
+    }
 
     private HarnessRecipePass() {}
 
@@ -85,9 +106,15 @@ public final class HarnessRecipePass {
     }
 
     public static PassSummary apply(final List<Path> files) throws IOException {
+        // One project-wide scan for super.X() names, so per-file recipe
+        // invocations see the cross-file callers they would otherwise
+        // miss. Regex-based; false positives only cause us to skip a
+        // rewrite, which is always safe.
+        final Set<String> superCalledNames = SuperCallScanner.scan(files);
+        final List<Recipe> recipes = deterministicRecipes(superCalledNames);
         final Map<Path, List<String>> byFile = new LinkedHashMap<>();
         for (final Path file : files) {
-            final List<String> fired = applyToFile(file);
+            final List<String> fired = applyToFile(file, recipes);
             if (!fired.isEmpty()) {
                 byFile.put(file, fired);
             }
@@ -95,10 +122,11 @@ public final class HarnessRecipePass {
         return new PassSummary(byFile);
     }
 
-    private static List<String> applyToFile(final Path file) throws IOException {
+    private static List<String> applyToFile(final Path file, final List<Recipe> recipes)
+            throws IOException {
         String current = Files.readString(file);
         final List<String> fired = new ArrayList<>();
-        for (final Recipe recipe : DETERMINISTIC_RECIPES) {
+        for (final Recipe recipe : recipes) {
             final String after = runOne(file, current, recipe);
             if (!after.equals(current)) {
                 fired.add(recipe.getClass().getSimpleName());
@@ -125,7 +153,7 @@ public final class HarnessRecipePass {
         final InMemoryLargeSourceSet sourceSet = new InMemoryLargeSourceSet(parsed);
         final List<Result> results = recipe.run(sourceSet, ctx).getChangeset().getAllResults();
         // Recipes can produce results for files OTHER than our input — for
-        // example SystemOutToLombokLog4jRecipe creates a fresh log4j2.xml.
+        // example SystemOutToSlf4jRecipe creates a fresh log4j2.xml.
         // Filter to the result whose source path matches our input file so
         // we don't blow our Java fixture away with someone else's output.
         for (final Result result : results) {

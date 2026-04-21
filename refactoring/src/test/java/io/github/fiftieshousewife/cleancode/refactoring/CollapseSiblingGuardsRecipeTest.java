@@ -104,6 +104,76 @@ class CollapseSiblingGuardsRecipeTest implements RewriteTest {
     }
 
     @Test
+    void collapsesFourConsecutiveGuardsAtThreshold() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Four {
+                            int count(String s) {
+                                if (s == null) return 0;
+                                if (s.isEmpty()) return 0;
+                                if (s.isBlank()) return 0;
+                                if (s.length() > 1000) return 0;
+                                return s.length();
+                            }
+                        }
+                        """,
+                        """
+                        package com.example;
+                        public class Four {
+                            int count(String s) {
+                                if (s == null || s.isEmpty() || s.isBlank() || s.length() > 1000) return 0;
+                                return s.length();
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesFivePlusConsecutiveGuardsAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class FiveGuards {
+                            int count(String s) {
+                                if (s == null) return 0;
+                                if (s.isEmpty()) return 0;
+                                if (s.isBlank()) return 0;
+                                if (s.length() > 1000) return 0;
+                                if (s.contains("\\0")) return 0;
+                                return s.length();
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesRunWithOverlyWideMergedConditionAlone() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Wide {
+                            boolean deny(String longIdentifierName) {
+                                if (longIdentifierName.startsWith("firstLongPrefix")) return true;
+                                if (longIdentifierName.startsWith("secondLongPrefix")) return true;
+                                if (longIdentifierName.startsWith("thirdLongPrefix")) return true;
+                                if (longIdentifierName.startsWith("fourthLongPrefix")) return true;
+                                return false;
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
     void collapsesContinueGuardsInLoopBody() {
         rewriteRun(
                 java(
