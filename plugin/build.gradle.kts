@@ -41,6 +41,39 @@ tasks.named<PluginUnderTestMetadata>("pluginUnderTestMetadata") {
     pluginClasspath.from(bundled)
 }
 
+// Slow self-apply scenarios that run TestKit against the plugin's own
+// source tree. Kept in a dedicated source set so they don't run on every
+// :plugin:test invocation. Wired into :plugin:check so CI catches them.
+val integrationTest by sourceSets.creating {
+    java.srcDir("src/integrationTest/java")
+    resources.srcDir("src/integrationTest/resources")
+    compileClasspath += sourceSets.test.get().compileClasspath
+    runtimeClasspath += sourceSets.test.get().runtimeClasspath
+}
+
+configurations["integrationTestImplementation"]
+    .extendsFrom(configurations.testImplementation.get())
+configurations["integrationTestRuntimeOnly"]
+    .extendsFrom(configurations.testRuntimeOnly.get())
+
+gradlePlugin {
+    testSourceSets(sourceSets["test"], integrationTest)
+}
+
+val integrationTestTask = tasks.register<Test>("integrationTest") {
+    description = "Runs the self-apply harness via TestKit against the plugin's own sources"
+    group = "verification"
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+    useJUnitPlatform()
+    shouldRunAfter(tasks.test)
+    systemProperty("cleancode.repoRoot", rootProject.projectDir.absolutePath)
+}
+
+tasks.named("check") {
+    dependsOn(integrationTestTask)
+}
+
 tasks.named<ProcessResources>("processResources") {
     from(rootProject.file(".claude/skills")) {
         into("skills")
