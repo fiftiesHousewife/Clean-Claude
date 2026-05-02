@@ -197,6 +197,24 @@ class HtmlReportWriterTest {
     }
 
     @Test
+    void emitsStopServerButtonThatPostsToShutdownEndpoint(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        HtmlReportWriter.write(sampleReport(), output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("class=\"stop-btn\""),
+                        "staging bar must offer a stop control so users do not need lsof+kill"),
+                () -> assertTrue(html.contains("Stop server"),
+                        "button label must communicate intent"),
+                () -> assertTrue(html.contains("/api/shutdown"),
+                        "click handler must POST to the shutdown endpoint"),
+                () -> assertTrue(html.contains("server-stopped"),
+                        "post-stop CSS state replaces the bar with a re-run hint"));
+    }
+
+    @Test
     void emitsPerFindingSuppressButtonWithCodeFileAndLine(@TempDir Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 

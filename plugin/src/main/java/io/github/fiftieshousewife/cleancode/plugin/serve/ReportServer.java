@@ -41,12 +41,22 @@ public final class ReportServer {
                                       final Supplier<ConfigSnapshot> stateSupplier,
                                       final Function<ApplyChangesRequest, ApplyChangesResponse> applyHandler,
                                       final Logger logger) throws IOException {
+        return start(port, reportPathSupplier, stateSupplier, applyHandler, () -> { }, logger);
+    }
+
+    public static ReportServer start(final int port,
+                                      final Supplier<Path> reportPathSupplier,
+                                      final Supplier<ConfigSnapshot> stateSupplier,
+                                      final Function<ApplyChangesRequest, ApplyChangesResponse> applyHandler,
+                                      final Runnable shutdownCallback,
+                                      final Logger logger) throws IOException {
         final HttpServer httpServer = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
         final Gson gson = new Gson();
 
         httpServer.createContext("/", new ReportHandler(reportPathSupplier, logger));
         httpServer.createContext("/api/state", new StateHandler(stateSupplier, gson, logger));
         httpServer.createContext("/api/apply-changes", new ApplyChangesHandler(applyHandler, gson, logger));
+        httpServer.createContext("/api/shutdown", new ShutdownHandler(shutdownCallback, logger));
 
         httpServer.setExecutor(Executors.newFixedThreadPool(4));
         httpServer.start();
@@ -111,6 +121,29 @@ public final class ReportServer {
                         ("{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}")
                                 .getBytes(StandardCharsets.UTF_8));
             }
+        }
+    }
+
+    private record ShutdownHandler(Runnable shutdownCallback, Logger logger) implements HttpHandler {
+        @Override
+        public void handle(final HttpExchange exchange) throws IOException {
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                send(exchange, 405, JSON, "{\"error\":\"POST required\"}".getBytes(StandardCharsets.UTF_8));
+                return;
+            }
+            send(exchange, 200, JSON, "{\"stopping\":true}".getBytes(StandardCharsets.UTF_8));
+            new Thread(() -> {
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+                try {
+                    shutdownCallback.run();
+                } catch (RuntimeException e) {
+                    logger.warn("ReportServer: shutdown callback threw", e);
+                }
+            }, "cleanCodeServe-shutdown-trigger").start();
         }
     }
 

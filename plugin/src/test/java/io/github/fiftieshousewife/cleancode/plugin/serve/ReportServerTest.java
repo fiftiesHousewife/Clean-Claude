@@ -17,6 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -112,6 +114,41 @@ class ReportServerTest {
     void applyChangesRejectsNonPost() throws Exception {
         final HttpResponse<String> response = client.send(
                 HttpRequest.newBuilder(URI.create(server.url() + "api/apply-changes")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(405, response.statusCode());
+    }
+
+    @Test
+    void shutdownEndpointInvokesShutdownCallback(@TempDir Path tempDir) throws Exception {
+        if (server != null) {
+            server.stop();
+        }
+        final Path report = tempDir.resolve("findings.html");
+        Files.writeString(report, "<html></html>");
+        final ConfigSnapshot snapshot = new ConfigSnapshot(List.of(), List.of(), Map.of());
+        final CountDownLatch shutdownInvoked = new CountDownLatch(1);
+        server = ReportServer.start(0, () -> report, () -> snapshot,
+                request -> ApplyChangesResponse.ok(0),
+                shutdownInvoked::countDown, LOG);
+
+        final HttpResponse<String> response = client.send(
+                HttpRequest.newBuilder(URI.create(server.url() + "api/shutdown"))
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertAll(
+                () -> assertEquals(200, response.statusCode()),
+                () -> assertTrue(response.body().contains("stopping")),
+                () -> assertTrue(shutdownInvoked.await(2, TimeUnit.SECONDS),
+                        "shutdown callback must run after the response is sent"));
+    }
+
+    @Test
+    void shutdownEndpointRejectsNonPost() throws Exception {
+        final HttpResponse<String> response = client.send(
+                HttpRequest.newBuilder(URI.create(server.url() + "api/shutdown")).GET().build(),
                 HttpResponse.BodyHandlers.ofString());
 
         assertEquals(405, response.statusCode());

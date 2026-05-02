@@ -184,6 +184,14 @@ public final class HtmlReportWriter {
         html.append("    #staging-bar .discard-btn { background: #fff; color: #c0392b; ");
         html.append("border-color: #c0392b; }\n");
         html.append("    #staging-bar .discard-btn:hover { background: #fce4e4; }\n");
+        html.append("    #staging-bar .stop-btn { background: #fff; color: #34495e; ");
+        html.append("border-color: #7f8c8d; }\n");
+        html.append("    #staging-bar .stop-btn:hover { background: #ecf0f1; }\n");
+        html.append("    #staging-bar.server-stopped { background: #ecf0f1; ");
+        html.append("border-color: #7f8c8d; display: flex; }\n");
+        html.append("    #staging-bar.server-stopped button { display: none; }\n");
+        html.append("    #staging-bar.server-stopped details { color: #34495e; ");
+        html.append("font-weight: 600; }\n");
         html.append("    #staging-bar details { background: transparent; border: 0; ");
         html.append("margin: 0; flex: 1; }\n");
         html.append("    #staging-bar summary { padding: 0; font-size: 0.85rem; ");
@@ -302,6 +310,8 @@ public final class HtmlReportWriter {
         html.append("    </details>\n");
         html.append("    <button class=\"confirm-btn\" type=\"button\">Confirm &amp; apply</button>\n");
         html.append("    <button class=\"discard-btn\" type=\"button\">Discard</button>\n");
+        html.append("    <button class=\"stop-btn\" type=\"button\" title=\"Stop the cleanCodeServe task\">");
+        html.append("&#128721; Stop server</button>\n");
         html.append("  </div>\n");
     }
 
@@ -335,6 +345,7 @@ public final class HtmlReportWriter {
         html.append("      const listEl = bar.querySelector('.pending-list');\n");
         html.append("      const confirmBtn = bar.querySelector('.confirm-btn');\n");
         html.append("      const discardBtn = bar.querySelector('.discard-btn');\n");
+        html.append("      const stopBtn = bar.querySelector('.stop-btn');\n");
         html.append("      const modal = document.getElementById('stage-modal');\n");
         html.append("      const modalForm = document.getElementById('stage-modal-form');\n");
         html.append("      const modalTitle = document.getElementById('modal-title');\n");
@@ -365,6 +376,18 @@ public final class HtmlReportWriter {
         html.append("          b.title = 'Run ./gradlew cleanCodeServe to enable';\n");
         html.append("        });\n");
         html.append("        confirmBtn.disabled = true;\n");
+        html.append("        stopBtn.disabled = true;\n");
+        html.append("      }\n");
+        html.append("\n");
+        html.append("      function setServerStopped() {\n");
+        html.append("        bar.classList.remove('server-down');\n");
+        html.append("        bar.classList.remove('has-changes');\n");
+        html.append("        bar.classList.add('server-stopped');\n");
+        html.append("        statusEl.textContent = 'Server stopped — re-run ./gradlew cleanCodeServe to resume';\n");
+        html.append("        document.querySelectorAll('.action-btn').forEach(b => {\n");
+        html.append("          b.disabled = true;\n");
+        html.append("          b.title = 'Server stopped';\n");
+        html.append("        });\n");
         html.append("      }\n");
         html.append("\n");
         html.append("      function render() {\n");
@@ -463,6 +486,15 @@ public final class HtmlReportWriter {
         html.append("            currentValue: current, suggestedValue: typeof current === 'number' ? current + 2 : 1 });\n");
         html.append("          return;\n");
         html.append("        }\n");
+        html.append("      });\n");
+        html.append("\n");
+        html.append("      stopBtn.addEventListener('click', () => {\n");
+        html.append("        if (!confirm('Stop the cleanCodeServe task? You will need to re-run ./gradlew cleanCodeServe to resume.')) return;\n");
+        html.append("        stopBtn.disabled = true;\n");
+        html.append("        stopBtn.textContent = 'Stopping...';\n");
+        html.append("        fetch('/api/shutdown', { method: 'POST' })\n");
+        html.append("          .then(() => setServerStopped())\n");
+        html.append("          .catch(() => setServerStopped());\n");
         html.append("      });\n");
         html.append("\n");
         html.append("      discardBtn.addEventListener('click', () => {\n");

@@ -87,6 +87,13 @@ public class CleanCodePlugin implements Plugin<Project> {
                 });
 
         project.getTasks()
+                .register("cleanCodeStop", StopTask.class, task -> {
+                    task.setDescription(
+                            "Stop a running cleanCodeServe task by reading build/clean-code/serve.pid");
+                    task.setGroup("clean code");
+                });
+
+        project.getTasks()
                 .register("reworkClass", ReworkClassTask.class, task -> {
                     task.setDescription(
                             "Rework a single class via the ReworkOrchestrator Java API "

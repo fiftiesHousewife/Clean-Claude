@@ -13,11 +13,15 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.work.DisableCachingByDefault;
 
 import java.awt.Desktop;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Long-running task that runs the analysis once, opens the HTML report
@@ -38,6 +42,7 @@ public abstract class ServeTask extends DefaultTask {
         final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
         final Path outputDir = buildDir.resolve("reports/clean-code");
         final Path htmlReport = outputDir.resolve("findings.html");
+        final Path pidFile = buildDir.resolve("clean-code/serve.pid");
 
         final SandboxAnalysis.Result analysis = SandboxAnalysis.analyseWithStates(getProject());
         final AggregatedReport report = analysis.report();
@@ -55,8 +60,25 @@ public abstract class ServeTask extends DefaultTask {
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
         HtmlReportWriter.write(report, htmlReport, repositoryUrl, projectRoot, ideScheme, sourceStates);
 
+        writePidFile(pidFile);
+
         final int port = ext.getServePort().get();
         final ChangeApplier applier = new ChangeApplier(projectRoot);
+
+        final CountDownLatch shutdownLatch = new CountDownLatch(1);
+        final AtomicBoolean shuttingDown = new AtomicBoolean(false);
+        final AtomicReference<ReportServer> serverRef = new AtomicReference<>();
+        final Runnable shutdown = () -> {
+            if (!shuttingDown.compareAndSet(false, true)) {
+                return;
+            }
+            final ReportServer running = serverRef.get();
+            if (running != null) {
+                running.stop();
+            }
+            deletePidFile(pidFile);
+            shutdownLatch.countDown();
+        };
 
         final ReportServer server = ReportServer.start(
                 port,
@@ -64,20 +86,37 @@ public abstract class ServeTask extends DefaultTask {
                 () -> snapshotConfig(ext),
                 request -> applyAndRegenerate(applier, request.changes(),
                         outputDir, htmlReport, repositoryUrl, ideScheme),
+                shutdown,
                 getLogger());
+        serverRef.set(server);
 
         getLogger().lifecycle("\n  Clean Code report serving at: {}", server.url());
-        getLogger().lifecycle("  Press Ctrl-C to stop.\n");
+        getLogger().lifecycle("  Press Ctrl-C or run ./gradlew cleanCodeStop to shut down.\n");
 
         openInBrowser(server.url());
 
-        final CountDownLatch shutdownLatch = new CountDownLatch(1);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             getLogger().lifecycle("\n  Stopping serve task...");
-            server.stop();
-            shutdownLatch.countDown();
-        }));
+            shutdown.run();
+        }, "cleanCodeServe-shutdown"));
         shutdownLatch.await();
+    }
+
+    private void writePidFile(final Path pidFile) {
+        try {
+            Files.createDirectories(pidFile.getParent());
+            Files.writeString(pidFile, Long.toString(ProcessHandle.current().pid()));
+        } catch (IOException e) {
+            getLogger().warn("Could not write PID file at {}: {}", pidFile, e.getMessage());
+        }
+    }
+
+    private void deletePidFile(final Path pidFile) {
+        try {
+            Files.deleteIfExists(pidFile);
+        } catch (IOException e) {
+            getLogger().warn("Could not delete PID file at {}: {}", pidFile, e.getMessage());
+        }
     }
 
     private ApplyChangesResponse applyAndRegenerate(final ChangeApplier applier,

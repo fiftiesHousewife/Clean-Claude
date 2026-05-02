@@ -5,11 +5,20 @@ Context for whoever picks this up next. Self-contained: you should not need to r
 ## State at start of next session
 
 - Branch: `main`, working tree clean.
-- Last commit: `a413a5e` — README + handoff doc updates for `cleanCodeServe`.
+- Last commit: `a413a5e` — README + handoff doc updates for `cleanCodeServe`. Plus uncommitted work below.
 - Version `0.1.2` published to **mavenLocal across all modules**; **not yet** tagged in git or published to Maven Central.
 - `./gradlew check` green end-to-end.
 - Self-apply harness lives at `/tmp/cleanclaude-selfanalysis-1777721438/` (per `feedback_publish_all_modules.md` memory). Run `./gradlew publishToMavenLocal` first; harness is excluded from sweeps.
 - Triage UI (`cleanCodeServe`) is functional end-to-end — verified via the harness (build-script edit + suppress-finding edit landed and re-analysis fired).
+- **NEW: P0 #3 (cleanCodeStop + in-page Stop button) is complete and smoke-tested via the harness — see "Done since last handoff" below. Not yet committed.**
+
+## Done since last handoff
+
+- `cleanCodeServe` writes `build/clean-code/serve.pid` before binding the port and deletes it on shutdown (Ctrl-C, `/api/shutdown`, or `cleanCodeStop`).
+- `ReportServer` exposes `POST /api/shutdown` which acks 200 and triggers the shutdown callback after a 150 ms delay (so the response gets out before the server stops).
+- New `cleanCodeStop` task reads the PID file, sends SIGTERM, waits 5 s, escalates to SIGKILL. Idempotent on a stale or missing PID file.
+- HTML staging bar gains a 🛑 **Stop server** button (next to Confirm/Discard); on click it confirms, POSTs `/api/shutdown`, and replaces the bar with "Server stopped — re-run `./gradlew cleanCodeServe`".
+- Tests: `HtmlReportWriterTest#emitsStopServerButtonThatPostsToShutdownEndpoint`, `ReportServerTest#shutdownEndpointInvokesShutdownCallback` (+ non-POST rejection), `StopTaskTest` covering `readPid` parsing edge cases and `waitForExit` exit-vs-timeout behaviour using `sh -c sleep`.
 
 ## Quick reference
 
@@ -68,25 +77,8 @@ cd /tmp/cleanclaude-selfanalysis-1777721438 && ./gradlew analyseCleanCode
 
 ---
 
-#### 3. `cleanCodeStop` task + in-page Stop button
-**Why:** Today you Ctrl-C the terminal or `lsof | xargs kill`. Bad UX, especially for users running the task from an IDE Gradle panel where the daemon is hidden.
-
-**Approach:**
-1. ServeTask writes its PID to `${buildDir}/clean-code/serve.pid` after starting; deletes it on shutdown.
-2. New `cleanCodeStop` task: reads the PID file, sends `SIGTERM`, waits 5s, sends `SIGKILL` if still alive.
-3. New endpoint `POST /api/shutdown` in `ReportServer` that releases the shutdown latch (same path Ctrl-C takes today).
-4. Top-right of the `#staging-bar` in `HtmlReportWriter`: small **🛑 Stop server** button that POSTs `/api/shutdown` and replaces the bar with "Server stopped — re-run `./gradlew cleanCodeServe`".
-
-**Files:**
-- `plugin/src/main/java/.../ServeTask.java` — PID file write/cleanup.
-- `plugin/src/main/java/.../StopTask.java` (new).
-- `plugin/src/main/java/.../CleanCodePlugin.java` — register the task.
-- `plugin/src/main/java/.../serve/ReportServer.java` — `/api/shutdown` handler with a `Runnable` callback.
-- `core/src/main/java/.../HtmlReportWriter.java` — Stop button in `appendStagingBar` and JS handler in `appendStagingScript`.
-
-**Gotchas:**
-- PID file race: write before binding the port; clean up via shutdown hook.
-- Don't ship the Stop endpoint without authentication if we ever bind to non-localhost. Currently `127.0.0.1` only, so trust = network ACL.
+#### 3. `cleanCodeStop` task + in-page Stop button — **DONE 2026-05-02 (uncommitted)**
+Implemented as described. Smoke-tested via the harness: `cleanCodeServe` writes the PID, `POST /api/shutdown` cleanly tears down (port closes, PID deleted, BUILD SUCCESSFUL), `cleanCodeStop` from a second daemon SIGTERMs the serve daemon successfully. Note: the PID written is the Gradle daemon's PID, not the serve thread's — killing it terminates the daemon, but that is fine because the daemon is fully occupied by the serve task and a fresh daemon spins up on the next gradle invocation.
 
 ---
 
