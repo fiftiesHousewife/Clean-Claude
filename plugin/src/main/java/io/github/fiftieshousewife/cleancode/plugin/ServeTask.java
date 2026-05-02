@@ -5,6 +5,7 @@ import io.github.fiftieshousewife.cleancode.core.HtmlReportWriter;
 import io.github.fiftieshousewife.cleancode.core.JsonReportWriter;
 import io.github.fiftieshousewife.cleancode.core.SourceState;
 import io.github.fiftieshousewife.cleancode.plugin.serve.ApplyChangesResponse;
+import io.github.fiftieshousewife.cleancode.plugin.serve.ChangeApplier;
 import io.github.fiftieshousewife.cleancode.plugin.serve.ConfigSnapshot;
 import io.github.fiftieshousewife.cleancode.plugin.serve.ReportServer;
 import org.gradle.api.DefaultTask;
@@ -24,8 +25,9 @@ import java.util.concurrent.CountDownLatch;
  * the in-page UI can call back into the server with batched changes
  * (disable a recipe, tune a threshold, suppress a finding).
  *
- * <p>This commit wires the server skeleton only — apply-changes is
- * stubbed; the next commits add the staging UI and the actual mutations.
+ * <p>Apply handler runs the staged changes against the project root via
+ * {@link ChangeApplier}, then re-runs the analysis and rewrites the
+ * report. The client soft-reloads on success so fresh state is shown.
  */
 @DisableCachingByDefault(because = "long-running interactive task")
 public abstract class ServeTask extends DefaultTask {
@@ -54,21 +56,14 @@ public abstract class ServeTask extends DefaultTask {
         HtmlReportWriter.write(report, htmlReport, repositoryUrl, projectRoot, ideScheme, sourceStates);
 
         final int port = ext.getServePort().get();
+        final ChangeApplier applier = new ChangeApplier(projectRoot);
+
         final ReportServer server = ReportServer.start(
                 port,
                 () -> htmlReport,
                 () -> snapshotConfig(ext),
-                request -> {
-                    getLogger().lifecycle("apply-changes received: {} change(s)",
-                            request.changes() == null ? 0 : request.changes().size());
-                    if (request.changes() != null) {
-                        request.changes().forEach(c ->
-                                getLogger().lifecycle("  staged: {} {} reason='{}'",
-                                        c.kind(), c.params(), c.reason()));
-                    }
-                    return ApplyChangesResponse.ok(
-                            request.changes() == null ? 0 : request.changes().size());
-                },
+                request -> applyAndRegenerate(applier, request.changes(),
+                        outputDir, htmlReport, repositoryUrl, ideScheme),
                 getLogger());
 
         getLogger().lifecycle("\n  Clean Code report serving at: {}", server.url());
@@ -83,6 +78,37 @@ public abstract class ServeTask extends DefaultTask {
             shutdownLatch.countDown();
         }));
         shutdownLatch.await();
+    }
+
+    private ApplyChangesResponse applyAndRegenerate(final ChangeApplier applier,
+                                                     final List<io.github.fiftieshousewife.cleancode.plugin.serve.PendingChange> changes,
+                                                     final Path outputDir, final Path htmlReport,
+                                                     final String repositoryUrl, final String ideScheme) {
+        if (changes == null || changes.isEmpty()) {
+            return ApplyChangesResponse.ok(0);
+        }
+        getLogger().lifecycle("applying {} staged change(s)...", changes.size());
+        final ApplyChangesResponse applyResponse = applier.apply(changes);
+        if (!applyResponse.success()) {
+            applyResponse.errors().forEach(err -> getLogger().error("  apply error: {}", err));
+            return applyResponse;
+        }
+
+        try {
+            getLogger().lifecycle("re-running analysis...");
+            final SandboxAnalysis.Result rerun = SandboxAnalysis.analyseWithStates(getProject());
+            JsonReportWriter.write(rerun.report(), outputDir.resolve("findings.json"));
+            HtmlReportWriter.write(rerun.report(), htmlReport, repositoryUrl,
+                    getProject().getProjectDir().toPath(), ideScheme, rerun.sourceStates());
+            getLogger().lifecycle("  applied {} change(s); {} findings remain.",
+                    applyResponse.applied(), rerun.report().findings().size());
+        } catch (Exception e) {
+            getLogger().error("re-run after apply failed", e);
+            return ApplyChangesResponse.failed(java.util.List.of(
+                    "changes were applied to disk but re-running analysis failed: " + e.getMessage()
+                            + " (re-run ./gradlew cleanCodeServe to refresh)"));
+        }
+        return applyResponse;
     }
 
     private void openInBrowser(final String url) {
