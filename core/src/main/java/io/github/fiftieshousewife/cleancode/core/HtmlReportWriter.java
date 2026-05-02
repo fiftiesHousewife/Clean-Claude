@@ -48,6 +48,7 @@ public final class HtmlReportWriter {
                                   List<SourceState> sourceStates) {
         final StringBuilder html = new StringBuilder();
         appendDocumentStart(html, report);
+        appendStagingBar(html);
         if (!report.findings().isEmpty()) {
             appendIdePicker(html, ideUrlScheme);
         }
@@ -62,9 +63,11 @@ public final class HtmlReportWriter {
         appendOptionalRulesSummary(html);
 
         appendFooter(html, report);
+        appendStagingModal(html);
         if (!report.findings().isEmpty()) {
             appendInteractionScript(html, projectRoot);
         }
+        appendStagingScript(html);
         appendDocumentEnd(html);
         return html.toString();
     }
@@ -151,7 +154,69 @@ public final class HtmlReportWriter {
         html.append("    .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }\n");
         html.append("    footer { text-align: center; padding: 2rem; font-size: 0.8rem; ");
         html.append("color: #999; }\n");
+        appendStagingStyles(html);
         html.append("  </style>\n");
+    }
+
+    private static void appendStagingStyles(final StringBuilder html) {
+        html.append("    col.actions { width: 11rem; }\n");
+        html.append("    td.actions { white-space: nowrap; text-align: right; }\n");
+        html.append("    .code-actions { margin-left: 0.75rem; display: inline-flex; gap: 0.4rem; }\n");
+        html.append("    .action-btn { font-size: 0.75rem; padding: 0.2rem 0.5rem; ");
+        html.append("border: 1px solid #ccc; background: #fff; color: #333; ");
+        html.append("border-radius: 4px; cursor: pointer; font-family: inherit; }\n");
+        html.append("    .action-btn:hover { background: #f0f0f0; border-color: #999; }\n");
+        html.append("    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }\n");
+        html.append("    .action-btn.staged { background: #fff8dc; border-color: #d4a017; }\n");
+        html.append("    #staging-bar { position: sticky; top: 0; z-index: 10; ");
+        html.append("background: #fff8dc; border-bottom: 2px solid #d4a017; ");
+        html.append("padding: 0.75rem 1rem; display: none; align-items: center; gap: 1rem; ");
+        html.append("box-shadow: 0 2px 4px rgba(0,0,0,0.1); }\n");
+        html.append("    #staging-bar.has-changes { display: flex; }\n");
+        html.append("    #staging-bar.server-down { background: #fce4e4; border-color: #c0392b; }\n");
+        html.append("    #staging-bar .pending-count { font-weight: 600; }\n");
+        html.append("    #staging-bar button { font-size: 0.85rem; padding: 0.4rem 0.8rem; ");
+        html.append("border: 1px solid #ccc; border-radius: 4px; cursor: pointer; ");
+        html.append("font-family: inherit; }\n");
+        html.append("    #staging-bar .confirm-btn { background: #27ae60; color: #fff; ");
+        html.append("border-color: #27ae60; }\n");
+        html.append("    #staging-bar .confirm-btn:hover { background: #219653; }\n");
+        html.append("    #staging-bar .discard-btn { background: #fff; color: #c0392b; ");
+        html.append("border-color: #c0392b; }\n");
+        html.append("    #staging-bar .discard-btn:hover { background: #fce4e4; }\n");
+        html.append("    #staging-bar details { background: transparent; border: 0; ");
+        html.append("margin: 0; flex: 1; }\n");
+        html.append("    #staging-bar summary { padding: 0; font-size: 0.85rem; ");
+        html.append("font-weight: normal; color: #555; }\n");
+        html.append("    #staging-bar .pending-list { font-size: 0.8rem; ");
+        html.append("color: #555; margin-top: 0.5rem; max-height: 30vh; overflow-y: auto; }\n");
+        html.append("    #staging-bar .pending-list .row { padding: 0.2rem 0; ");
+        html.append("border-bottom: 1px dashed #d4a017; }\n");
+        html.append("    .modal-backdrop { position: fixed; inset: 0; ");
+        html.append("background: rgba(0,0,0,0.4); display: none; ");
+        html.append("align-items: center; justify-content: center; z-index: 100; }\n");
+        html.append("    .modal-backdrop.open { display: flex; }\n");
+        html.append("    .modal { background: #fff; border-radius: 6px; padding: 1.5rem; ");
+        html.append("width: min(500px, 90vw); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }\n");
+        html.append("    .modal h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }\n");
+        html.append("    .modal .summary-line { font-size: 0.85rem; color: #555; ");
+        html.append("margin-bottom: 1rem; font-family: 'SF Mono', monospace; }\n");
+        html.append("    .modal label { display: block; font-size: 0.85rem; ");
+        html.append("color: #555; margin-bottom: 0.25rem; }\n");
+        html.append("    .modal textarea, .modal input { width: 100%; padding: 0.5rem; ");
+        html.append("font: inherit; font-size: 0.9rem; border: 1px solid #ccc; ");
+        html.append("border-radius: 4px; margin-bottom: 1rem; }\n");
+        html.append("    .modal textarea { resize: vertical; min-height: 4rem; }\n");
+        html.append("    .modal .modal-actions { display: flex; gap: 0.5rem; ");
+        html.append("justify-content: flex-end; }\n");
+        html.append("    .modal button { font-size: 0.9rem; padding: 0.4rem 1rem; ");
+        html.append("border: 1px solid #ccc; border-radius: 4px; cursor: pointer; ");
+        html.append("font-family: inherit; background: #fff; }\n");
+        html.append("    .modal button.primary { background: #2980b9; color: #fff; ");
+        html.append("border-color: #2980b9; }\n");
+        html.append("    .modal button.primary:disabled { opacity: 0.4; cursor: not-allowed; }\n");
+        html.append("    .modal .threshold-row { display: flex; gap: 1rem; align-items: end; }\n");
+        html.append("    .modal .threshold-row > div { flex: 1; }\n");
     }
 
     private static void appendIdePicker(StringBuilder html, String ideUrlScheme) {
@@ -228,6 +293,218 @@ public final class HtmlReportWriter {
         return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 
+    private static void appendStagingBar(final StringBuilder html) {
+        html.append("  <div id=\"staging-bar\">\n");
+        html.append("    <details>\n");
+        html.append("      <summary><span class=\"pending-count\">0</span> pending change(s) ");
+        html.append("&mdash; <span class=\"server-status\"></span></summary>\n");
+        html.append("      <div class=\"pending-list\"></div>\n");
+        html.append("    </details>\n");
+        html.append("    <button class=\"confirm-btn\" type=\"button\">Confirm &amp; apply</button>\n");
+        html.append("    <button class=\"discard-btn\" type=\"button\">Discard</button>\n");
+        html.append("  </div>\n");
+    }
+
+    private static void appendStagingModal(final StringBuilder html) {
+        html.append("  <div class=\"modal-backdrop\" id=\"stage-modal\">\n");
+        html.append("    <form class=\"modal\" id=\"stage-modal-form\">\n");
+        html.append("      <h3 id=\"modal-title\">Stage change</h3>\n");
+        html.append("      <p class=\"summary-line\" id=\"modal-summary\"></p>\n");
+        html.append("      <div id=\"modal-threshold-row\" class=\"threshold-row\" style=\"display:none\">\n");
+        html.append("        <div><label>Current</label><input type=\"text\" id=\"modal-current\" disabled></div>\n");
+        html.append("        <div><label>New value</label><input type=\"number\" id=\"modal-new-value\" min=\"1\"></div>\n");
+        html.append("      </div>\n");
+        html.append("      <label for=\"modal-reason\">Reason (required, min 5 chars)</label>\n");
+        html.append("      <textarea id=\"modal-reason\" required minlength=\"5\" ");
+        html.append("placeholder=\"Why are you making this change? This goes into the suppression annotation / build script comment.\"></textarea>\n");
+        html.append("      <div class=\"modal-actions\">\n");
+        html.append("        <button type=\"button\" class=\"cancel-btn\">Cancel</button>\n");
+        html.append("        <button type=\"submit\" class=\"primary\" disabled>Stage</button>\n");
+        html.append("      </div>\n");
+        html.append("    </form>\n");
+        html.append("  </div>\n");
+    }
+
+    private static void appendStagingScript(final StringBuilder html) {
+        html.append("  <script>\n");
+        html.append("    (function() {\n");
+        html.append("      const STORAGE_KEY = 'cleanCodePendingChanges';\n");
+        html.append("      const bar = document.getElementById('staging-bar');\n");
+        html.append("      const countEl = bar.querySelector('.pending-count');\n");
+        html.append("      const statusEl = bar.querySelector('.server-status');\n");
+        html.append("      const listEl = bar.querySelector('.pending-list');\n");
+        html.append("      const confirmBtn = bar.querySelector('.confirm-btn');\n");
+        html.append("      const discardBtn = bar.querySelector('.discard-btn');\n");
+        html.append("      const modal = document.getElementById('stage-modal');\n");
+        html.append("      const modalForm = document.getElementById('stage-modal-form');\n");
+        html.append("      const modalTitle = document.getElementById('modal-title');\n");
+        html.append("      const modalSummary = document.getElementById('modal-summary');\n");
+        html.append("      const modalThreshold = document.getElementById('modal-threshold-row');\n");
+        html.append("      const modalCurrent = document.getElementById('modal-current');\n");
+        html.append("      const modalNewValue = document.getElementById('modal-new-value');\n");
+        html.append("      const modalReason = document.getElementById('modal-reason');\n");
+        html.append("      const modalSubmit = modalForm.querySelector('button[type=submit]');\n");
+        html.append("      let pending = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');\n");
+        html.append("      let serverState = null;\n");
+        html.append("      let pendingDraft = null;\n");
+        html.append("\n");
+        html.append("      function load() {\n");
+        html.append("        fetch('/api/state').then(r => r.ok ? r.json() : null).then(state => {\n");
+        html.append("          serverState = state;\n");
+        html.append("          if (state) { statusEl.textContent = 'server connected'; }\n");
+        html.append("          else { setServerDown(); }\n");
+        html.append("          render();\n");
+        html.append("        }).catch(() => { setServerDown(); render(); });\n");
+        html.append("      }\n");
+        html.append("\n");
+        html.append("      function setServerDown() {\n");
+        html.append("        bar.classList.add('server-down');\n");
+        html.append("        statusEl.textContent = 'server not running — start ./gradlew cleanCodeServe to enable';\n");
+        html.append("        document.querySelectorAll('.action-btn').forEach(b => {\n");
+        html.append("          b.disabled = true;\n");
+        html.append("          b.title = 'Run ./gradlew cleanCodeServe to enable';\n");
+        html.append("        });\n");
+        html.append("        confirmBtn.disabled = true;\n");
+        html.append("      }\n");
+        html.append("\n");
+        html.append("      function render() {\n");
+        html.append("        countEl.textContent = pending.length;\n");
+        html.append("        if (pending.length > 0) bar.classList.add('has-changes');\n");
+        html.append("        else bar.classList.remove('has-changes');\n");
+        html.append("        listEl.innerHTML = pending.map(c => {\n");
+        html.append("          const params = Object.entries(c.params).map(([k,v]) => k+'='+v).join(' ');\n");
+        html.append("          return '<div class=\"row\">' + esc(c.kind) + ' &middot; ' + esc(params)\n");
+        html.append("              + ' &middot; <em>' + esc(c.reason) + '</em></div>';\n");
+        html.append("        }).join('');\n");
+        html.append("        markStagedButtons();\n");
+        html.append("      }\n");
+        html.append("\n");
+        html.append("      function markStagedButtons() {\n");
+        html.append("        document.querySelectorAll('.action-btn.staged').forEach(b => b.classList.remove('staged'));\n");
+        html.append("        pending.forEach(c => {\n");
+        html.append("          let selector;\n");
+        html.append("          if (c.kind === 'suppressFinding') {\n");
+        html.append("            selector = '.suppress-btn[data-code=\"'+c.params.code+'\"][data-file=\"'+c.params.file+'\"][data-line=\"'+c.params.line+'\"]';\n");
+        html.append("          } else if (c.kind === 'disableRecipe') {\n");
+        html.append("            selector = '.disable-btn[data-code=\"'+c.params.code+'\"]';\n");
+        html.append("          } else if (c.kind === 'tuneThreshold') {\n");
+        html.append("            selector = '.tune-btn[data-code=\"'+c.params.code+'\"]';\n");
+        html.append("          }\n");
+        html.append("          if (selector) document.querySelectorAll(selector).forEach(b => b.classList.add('staged'));\n");
+        html.append("        });\n");
+        html.append("      }\n");
+        html.append("\n");
+        html.append("      function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }\n");
+        html.append("\n");
+        html.append("      function openModal(draft) {\n");
+        html.append("        pendingDraft = draft;\n");
+        html.append("        modalTitle.textContent = draft.title;\n");
+        html.append("        modalSummary.innerHTML = draft.summary;\n");
+        html.append("        modalReason.value = '';\n");
+        html.append("        if (draft.kind === 'tuneThreshold') {\n");
+        html.append("          modalThreshold.style.display = 'flex';\n");
+        html.append("          modalCurrent.value = draft.currentValue;\n");
+        html.append("          modalNewValue.value = draft.suggestedValue;\n");
+        html.append("        } else {\n");
+        html.append("          modalThreshold.style.display = 'none';\n");
+        html.append("        }\n");
+        html.append("        modal.classList.add('open');\n");
+        html.append("        modalReason.focus();\n");
+        html.append("        validateModal();\n");
+        html.append("      }\n");
+        html.append("\n");
+        html.append("      function closeModal() { modal.classList.remove('open'); pendingDraft = null; }\n");
+        html.append("\n");
+        html.append("      function validateModal() {\n");
+        html.append("        const reasonOk = modalReason.value.trim().length >= 5;\n");
+        html.append("        const valueOk = pendingDraft && pendingDraft.kind === 'tuneThreshold'\n");
+        html.append("          ? Number(modalNewValue.value) > 0 : true;\n");
+        html.append("        modalSubmit.disabled = !(reasonOk && valueOk);\n");
+        html.append("      }\n");
+        html.append("\n");
+        html.append("      modalReason.addEventListener('input', validateModal);\n");
+        html.append("      modalNewValue.addEventListener('input', validateModal);\n");
+        html.append("      modalForm.querySelector('.cancel-btn').addEventListener('click', closeModal);\n");
+        html.append("      modalForm.addEventListener('submit', e => {\n");
+        html.append("        e.preventDefault();\n");
+        html.append("        if (!pendingDraft) return;\n");
+        html.append("        const change = { kind: pendingDraft.kind, params: pendingDraft.params, reason: modalReason.value.trim() };\n");
+        html.append("        if (pendingDraft.kind === 'tuneThreshold') {\n");
+        html.append("          change.params.newValue = String(Number(modalNewValue.value));\n");
+        html.append("        }\n");
+        html.append("        pending.push(change);\n");
+        html.append("        localStorage.setItem(STORAGE_KEY, JSON.stringify(pending));\n");
+        html.append("        closeModal();\n");
+        html.append("        render();\n");
+        html.append("      });\n");
+        html.append("\n");
+        html.append("      document.addEventListener('click', e => {\n");
+        html.append("        const suppress = e.target.closest('.suppress-btn');\n");
+        html.append("        if (suppress) {\n");
+        html.append("          openModal({ kind: 'suppressFinding', title: 'Suppress finding',\n");
+        html.append("            summary: 'Adds <code>@SuppressWarnings(\"CleanCode:'+suppress.dataset.code+'\")</code> in ' + esc(suppress.dataset.file) + ':' + suppress.dataset.line,\n");
+        html.append("            params: { code: suppress.dataset.code, file: suppress.dataset.file, line: suppress.dataset.line } });\n");
+        html.append("          return;\n");
+        html.append("        }\n");
+        html.append("        const disable = e.target.closest('.disable-btn');\n");
+        html.append("        if (disable) {\n");
+        html.append("          openModal({ kind: 'disableRecipe', title: 'Disable rule project-wide',\n");
+        html.append("            summary: 'Adds <code>\"'+disable.dataset.code+'\"</code> to <code>cleanCode.disabledRecipes</code>',\n");
+        html.append("            params: { code: disable.dataset.code } });\n");
+        html.append("          return;\n");
+        html.append("        }\n");
+        html.append("        const tune = e.target.closest('.tune-btn');\n");
+        html.append("        if (tune) {\n");
+        html.append("          const key = tune.dataset.threshold;\n");
+        html.append("          const current = serverState && serverState.thresholds ? serverState.thresholds[key] : '?';\n");
+        html.append("          openModal({ kind: 'tuneThreshold', title: 'Tune threshold',\n");
+        html.append("            summary: 'Updates <code>cleanCode.thresholds.'+key+'</code> in build.gradle.kts',\n");
+        html.append("            params: { code: tune.dataset.code, threshold: key },\n");
+        html.append("            currentValue: current, suggestedValue: typeof current === 'number' ? current + 2 : 1 });\n");
+        html.append("          return;\n");
+        html.append("        }\n");
+        html.append("      });\n");
+        html.append("\n");
+        html.append("      discardBtn.addEventListener('click', () => {\n");
+        html.append("        if (pending.length === 0) return;\n");
+        html.append("        if (!confirm('Discard ' + pending.length + ' pending change(s)?')) return;\n");
+        html.append("        pending = [];\n");
+        html.append("        localStorage.removeItem(STORAGE_KEY);\n");
+        html.append("        render();\n");
+        html.append("      });\n");
+        html.append("\n");
+        html.append("      confirmBtn.addEventListener('click', () => {\n");
+        html.append("        if (pending.length === 0) return;\n");
+        html.append("        confirmBtn.disabled = true;\n");
+        html.append("        confirmBtn.textContent = 'Applying...';\n");
+        html.append("        fetch('/api/apply-changes', {\n");
+        html.append("          method: 'POST',\n");
+        html.append("          headers: { 'Content-Type': 'application/json' },\n");
+        html.append("          body: JSON.stringify({ changes: pending })\n");
+        html.append("        }).then(r => r.json().then(j => ({ status: r.status, body: j })))\n");
+        html.append("          .then(({ status, body }) => {\n");
+        html.append("            if (status === 200 && body.success) {\n");
+        html.append("              pending = [];\n");
+        html.append("              localStorage.removeItem(STORAGE_KEY);\n");
+        html.append("              location.reload();\n");
+        html.append("            } else {\n");
+        html.append("              const errs = (body.errors || ['unknown error']).join('\\n');\n");
+        html.append("              alert('Apply failed:\\n' + errs);\n");
+        html.append("              confirmBtn.disabled = false;\n");
+        html.append("              confirmBtn.textContent = 'Confirm & apply';\n");
+        html.append("            }\n");
+        html.append("          }).catch(err => {\n");
+        html.append("            alert('Network error: ' + err.message);\n");
+        html.append("            confirmBtn.disabled = false;\n");
+        html.append("            confirmBtn.textContent = 'Confirm & apply';\n");
+        html.append("          });\n");
+        html.append("      });\n");
+        html.append("\n");
+        html.append("      load();\n");
+        html.append("    })();\n");
+        html.append("  </script>\n");
+    }
+
     private static void appendSeveritySummary(StringBuilder html, AggregatedReport report) {
         final Map<Severity, List<Finding>> bySeverity = report.bySeverity();
         final int errors = bySeverity.getOrDefault(Severity.ERROR, List.of()).size();
@@ -261,10 +538,12 @@ public final class HtmlReportWriter {
         final String reference = HeuristicDescriptions.reference(code);
         final String guidance = HeuristicDescriptions.guidance(code);
 
-        html.append("    <details>\n");
+        html.append("    <details data-code=\"").append(escape(code.name())).append("\">\n");
         html.append("      <summary><span class=\"code-label\">").append(escape(code.name()));
         html.append("</span>").append(escape(name));
-        html.append(" (").append(group.size()).append(")</summary>\n");
+        html.append(" (").append(group.size()).append(")");
+        appendCodeActions(html, code);
+        html.append("</summary>\n");
         html.append("      <div class=\"group-body\">\n");
 
         if (reference != null) {
@@ -279,13 +558,13 @@ public final class HtmlReportWriter {
 
         html.append("        <table>\n");
         html.append("          <colgroup>");
-        html.append("<col class=\"severity\"><col class=\"location\"><col class=\"message\">");
+        html.append("<col class=\"severity\"><col class=\"location\"><col class=\"message\"><col class=\"actions\">");
         html.append("</colgroup>\n");
-        html.append("          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>\n");
+        html.append("          <tr><th>Severity</th><th>Location</th><th>Message</th><th></th></tr>\n");
 
         group.stream()
                 .sorted(Comparator.comparing(f -> f.sourceFile() != null ? f.sourceFile() : ""))
-                .forEach(f -> appendFindingRow(html, f, repositoryUrl, projectRoot, ideUrlScheme));
+                .forEach(f -> appendFindingRow(html, f, code, repositoryUrl, projectRoot, ideUrlScheme));
 
         html.append("        </table>\n");
         html.append("      </div>\n");
@@ -293,6 +572,7 @@ public final class HtmlReportWriter {
     }
 
     private static void appendFindingRow(StringBuilder html, Finding finding,
+                                          HeuristicCode code,
                                           String repositoryUrl, Path projectRoot,
                                           String ideUrlScheme) {
         final String severityClass = "sev-" + finding.severity().name().toLowerCase();
@@ -305,7 +585,50 @@ public final class HtmlReportWriter {
         html.append(finding.severity().name()).append("</td>");
         html.append("<td class=\"location\">").append(locationHtml).append("</td>");
         html.append("<td>").append(escape(finding.message())).append("</td>");
+        html.append("<td class=\"actions\">").append(buildSuppressButton(finding, code)).append("</td>");
         html.append("</tr>\n");
+    }
+
+    private static String buildSuppressButton(final Finding finding, final HeuristicCode code) {
+        if (finding.sourceFile() == null || finding.startLine() <= 0) {
+            return "";
+        }
+        return "<button type=\"button\" class=\"action-btn suppress-btn\""
+                + " data-code=\"" + escape(code.name()) + "\""
+                + " data-file=\"" + escape(finding.sourceFile()) + "\""
+                + " data-line=\"" + finding.startLine() + "\""
+                + " title=\"Suppress this specific finding with @SuppressWarnings\""
+                + ">&#128264; Suppress</button>";
+    }
+
+    private static void appendCodeActions(final StringBuilder html, final HeuristicCode code) {
+        html.append("<span class=\"code-actions\">");
+        html.append("<button type=\"button\" class=\"action-btn disable-btn\"")
+                .append(" data-code=\"").append(escape(code.name())).append("\"")
+                .append(" title=\"Disable this rule project-wide\"")
+                .append(">&#10060; Disable</button>");
+        final String thresholdKey = thresholdKeyFor(code);
+        if (thresholdKey != null) {
+            html.append("<button type=\"button\" class=\"action-btn tune-btn\"")
+                    .append(" data-code=\"").append(escape(code.name())).append("\"")
+                    .append(" data-threshold=\"").append(escape(thresholdKey)).append("\"")
+                    .append(" title=\"Raise the threshold to silence borderline cases\"")
+                    .append(">&#9881;&#65039; Tune</button>");
+        }
+        html.append("</span>");
+    }
+
+    private static String thresholdKeyFor(final HeuristicCode code) {
+        return switch (code) {
+            case G30 -> "methodBlankLineSections";
+            case T1 -> "privateMethodMinLines";
+            case G25 -> "magicStringMinOccurrences";
+            case G35 -> "hardcodedListMinLiterals";
+            case Ch10_1 -> "classLineCount";
+            case F1 -> "recordComponentCount";
+            case G5 -> "cpdMinimumTokens";
+            default -> null;
+        };
     }
 
     private static String buildLocationHtml(Finding finding, String location,

@@ -177,6 +177,97 @@ class HtmlReportWriterTest {
     }
 
     @Test
+    void emitsStagingBarAndModalForServeUx(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        HtmlReportWriter.write(sampleReport(), output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("id=\"staging-bar\""),
+                        "top-bar holds the pending-changes counter and confirm/discard"),
+                () -> assertTrue(html.contains("id=\"stage-modal\""),
+                        "modal captures reason before staging"),
+                () -> assertTrue(html.contains("cleanCodePendingChanges"),
+                        "pending changes persist across reloads via localStorage"),
+                () -> assertTrue(html.contains("/api/state"),
+                        "client fetches current config to render correct toggle states"),
+                () -> assertTrue(html.contains("/api/apply-changes"),
+                        "confirm POSTs the batch to the server"));
+    }
+
+    @Test
+    void emitsPerFindingSuppressButtonWithCodeFileAndLine(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        HtmlReportWriter.write(sampleReport(), output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("class=\"action-btn suppress-btn\""),
+                        "every actionable finding gets a Suppress button"),
+                () -> assertTrue(html.contains("data-code=\"G5\"")
+                        && html.contains("data-file=\"Foo.java\"")
+                        && html.contains("data-line=\"10\""),
+                        "Suppress button carries the data the server needs to insert the annotation"));
+    }
+
+    @Test
+    void emitsDisableAndTuneButtonsPerCodeSection(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        final Finding f = new Finding(HeuristicCode.G30, "Foo.java", 1, 1,
+                "method has too many blank-line sections",
+                Severity.WARNING, Confidence.HIGH, "openrewrite", "G30", Map.of());
+        final AggregatedReport report = new AggregatedReport(
+                List.of(f), Set.of(HeuristicCode.G30),
+                java.time.Instant.now(), "test", "1.0");
+
+        HtmlReportWriter.write(report, output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("class=\"action-btn disable-btn\""),
+                        "every code section gets a Disable button"),
+                () -> assertTrue(html.contains("class=\"action-btn tune-btn\"")
+                        && html.contains("data-threshold=\"methodBlankLineSections\""),
+                        "G30 has a tunable threshold so it gets the Tune button mapped to the right key"));
+    }
+
+    @Test
+    void omitsTuneButtonForCodesWithoutThreshold(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        final Finding f = new Finding(HeuristicCode.G36, "Foo.java", 1, 1,
+                "too much information",
+                Severity.WARNING, Confidence.HIGH, "openrewrite", "G36", Map.of());
+        final AggregatedReport report = new AggregatedReport(
+                List.of(f), Set.of(HeuristicCode.G36),
+                java.time.Instant.now(), "test", "1.0");
+
+        HtmlReportWriter.write(report, output);
+        final String html = Files.readString(output);
+
+        assertTrue(!html.contains("class=\"action-btn tune-btn\""),
+                "G36 has no configurable threshold — Tune button must not appear");
+    }
+
+    @Test
+    void modalRequiresReasonBeforeStaging(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        HtmlReportWriter.write(sampleReport(), output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("required minlength=\"5\""),
+                        "modal enforces a meaningful reason via HTML validation"),
+                () -> assertTrue(html.contains("id=\"modal-reason\"")),
+                () -> assertTrue(html.contains("Reason (required, min 5 chars)"),
+                        "label tells the user reason is mandatory"));
+    }
+
+    @Test
     void emitsIdePickerWhenFindingsPresent(@TempDir Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");
