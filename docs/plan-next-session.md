@@ -1,5 +1,57 @@
 # Plan: next session handoff
 
+## 2026-05-02 — interactive triage UI (`cleanCodeServe`) + opt-in rules + plumbing fixes
+
+### What shipped this session
+
+| Commit | Scope |
+|---|---|
+| `170834b` | Heuristic + report fixes from consumer feedback (equals/hashCode/@Option/compareTo skip across 19 visitors; G35 inversion; G29→G30 re-mapping; HTML clickable IDE jump links; per-finding `@SuppressWarnings("CleanCode:N5")` recognition). |
+| `1c24d33` | **Optional rules + transparent Sources panel.** `OptionalRules` defaults disable `checkstyle:FinalLocalVariable` (G22) and `pmd:UseLocaleWithCaseConversions` (G26). Opt in via `cleanCode.enabledOptionalRules`. New `SourceState` record so the Sources section lists every configured tool with its state (produced N findings / ran no findings / not available). |
+| `924fa9a` | **Plumbing fix + LegacyTypesRecipe.** SandboxAnalysis now reads sourceSets from `JavaPluginExtension` instead of hardcoding `src/main/java`. LegacyTypesRecipe replaces LegacyFileApiRecipe; catalogue extended to Date/Calendar/SimpleDateFormat/Vector/Hashtable/Stack/Random/StringBuffer/Class.newInstance() with per-type replacement hints. |
+| `1110f1f` | Bump 0.1.0 → 0.1.1. |
+| `eab395e` | **Triage of OpenRewrite finding flood.** G30 default 4→6, T1 default 5→12, F2 skips private/static accumulator helpers, G12 skips `.class` literals. |
+| `39ab020` | **`cleanCodeServe` task + HTTP server skeleton.** Long-running task on `localhost:7070`. Endpoints: `GET /` (serves report fresh), `GET /api/state` (config snapshot), `POST /api/apply-changes` (batch). 9 protocol tests. |
+| `24b0457` | **HTML staging UI.** Per-finding 🔇 Suppress, per-section ❌ Disable / ⚙️ Tune (when threshold-mapped). Modal enforces `reason` ≥ 5 chars. Sticky staging bar with Confirm / Discard. localStorage persistence. Server-down fallback. 5 markup tests. |
+| `0dcf4fb` | **Real mutations + re-run-after-apply.** `BuildScriptEditor` (line-based on `build.gradle.kts`), `SourceFileEditor` (JavaParser-driven annotation insertion with merge-into-existing-`@SuppressWarnings`), `ChangeApplier` (groups + reverse-line-order suppressions). Apply triggers re-analysis + report regeneration; client soft-reloads. 18 tests across the three editors. |
+| `b64b814` | Bump 0.1.1 → 0.1.2. **SourceFileEditor parser language level fix** — JavaParser defaulted to JAVA_11 and choked on records; pinned to JAVA_21. |
+
+### State at end of session
+
+- Working tree clean on `main`.
+- `./gradlew check` green end-to-end.
+- 0.1.2 published to mavenLocal across all modules.
+- `cleanCodeServe` validated end-to-end via the harness at `/tmp/cleanclaude-selfanalysis-1777721438/`: real apply round-trip mutated `build.gradle.kts` (new `thresholds { classLineCount = 152 }` block) and inserted a `@SuppressWarnings("CleanCode:F1")` annotation in `CpdFindingSource`.
+
+### How to use the triage UI
+
+```bash
+./gradlew cleanCodeServe
+# → opens http://localhost:7070, blocks until Ctrl-C
+```
+
+In the report:
+
+| Action | Where | Effect |
+|---|---|---|
+| 🔇 **Suppress** | per finding row | inserts `// CleanCode-suppress CODE: <reason>` + `@SuppressWarnings("CleanCode:CODE")` above the smallest enclosing declaration |
+| ❌ **Disable** | per code section | appends to `cleanCode.disabledRecipes` (idempotent) |
+| ⚙️ **Tune** | per code section (when threshold-mapped) | updates `cleanCode.thresholds.<key>` in `build.gradle.kts` |
+
+Click → reason modal → stage in `localStorage`. Top-bar **Confirm & apply** POSTs the batch; server runs all edits, re-analyses, page reloads.
+
+### Carryover for next session
+
+- **#6 G12 static-final tightening** — currently flags `LoggerNames.LOG4J2_LOGGER` style constant access. Need to skip `static final` field accesses at the analysis layer.
+- **#8 CPD G5 visitor scaffolding** — visitor patterns trigger CPD; consider tagging recipe-implementation packages or per-package CPD min-token override.
+- **#10 Tag/push/publish 0.1.2 to Maven Central** — currently in mavenLocal only. Local tag `0.1.2` not yet pushed.
+- **#14 N6 real-word detection** — use English-word library to flag genuinely opaque names.
+- **#15 TestKit-based self-apply harness** — replace `/tmp/cleanclaude-selfanalysis-*` script with a Tooling-API/TestKit run wired into CI.
+- **Triage UI follow-ups discussed but not built yet:**
+  - **`cleanCodeStop` task / in-page Stop button** — currently you Ctrl-C the terminal or `lsof | xargs kill`.
+  - **Per-finding 🔧 FIXME button** — wire `HarnessRecipePass.applyToFile` so codes that have a refactoring recipe get a "Fix" action; add a per-section "Fix all N" too.
+  - **💬 Request-a-change button** — top-of-report channel that writes user feedback to a local `clean-code-feedback.md`.
+
 ## 2026-04-20 morning handoff — full P0→P4 sprint + recipe hardening + whole-codebase sweep verified
 
 ### What shipped this session (commits `8329e2e` → `6ae0adc`)

@@ -132,6 +132,8 @@ cleanCode {
         "pmd:UseLocaleWithCaseConversions"     // G26 — require an explicit Locale on toLowerCase/toUpperCase
     )
 
+    servePort = 7070                           // port for ./gradlew cleanCodeServe (default 7070)
+
     packageSuppressions = mapOf(
         "io.github.fiftieshousewife.cleancode.recipes" to listOf("G5", "Ch7_2")
     )
@@ -205,12 +207,31 @@ plugins {
 
 ```bash
 ./gradlew analyseCleanCode                           # full analysis with linked HTML report
+./gradlew cleanCodeServe                             # interactive triage UI (see below)
 ./gradlew cleanCodeFixPlan                           # per-file fix briefs for agent handoff
 ./gradlew generateClaudeMd                           # generate CLAUDE.md
 ./gradlew cleanCodeBaseline                          # snapshot baseline
 ./gradlew cleanCodeExplain --finding=error-handling  # print skill guidance
 ./gradlew updateVersionCatalog                       # bump non-major deps in libs.versions.toml (root only)
 ```
+
+### Interactive triage — `cleanCodeServe`
+
+Long-running task that runs the analysis, opens the report at `http://localhost:7070`, and accepts in-page batched changes:
+
+| Action | Where | What it does |
+|---|---|---|
+| 🔇 **Suppress** | per finding row | inserts `// CleanCode-suppress CODE: <reason>` + `@SuppressWarnings("CleanCode:CODE")` above the enclosing method/class |
+| ❌ **Disable** | per code section | appends the code to `cleanCode.disabledRecipes` in `build.gradle.kts` |
+| ⚙️ **Tune** | per code section (when configurable) | updates the matching threshold in `cleanCode.thresholds { ... }` |
+
+Click any action → reason modal (≥ 5 chars, required) → entry is staged in the browser's `localStorage`. The staging bar at the top shows pending count and offers **Confirm & apply** (POSTs the batch) or **Discard**. On confirm the server applies all edits, re-runs the analysis, and the page reloads with fresh state.
+
+Notes:
+- Server binds to `127.0.0.1` only; the apply endpoint mutates files on disk so off-host requests are refused.
+- If you reopen `findings.html` cold (no server running), the triage buttons are disabled with a tooltip pointing back to `./gradlew cleanCodeServe`.
+- Existing `@SuppressWarnings` annotations are merged into, not duplicated. The single-string form is upgraded to array form when a new code is added.
+- Configurable port via `cleanCode.servePort = 8080`. Press `Ctrl-C` in the terminal to stop the server.
 
 The plugin automatically applies `java`, `pmd`, `checkstyle`, `jacoco`, and `com.github.spotbugs`. It provides a bundled Checkstyle configuration if the project has none, and wires `analyseCleanCode` to depend on all tool report tasks.
 
