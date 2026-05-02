@@ -111,8 +111,8 @@ cleanCode {
         nullCheckDensity = 4              // default 3
         chainDepthThreshold = 4           // default 3
         verticalSeparationDistance = 15    // default 10
-        methodBlankLineSections = 5       // default 4
-        privateMethodMinLines = 8         // default 5
+        methodBlankLineSections = 8       // default 6
+        privateMethodMinLines = 15        // default 12
         magicStringMinOccurrences = 3     // default 2
         stringSwitchMinCases = 4          // default 3
         shortNameMinLength = 2            // default 2

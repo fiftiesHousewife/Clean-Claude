@@ -53,6 +53,9 @@ public class OutputArgumentRecipe extends ScanningRecipe<OutputArgumentRecipe.Ac
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
                     return m;
                 }
+                if (isPrivateOrStatic(m)) {
+                    return m;
+                }
                 final String className = findEnclosingClassName();
                 final String methodBody = m.getBody() != null ? m.getBody().print(getCursor()) : "";
 
@@ -75,6 +78,15 @@ public class OutputArgumentRecipe extends ScanningRecipe<OutputArgumentRecipe.Ac
             private boolean isMutatedInBody(String paramName, String body) {
                 return MUTATING_METHODS.stream()
                         .anyMatch(method -> body.contains(paramName + "." + method + "("));
+            }
+
+            private boolean isPrivateOrStatic(final J.MethodDeclaration m) {
+                if (m.getModifiers() == null) {
+                    return false;
+                }
+                return m.getModifiers().stream().anyMatch(mod ->
+                        mod.getType() == J.Modifier.Type.Private
+                                || mod.getType() == J.Modifier.Type.Static);
             }
 
             private String findEnclosingClassName() {

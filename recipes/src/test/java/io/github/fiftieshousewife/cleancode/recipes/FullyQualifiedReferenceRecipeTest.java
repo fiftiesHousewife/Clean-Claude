@@ -72,6 +72,37 @@ class FullyQualifiedReferenceRecipeTest {
     }
 
     @Test
+    void doesNotFlagClassLiteral() {
+        final var recipe = new FullyQualifiedReferenceRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void register() {
+                        Class<?> cls = String.class;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "X.class is a class literal — the only way to express it in source. "
+                        + "It is not a fully-qualified package reference");
+    }
+
+    @Test
+    void doesNotFlagClassLiteralOfImportedType() {
+        final var recipe = new FullyQualifiedReferenceRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.List;
+                public class Foo {
+                    Class<?> cls = List.class;
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty());
+    }
+
+    @Test
     void collapsesMultipleReferencesInSameFileToOneFinding() {
         final var recipe = new FullyQualifiedReferenceRecipe();
         RecipeTestHelper.runAgainst(recipe, """
