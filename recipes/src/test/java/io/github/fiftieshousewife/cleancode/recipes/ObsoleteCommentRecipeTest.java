@@ -58,4 +58,23 @@ class ObsoleteCommentRecipeTest {
 
         assertEquals(1, recipe.collectedRows().size());
     }
+
+    @Test
+    void capturesPascalCaseIdentifiersWithoutDroppingLeadingLetter() {
+        final var recipe = new ObsoleteCommentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void process() {
+                        // delegates to HarnessRecipePass for the heavy lifting
+                        int counter = 0;
+                        System.out.println(counter);
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size());
+        assertEquals("HarnessRecipePass", recipe.collectedRows().get(0).missingIdentifier(),
+                "regex must keep the leading uppercase letter");
+    }
 }

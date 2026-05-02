@@ -20,7 +20,12 @@ import java.util.regex.Pattern;
 
 public class ObsoleteCommentRecipe extends ScanningRecipe<ObsoleteCommentRecipe.Accumulator> {
 
-    private static final Pattern CAMEL_CASE_PATTERN = Pattern.compile("[a-z]+[A-Z][a-zA-Z0-9]*");
+    // Match identifiers that contain at least one inner case transition,
+    // anchored at a word boundary so PascalCase identifiers like
+    // 'HarnessRecipePass' don't lose their leading uppercase letter.
+    // Covers both camelCase ('userName') and PascalCase ('HarnessRecipePass').
+    private static final Pattern CAMEL_CASE_PATTERN =
+            Pattern.compile("\\b[A-Za-z][a-zA-Z0-9]*[A-Z][a-zA-Z0-9]*\\b");
 
     public record Row(String className, String commentPreview, String missingIdentifier) {}
 
