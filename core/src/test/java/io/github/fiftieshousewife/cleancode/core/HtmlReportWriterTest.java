@@ -132,10 +132,13 @@ class HtmlReportWriterTest {
         assertAll(
                 () -> assertTrue(html.contains("max-width: min(1800px, 96vw)"),
                         "main width should expand on wider screens"),
-                () -> assertTrue(html.contains("col.location { width: 38%"),
-                        "location column should be wide enough for module + path + line"),
+                () -> assertTrue(html.contains("col.location { width: 35%"),
+                        "location column should be wide enough for module + path + line "
+                                + "even after the confidence column lands"),
                 () -> assertTrue(html.contains("col.severity { width: 5rem"),
-                        "severity column should be tight"));
+                        "severity column should be tight"),
+                () -> assertTrue(html.contains("col.confidence"),
+                        "confidence column should have its own width slot"));
     }
 
     @Test
@@ -303,6 +306,56 @@ class HtmlReportWriterTest {
                         "should include the CLI fallback builder"),
                 () -> assertTrue(html.contains("localStorage"),
                         "picker selection should persist across visits"));
+    }
+
+    @Test
+    void emitsConfidencePillPerRowAndSummaryPerCodeSection(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        final Finding high = new Finding(HeuristicCode.G30, "A.java", 1, 1,
+                "high-confidence", Severity.WARNING, Confidence.HIGH, "openrewrite", "G30", Map.of());
+        final Finding medium = new Finding(HeuristicCode.G30, "B.java", 2, 2,
+                "medium-confidence", Severity.WARNING, Confidence.MEDIUM, "openrewrite", "G30", Map.of());
+        final Finding low = new Finding(HeuristicCode.G30, "C.java", 3, 3,
+                "low-confidence", Severity.WARNING, Confidence.LOW, "openrewrite", "G30", Map.of());
+        final AggregatedReport report = new AggregatedReport(
+                List.of(high, medium, low), Set.of(HeuristicCode.G30),
+                java.time.Instant.now(), "test", "1.0");
+
+        HtmlReportWriter.write(report, output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("data-confidence=\"high\""),
+                        "row carries data-confidence so the filter can hide it"),
+                () -> assertTrue(html.contains("data-confidence=\"medium\"")),
+                () -> assertTrue(html.contains("data-confidence=\"low\"")),
+                () -> assertTrue(html.contains("class=\"confidence-pill high\">HIGH"),
+                        "HIGH pill renders with the right class for green styling"),
+                () -> assertTrue(html.contains("class=\"confidence-pill medium\">MEDIUM")),
+                () -> assertTrue(html.contains("class=\"confidence-pill low\">LOW")),
+                () -> assertTrue(html.contains("class=\"high\" title=\"high-confidence findings\">H:1"),
+                        "summary breakdown surfaces the H/M/L counts for the section"),
+                () -> assertTrue(html.contains(">M:1</span>")),
+                () -> assertTrue(html.contains(">L:1</span>")));
+    }
+
+    @Test
+    void emitsConfidenceFilterBarAndPersistenceScript(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        HtmlReportWriter.write(sampleReport(), output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("id=\"confidence-filter\""),
+                        "filter bar must be present so the user can hide low-confidence noise"),
+                () -> assertTrue(html.contains("data-confidence-toggle=\"high\"")
+                        && html.contains("data-confidence-toggle=\"medium\"")
+                        && html.contains("data-confidence-toggle=\"low\""),
+                        "all three confidence toggles must be wired"),
+                () -> assertTrue(html.contains("cleanCodeConfidenceFilter"),
+                        "filter selection persists in localStorage so it survives reloads"));
     }
 
     private AggregatedReport sampleReport() {

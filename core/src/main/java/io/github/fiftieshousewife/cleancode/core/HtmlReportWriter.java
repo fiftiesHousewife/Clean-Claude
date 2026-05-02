@@ -51,6 +51,7 @@ public final class HtmlReportWriter {
         appendStagingBar(html);
         if (!report.findings().isEmpty()) {
             appendIdePicker(html, ideUrlScheme);
+            appendConfidenceFilter(html);
         }
         appendSeveritySummary(html, report);
 
@@ -66,6 +67,7 @@ public final class HtmlReportWriter {
         appendStagingModal(html);
         if (!report.findings().isEmpty()) {
             appendInteractionScript(html, projectRoot);
+            appendConfidenceFilterScript(html);
         }
         appendStagingScript(html);
         appendDocumentEnd(html);
@@ -124,8 +126,29 @@ public final class HtmlReportWriter {
         html.append("    th, td { text-align: left; padding: 0.4rem 0.6rem; ");
         html.append("border-bottom: 1px solid #eee; vertical-align: top; }\n");
         html.append("    col.severity { width: 5rem; }\n");
-        html.append("    col.location { width: 38%; }\n");
+        html.append("    col.confidence { width: 5.5rem; }\n");
+        html.append("    col.location { width: 35%; }\n");
         html.append("    col.message { width: auto; }\n");
+        html.append("    .confidence-pill { display: inline-block; font-size: 0.7rem; ");
+        html.append("font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 999px; ");
+        html.append("text-transform: uppercase; letter-spacing: 0.04em; }\n");
+        html.append("    .confidence-pill.high { background: #27ae60; color: #fff; }\n");
+        html.append("    .confidence-pill.medium { background: #fff; color: #d35400; ");
+        html.append("border: 1px solid #d35400; }\n");
+        html.append("    .confidence-pill.low { background: #fff; color: #95a5a6; ");
+        html.append("border: 1px solid #bdc3c7; }\n");
+        html.append("    .confidence-summary { font-size: 0.75rem; color: #777; ");
+        html.append("margin-left: 0.5rem; font-weight: 400; }\n");
+        html.append("    .confidence-summary .high { color: #27ae60; font-weight: 600; }\n");
+        html.append("    .confidence-summary .medium { color: #d35400; }\n");
+        html.append("    .confidence-summary .low { color: #95a5a6; }\n");
+        html.append("    .confidence-filter { font-size: 0.85rem; color: #555; ");
+        html.append("margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: #fff; ");
+        html.append("border: 1px solid #ddd; border-radius: 6px; ");
+        html.append("display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }\n");
+        html.append("    .confidence-filter label { display: inline-flex; align-items: center; ");
+        html.append("gap: 0.3rem; cursor: pointer; }\n");
+        html.append("    .confidence-filter input { margin: 0; }\n");
         html.append("    td:first-child { white-space: nowrap; }\n");
         html.append("    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; word-break: break-all; }\n");
         html.append("    td:nth-child(3) { overflow-wrap: anywhere; word-break: break-word; }\n");
@@ -227,6 +250,18 @@ public final class HtmlReportWriter {
         html.append("    .modal .threshold-row > div { flex: 1; }\n");
     }
 
+    private static void appendConfidenceFilter(final StringBuilder html) {
+        html.append("    <div class=\"confidence-filter\" id=\"confidence-filter\">\n");
+        html.append("      <span style=\"color:#999;\">Show findings:</span>\n");
+        html.append("      <label><input type=\"checkbox\" data-confidence-toggle=\"high\" checked>");
+        html.append("<span class=\"confidence-pill high\">High</span></label>\n");
+        html.append("      <label><input type=\"checkbox\" data-confidence-toggle=\"medium\" checked>");
+        html.append("<span class=\"confidence-pill medium\">Medium</span></label>\n");
+        html.append("      <label><input type=\"checkbox\" data-confidence-toggle=\"low\" checked>");
+        html.append("<span class=\"confidence-pill low\">Low</span></label>\n");
+        html.append("    </div>\n");
+    }
+
     private static void appendIdePicker(StringBuilder html, String ideUrlScheme) {
         html.append("    <div class=\"ide-picker\">\n");
         html.append("      Open clicked links in: <select id=\"ide-scheme\">");
@@ -299,6 +334,36 @@ public final class HtmlReportWriter {
 
     private static String jsString(String s) {
         return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+    }
+
+    private static void appendConfidenceFilterScript(final StringBuilder html) {
+        html.append("  <script>\n");
+        html.append("    (function() {\n");
+        html.append("      const STORAGE_KEY = 'cleanCodeConfidenceFilter';\n");
+        html.append("      const filter = document.getElementById('confidence-filter');\n");
+        html.append("      if (!filter) return;\n");
+        html.append("      const toggles = filter.querySelectorAll('input[data-confidence-toggle]');\n");
+        html.append("      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');\n");
+        html.append("      if (stored) {\n");
+        html.append("        toggles.forEach(t => { t.checked = !!stored[t.dataset.confidenceToggle]; });\n");
+        html.append("      }\n");
+        html.append("      function apply() {\n");
+        html.append("        const visible = {};\n");
+        html.append("        toggles.forEach(t => { visible[t.dataset.confidenceToggle] = t.checked; });\n");
+        html.append("        localStorage.setItem(STORAGE_KEY, JSON.stringify(visible));\n");
+        html.append("        document.querySelectorAll('tr[data-confidence]').forEach(row => {\n");
+        html.append("          row.style.display = visible[row.dataset.confidence] ? '' : 'none';\n");
+        html.append("        });\n");
+        html.append("        document.querySelectorAll('details[data-code]').forEach(group => {\n");
+        html.append("          const anyVisible = Array.from(group.querySelectorAll('tr[data-confidence]'))\n");
+        html.append("              .some(r => r.style.display !== 'none');\n");
+        html.append("          group.style.display = anyVisible ? '' : 'none';\n");
+        html.append("        });\n");
+        html.append("      }\n");
+        html.append("      toggles.forEach(t => t.addEventListener('change', apply));\n");
+        html.append("      apply();\n");
+        html.append("    })();\n");
+        html.append("  </script>\n");
     }
 
     private static void appendStagingBar(final StringBuilder html) {
@@ -574,6 +639,7 @@ public final class HtmlReportWriter {
         html.append("      <summary><span class=\"code-label\">").append(escape(code.name()));
         html.append("</span>").append(escape(name));
         html.append(" (").append(group.size()).append(")");
+        appendConfidenceSummary(html, group);
         appendCodeActions(html, code);
         html.append("</summary>\n");
         html.append("      <div class=\"group-body\">\n");
@@ -590,9 +656,11 @@ public final class HtmlReportWriter {
 
         html.append("        <table>\n");
         html.append("          <colgroup>");
-        html.append("<col class=\"severity\"><col class=\"location\"><col class=\"message\"><col class=\"actions\">");
+        html.append("<col class=\"severity\"><col class=\"confidence\">");
+        html.append("<col class=\"location\"><col class=\"message\"><col class=\"actions\">");
         html.append("</colgroup>\n");
-        html.append("          <tr><th>Severity</th><th>Location</th><th>Message</th><th></th></tr>\n");
+        html.append("          <tr><th>Severity</th><th>Confidence</th>");
+        html.append("<th>Location</th><th>Message</th><th></th></tr>\n");
 
         group.stream()
                 .sorted(Comparator.comparing(f -> f.sourceFile() != null ? f.sourceFile() : ""))
@@ -608,17 +676,34 @@ public final class HtmlReportWriter {
                                           String repositoryUrl, Path projectRoot,
                                           String ideUrlScheme) {
         final String severityClass = "sev-" + finding.severity().name().toLowerCase();
+        final String confidenceLevel = finding.confidence().name().toLowerCase();
         final String location = formatLocation(finding);
         final String locationHtml = buildLocationHtml(finding, location, repositoryUrl,
                 projectRoot, ideUrlScheme);
 
-        html.append("          <tr>");
+        html.append("          <tr data-confidence=\"").append(confidenceLevel).append("\">");
         html.append("<td class=\"").append(severityClass).append("\">");
         html.append(finding.severity().name()).append("</td>");
+        html.append("<td><span class=\"confidence-pill ").append(confidenceLevel).append("\">");
+        html.append(finding.confidence().name()).append("</span></td>");
         html.append("<td class=\"location\">").append(locationHtml).append("</td>");
         html.append("<td>").append(escape(finding.message())).append("</td>");
         html.append("<td class=\"actions\">").append(buildSuppressButton(finding, code)).append("</td>");
         html.append("</tr>\n");
+    }
+
+    private static void appendConfidenceSummary(final StringBuilder html, final List<Finding> group) {
+        long high = group.stream().filter(f -> f.confidence() == Confidence.HIGH).count();
+        long medium = group.stream().filter(f -> f.confidence() == Confidence.MEDIUM).count();
+        long low = group.stream().filter(f -> f.confidence() == Confidence.LOW).count();
+        if (high == 0 && medium == 0 && low == 0) {
+            return;
+        }
+        html.append("<span class=\"confidence-summary\">");
+        html.append("<span class=\"high\" title=\"high-confidence findings\">H:").append(high).append("</span> ");
+        html.append("<span class=\"medium\" title=\"medium-confidence findings\">M:").append(medium).append("</span> ");
+        html.append("<span class=\"low\" title=\"low-confidence findings\">L:").append(low).append("</span>");
+        html.append("</span>");
     }
 
     private static String buildSuppressButton(final Finding finding, final HeuristicCode code) {
