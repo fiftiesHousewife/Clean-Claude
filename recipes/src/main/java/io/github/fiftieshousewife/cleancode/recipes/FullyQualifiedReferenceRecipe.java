@@ -89,6 +89,9 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
                 if (!(fa.getType() instanceof JavaType.FullyQualified fq)) {
                     return false;
                 }
+                if (fq.getOwningClass() != null) {
+                    return false;
+                }
                 return fq.getFullyQualifiedName().contains(".");
             }
         };

@@ -5,6 +5,7 @@ import com.diffplug.gradle.spotless.SpotlessPlugin;
 import com.github.spotbugs.snom.SpotBugsExtension;
 import com.github.spotbugs.snom.SpotBugsPlugin;
 import com.github.spotbugs.snom.SpotBugsTask;
+import io.github.fiftieshousewife.cleancode.core.AgentLayout;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
@@ -33,8 +34,14 @@ public class CleanCodePlugin implements Plugin<Project> {
         applyStaticAnalysisPlugins(project, ext);
 
         project.afterEvaluate(p -> {
-            final Path skillsDir = p.getProjectDir().toPath().resolve(ext.getSkillsDir().get());
+            final Path projectDir = p.getProjectDir().toPath();
+            final AgentLayout layout =
+                    AgentLayout.resolve(projectDir,
+                            ext.getAgentInstructionsFile().getOrElse(""),
+                            ext.getSkillsDir().getOrElse(""));
+            final Path skillsDir = projectDir.resolve(layout.skillsDir());
             new SkillFileScaffolder(skillsDir, ext.getThresholds(), p.getLogger()).scaffold();
+            ensureAgentInstructionsFile(projectDir, layout, p);
         });
 
         final TaskProvider<AnalyseTask> analyse = project.getTasks()
@@ -244,6 +251,33 @@ public class CleanCodePlugin implements Plugin<Project> {
                 }
             });
         });
+    }
+
+    private void ensureAgentInstructionsFile(final Path projectDir,
+            final AgentLayout layout,
+            final Project project) {
+        final Path file = projectDir.resolve(layout.instructionsFile());
+        if (Files.exists(file)) {
+            return;
+        }
+        try {
+            Files.writeString(file, agentInstructionsSeed(layout));
+            project.getLogger().lifecycle("Created {} with Clean Code skills directive",
+                    layout.instructionsFile());
+        } catch (final IOException e) {
+            project.getLogger().warn("Could not create {}: {}", layout.instructionsFile(),
+                    e.getMessage());
+        }
+    }
+
+    private String agentInstructionsSeed(
+            final AgentLayout layout) {
+        return "<!-- BEGIN clean-code skills directive -->\n"
+                + "## Before you start any work in this codebase\n\n"
+                + "Read `" + layout.skillsDir() + "/SKILLS.md` first; each entry maps a\n"
+                + "Clean Code heuristic to a hand-written remediation skill.\n"
+                + "Run `./gradlew analyseCleanCode generateClaudeMd` to refresh findings.\n"
+                + "<!-- END clean-code skills directive -->\n";
     }
 
     private String loadClasspathResource(String resourcePath) {

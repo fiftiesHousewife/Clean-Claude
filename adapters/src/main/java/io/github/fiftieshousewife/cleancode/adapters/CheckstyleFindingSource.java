@@ -116,9 +116,10 @@ public class CheckstyleFindingSource implements FindingSource {
                     Severity severity = xmlSeverityOrDefault(e.getAttribute("severity"), mapping.severity());
                     severity = escalateLineLength(checkName, message, severity);
 
+                    final String prefixedMessage = "[" + checkName + "] " + message;
                     findings.add(new Finding(
                             mapping.code(), relativePath, line, line,
-                            message, severity, mapping.confidence(),
+                            prefixedMessage, severity, mapping.confidence(),
                             "checkstyle", checkName, Map.of("ruleUrl", mapping.ruleUrl())));
                 }
             }

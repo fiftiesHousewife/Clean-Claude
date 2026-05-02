@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 /**
  * Flags two related StringBuilder anti-patterns surfaced by manual-1:
@@ -91,6 +92,10 @@ public class StringBuilderThreadingRecipe extends ScanningRecipe<StringBuilderTh
             public J.MethodDeclaration visitMethodDeclaration(
                     final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
                 final Set<String> builderParamNames = new HashSet<>();
                 for (final Statement p : m.getParameters()) {
                     if (p instanceof J.VariableDeclarations vd && isBuilderType(vd.getType())) {

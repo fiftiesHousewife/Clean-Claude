@@ -18,11 +18,11 @@ public final class FixBriefGenerator {
     private FixBriefGenerator() {}
 
     public static List<Path> generate(final AggregatedReport report, final Path outputDir) throws IOException {
-        return generate(report, outputDir, null);
+        return generate(report, outputDir, null, AgentLayout.CLAUDE.skillsDir());
     }
 
     public static List<Path> generate(final AggregatedReport report, final Path outputDir,
-                                      final Path projectRoot) throws IOException {
+                                      final Path projectRoot, final String skillsDir) throws IOException {
         Files.createDirectories(outputDir);
 
         final Map<String, List<Finding>> byFile = groupByFile(report.findings());
@@ -31,7 +31,7 @@ public final class FixBriefGenerator {
         for (final Map.Entry<String, List<Finding>> entry : byFile.entrySet()) {
             final String fileName = briefFileName(entry.getKey());
             final Path brief = outputDir.resolve(fileName);
-            Files.writeString(brief, renderBrief(entry.getKey(), entry.getValue(), projectRoot));
+            Files.writeString(brief, renderBrief(entry.getKey(), entry.getValue(), projectRoot, skillsDir));
             written.add(brief);
         }
 
@@ -64,7 +64,7 @@ public final class FixBriefGenerator {
     }
 
     private static String renderBrief(final String sourceFile, final List<Finding> findings,
-                                       final Path projectRoot) {
+                                       final Path projectRoot, final String skillsDir) {
         final StringBuilder sb = new StringBuilder();
         sb.append("# Fix brief: ").append(sourceFile).append('\n');
         sb.append('\n');
@@ -116,7 +116,7 @@ public final class FixBriefGenerator {
                 .forEach(f -> byCode.computeIfAbsent(f.code(), k -> new ArrayList<>()).add(f));
 
         for (final Map.Entry<HeuristicCode, List<Finding>> entry : byCode.entrySet()) {
-            appendCodeSection(sb, entry.getKey(), entry.getValue());
+            appendCodeSection(sb, entry.getKey(), entry.getValue(), skillsDir);
         }
 
         sb.append("## Final self-check\n");
@@ -188,11 +188,11 @@ public final class FixBriefGenerator {
     }
 
     private static void appendCodeSection(final StringBuilder sb, final HeuristicCode code,
-                                          final List<Finding> findings) {
+                                          final List<Finding> findings, final String skillsDir) {
         final String title = HeuristicDescriptions.name(code);
         sb.append("## ").append(code.name()).append(": ").append(title).append('\n');
         sb.append('\n');
-        final String skillPath = SkillPathRegistry.skillPathFor(code);
+        final String skillPath = SkillPathRegistry.skillPathFor(code, skillsDir);
         if (skillPath != null) {
             sb.append("> **You MUST Read this file first — before any Edit or Write tool call:** `")
                     .append(skillPath).append("`\n\n");

@@ -24,7 +24,11 @@ public abstract class CleanCodeExtension {
 
     public abstract Property<String> getSkillsDir();
 
+    public abstract Property<String> getAgentInstructionsFile();
+
     public abstract Property<String> getRepositoryUrl();
+
+    public abstract Property<String> getIdeUrlScheme();
 
     public abstract Property<Boolean> getEnforceFormatting();
 
@@ -36,8 +40,10 @@ public abstract class CleanCodeExtension {
         getFailOnViolation().convention(true);
         getDisabledRecipes().convention(java.util.List.of());
         getPackageSuppressions().convention(java.util.Map.of());
-        getSkillsDir().convention(".claude/skills");
+        getSkillsDir().convention("");
+        getAgentInstructionsFile().convention("");
         getRepositoryUrl().convention("");
+        getIdeUrlScheme().convention("");
         getEnforceFormatting().convention(false);
         thresholds = objects.newInstance(ThresholdsExtension.class);
         claudeReview = objects.newInstance(ClaudeReviewExtension.class);

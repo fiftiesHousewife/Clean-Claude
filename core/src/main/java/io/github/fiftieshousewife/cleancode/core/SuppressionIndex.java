@@ -11,6 +11,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 
 import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
 
@@ -148,11 +149,14 @@ public class SuppressionIndex {
         int endLine = node.getEnd().map(p -> p.line).orElse(-1);
 
         for (AnnotationExpr ann : node.getAnnotations()) {
-            String annName = ann.getNameAsString();
+            String annotationName = ann.getNameAsString();
 
-            if ("SuppressCleanCode".equals(annName)) {
+            if ("SuppressCleanCode".equals(annotationName)) {
                 processSingleAnnotation(ann, sourceFile, startLine, endLine, suppressions, metaFindings, packagePath);
-            } else if ("SuppressCleanCode.List".equals(annName)) {
+            } else if ("SuppressWarnings".equals(annotationName)
+                    || "java.lang.SuppressWarnings".equals(annotationName)) {
+                processSuppressWarnings(ann, sourceFile, startLine, endLine, suppressions, packagePath);
+            } else if ("SuppressCleanCode.List".equals(annotationName)) {
                 // Handle @Repeatable container
                 if (ann instanceof NormalAnnotationExpr normal) {
                     for (MemberValuePair pair : normal.getPairs()) {
@@ -167,6 +171,42 @@ public class SuppressionIndex {
                     }
                 }
             }
+        }
+    }
+
+    private static void processSuppressWarnings(AnnotationExpr ann, String sourceFile,
+                                                  int startLine, int endLine,
+                                                  List<Suppression> suppressions,
+                                                  String packagePath) {
+        final Set<HeuristicCode> codes = new HashSet<>();
+        if (ann instanceof SingleMemberAnnotationExpr single) {
+            collectCleanCodeStrings(single.getMemberValue(), codes);
+        } else if (ann instanceof NormalAnnotationExpr normal) {
+            for (MemberValuePair pair : normal.getPairs()) {
+                if ("value".equals(pair.getNameAsString())) {
+                    collectCleanCodeStrings(pair.getValue(), codes);
+                }
+            }
+        }
+        if (codes.isEmpty()) {
+            return;
+        }
+        suppressions.add(new Suppression(sourceFile, startLine, endLine, codes, "", "", packagePath));
+    }
+
+    private static void collectCleanCodeStrings(Expression expr, Set<HeuristicCode> out) {
+        if (expr.isStringLiteralExpr()) {
+            final String value = expr.asStringLiteralExpr().getValue();
+            if (value.startsWith("CleanCode:")) {
+                final String name = value.substring("CleanCode:".length());
+                try {
+                    out.add(HeuristicCode.valueOf(name));
+                } catch (final IllegalArgumentException ignored) {
+                    // Unknown code — silently skip
+                }
+            }
+        } else if (expr.isArrayInitializerExpr()) {
+            expr.asArrayInitializerExpr().getValues().forEach(v -> collectCleanCodeStrings(v, out));
         }
     }
 

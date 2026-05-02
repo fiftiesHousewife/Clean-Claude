@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecipe.Accumulator> {
 
@@ -47,6 +48,10 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
                 if (m.getBody() == null) {
                     return m;
                 }

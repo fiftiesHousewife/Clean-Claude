@@ -25,6 +25,7 @@ class CleanCodePluginTest {
                     id("io.github.fiftieshousewife.cleancode")
                 }
                 """);
+        Files.writeString(projectDir.resolve("CLAUDE.md"), "");
     }
 
     @Test
@@ -84,6 +85,28 @@ class CleanCodePluginTest {
                 """);
         final BuildResult result = runner("tasks").build();
         assertTrue(result.getOutput().contains("BUILD SUCCESSFUL"));
+    }
+
+    @Test
+    void scaffoldsToAgentSkillsWhenAgentsMdPresent() throws IOException {
+        Files.delete(projectDir.resolve("CLAUDE.md"));
+        Files.writeString(projectDir.resolve("AGENTS.md"), "");
+        runner("tasks").build();
+        final Path skill = projectDir.resolve(".agent/skills/clean-code-classes/SKILL.md");
+        assertTrue(Files.exists(skill), "AGENTS.md project should land skills under .agent/skills/");
+    }
+
+    @Test
+    void createsAgentsMdAndScaffoldsToAgentSkillsWhenNeitherPresent() throws IOException {
+        Files.delete(projectDir.resolve("CLAUDE.md"));
+        runner("tasks").build();
+        final Path agentsMd = projectDir.resolve("AGENTS.md");
+        final Path skill = projectDir.resolve(".agent/skills/clean-code-classes/SKILL.md");
+        assertAll(
+                () -> assertTrue(Files.exists(agentsMd), "AGENTS.md should be created when no agent file exists"),
+                () -> assertTrue(Files.readString(agentsMd).contains("clean-code skills directive"),
+                        "AGENTS.md seed should contain the BEGIN/END markers"),
+                () -> assertTrue(Files.exists(skill), "skills should land under .agent/skills/"));
     }
 
     @Test

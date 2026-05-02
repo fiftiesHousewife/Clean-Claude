@@ -36,8 +36,10 @@ public class HardcodedListRecipe extends ScanningRecipe<HardcodedListRecipe.Accu
 
     @Override
     public String getDescription() {
-        return "Detects static final collections initialised with %d+ hardcoded literals that should be loaded from config."
-                .formatted(minLiterals);
+        return "Detects collections of %d+ hardcoded literals that escape compile-time configuration — usually "
+                .formatted(minLiterals)
+                + "a sign the values should be an enum or external config. `static final` initializers are "
+                + "skipped: those ARE the configuration, collocated and type-checked.";
     }
 
     @Override
@@ -53,7 +55,7 @@ public class HardcodedListRecipe extends ScanningRecipe<HardcodedListRecipe.Accu
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations varDecl, ExecutionContext ctx) {
                 final J.VariableDeclarations v = super.visitVariableDeclarations(varDecl, ctx);
 
-                if (!isStaticFinal(v)) {
+                if (isStaticFinal(v)) {
                     return v;
                 }
 

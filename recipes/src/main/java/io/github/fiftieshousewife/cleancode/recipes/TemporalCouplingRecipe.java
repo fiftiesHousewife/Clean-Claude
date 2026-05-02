@@ -10,6 +10,7 @@ import org.openrewrite.java.tree.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class TemporalCouplingRecipe extends ScanningRecipe<TemporalCouplingRecipe.Accumulator> {
 
@@ -50,6 +51,10 @@ public class TemporalCouplingRecipe extends ScanningRecipe<TemporalCouplingRecip
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
                 if (m.getBody() == null) {
                     return m;
                 }

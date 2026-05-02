@@ -31,7 +31,10 @@ public abstract class AnalyseTask extends DefaultTask {
         final Path outputDir = buildDir.resolve("reports/clean-code");
         final Path htmlReport = outputDir.resolve("findings.html");
         JsonReportWriter.write(report, outputDir.resolve("findings.json"));
-        HtmlReportWriter.write(report, htmlReport, repositoryUrl);
+        final String ideScheme = ext.getIdeUrlScheme().getOrElse("").isBlank()
+                ? detectIdeUrlScheme(projectRoot)
+                : ext.getIdeUrlScheme().get();
+        HtmlReportWriter.write(report, htmlReport, repositoryUrl, projectRoot, ideScheme);
 
         final Path baselineFile = projectRoot.resolve("clean-code-baseline.json");
         final Map<HeuristicCode, BaselineManager.Delta> deltas = Files.exists(baselineFile)
@@ -40,5 +43,18 @@ public abstract class AnalyseTask extends DefaultTask {
 
         getLogger().lifecycle(BuildOutputFormatter.format(report, deltas));
         getLogger().lifecycle("\n  Report: file://" + htmlReport.toAbsolutePath());
+    }
+
+    static String detectIdeUrlScheme(final Path projectRoot) {
+        if (Files.isDirectory(projectRoot.resolve(".idea"))) {
+            return "idea";
+        }
+        if (Files.isDirectory(projectRoot.resolve(".vscode"))) {
+            return "vscode";
+        }
+        if (Files.isDirectory(projectRoot.resolve(".cursor"))) {
+            return "cursor";
+        }
+        return "idea";
     }
 }

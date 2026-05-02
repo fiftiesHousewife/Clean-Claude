@@ -10,6 +10,7 @@ import org.openrewrite.java.tree.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumulator> {
 
@@ -25,12 +26,14 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
 
     @Override
     public String getDisplayName() {
-        return "Excessive guard clause detection (G29/G30)";
+        return "Excessive guard clause detection (G30)";
     }
 
     @Override
     public String getDescription() {
-        return "Detects methods with multiple if-return/if-continue guard clauses that should be simplified.";
+        return "Detects methods with many guard clauses — multiple entry conditions usually mean the method "
+                + "does several things and should be split. Guards themselves are encouraged by Clean Code; "
+                + "the smell is the count, not the form.";
     }
 
     @Override
@@ -45,6 +48,10 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
                 if (m.getBody() == null) {
                     return m;
                 }

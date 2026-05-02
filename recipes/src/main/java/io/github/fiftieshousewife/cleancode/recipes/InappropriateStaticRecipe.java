@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStaticRecipe.Accumulator> {
 
@@ -44,6 +45,10 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
 
                 if (isStatic(m) || isPrivate(m) || isConstructor(m) || isOverride(m) || isMain(m)) {
                     return m;

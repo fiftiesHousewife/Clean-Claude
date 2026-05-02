@@ -147,6 +147,44 @@ class SuppressionIndexTest {
         assertFalse(index.isSuppressed(finding));
     }
 
+    @Test
+    void suppressWarningsWithCleanCodePrefix_suppressesSingle() {
+        final SuppressionIndex index = buildIndex();
+
+        final Finding finding = Finding.at(HeuristicCode.G30,
+                "com/example/SuppressWarningsAnnotated.java",
+                7, 7, "complex", Severity.WARNING, Confidence.MEDIUM, "openrewrite", "rule");
+
+        assertTrue(index.isSuppressed(finding));
+    }
+
+    @Test
+    void suppressWarningsWithCleanCodePrefix_suppressesArray() {
+        final SuppressionIndex index = buildIndex();
+
+        final Finding f1 = Finding.at(HeuristicCode.N5,
+                "com/example/SuppressWarningsAnnotated.java",
+                12, 12, "short", Severity.WARNING, Confidence.MEDIUM, "openrewrite", "rule");
+        final Finding f2 = Finding.at(HeuristicCode.Ch7_2,
+                "com/example/SuppressWarningsAnnotated.java",
+                12, 12, "null", Severity.WARNING, Confidence.MEDIUM, "openrewrite", "rule");
+
+        assertAll(
+                () -> assertTrue(index.isSuppressed(f1)),
+                () -> assertTrue(index.isSuppressed(f2)));
+    }
+
+    @Test
+    void suppressWarningsWithCleanCodePrefix_doesNotSuppressUnannotatedMethod() {
+        final SuppressionIndex index = buildIndex();
+
+        final Finding finding = Finding.at(HeuristicCode.G30,
+                "com/example/SuppressWarningsAnnotated.java",
+                17, 17, "complex", Severity.WARNING, Confidence.MEDIUM, "openrewrite", "rule");
+
+        assertFalse(index.isSuppressed(finding));
+    }
+
     private SuppressionIndex buildIndex() {
         try {
             Path sourceRoot = Path.of(getClass().getResource("/suppression").toURI());

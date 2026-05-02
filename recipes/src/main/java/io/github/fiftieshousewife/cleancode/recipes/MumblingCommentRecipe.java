@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.Accumulator> {
 
@@ -47,6 +48,10 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
                 final String methodName = m.getSimpleName();
                 final Set<String> paramNames = extractParamNames(m);
                 final String className = findEnclosingClassName();

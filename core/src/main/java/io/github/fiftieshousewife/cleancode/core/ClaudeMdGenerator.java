@@ -21,12 +21,19 @@ public final class ClaudeMdGenerator {
 
     public static void generate(final AggregatedReport report, final Path claudeMdFile,
                                 final Path baselineFile) throws IOException {
-        generate(report, claudeMdFile, baselineFile, List.of());
+        generate(report, claudeMdFile, baselineFile, List.of(), AgentLayout.CLAUDE);
     }
 
     public static void generate(final AggregatedReport report, final Path claudeMdFile,
                                 final Path baselineFile,
                                 final List<String> dependencies) throws IOException {
+        generate(report, claudeMdFile, baselineFile, dependencies, AgentLayout.CLAUDE);
+    }
+
+    public static void generate(final AggregatedReport report, final Path claudeMdFile,
+                                final Path baselineFile,
+                                final List<String> dependencies,
+                                final AgentLayout layout) throws IOException {
         final Map<String, String> preservedAnnotations = new LinkedHashMap<>();
         if (Files.exists(claudeMdFile)) {
             preservedAnnotations.putAll(parseAnnotateSections(Files.readString(claudeMdFile)));
@@ -34,18 +41,18 @@ public final class ClaudeMdGenerator {
 
         final StringBuilder sb = new StringBuilder();
 
-        appendPreamble(sb);
+        appendPreamble(sb, layout.skillsDir());
         appendFrameworksSection(sb, dependencies);
         appendDeltaTable(sb, report, baselineFile);
-        appendFindingSections(sb, report, preservedAnnotations);
+        appendFindingSections(sb, report, preservedAnnotations, layout.skillsDir());
         appendNarrativeStubs(sb, report, preservedAnnotations);
 
         Files.writeString(claudeMdFile, sb.toString());
     }
 
-    private static void appendPreamble(final StringBuilder sb) {
+    private static void appendPreamble(final StringBuilder sb, final String skillsDir) {
         sb.append("## Before you start any work in this codebase\n\n");
-        sb.append("1. Read `.claude/skills/SKILLS.md` now, before reading anything else.\n");
+        sb.append("1. Read `").append(skillsDir).append("/SKILLS.md` now, before reading anything else.\n");
         sb.append("   This is mandatory, not optional.\n");
         sb.append("2. When a finding section below points to a skill file, read it before\n");
         sb.append("   acting on that finding.\n");
@@ -128,7 +135,8 @@ public final class ClaudeMdGenerator {
     }
 
     private static void appendFindingSections(final StringBuilder sb, final AggregatedReport report,
-                                               final Map<String, String> preservedAnnotations) {
+                                               final Map<String, String> preservedAnnotations,
+                                               final String skillsDir) {
         final Map<HeuristicCode, List<Finding>> byCode = report.byCode();
 
         for (final Map.Entry<HeuristicCode, List<Finding>> entry : byCode.entrySet()) {
@@ -138,7 +146,7 @@ public final class ClaudeMdGenerator {
             sb.append(String.format("## %s [%d finding%s]%n", code.name(),
                     findings.size(), findings.size() == 1 ? "" : "s"));
 
-            final String skillPath = SkillPathRegistry.skillPathFor(code);
+            final String skillPath = SkillPathRegistry.skillPathFor(code, skillsDir);
             if (skillPath != null) {
                 sb.append(String.format("> Read `%s` before addressing these.%n%n", skillPath));
             } else {

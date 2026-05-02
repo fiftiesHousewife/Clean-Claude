@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumulator> {
 
@@ -67,6 +68,10 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
 
                 if (isConstructor(m) || isStatic(m) || isInTestClass()
                         || isVisitorMethod(m)) {

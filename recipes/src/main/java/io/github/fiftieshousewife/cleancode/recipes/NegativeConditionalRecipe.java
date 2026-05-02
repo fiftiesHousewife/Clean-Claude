@@ -1,5 +1,6 @@
 package io.github.fiftieshousewife.cleancode.recipes;
 
+import io.github.fiftieshousewife.cleancode.recipes.support.LineNumbers;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
@@ -57,7 +58,7 @@ public class NegativeConditionalRecipe extends ScanningRecipe<NegativeConditiona
                                 findEnclosingClassName(),
                                 findEnclosingMethodName(),
                                 "!" + name + "()",
-                                -1));
+                                LineNumbers.lineOf(getCursor())));
                     }
                 }
 

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class MultipleAssertRecipe extends ScanningRecipe<MultipleAssertRecipe.Accumulator> {
 
@@ -59,6 +60,10 @@ public class MultipleAssertRecipe extends ScanningRecipe<MultipleAssertRecipe.Ac
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
                 if (!isTestMethod(m) || m.getBody() == null) {
                     return m;
                 }

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class SideEffectNamingRecipe extends ScanningRecipe<SideEffectNamingRecipe.Accumulator> {
 
@@ -45,6 +46,10 @@ public class SideEffectNamingRecipe extends ScanningRecipe<SideEffectNamingRecip
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
 
                 if (hasOverrideAnnotation(m)) {
                     return m;

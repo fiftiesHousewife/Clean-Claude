@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class OutputArgumentRecipe extends ScanningRecipe<OutputArgumentRecipe.Accumulator> {
 
@@ -48,6 +49,10 @@ public class OutputArgumentRecipe extends ScanningRecipe<OutputArgumentRecipe.Ac
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
                 final String className = findEnclosingClassName();
                 final String methodBody = m.getBody() != null ? m.getBody().print(getCursor()) : "";
 

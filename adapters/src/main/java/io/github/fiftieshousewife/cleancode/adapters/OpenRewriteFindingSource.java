@@ -10,6 +10,9 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Comment;
+import org.openrewrite.java.tree.J;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -73,6 +76,7 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private Map<String, String> classNameToSourcePath = Map.of();
+    private Map<String, J.CompilationUnit> classNameToCompilationUnit = Map.of();
 
     @Override
     public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
@@ -83,9 +87,21 @@ public class OpenRewriteFindingSource implements FindingSource {
 
         final List<SourceFile> parsed = parseSourceFiles(javaFiles);
         classNameToSourcePath = buildSourcePathIndex(parsed);
+        classNameToCompilationUnit = buildCompilationUnitIndex(parsed);
         final List<ScanningRecipe<?>> recipes = createRecipes();
         recipes.forEach(recipe -> runRecipe(parsed, recipe));
         return extractFindings(recipes);
+    }
+
+    private Map<String, J.CompilationUnit> buildCompilationUnitIndex(final List<SourceFile> parsed) {
+        final Map<String, J.CompilationUnit> index = new HashMap<>();
+        parsed.forEach(sf -> {
+            if (!(sf instanceof J.CompilationUnit cu)) {
+                return;
+            }
+            cu.getClasses().forEach(c -> index.put(c.getSimpleName(), cu));
+        });
+        return index;
     }
 
     private Map<String, String> buildSourcePathIndex(List<SourceFile> parsed) {
@@ -256,7 +272,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapFlagArgs(List<FlagArgumentRecipe.FlagArgumentRow> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.F3, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.F3, r.className(), r.methodName(),
                         "Method '%s' takes boolean parameter '%s' — split into two methods instead".formatted(r.methodName(), r.paramName())))
                 .toList();
     }
@@ -271,7 +287,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapCatchLog(List<CatchLogContinueRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.Ch7_1, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.Ch7_1, r.className(), r.methodName(),
                         "Catch block in '%s' only logs or is empty".formatted(r.methodName())))
                 .toList();
     }
@@ -299,7 +315,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapNullDensity(List<NullDensityRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.Ch7_2, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.Ch7_2, r.className(), r.methodName(),
                         "Method '%s' has %d null checks".formatted(r.methodName(), r.nullCheckCount())))
                 .toList();
     }
@@ -535,7 +551,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapMultipleAssert(List<MultipleAssertRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.T1, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.T1, r.className(), r.methodName(),
                         "Test '%s' has %d consecutive assertions — wrap in assertAll".formatted(
                                 r.methodName(), r.assertCount())))
                 .toList();
@@ -551,7 +567,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapInappropriateStatic(List<InappropriateStaticRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G18, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G18, r.className(), r.methodName(),
                         "Method '%s' does not use instance state — consider making it static or extracting".formatted(
                                 r.methodName())))
                 .toList();
@@ -559,7 +575,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapStringlyTypedDispatch(List<StringlyTypedDispatchRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G23, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G23, r.className(), r.methodName(),
                         "Method '%s' dispatches on String parameter '%s' with %d branches — use an enum or split into separate methods".formatted(
                                 r.methodName(), r.parameterName(), r.branchCount())))
                 .toList();
@@ -567,7 +583,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapConfigurableData(List<ConfigurableDataRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G35, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G35, r.className(), r.methodName(),
                         "Magic number %s in private method '%s' — extract to a named constant".formatted(
                                 r.literalValue(), r.methodName())))
                 .toList();
@@ -575,7 +591,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapEmbeddedLanguage(List<EmbeddedLanguageRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G1, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G1, r.className(), r.methodName(),
                         "Embedded %s in method '%s' — extract to a template or resource file".formatted(
                                 r.language().toUpperCase(), r.methodName())))
                 .toList();
@@ -583,8 +599,8 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapGuardClause(List<GuardClauseRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G29, r.className(),
-                        "Method '%s' has %d guard clauses — simplify with early return or extract filter".formatted(
+                .map(r -> findingForMethod(HeuristicCode.G30, r.className(), r.methodName(),
+                        "Method '%s' has %d guard clauses — the entry conditions suggest it does several things".formatted(
                                 r.methodName(), r.guardCount())))
                 .toList();
     }
@@ -608,14 +624,14 @@ public class OpenRewriteFindingSource implements FindingSource {
     private List<Finding> mapHardcodedList(List<HardcodedListRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G35, r.className(),
-                        "Field '%s' has %d hardcoded literals — load from configuration".formatted(
+                        "'%s' is initialised with %d literal values outside a static-final field — extract to a constant table or enum".formatted(
                                 r.fieldName(), r.literalCount())))
                 .toList();
     }
 
     private List<Finding> mapSelectorArgument(List<SelectorArgumentRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G15, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G15, r.className(), r.methodName(),
                         "Method '%s' uses %s parameter '%s' to select behaviour — split into separate methods".formatted(
                                 r.methodName(), r.parameterType(), r.parameterName())))
                 .toList();
@@ -631,7 +647,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapTemporalCoupling(List<TemporalCouplingRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G31, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G31, r.className(), r.methodName(),
                         "Method '%s' has %d consecutive void calls with no data dependency — make the order explicit".formatted(
                                 r.methodName(), r.callCount())))
                 .toList();
@@ -639,7 +655,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapBroadCatch(List<BroadCatchRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.Ch7_1, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.Ch7_1, r.className(), r.methodName(),
                         "Method '%s' catches %s — catch specific exception types instead".formatted(
                                 r.methodName(), r.caughtType())))
                 .toList();
@@ -647,7 +663,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapRawGeneric(List<RawGenericRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G26, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G26, r.className(), r.methodName(),
                         "'%s' in '%s' uses Object type parameter — use a typed record or specific generic".formatted(
                                 r.typeName(), r.methodName())))
                 .toList();
@@ -655,7 +671,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapSwallowedException(List<SwallowedExceptionRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G4, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G4, r.className(), r.methodName(),
                         "Method '%s' catches %s and silently swallows it — handle or propagate".formatted(
                                 r.methodName(), r.exceptionType())))
                 .toList();
@@ -671,7 +687,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapSuppressedWarning(List<SuppressedWarningRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G4, r.className(),
+                .map(r -> findingForMethod(HeuristicCode.G4, r.className(), r.methodName(),
                         "@SuppressWarnings(\"%s\") on '%s' — redesign to avoid unsafe operations".formatted(
                                 r.warningType(), r.methodName())))
                 .toList();
@@ -705,17 +721,96 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private Finding finding(HeuristicCode code, String className, String message) {
         final String sourcePath = resolveSourcePath(className);
-        return Finding.at(code, sourcePath, -1, -1,
+        final int line = lineOfClass(className);
+        return Finding.at(code, sourcePath, line, line,
                 message, severityFor(code), Confidence.HIGH, TOOL, code.name());
     }
 
     private Finding finding(HeuristicCode code, String className, int line, String message) {
         final String sourcePath = resolveSourcePath(className);
+        final int resolvedLine = line > 0 ? line : lineOfClass(className);
+        return Finding.at(code, sourcePath, resolvedLine, resolvedLine,
+                message, severityFor(code), Confidence.HIGH, TOOL, code.name());
+    }
+
+    private Finding findingForMethod(HeuristicCode code, String className, String methodName, String message) {
+        final String sourcePath = resolveSourcePath(className);
+        final int line = lineOfMethod(className, methodName);
         return Finding.at(code, sourcePath, line, line,
                 message, severityFor(code), Confidence.HIGH, TOOL, code.name());
     }
 
     private String resolveSourcePath(String className) {
         return classNameToSourcePath.getOrDefault(className, className + ".java");
+    }
+
+    private int lineOfClass(final String className) {
+        final J.CompilationUnit cu = classNameToCompilationUnit.get(className);
+        if (cu == null) {
+            return -1;
+        }
+        return cu.getClasses().stream()
+                .filter(c -> c.getSimpleName().equals(className))
+                .findFirst()
+                .map(c -> lineIndexOf(cu).getOrDefault(c.getId(), -1))
+                .orElse(-1);
+    }
+
+    private int lineOfMethod(final String className, final String methodName) {
+        final J.CompilationUnit cu = classNameToCompilationUnit.get(className);
+        if (cu == null) {
+            return lineOfClass(className);
+        }
+        final Map<UUID, Integer> idx = lineIndexOf(cu);
+        final int[] line = {-1};
+        new JavaIsoVisitor<Object>() {
+            @Override
+            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration m, Object o) {
+                if (line[0] < 0 && methodName.equals(m.getSimpleName())) {
+                    final J.ClassDeclaration enclosing = getCursor().firstEnclosing(J.ClassDeclaration.class);
+                    if (enclosing != null && className.equals(enclosing.getSimpleName())) {
+                        line[0] = idx.getOrDefault(m.getId(), -1);
+                    }
+                }
+                return super.visitMethodDeclaration(m, o);
+            }
+        }.visit(cu, new Object());
+        return line[0] > 0 ? line[0] : lineOfClass(className);
+    }
+
+    private final Map<UUID, Map<UUID, Integer>> lineIndexCache = new HashMap<>();
+
+    private Map<UUID, Integer> lineIndexOf(final J.CompilationUnit cu) {
+        return lineIndexCache.computeIfAbsent(cu.getId(), id -> buildLineIndex(cu));
+    }
+
+    private Map<UUID, Integer> buildLineIndex(final J.CompilationUnit cu) {
+        final Map<UUID, Integer> index = new HashMap<>();
+        final int[] line = {1};
+        new JavaIsoVisitor<Object>() {
+            @Override
+            public J preVisit(final J node, final Object ignored) {
+                line[0] += countNewlines(node.getPrefix().getWhitespace());
+                for (final Comment c : node.getPrefix().getComments()) {
+                    line[0] += countNewlines(c.printComment(getCursor()));
+                }
+                index.put(node.getId(), line[0]);
+                return node;
+            }
+        }.visit(cu, new Object());
+        return index;
+    }
+
+    private static int countNewlines(final String s) {
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
+        int n = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '\n') {
+                n++;
+            }
+        }
+        return n;
     }
 }

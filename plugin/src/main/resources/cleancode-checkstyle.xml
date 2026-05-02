@@ -21,6 +21,10 @@
         <module name="MethodLength">
             <property name="max" value="50"/>
         </module>
+        <module name="SuppressionXpathSingleFilter">
+            <property name="checks" value="MethodLength|ParameterNumber"/>
+            <property name="query" value="//METHOD_DEF[./IDENT[@text='equals' or @text='hashCode']]"/>
+        </module>
     </module>
     <module name="FileLength">
         <property name="max" value="150"/>

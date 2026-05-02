@@ -10,6 +10,7 @@ import org.openrewrite.java.tree.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class LargeConstructorRecipe extends ScanningRecipe<LargeConstructorRecipe.Accumulator> {
 
@@ -53,6 +54,10 @@ public class LargeConstructorRecipe extends ScanningRecipe<LargeConstructorRecip
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m, getCursor())) {
+                    return m;
+                }
                 if (!m.isConstructor()) {
                     return m;
                 }

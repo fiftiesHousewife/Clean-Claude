@@ -95,7 +95,7 @@ class FixBriefGeneratorTest {
                 Finding.at(HeuristicCode.G22, "core/src/main/java/com/example/Foo.java",
                         10, 10, "missing final", Severity.WARNING, Confidence.HIGH, "checkstyle", "r"));
 
-        FixBriefGenerator.generate(report, outputDir, projectRoot);
+        FixBriefGenerator.generate(report, outputDir, projectRoot, ".claude/skills");
 
         final String content = Files.readString(outputDir.resolve("Foo.md"));
         assertAll(

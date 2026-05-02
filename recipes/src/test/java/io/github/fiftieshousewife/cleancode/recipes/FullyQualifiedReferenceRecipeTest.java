@@ -57,6 +57,21 @@ class FullyQualifiedReferenceRecipeTest {
     }
 
     @Test
+    void doesNotFlagNestedTypeReferences() {
+        final var recipe = new FullyQualifiedReferenceRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.Map;
+                public class Foo {
+                    void register(Map.Entry<String, String> entry) {}
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "Map.Entry is a nested type already in its readable form, not a package-qualified FQN");
+    }
+
+    @Test
     void collapsesMultipleReferencesInSameFileToOneFinding() {
         final var recipe = new FullyQualifiedReferenceRecipe();
         RecipeTestHelper.runAgainst(recipe, """

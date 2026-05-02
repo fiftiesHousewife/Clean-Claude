@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class DisabledTestRecipe extends ScanningRecipe<DisabledTestRecipe.Accumulator> {
 
@@ -47,6 +48,10 @@ public class DisabledTestRecipe extends ScanningRecipe<DisabledTestRecipe.Accumu
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
                 m.getLeadingAnnotations().forEach(ann -> checkAnnotation(acc, ann, m.getSimpleName()));
                 return m;
             }

@@ -9,6 +9,7 @@ import org.openrewrite.java.tree.J;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class PrivateMethodTestabilityRecipe extends ScanningRecipe<PrivateMethodTestabilityRecipe.Accumulator> {
 
@@ -60,6 +61,10 @@ public class PrivateMethodTestabilityRecipe extends ScanningRecipe<PrivateMethod
             public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method,
                                                               final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
 
                 if (!isPrivate(m) || isConstructor(m) || isInsideAnonymousClassOrLambda()) {
                     return m;

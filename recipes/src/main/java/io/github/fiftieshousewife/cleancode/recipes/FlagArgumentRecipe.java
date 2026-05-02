@@ -11,6 +11,7 @@ import org.openrewrite.java.tree.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumulator> {
 
@@ -49,6 +50,10 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                if (BoilerplateMethodSkip.isContractMethod(m)) {
+                    return m;
+                }
 
                 if (isPrivate(m) || isConstructor(m)) {
                     return m;
