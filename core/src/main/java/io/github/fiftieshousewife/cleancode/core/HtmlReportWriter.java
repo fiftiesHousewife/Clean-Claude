@@ -68,6 +68,7 @@ public final class HtmlReportWriter {
         if (!report.findings().isEmpty()) {
             appendInteractionScript(html, projectRoot);
             appendConfidenceFilterScript(html);
+            appendSnippetToggleScript(html);
         }
         appendStagingScript(html);
         appendDocumentEnd(html);
@@ -91,6 +92,23 @@ public final class HtmlReportWriter {
         html.append("</p>\n");
         html.append("  </header>\n");
         html.append("  <main>\n");
+    }
+
+    private static void appendSnippetStyles(final StringBuilder html) {
+        html.append("    tr.snippet-row td { padding: 0; background: #fafafa; ");
+        html.append("border-bottom: 1px solid #eee; }\n");
+        html.append("    tr.snippet-row pre { margin: 0; padding: 0.6rem 0.9rem; ");
+        html.append("font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; ");
+        html.append("line-height: 1.45; overflow-x: auto; color: #333; ");
+        html.append("background: transparent; }\n");
+        html.append("    tr.snippet-row .ln { display: inline-block; width: 2.5rem; ");
+        html.append("text-align: right; padding-right: 0.7rem; color: #bbb; user-select: none; }\n");
+        html.append("    tr.snippet-row .focal { background: #fff8dc; display: block; ");
+        html.append("margin: 0 -0.9rem; padding: 0 0.9rem; }\n");
+        html.append("    tr.snippet-row .focal .ln { color: #888; font-weight: 600; }\n");
+        html.append("    .snippet-toggle { display: inline-block; margin-left: 0.4rem; ");
+        html.append("font-size: 0.75rem; color: #2980b9; cursor: pointer; user-select: none; }\n");
+        html.append("    .snippet-toggle:hover { text-decoration: underline; }\n");
     }
 
     private static void appendStyles(StringBuilder html) {
@@ -177,6 +195,7 @@ public final class HtmlReportWriter {
         html.append("    .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }\n");
         html.append("    footer { text-align: center; padding: 2rem; font-size: 0.8rem; ");
         html.append("color: #999; }\n");
+        appendSnippetStyles(html);
         appendStagingStyles(html);
         html.append("  </style>\n");
     }
@@ -334,6 +353,21 @@ public final class HtmlReportWriter {
 
     private static String jsString(String s) {
         return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+    }
+
+    private static void appendSnippetToggleScript(final StringBuilder html) {
+        html.append("  <script>\n");
+        html.append("    document.addEventListener('click', e => {\n");
+        html.append("      const toggle = e.target.closest('[data-action=\"toggle-snippet\"]');\n");
+        html.append("      if (!toggle) return;\n");
+        html.append("      const row = toggle.closest('tr');\n");
+        html.append("      const next = row.nextElementSibling;\n");
+        html.append("      if (!next || !next.classList.contains('snippet-row')) return;\n");
+        html.append("      const open = !next.hidden;\n");
+        html.append("      next.hidden = open;\n");
+        html.append("      toggle.innerHTML = open ? '&#9656; snippet' : '&#9662; hide';\n");
+        html.append("    });\n");
+        html.append("  </script>\n");
     }
 
     private static void appendConfidenceFilterScript(final StringBuilder html) {
@@ -680,6 +714,7 @@ public final class HtmlReportWriter {
         final String location = formatLocation(finding);
         final String locationHtml = buildLocationHtml(finding, location, repositoryUrl,
                 projectRoot, ideUrlScheme);
+        final java.util.Optional<SnippetReader.Snippet> snippet = SnippetReader.read(finding, projectRoot);
 
         html.append("          <tr data-confidence=\"").append(confidenceLevel).append("\">");
         html.append("<td class=\"").append(severityClass).append("\">");
@@ -687,9 +722,38 @@ public final class HtmlReportWriter {
         html.append("<td><span class=\"confidence-pill ").append(confidenceLevel).append("\">");
         html.append(finding.confidence().name()).append("</span></td>");
         html.append("<td class=\"location\">").append(locationHtml).append("</td>");
-        html.append("<td>").append(escape(finding.message())).append("</td>");
+        html.append("<td>").append(escape(finding.message()));
+        if (snippet.isPresent()) {
+            html.append("<span class=\"snippet-toggle\" data-action=\"toggle-snippet\">");
+            html.append("&#9656; snippet</span>");
+        }
+        html.append("</td>");
         html.append("<td class=\"actions\">").append(buildSuppressButton(finding, code)).append("</td>");
         html.append("</tr>\n");
+
+        if (snippet.isPresent()) {
+            appendSnippetRow(html, snippet.get(), confidenceLevel);
+        }
+    }
+
+    private static void appendSnippetRow(final StringBuilder html, final SnippetReader.Snippet snippet,
+                                          final String confidenceLevel) {
+        html.append("          <tr class=\"snippet-row\" data-confidence=\"").append(confidenceLevel);
+        html.append("\" hidden><td colspan=\"5\"><pre>");
+        for (int i = 0; i < snippet.lines().size(); i++) {
+            final int lineNumber = snippet.firstLineNumber() + i;
+            final boolean focal = lineNumber >= snippet.focalStartLine() && lineNumber <= snippet.focalEndLine();
+            if (focal) {
+                html.append("<span class=\"focal\">");
+            }
+            html.append("<span class=\"ln\">").append(lineNumber).append("</span>");
+            html.append(escape(snippet.lines().get(i)));
+            html.append('\n');
+            if (focal) {
+                html.append("</span>");
+            }
+        }
+        html.append("</pre></td></tr>\n");
     }
 
     private static void appendConfidenceSummary(final StringBuilder html, final List<Finding> group) {

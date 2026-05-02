@@ -341,6 +341,63 @@ class HtmlReportWriterTest {
     }
 
     @Test
+    void emitsCollapsibleCodeSnippetWhenSourceFilePresent(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+        final Path projectRoot = tempDir.resolve("project");
+        Files.createDirectories(projectRoot);
+        Files.write(projectRoot.resolve("Foo.java"), List.of(
+                "package x;",
+                "public class Foo {",
+                "    void bar() {",
+                "        System.out.println(\"oops\");",
+                "    }",
+                "}"));
+
+        final Finding finding = new Finding(HeuristicCode.G17, "Foo.java", 4, 4,
+                "System.out misplaced", Severity.WARNING, Confidence.HIGH,
+                "openrewrite", "G17", Map.of());
+        final AggregatedReport report = new AggregatedReport(
+                List.of(finding), Set.of(HeuristicCode.G17),
+                java.time.Instant.now(), "test", "1.0");
+
+        HtmlReportWriter.write(report, output, "", projectRoot, "vscode");
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("snippet-toggle"),
+                        "every locatable finding gets a click-to-expand snippet link"),
+                () -> assertTrue(html.contains("class=\"snippet-row\""),
+                        "the snippet row is emitted alongside its finding"),
+                () -> assertTrue(html.contains("hidden><td colspan=\"5\""),
+                        "snippet row starts collapsed and spans every column"),
+                () -> assertTrue(html.contains("toggle-snippet"),
+                        "JS handler hooks via data-action"),
+                () -> assertTrue(html.contains("System.out.println"),
+                        "the focal line itself is included in the snippet"),
+                () -> assertTrue(html.contains("class=\"focal\""),
+                        "focal line gets highlighted styling"));
+    }
+
+    @Test
+    void doesNotEmitSnippetForProjectLevelFindings(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+        final Path projectRoot = tempDir.resolve("project");
+        Files.createDirectories(projectRoot);
+
+        final Finding projectLevel = Finding.projectLevel(HeuristicCode.T1, "Low coverage",
+                Severity.ERROR, Confidence.HIGH, "jacoco", "coverage");
+        final AggregatedReport report = new AggregatedReport(
+                List.of(projectLevel), Set.of(HeuristicCode.T1),
+                java.time.Instant.now(), "test", "1.0");
+
+        HtmlReportWriter.write(report, output, "", projectRoot, "vscode");
+        final String html = Files.readString(output);
+
+        assertTrue(!html.contains("class=\"snippet-toggle\""),
+                "project-level findings have no source line — no snippet UI");
+    }
+
+    @Test
     void emitsConfidenceFilterBarAndPersistenceScript(@TempDir Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
