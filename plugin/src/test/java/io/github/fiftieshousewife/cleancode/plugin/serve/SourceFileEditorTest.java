@@ -158,6 +158,37 @@ class SourceFileEditorTest {
     }
 
     @Test
+    void parsesRecordDeclarationsAndModernJavaSyntax(@TempDir Path tempDir) throws IOException {
+        final Path file = tempDir.resolve("Foo.java");
+        Files.writeString(file, """
+                package com.example;
+                import java.util.List;
+                public final class Foo {
+                    public record PassSummary(List<String> names) {}
+                    public sealed interface Shape permits Circle, Square {}
+                    public record Circle(double radius) implements Shape {}
+                    public record Square(double side) implements Shape {}
+
+                    public String describe(Shape s) {
+                        return switch (s) {
+                            case Circle c -> "circle " + c.radius();
+                            case Square q -> "square " + q.side();
+                        };
+                    }
+                }
+                """);
+
+        final SourceFileEditor editor = new SourceFileEditor(file);
+        final SourceFileEditor.Result result = editor.suppressFinding(10, "G30",
+                "switch expression with pattern matching is intentional");
+        editor.save();
+
+        assertAll(
+                () -> assertTrue(result.success(), "modern Java syntax must parse — " + result.error()),
+                () -> assertTrue(Files.readString(file).contains("@SuppressWarnings(\"CleanCode:G30\")")));
+    }
+
+    @Test
     void failsClearlyWhenLineHasNoEnclosingDeclaration(@TempDir Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """

@@ -2,6 +2,7 @@ package io.github.fiftieshousewife.cleancode.plugin.serve;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
@@ -52,9 +53,13 @@ public final class SourceFileEditor {
     }
 
     public Result suppressFinding(final int line, final String code, final String reason) throws IOException {
-        final ParseResult<CompilationUnit> parse = new JavaParser().parse(String.join("\n", lines));
+        final JavaParser parser = new JavaParser(new ParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21));
+        final ParseResult<CompilationUnit> parse = parser.parse(String.join("\n", lines));
         if (!parse.isSuccessful() || parse.getResult().isEmpty()) {
-            return Result.failed("could not parse " + javaFile.getFileName());
+            final String firstProblem = parse.getProblems().isEmpty() ? "unknown"
+                    : parse.getProblems().get(0).getMessage();
+            return Result.failed("could not parse " + javaFile.getFileName() + ": " + firstProblem);
         }
         final CompilationUnit cu = parse.getResult().get();
         final Optional<BodyDeclaration<?>> target = findEnclosingDeclaration(cu, line);
