@@ -13,6 +13,8 @@ spotbugs-plugin = "6.5.1"
 spotbugs-core = "4.9.8"
 cpd-plugin = "3.4"
 spotless-plugin = "6.25.0"
+shadow = "9.4.1"
+vanniktech-maven-publish = "0.36.0"
 
 [libraries]
 anthropic-java = { module = "com.anthropic:anthropic-java", version.ref = "anthropic" }
@@ -36,3 +38,5 @@ slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-maven-publish" }
