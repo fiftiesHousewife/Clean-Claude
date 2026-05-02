@@ -23,7 +23,11 @@ import io.github.fiftieshousewife.cleancode.core.RecipeThresholds;
 import io.github.fiftieshousewife.cleancode.core.SourceState;
 import io.github.fiftieshousewife.cleancode.core.SuppressionIndex;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
@@ -73,8 +77,8 @@ public final class SandboxAnalysis {
                 project.getName(),
                 project.getVersion().toString(),
                 "21",
-                List.of(projectRoot.resolve("src/main/java")),
-                List.of(projectRoot.resolve("src/test/java")),
+                resolveSourceRoots(project, projectRoot, SourceSet.MAIN_SOURCE_SET_NAME, "src/main/java"),
+                resolveSourceRoots(project, projectRoot, SourceSet.TEST_SOURCE_SET_NAME, "src/test/java"),
                 buildDir,
                 reportsDir,
                 dependencies);
@@ -134,6 +138,24 @@ public final class SandboxAnalysis {
                 report.generatedAt(),
                 report.projectName(),
                 report.projectVersion());
+    }
+
+    private static List<Path> resolveSourceRoots(final Project project, final Path projectRoot,
+                                                  final String sourceSetName, final String fallback) {
+        final JavaPluginExtension javaExtension = project.getExtensions().findByType(JavaPluginExtension.class);
+        if (javaExtension == null) {
+            return List.of(projectRoot.resolve(fallback));
+        }
+        final SourceSetContainer sourceSets = javaExtension.getSourceSets();
+        final SourceSet sourceSet = sourceSets.findByName(sourceSetName);
+        if (sourceSet == null) {
+            return List.of(projectRoot.resolve(fallback));
+        }
+        final Set<File> srcDirs = sourceSet.getJava().getSrcDirs();
+        if (srcDirs.isEmpty()) {
+            return List.of(projectRoot.resolve(fallback));
+        }
+        return srcDirs.stream().map(File::toPath).toList();
     }
 
     private static String resolveApiKey(final Project project) {

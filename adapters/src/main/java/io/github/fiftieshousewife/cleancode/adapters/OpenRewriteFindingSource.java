@@ -156,7 +156,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 new BadClassNameRecipe(),
                 new SystemOutRecipe(),
                 new FixedStringLogRecipe(),
-                new LegacyFileApiRecipe(),
+                new LegacyTypesRecipe(),
                 new MultipleAssertRecipe(),
                 new LargeConstructorRecipe(thresholds.recordComponentCount()),
                 new InappropriateStaticRecipe(),
@@ -223,7 +223,7 @@ public class OpenRewriteFindingSource implements FindingSource {
             case BadClassNameRecipe r -> mapBadClassName(r.collectedRows());
             case SystemOutRecipe r -> mapSystemOut(r.collectedRows());
             case FixedStringLogRecipe r -> mapFixedStringLog(r.collectedRows());
-            case LegacyFileApiRecipe r -> mapLegacyFileApi(r.collectedRows());
+            case LegacyTypesRecipe r -> mapLegacyTypes(r.collectedRows());
             case MultipleAssertRecipe r -> mapMultipleAssert(r.collectedRows());
             case LargeConstructorRecipe r -> mapLargeConstructor(r.collectedRows());
             case InappropriateStaticRecipe r -> mapInappropriateStatic(r.collectedRows());
@@ -541,11 +541,10 @@ public class OpenRewriteFindingSource implements FindingSource {
         return s.length() <= 60 ? s : s.substring(0, 57) + "...";
     }
 
-    private List<Finding> mapLegacyFileApi(List<LegacyFileApiRecipe.Row> rows) {
+    private List<Finding> mapLegacyTypes(List<LegacyTypesRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G26, r.className(),
-                        "'%s' is a legacy API — use java.nio.file.Path and Files instead".formatted(
-                                r.legacyType())))
+                        "'%s' is a legacy API — %s".formatted(r.legacyType(), r.replacement())))
                 .toList();
     }
 
