@@ -34,6 +34,8 @@ public abstract class CleanCodeExtension {
 
     public abstract Property<Boolean> getEnforceFormatting();
 
+    public abstract Property<Integer> getServePort();
+
     private final ThresholdsExtension thresholds;
     private final ClaudeReviewExtension claudeReview;
 
@@ -48,6 +50,7 @@ public abstract class CleanCodeExtension {
         getRepositoryUrl().convention("");
         getIdeUrlScheme().convention("");
         getEnforceFormatting().convention(false);
+        getServePort().convention(7070);
         thresholds = objects.newInstance(ThresholdsExtension.class);
         claudeReview = objects.newInstance(ClaudeReviewExtension.class);
     }

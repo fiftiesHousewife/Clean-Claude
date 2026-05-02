@@ -80,6 +80,13 @@ public class CleanCodePlugin implements Plugin<Project> {
                 });
 
         project.getTasks()
+                .register("cleanCodeServe", ServeTask.class, task -> {
+                    task.setDescription("Serve the findings report at http://localhost:7070 with "
+                            + "in-page controls to disable recipes, tune thresholds, and suppress findings");
+                    task.setGroup("clean code");
+                });
+
+        project.getTasks()
                 .register("reworkClass", ReworkClassTask.class, task -> {
                     task.setDescription(
                             "Rework a single class via the ReworkOrchestrator Java API "
