@@ -139,6 +139,44 @@ class HtmlReportWriterTest {
     }
 
     @Test
+    void listsAllConfiguredSourcesIncludingMissingOnes(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+        final Path projectRoot = tempDir.resolve("project");
+        Files.createDirectories(projectRoot);
+
+        final List<SourceState> sourceStates = List.of(
+                SourceState.produced("openrewrite", "OpenRewrite", 2),
+                SourceState.ranNoFindings("checkstyle", "Checkstyle"),
+                SourceState.notAvailable("jacoco", "JaCoCo"));
+
+        HtmlReportWriter.write(sampleReport(), output, "", projectRoot, "vscode", sourceStates);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("OpenRewrite"),
+                        "tool that produced findings should appear"),
+                () -> assertTrue(html.contains("ran, no findings"),
+                        "tools that ran but produced nothing should be visible to users"),
+                () -> assertTrue(html.contains("not available")
+                        && html.contains("JaCoCo"),
+                        "tools whose report file was missing should be flagged"));
+    }
+
+    @Test
+    void includesOptionalRulesPanelByDefault(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        HtmlReportWriter.write(sampleReport(), output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("Optional rules")),
+                () -> assertTrue(html.contains("checkstyle:FinalLocalVariable")),
+                () -> assertTrue(html.contains("enabledOptionalRules"),
+                        "panel should tell users how to opt in"));
+    }
+
+    @Test
     void emitsIdePickerWhenFindingsPresent(@TempDir Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");

@@ -16,9 +16,11 @@ import io.github.fiftieshousewife.cleancode.core.FindingAggregator;
 import io.github.fiftieshousewife.cleancode.core.FindingFilter;
 import io.github.fiftieshousewife.cleancode.core.FindingSource;
 import io.github.fiftieshousewife.cleancode.core.FindingSourceException;
+import io.github.fiftieshousewife.cleancode.core.OptionalRules;
 import io.github.fiftieshousewife.cleancode.core.PackageSuppression;
 import io.github.fiftieshousewife.cleancode.core.ProjectContext;
 import io.github.fiftieshousewife.cleancode.core.RecipeThresholds;
+import io.github.fiftieshousewife.cleancode.core.SourceState;
 import io.github.fiftieshousewife.cleancode.core.SuppressionIndex;
 import org.gradle.api.Project;
 
@@ -37,9 +39,15 @@ import java.util.Set;
  */
 public final class SandboxAnalysis {
 
+    public record Result(AggregatedReport report, List<SourceState> sourceStates) {}
+
     private SandboxAnalysis() {}
 
     public static AggregatedReport analyse(final Project project) throws FindingSourceException {
+        return analyseWithStates(project).report();
+    }
+
+    public static Result analyseWithStates(final Project project) throws FindingSourceException {
         final Path projectRoot = project.getProjectDir().toPath();
         final Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         final Path reportsDir = buildDir.resolve("reports");
@@ -49,6 +57,7 @@ public final class SandboxAnalysis {
         final String anthropicApiKey = resolveApiKey(project);
         final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig(anthropicApiKey);
         final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
+        final Set<String> enabledOptionalRules = Set.copyOf(ext.getEnabledOptionalRules().get());
         final PackageSuppression packageSuppression = PackageSuppression.of(ext.getPackageSuppressions().get());
 
         final List<String> dependencies = project.getConfigurations().stream()
@@ -81,9 +90,11 @@ public final class SandboxAnalysis {
                 new OpenRewriteFindingSource(thresholds),
                 new ClaudeReviewFindingSource(claudeConfig));
 
-        final AggregatedReport fullReport = FindingAggregator.aggregate(sources, context);
-        final AggregatedReport afterDisabled = filterDisabledRecipes(fullReport, disabledRecipes);
-        return filterSuppressions(afterDisabled, projectRoot, packageSuppression);
+        final FindingAggregator.Result aggregated = FindingAggregator.aggregateWithStates(sources, context);
+        final AggregatedReport afterDisabled = filterDisabledRecipes(aggregated.report(), disabledRecipes);
+        final AggregatedReport afterOptional = filterOptionalRules(afterDisabled, enabledOptionalRules);
+        final AggregatedReport finalReport = filterSuppressions(afterOptional, projectRoot, packageSuppression);
+        return new Result(finalReport, aggregated.sourceStates());
     }
 
     private static AggregatedReport filterDisabledRecipes(final AggregatedReport report,
@@ -94,6 +105,17 @@ public final class SandboxAnalysis {
         final List<Finding> filtered = report.findings().stream()
                 .filter(f -> !disabledRecipes.contains(f.code().name()))
                 .toList();
+        return withFindings(report, filtered);
+    }
+
+    private static AggregatedReport filterOptionalRules(final AggregatedReport report,
+                                                         final Set<String> enabledOptionalRules) {
+        final List<Finding> filtered = report.findings().stream()
+                .filter(f -> OptionalRules.isEnabled(f, enabledOptionalRules))
+                .toList();
+        if (filtered.size() == report.findings().size()) {
+            return report;
+        }
         return withFindings(report, filtered);
     }
 

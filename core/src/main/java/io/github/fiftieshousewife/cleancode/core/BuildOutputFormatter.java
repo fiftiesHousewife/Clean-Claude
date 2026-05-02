@@ -18,11 +18,17 @@ public final class BuildOutputFormatter {
     private BuildOutputFormatter() {}
 
     public static String format(AggregatedReport report) {
-        return format(report, Map.of());
+        return format(report, Map.of(), List.of());
     }
 
     public static String format(AggregatedReport report,
                                 Map<HeuristicCode, BaselineManager.Delta> deltas) {
+        return format(report, deltas, List.of());
+    }
+
+    public static String format(AggregatedReport report,
+                                Map<HeuristicCode, BaselineManager.Delta> deltas,
+                                List<SourceState> sourceStates) {
         final StringBuilder out = new StringBuilder();
         final List<Finding> findings = report.findings();
 
@@ -32,6 +38,8 @@ public final class BuildOutputFormatter {
 
         if (findings.isEmpty()) {
             out.append("\n  No violations found. The code is clean.\n");
+            appendSourceStateSummary(out, sourceStates);
+            appendOptionalRulesSummary(out);
             out.append('\n').append(HEADER).append('\n');
             return out.toString();
         }
@@ -43,7 +51,8 @@ public final class BuildOutputFormatter {
         }
 
         appendFindingsByCode(out, findings);
-        appendToolSummary(out, findings);
+        appendToolSummary(out, findings, sourceStates);
+        appendOptionalRulesSummary(out);
         appendFooter(out, findings);
 
         return out.toString();
@@ -169,18 +178,54 @@ public final class BuildOutputFormatter {
         };
     }
 
-    private static void appendToolSummary(StringBuilder out, List<Finding> findings) {
-        final Map<String, Long> byTool = findings.stream()
-                .collect(Collectors.groupingBy(Finding::tool, Collectors.counting()));
-
+    private static void appendToolSummary(StringBuilder out, List<Finding> findings, List<SourceState> sourceStates) {
         out.append('\n').append(DIVIDER).append('\n');
         out.append("  Sources:\n");
 
-        byTool.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .forEach(entry ->
-                        out.append("    ").append(entry.getKey())
-                                .append(": ").append(entry.getValue()).append('\n'));
+        if (sourceStates.isEmpty()) {
+            final Map<String, Long> byTool = findings.stream()
+                    .collect(Collectors.groupingBy(Finding::tool, Collectors.counting()));
+            byTool.entrySet().stream()
+                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                    .forEach(entry ->
+                            out.append("    ").append(entry.getKey())
+                                    .append(": ").append(entry.getValue()).append('\n'));
+            return;
+        }
+
+        sourceStates.stream()
+                .sorted(Comparator.comparingInt((SourceState s) -> -s.findingCount())
+                        .thenComparing(SourceState::displayName))
+                .forEach(state -> out.append("    ").append(formatSourceState(state)).append('\n'));
+    }
+
+    private static String formatSourceState(final SourceState state) {
+        return switch (state.status()) {
+            case PRODUCED_FINDINGS -> state.displayName() + ": " + state.findingCount();
+            case RAN_NO_FINDINGS -> state.displayName() + ": (ran, no findings)";
+            case NOT_AVAILABLE -> state.displayName() + ": (not available — report not found)";
+        };
+    }
+
+    private static void appendSourceStateSummary(StringBuilder out, List<SourceState> sourceStates) {
+        if (sourceStates.isEmpty()) {
+            return;
+        }
+        out.append('\n').append(DIVIDER).append('\n');
+        out.append("  Sources:\n");
+        sourceStates.forEach(state -> out.append("    ").append(formatSourceState(state)).append('\n'));
+    }
+
+    private static void appendOptionalRulesSummary(StringBuilder out) {
+        if (OptionalRules.defaults().isEmpty()) {
+            return;
+        }
+        out.append('\n').append(DIVIDER).append('\n');
+        out.append("  Optional rules (disabled by default — opt in via cleanCode.enabledOptionalRules):\n");
+        OptionalRules.defaults().values().forEach(rule -> {
+            out.append("    ").append(rule.key()).append("  [").append(rule.code()).append("]\n");
+            out.append("      ").append(rule.summary()).append('\n');
+        });
     }
 
     private static void appendFooter(StringBuilder out, List<Finding> findings) {

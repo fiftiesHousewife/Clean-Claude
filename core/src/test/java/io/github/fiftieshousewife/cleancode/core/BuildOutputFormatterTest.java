@@ -71,4 +71,43 @@ class BuildOutputFormatterTest {
                 () -> assertTrue(output.contains("checkstyle: 1"))
         );
     }
+
+    @Test
+    void listsAllSourcesIncludingNotAvailableAndRanNoFindings() {
+        final Finding f = Finding.at(HeuristicCode.F3, "Foo.java", 1, 1,
+                "flag arg", Severity.WARNING, Confidence.HIGH, "openrewrite", "F3");
+        final AggregatedReport report = new AggregatedReport(
+                List.of(f), Set.of(), Instant.now(), "test", "1.0");
+
+        final List<SourceState> sourceStates = List.of(
+                SourceState.produced("openrewrite", "OpenRewrite", 1),
+                SourceState.ranNoFindings("checkstyle", "Checkstyle"),
+                SourceState.notAvailable("jacoco", "JaCoCo"));
+
+        final String output = BuildOutputFormatter.format(report, java.util.Map.of(), sourceStates);
+
+        assertAll(
+                () -> assertTrue(output.contains("OpenRewrite: 1"),
+                        "tools that produced findings show their count"),
+                () -> assertTrue(output.contains("Checkstyle: (ran, no findings)"),
+                        "tools that ran but found nothing are not silently dropped"),
+                () -> assertTrue(output.contains("JaCoCo: (not available — report not found)"),
+                        "tools whose report file was missing are flagged so users know to investigate"));
+    }
+
+    @Test
+    void includesOptionalRulesPanelByDefault() {
+        final AggregatedReport report = new AggregatedReport(
+                List.of(), Set.of(), Instant.now(), "test", "1.0");
+
+        final String output = BuildOutputFormatter.format(report);
+
+        assertAll(
+                () -> assertTrue(output.contains("Optional rules"),
+                        "users should see what's available behind the opt-in flag"),
+                () -> assertTrue(output.contains("checkstyle:FinalLocalVariable")),
+                () -> assertTrue(output.contains("pmd:UseLocaleWithCaseConversions")),
+                () -> assertTrue(output.contains("enabledOptionalRules"),
+                        "panel should tell users how to enable an optional rule"));
+    }
 }

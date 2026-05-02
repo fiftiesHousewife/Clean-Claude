@@ -20,6 +20,8 @@ public abstract class CleanCodeExtension {
 
     public abstract ListProperty<String> getDisabledRecipes();
 
+    public abstract ListProperty<String> getEnabledOptionalRules();
+
     public abstract MapProperty<String, java.util.List<String>> getPackageSuppressions();
 
     public abstract Property<String> getSkillsDir();
@@ -39,6 +41,7 @@ public abstract class CleanCodeExtension {
     public CleanCodeExtension(ObjectFactory objects) {
         getFailOnViolation().convention(true);
         getDisabledRecipes().convention(java.util.List.of());
+        getEnabledOptionalRules().convention(java.util.List.of());
         getPackageSuppressions().convention(java.util.Map.of());
         getSkillsDir().convention("");
         getAgentInstructionsFile().convention("");

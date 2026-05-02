@@ -77,6 +77,28 @@ class FindingAggregatorTest {
     }
 
     @Test
+    void aggregateWithStatesReportsAllSourceOutcomes() throws FindingSourceException {
+        FindingSource produced = stubSource("p", Set.of(HeuristicCode.G5),
+                List.of(finding(HeuristicCode.G5, "Foo.java")));
+        FindingSource ranEmpty = stubSource("e", Set.of(HeuristicCode.G6), List.of());
+        FindingSource unavailable = new FindingSource() {
+            @Override public String id() { return "u"; }
+            @Override public String displayName() { return "U"; }
+            @Override public List<Finding> collectFindings(ProjectContext ctx) { return List.of(); }
+            @Override public Set<HeuristicCode> coveredCodes() { return Set.of(HeuristicCode.T1); }
+            @Override public boolean isAvailable(ProjectContext ctx) { return false; }
+        };
+
+        FindingAggregator.Result result = FindingAggregator.aggregateWithStates(
+                List.of(produced, ranEmpty, unavailable), dummyContext());
+
+        assertEquals(3, result.sourceStates().size());
+        assertEquals(SourceState.Status.PRODUCED_FINDINGS, result.sourceStates().get(0).status());
+        assertEquals(SourceState.Status.RAN_NO_FINDINGS, result.sourceStates().get(1).status());
+        assertEquals(SourceState.Status.NOT_AVAILABLE, result.sourceStates().get(2).status());
+    }
+
+    @Test
     void setsProjectMetadata() throws FindingSourceException {
         AggregatedReport report = FindingAggregator.aggregate(List.of(), dummyContext());
 

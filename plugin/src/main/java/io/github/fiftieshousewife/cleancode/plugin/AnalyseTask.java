@@ -6,6 +6,8 @@ import io.github.fiftieshousewife.cleancode.core.BaselineManager;
 import io.github.fiftieshousewife.cleancode.core.BuildOutputFormatter;
 import io.github.fiftieshousewife.cleancode.core.HtmlReportWriter;
 import io.github.fiftieshousewife.cleancode.core.JsonReportWriter;
+import io.github.fiftieshousewife.cleancode.core.SourceState;
+import java.util.List;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.work.DisableCachingByDefault;
@@ -21,7 +23,9 @@ public abstract class AnalyseTask extends DefaultTask {
     public void analyse() throws Exception {
         final Path projectRoot = getProject().getProjectDir().toPath();
         final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
-        final AggregatedReport report = SandboxAnalysis.analyse(getProject());
+        final SandboxAnalysis.Result analysis = SandboxAnalysis.analyseWithStates(getProject());
+        final AggregatedReport report = analysis.report();
+        final List<SourceState> sourceStates = analysis.sourceStates();
 
         final CleanCodeExtension ext = getProject().getExtensions().getByType(CleanCodeExtension.class);
         final String baseRepoUrl = ext.getRepositoryUrl().get();
@@ -34,14 +38,14 @@ public abstract class AnalyseTask extends DefaultTask {
         final String ideScheme = ext.getIdeUrlScheme().getOrElse("").isBlank()
                 ? detectIdeUrlScheme(projectRoot)
                 : ext.getIdeUrlScheme().get();
-        HtmlReportWriter.write(report, htmlReport, repositoryUrl, projectRoot, ideScheme);
+        HtmlReportWriter.write(report, htmlReport, repositoryUrl, projectRoot, ideScheme, sourceStates);
 
         final Path baselineFile = projectRoot.resolve("clean-code-baseline.json");
         final Map<HeuristicCode, BaselineManager.Delta> deltas = Files.exists(baselineFile)
                 ? BaselineManager.computeDeltas(report, baselineFile)
                 : Map.of();
 
-        getLogger().lifecycle(BuildOutputFormatter.format(report, deltas));
+        getLogger().lifecycle(BuildOutputFormatter.format(report, deltas, sourceStates));
         getLogger().lifecycle("\n  Report: file://" + htmlReport.toAbsolutePath());
     }
 

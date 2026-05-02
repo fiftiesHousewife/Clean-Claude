@@ -20,25 +20,32 @@ public final class HtmlReportWriter {
     private HtmlReportWriter() {}
 
     public static void write(AggregatedReport report, Path outputFile) throws IOException {
-        write(report, outputFile, "", null, "vscode");
+        write(report, outputFile, "", null, "vscode", List.of());
     }
 
     public static void write(AggregatedReport report, Path outputFile,
                               String repositoryUrl) throws IOException {
-        write(report, outputFile, repositoryUrl, null, "vscode");
+        write(report, outputFile, repositoryUrl, null, "vscode", List.of());
     }
 
     public static void write(AggregatedReport report, Path outputFile,
                               String repositoryUrl, Path projectRoot, String ideUrlScheme) throws IOException {
+        write(report, outputFile, repositoryUrl, projectRoot, ideUrlScheme, List.of());
+    }
+
+    public static void write(AggregatedReport report, Path outputFile,
+                              String repositoryUrl, Path projectRoot, String ideUrlScheme,
+                              List<SourceState> sourceStates) throws IOException {
         final Path parent = outputFile.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
-        Files.writeString(outputFile, render(report, repositoryUrl, projectRoot, ideUrlScheme));
+        Files.writeString(outputFile, render(report, repositoryUrl, projectRoot, ideUrlScheme, sourceStates));
     }
 
     private static String render(AggregatedReport report, String repositoryUrl,
-                                  Path projectRoot, String ideUrlScheme) {
+                                  Path projectRoot, String ideUrlScheme,
+                                  List<SourceState> sourceStates) {
         final StringBuilder html = new StringBuilder();
         appendDocumentStart(html, report);
         if (!report.findings().isEmpty()) {
@@ -50,8 +57,9 @@ public final class HtmlReportWriter {
             html.append("    <p class=\"clean\">No violations found. The code is clean.</p>\n");
         } else {
             appendFindingsByCode(html, report.findings(), repositoryUrl, projectRoot, ideUrlScheme);
-            appendToolSummary(html, report.findings());
         }
+        appendToolSummary(html, report.findings(), sourceStates);
+        appendOptionalRulesSummary(html);
 
         appendFooter(html, report);
         if (!report.findings().isEmpty()) {
@@ -364,22 +372,58 @@ public final class HtmlReportWriter {
         return sourceFile;
     }
 
-    private static void appendToolSummary(StringBuilder html, List<Finding> findings) {
-        final Map<String, Long> byTool = findings.stream()
-                .collect(Collectors.groupingBy(Finding::tool, Collectors.counting()));
-
+    private static void appendToolSummary(StringBuilder html, List<Finding> findings, List<SourceState> sourceStates) {
         html.append("    <div class=\"tool-summary\">\n");
         html.append("      <h2>Sources</h2>\n");
         html.append("      <table>\n");
-        html.append("        <tr><th>Tool</th><th>Findings</th></tr>\n");
+        html.append("        <tr><th>Tool</th><th>Status</th></tr>\n");
 
-        byTool.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .forEach(entry -> {
-                    html.append("        <tr><td>").append(escape(entry.getKey()));
-                    html.append("</td><td>").append(entry.getValue()).append("</td></tr>\n");
-                });
+        if (sourceStates.isEmpty()) {
+            final Map<String, Long> byTool = findings.stream()
+                    .collect(Collectors.groupingBy(Finding::tool, Collectors.counting()));
+            byTool.entrySet().stream()
+                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                    .forEach(entry -> {
+                        html.append("        <tr><td>").append(escape(entry.getKey()));
+                        html.append("</td><td>").append(entry.getValue()).append("</td></tr>\n");
+                    });
+        } else {
+            sourceStates.stream()
+                    .sorted(Comparator.comparingInt((SourceState s) -> -s.findingCount())
+                            .thenComparing(SourceState::displayName))
+                    .forEach(state -> {
+                        html.append("        <tr><td>").append(escape(state.displayName()));
+                        html.append("</td><td>").append(escape(formatSourceStatus(state))).append("</td></tr>\n");
+                    });
+        }
 
+        html.append("      </table>\n");
+        html.append("    </div>\n");
+    }
+
+    private static String formatSourceStatus(final SourceState state) {
+        return switch (state.status()) {
+            case PRODUCED_FINDINGS -> state.findingCount() + " findings";
+            case RAN_NO_FINDINGS -> "ran, no findings";
+            case NOT_AVAILABLE -> "not available — report not found";
+        };
+    }
+
+    private static void appendOptionalRulesSummary(StringBuilder html) {
+        if (OptionalRules.defaults().isEmpty()) {
+            return;
+        }
+        html.append("    <div class=\"optional-rules\">\n");
+        html.append("      <h2>Optional rules</h2>\n");
+        html.append("      <p>Disabled by default. To enable, add to ");
+        html.append("<code>cleanCode.enabledOptionalRules</code> in your build script.</p>\n");
+        html.append("      <table>\n");
+        html.append("        <tr><th>Rule</th><th>Code</th><th>What it enforces</th></tr>\n");
+        OptionalRules.defaults().values().forEach(rule -> {
+            html.append("        <tr><td><code>").append(escape(rule.key())).append("</code></td>");
+            html.append("<td>").append(escape(rule.code())).append("</td>");
+            html.append("<td>").append(escape(rule.summary())).append("</td></tr>\n");
+        });
         html.append("      </table>\n");
         html.append("    </div>\n");
     }

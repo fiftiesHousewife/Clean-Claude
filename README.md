@@ -124,6 +124,14 @@ cleanCode {
     }
     disabledRecipes = listOf("G36", "G10")
 
+    // Opt-in rules — disabled by default because they're noisy or only valuable
+    // to teams that have already committed to the convention. Run the build
+    // once and the report's "Optional rules" panel lists what's available.
+    enabledOptionalRules = listOf(
+        "checkstyle:FinalLocalVariable",       // G22 — require all locals/params to be final
+        "pmd:UseLocaleWithCaseConversions"     // G26 — require an explicit Locale on toLowerCase/toUpperCase
+    )
+
     packageSuppressions = mapOf(
         "io.github.fiftieshousewife.cleancode.recipes" to listOf("G5", "Ch7_2")
     )
