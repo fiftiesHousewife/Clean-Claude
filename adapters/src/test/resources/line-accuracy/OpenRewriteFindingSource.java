@@ -313,56 +313,14 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapEncapCond(List<EncapsulateConditionalRecipe.Row> rows) {
-        // The recipe records lineNumber=-1, so resolve via source-text:
-        // walk the method's body for the first multi-operator `if` line
-        // (depth-2 conditional means at least one logical operator).
+        // Row.lineNumber is captured by the recipe at the actual `if`/`while`
+        // expression — use it directly instead of falling back to the class
+        // line, which would land the snippet on the class declaration
+        // (showing Javadoc and imports instead of the offending condition).
         return rows.stream()
-                .map(r -> {
-                    final int line = lineOfFirstComplexIf(r.className(), r.methodName());
-                    return finding(HeuristicCode.G28, r.className(), line,
-                            "Complex condition (depth %d) should be extracted".formatted(r.depth()));
-                })
+                .map(r -> finding(HeuristicCode.G28, r.className(), r.lineNumber(),
+                        "Complex condition (depth %d) should be extracted".formatted(r.depth())))
                 .toList();
-    }
-
-    /**
-     * Returns the source line of the first {@code if (} inside the named
-     * method whose condition contains a logical operator ({@code &&} or
-     * {@code ||}). Falls back to the method declaration line if no such
-     * if is found.
-     */
-    private int lineOfFirstComplexIf(final String className, final String methodName) {
-        final List<String> lines = readSourceLines(className);
-        if (lines == null || lines.isEmpty()) {
-            return -1;
-        }
-        final int methodLine = lineOfMethodFromSource(className, methodName);
-        if (methodLine <= 0) {
-            return -1;
-        }
-        int depth = 0;
-        boolean enteredMethodBody = false;
-        for (int i = methodLine - 1; i < lines.size(); i++) {
-            final String line = lines.get(i);
-            if (enteredMethodBody && depth >= 1
-                    && line.contains("if (")
-                    && (line.contains("&&") || line.contains("||"))) {
-                return i + 1;
-            }
-            for (int j = 0; j < line.length(); j++) {
-                final char c = line.charAt(j);
-                if (c == '{') {
-                    depth++;
-                    enteredMethodBody = true;
-                } else if (c == '}') {
-                    depth--;
-                    if (enteredMethodBody && depth == 0) {
-                        return methodLine;
-                    }
-                }
-            }
-        }
-        return methodLine;
     }
 
     private List<Finding> mapNullDensity(List<NullDensityRecipe.Row> rows) {
@@ -486,61 +444,23 @@ public class OpenRewriteFindingSource implements FindingSource {
      * in the file containing {@code className}, or -1 if the file isn't
      * readable. Skips comment lines so a Javadoc that mentions the literal
      * doesn't pull the snippet onto the wrong line.
-     *
-     * <p>Multi-line literals can't be matched directly: the recipe gives
-     * us the unescaped value (e.g. {@code "});\n"}), but Java source
-     * contains the escaped form (e.g. {@code "});\\n"}). Search using the
-     * leading non-newline prefix of the literal — enough to identify the
-     * line, even when the literal continues onto subsequent lines or is
-     * built up via {@code + "..."} concatenation.
      */
     private int lineOfFirstStringLiteral(final String className, final String literal) {
         final List<String> lines = readSourceLines(className);
         if (lines == null || lines.isEmpty()) {
             return -1;
         }
-        final String prefix = literalSearchPrefix(literal);
-        if (prefix.isEmpty()) {
-            return -1;
-        }
+        final String quoted = '"' + literal + '"';
         for (int i = 0; i < lines.size(); i++) {
             final String stripped = lines.get(i).strip();
             if (stripped.startsWith("*") || stripped.startsWith("/*") || stripped.startsWith("//")) {
                 continue;
             }
-            if (lines.get(i).contains(prefix)) {
+            if (lines.get(i).contains(quoted)) {
                 return i + 1;
             }
         }
         return -1;
-    }
-
-    /**
-     * Builds a search needle for the literal: a leading {@code "} plus
-     * the literal's first chunk (up to a newline or 32 chars), re-escaped
-     * the way Java source escapes string contents — backslash and quote
-     * doubled, tab and newline as \t / \n. Without re-escaping, regex
-     * literals like {@code "\s*\("} (real value) would never match the
-     * source form {@code "\\s*\\("}.
-     */
-    static String literalSearchPrefix(final String literal) {
-        if (literal == null || literal.isEmpty()) {
-            return "";
-        }
-        final int firstNewline = literal.indexOf('\n');
-        final int cutAt = firstNewline >= 0 ? firstNewline : Math.min(literal.length(), 32);
-        final StringBuilder out = new StringBuilder("\"");
-        for (int i = 0; i < cutAt; i++) {
-            final char c = literal.charAt(i);
-            switch (c) {
-                case '\\' -> out.append("\\\\");
-                case '"' -> out.append("\\\"");
-                case '\t' -> out.append("\\t");
-                case '\r' -> out.append("\\r");
-                default -> out.append(c);
-            }
-        }
-        return out.toString();
     }
 
     private List<Finding> mapWhitespaceSplit(List<WhitespaceSplitMethodRecipe.Row> rows) {
@@ -1034,23 +954,18 @@ public class OpenRewriteFindingSource implements FindingSource {
         if (lines == null || lines.isEmpty()) {
             return -1;
         }
-        // Match `<word>+ methodName(` so we only catch declarations.
-        // Lambdas (`entry -> appendCodeGroup(html, ...)`) are excluded
-        // by skipping any line that contains `->`. Lines containing `=`
-        // before `methodName(` are call sites (assignments / returns
-        // capturing a result), not declarations — also skip.
+        // Match `<word> methodName(` so we only catch declarations, not
+        // free-standing call sites like `methodName()`. Modifiers,
+        // generics, and return types all end at a space-or-`>` boundary
+        // before the method name.
         final java.util.regex.Pattern decl = java.util.regex.Pattern.compile(
-                "\\w\\s+" + java.util.regex.Pattern.quote(methodName) + "\\s*\\(");
+                "[\\w>]\\s+" + java.util.regex.Pattern.quote(methodName) + "\\s*\\(");
         for (int i = 0; i < lines.size(); i++) {
-            final String line = lines.get(i);
-            final String stripped = line.strip();
+            final String stripped = lines.get(i).strip();
             if (stripped.startsWith("*") || stripped.startsWith("/*") || stripped.startsWith("//")) {
                 continue;
             }
-            if (line.contains("->") || line.contains(" = ")) {
-                continue;
-            }
-            if (decl.matcher(line).find()) {
+            if (decl.matcher(lines.get(i)).find()) {
                 return i + 1;
             }
         }

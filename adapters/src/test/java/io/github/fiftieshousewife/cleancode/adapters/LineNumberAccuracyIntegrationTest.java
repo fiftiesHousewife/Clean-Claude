@@ -103,6 +103,19 @@ class LineNumberAccuracyIntegrationTest {
         runFixture("HarnessRecipePass.java", tempDir);
     }
 
+    @Test
+    void openRewriteFindingSourceFindingsAnchorAtTheirActualConstruct(@TempDir Path tempDir) throws Exception {
+        // Big self-referential file: stresses the source-text scanner
+        // because many methods share helper-shape names.
+        runFixture("OpenRewriteFindingSource.java", tempDir);
+    }
+
+    @Test
+    void htmlReportWriterFindingsAnchorAtTheirActualConstruct(@TempDir Path tempDir) throws Exception {
+        // Many string literals (HTML tags, CSS), heavy method count.
+        runFixture("HtmlReportWriter.java", tempDir);
+    }
+
     private void runFixture(final String fixtureName, final Path tempDir) throws IOException, FindingSourceException {
         // Materialise the fixture into a fake project under tempDir so the
         // OpenRewrite source can pick it up via its normal source-set walk.
@@ -178,6 +191,12 @@ class LineNumberAccuracyIntegrationTest {
             // anchor correctly.
             case "ChangeApplier.java" -> 0;
             case "HarnessRecipePass.java" -> 0;
+            // After the source-text scanner overhaul (lineOfMethod,
+            // lineOfFirstStringLiteral with escape-aware search,
+            // lineOfFirstComplexIf for G28), both larger fixtures
+            // anchor cleanly.
+            case "OpenRewriteFindingSource.java" -> 0;
+            case "HtmlReportWriter.java" -> 0;
             default -> 0;
         };
     }
