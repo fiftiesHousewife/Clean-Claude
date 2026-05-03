@@ -106,4 +106,44 @@ class SnippetReaderTest {
         assertEquals(SnippetReader.MAX_LINES, snippet.lines().size(),
                 "snippet truncates to MAX_LINES so the report stays small");
     }
+
+    @Test
+    void slidesWindowDownWhenFocalLineDeclaresAClassPrecededByJavadoc(@TempDir Path tempDir) throws Exception {
+        // SpotBugs/PMD class-level findings (Ch10_1, EI_EXPOSE on records,
+        // file-length warnings) anchor at the class declaration line. With
+        // the default symmetric context the user sees Javadoc lines above
+        // the declaration instead of a glimpse of the class body — exactly
+        // the "shows the class comment instead of the method" problem.
+        // The reader should detect a class/record/interface declaration
+        // on the focal line and shift the window down so the body is
+        // visible.
+        final Path file = tempDir.resolve("src/main/java/Foo.java");
+        Files.createDirectories(file.getParent());
+        Files.write(file, List.of(
+                "package com.example;",                       // 1
+                "",                                            // 2
+                "/**",                                         // 3
+                " * A record that is too big.",                // 4
+                " */",                                         // 5
+                "public record Foo(",                          // 6 — focal: class-level finding
+                "        int a,",                              // 7
+                "        int b,",                              // 8
+                "        int c,",                              // 9
+                "        int d) {}"));                         // 10
+
+        final Finding finding = new Finding(HeuristicCode.Ch10_1, "src/main/java/Foo.java",
+                6, 6, "Class is 5 lines", Severity.WARNING, Confidence.HIGH,
+                "openrewrite", "Ch10_1", java.util.Map.of());
+
+        final SnippetReader.Snippet snippet = SnippetReader.read(finding, tempDir).orElseThrow();
+        assertAll(
+                () -> assertEquals(6, snippet.firstLineNumber(),
+                        "class-level finding should start AT the declaration, not above it"),
+                () -> assertFalse(snippet.lines().stream().anyMatch(s -> s.trim().startsWith("*")),
+                        "Javadoc body lines must not appear in the snippet"),
+                () -> assertTrue(snippet.lines().get(0).contains("public record Foo"),
+                        "first line should be the declaration itself"),
+                () -> assertTrue(snippet.lines().stream().anyMatch(s -> s.contains("int a")),
+                        "the class body should be visible"));
+    }
 }

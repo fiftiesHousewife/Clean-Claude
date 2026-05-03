@@ -34,8 +34,13 @@ public final class RefactoringRegistry {
             Map.entry(HeuristicCode.G31, List.of(REFACTORING + "ChainConsecutiveBuilderCallsRecipe")),
             // G34 — drop section comments
             Map.entry(HeuristicCode.G34, List.of(REFACTORING + "DeleteSectionCommentsRecipe")),
-            // G18 — make method static
-            Map.entry(HeuristicCode.G18, List.of(REFACTORING + "MakeMethodStaticRecipe")),
+            // G18 deliberately has NO Fix recipe. Robert Martin's heuristic
+            // is "prefer non-static methods to static methods" — a method
+            // that doesn't touch instance state is more often a misplaced
+            // responsibility than a candidate for `static`. Auto-applying
+            // MakeMethodStaticRecipe would make the codebase MORE static,
+            // which is the opposite of the heuristic. The finding still
+            // surfaces; the resolution is human (relocate or accept).
             // F2 — return new value instead of mutating arg
             Map.entry(HeuristicCode.F2, List.of(REFACTORING + "ReturnInsteadOfMutateArgRecipe")),
             // G4 — try-with-resources

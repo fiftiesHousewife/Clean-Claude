@@ -264,7 +264,7 @@ public class OpenRewriteFindingSource implements FindingSource {
     private List<Finding> mapFullyQualifiedReferences(List<FullyQualifiedReferenceRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> Finding.at(HeuristicCode.G12, r.sourceFile(), 0, 0,
-                        "%d inline fully-qualified type reference(s); first: %s — run ShortenFullyQualifiedReferencesRecipe"
+                        "%d inline fully-qualified type reference(s); first: %s"
                                 .formatted(r.count(), r.samplePreview()),
                         Severity.WARNING, Confidence.HIGH, TOOL, "FullyQualifiedReferenceRecipe"))
                 .toList();
@@ -567,7 +567,7 @@ public class OpenRewriteFindingSource implements FindingSource {
     private List<Finding> mapInappropriateStatic(List<InappropriateStaticRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G18, r.className(), r.methodName(),
-                        "Method '%s' does not use instance state — consider making it static or extracting".formatted(
+                        "Method '%s' does not use instance state — relocate to a more appropriate class or accept the coupling".formatted(
                                 r.methodName())))
                 .toList();
     }

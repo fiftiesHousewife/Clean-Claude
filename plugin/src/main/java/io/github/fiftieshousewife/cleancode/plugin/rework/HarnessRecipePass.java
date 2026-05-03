@@ -6,7 +6,6 @@ import io.github.fiftieshousewife.cleancode.refactoring.CollapseSiblingGuardsRec
 import io.github.fiftieshousewife.cleancode.refactoring.DeleteMumblingLogRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.DeleteSectionCommentsRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.InvertNegativeConditionalRecipe;
-import io.github.fiftieshousewife.cleancode.refactoring.MakeMethodStaticRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.MathMinCapRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.MergeInlineValidationRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.ReplaceForAddNCopiesRecipe;
@@ -72,16 +71,17 @@ public final class HarnessRecipePass {
     //         "io.github.fiftieshousewife.SystemOutToSlf4jRecipeNoDeps";
 
     /**
-     * Builds the recipe pipeline for a given sweep. The only per-sweep
-     * input is {@code externalSuperCalledNames} — aggregated once from
-     * every target file so {@link MakeMethodStaticRecipe} can protect
-     * methods whose {@code super.X()} caller lives in another file.
-     * Everything else is stateless and would be a constant list if not
-     * for this one piece of context.
+     * Builds the recipe pipeline for a given sweep. {@code
+     * externalSuperCalledNames} is no longer consumed — it's still computed
+     * upstream in case a future recipe needs it, but {@code
+     * MakeMethodStaticRecipe} was removed from this pipeline because it
+     * goes against the spirit of Robert Martin's G18 ("prefer non-static
+     * methods to static methods"); auto-applying it would make the
+     * codebase MORE static, not less. The standalone refactoring is still
+     * in the module for tests, just not in the harness sweep.
      */
     private static List<Recipe> deterministicRecipes(final Set<String> externalSuperCalledNames) {
         return List.of(
-                new MakeMethodStaticRecipe(externalSuperCalledNames),
                 new RestoreInterruptFlagRecipe(),
                 new DeleteSectionCommentsRecipe(),
                 new DeleteMumblingLogRecipe(),

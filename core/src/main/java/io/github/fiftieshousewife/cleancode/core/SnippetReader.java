@@ -53,8 +53,19 @@ public final class SnippetReader {
         final int startLine = clamp(finding.startLine(), 1, totalLines);
         final int endLine = clamp(Math.max(finding.endLine(), finding.startLine()), startLine, totalLines);
 
-        int from = Math.max(1, startLine - CONTEXT_BEFORE);
-        int to = Math.min(totalLines, endLine + CONTEXT_AFTER);
+        // The default symmetric window pulls Javadoc / annotations from above
+        // the focal line into the snippet. For class- and method-level
+        // findings (Ch10_1 file-length, EI_EXPOSE on records, Ch7_1 on a
+        // method's catch block) that means the user sees the comment about
+        // the method instead of a glimpse of its body. Detect noisy
+        // context-before — Javadoc lines, block comments, line comments,
+        // annotations, blanks — and trim them, spending the saved budget on
+        // more lines AFTER the focal instead.
+        final int contextBefore = trimmedBefore(all, startLine);
+        final int contextAfter = CONTEXT_AFTER + (CONTEXT_BEFORE - contextBefore);
+
+        int from = Math.max(1, startLine - contextBefore);
+        int to = Math.min(totalLines, endLine + contextAfter);
 
         if (to - from + 1 > MAX_LINES) {
             final int focalSpan = endLine - startLine + 1;
@@ -65,6 +76,40 @@ public final class SnippetReader {
         }
 
         return Optional.of(new Snippet(all.subList(from - 1, to), from, startLine, endLine));
+    }
+
+    /**
+     * Returns how many lines of context-before to actually include — at most
+     * {@link #CONTEXT_BEFORE}, less if any of those candidate lines is
+     * Javadoc, a comment, an annotation, or blank. The first non-noise line
+     * we encounter walking upwards from the focal sets the cap; everything
+     * above it is also kept since it's "real" code, but the moment we see
+     * a comment line we stop adding more before-context.
+     */
+    private static int trimmedBefore(final List<String> all, final int focalLine) {
+        int kept = 0;
+        for (int offset = 1; offset <= CONTEXT_BEFORE; offset++) {
+            final int idx = focalLine - 1 - offset;
+            if (idx < 0) {
+                break;
+            }
+            if (isNoise(all.get(idx))) {
+                break;
+            }
+            kept = offset;
+        }
+        return kept;
+    }
+
+    private static boolean isNoise(final String line) {
+        final String stripped = line.strip();
+        if (stripped.isEmpty()) {
+            return true;
+        }
+        return stripped.startsWith("*")             // Javadoc body or closing */
+                || stripped.startsWith("/*")        // block comment opening
+                || stripped.startsWith("//")        // line comment
+                || stripped.startsWith("@");        // annotation (e.g. @Override)
     }
 
     private static int clamp(final int value, final int min, final int max) {
