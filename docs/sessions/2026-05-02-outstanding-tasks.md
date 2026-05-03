@@ -5,12 +5,18 @@ Context for whoever picks this up next. Self-contained: you should not need to r
 ## State at start of next session
 
 - Branch: `main`, working tree clean.
-- Last commit: `a413a5e` — README + handoff doc updates for `cleanCodeServe`. Plus uncommitted work below.
-- Version `0.1.2` published to **mavenLocal across all modules**; **not yet** tagged in git or published to Maven Central.
-- `./gradlew check` green end-to-end.
-- Self-apply harness lives at `/tmp/cleanclaude-selfanalysis-1777721438/` (per `feedback_publish_all_modules.md` memory). Run `./gradlew publishToMavenLocal` first; harness is excluded from sweeps.
-- Triage UI (`cleanCodeServe`) is functional end-to-end — verified via the harness (build-script edit + suppress-finding edit landed and re-analysis fired).
-- **NEW: P0 #3 (cleanCodeStop + in-page Stop button) is complete and smoke-tested via the harness — see "Done since last handoff" below. Not yet committed.**
+- Version `0.1.3` is staged in `build.gradle.kts`; **not yet** tagged in git or published to Maven Central. The bytecode is now JDK 21 (`options.release.set(21)`), so consumers on JDK 21+ can use the plugin (previously pinned to JDK 25).
+- `./gradlew check` and `./gradlew clean build` are green end-to-end (49 actionable tasks, including `:plugin:integrationTest` running the TestKit self-apply harness against the plugin's own sources).
+- Triage UI Fix / Suppress / Fix-all / Disable / Tune buttons are rendered **disabled** with a tooltip explaining the gate, pending an end-to-end verification of the cleanCodeServe mutation pipeline.
+
+## Done since 2026-05-02 (this session)
+
+- Comment line accuracy: C2 / C3 / C5 findings now anchor at the actual comment line (handles inline `// note` and Javadoc continuations). Verified across every regenerated dogfood module.
+- Method-level findings: `lineOfMethodFromSource` accepts a `paramCount` to disambiguate overloads. Threaded through `FlagArgumentRecipe` so F3 lands on the right overload; foundation in place for the other 10 `findingForMethod` recipes.
+- JDK 21 bytecode: `cleancode.java-conventions` now sets `options.release.set(21)`. Class major dropped from 69 → 65.
+- TestKit self-apply harness (`SelfApplyHarnessTest`) runs in `:plugin:check`; CI's `gradle build` triggers it.
+- SystemOut → Lombok/Slf4j recipe re-enabled at `fifties-recipes 0.8` via `Environment.activateRecipes("io.github.fiftieshousewife.JavaTransformsClasspathGated")`. The classpath gate keeps `@Slf4j` from being inserted into modules without Lombok.
+- Disabled the mutating action buttons in `HtmlReportWriter` while end-to-end verification of the serve pipeline catches up.
 
 ## Done since last handoff
 
