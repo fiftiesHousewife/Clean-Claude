@@ -122,7 +122,7 @@ public final class HarnessRecipePass {
         return new PassSummary(byFile);
     }
 
-    private static List<String> applyToFile(final Path file, final List<Recipe> recipes)
+    public static List<String> applyToFile(final Path file, final List<Recipe> recipes)
             throws IOException {
         String current = Files.readString(file);
         final List<String> fired = new ArrayList<>();
