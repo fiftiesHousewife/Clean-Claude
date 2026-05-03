@@ -122,7 +122,11 @@ gradlePlugin {
 
 mavenPublishing {
     publishToMavenCentral(automaticRelease = true)
-    signAllPublications()
+    // Skip signing on CI runners (no signatory configured); local publish
+    // and the release pipeline still sign.
+    if (System.getenv("CI") == null) {
+        signAllPublications()
+    }
     configure(GradlePlugin(javadocJar = JavadocJar.Empty()))
     coordinates("io.github.fiftieshousewife", "clean-code", project.version.toString())
 

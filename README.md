@@ -276,14 +276,7 @@ plugins {
 ./gradlew publishToMavenLocal   # publish all modules to ~/.m2
 ```
 
-Requires Java 21. Uses Gradle 9.0 with version catalog (`gradle/libs.versions.toml`).
-
-**Important:** The Gradle daemon must run on JDK 21. OpenRewrite 8.x uses internal `com.sun.tools.javac` APIs that were removed in JDK 25, causing `NoClassDefFoundError: com/sun/tools/javac/code/Type$UnknownType` at parse time. PMD, Checkstyle, SpotBugs, and JaCoCo still work on newer JDKs, but OpenRewrite recipe findings will be missing. Set `JAVA_HOME` to JDK 21 before running:
-
-```bash
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
-./gradlew analyseCleanCode
-```
+Consumers need JDK 21+. Plugin classes are emitted with `--release 21` so any Gradle build on JDK 21 or newer can apply the plugin. Building this repo uses the JDK 25 toolchain (auto-provisioned by Gradle). Uses Gradle 9.4 with version catalog (`gradle/libs.versions.toml`).
 
 ## Testing
 
@@ -325,12 +318,15 @@ The `refactoring` module contains OpenRewrite recipes that **transform** code, n
 
 | Library                | Version | Used by                    |
 |------------------------|---------|----------------------------|
-| JUnit Jupiter          | 5.10.0  | All modules (test)         |
-| JavaParser             | 3.26.2  | core (SuppressionIndex)    |
-| Gson                   | 2.11.0  | core, adapters (JSON I/O)  |
-| OpenRewrite            | 8.40.2  | recipes, refactoring, adapters |
-| Anthropic Java SDK     | 2.25.0  | claude-review              |
-| SpotBugs Gradle Plugin | 6.5.0   | plugin                     |
+| JUnit Jupiter          | 5.14.4  | All modules (test)         |
+| JavaParser             | 3.28.0  | core (SuppressionIndex)    |
+| Gson                   | 2.14.0  | core, adapters (JSON I/O)  |
+| OpenRewrite            | 8.81.3  | recipes, refactoring, adapters |
+| Anthropic Java SDK     | 2.27.0  | claude-review              |
+| SpotBugs Gradle Plugin | 6.5.4   | plugin                     |
+| PMD                    | 7.24.0  | plugin (analyzer)          |
+| Checkstyle             | 10.26.1 | plugin (analyzer)          |
+| JaCoCo                 | 0.8.14  | plugin (analyzer)          |
 | Ben-Manes Versions     | 0.53.0  | build-logic                |
 
 ## References
