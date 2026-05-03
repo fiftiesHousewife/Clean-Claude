@@ -141,8 +141,44 @@ public class ObsoleteCommentRecipe extends ScanningRecipe<ObsoleteCommentRecipe.
         final Set<String> ids = new HashSet<>();
         final Matcher matcher = CAMEL_CASE_PATTERN.matcher(text);
         while (matcher.find()) {
-            ids.add(matcher.group());
+            final String token = matcher.group();
+            if (looksLikeAJavaIdentifier(token)) {
+                ids.add(token);
+            }
         }
         return ids;
+    }
+
+    /**
+     * The CAMEL_CASE_PATTERN matches all-caps acronyms (MCP, HTML, URL)
+     * because it only requires one uppercase letter anywhere. Real Java
+     * type / member names always have at least one lowercase letter,
+     * which lets us filter acronyms with a post-check.
+     *
+     * <p>The 3-character minimum keeps class-or-member-shaped tokens
+     * like {@code Map} or {@code id} from getting in (1- and 2-char
+     * tokens are too noisy and rarely meaningful in prose). With the
+     * mixed-case requirement {@code id} is already rejected; the length
+     * floor adds a safety margin against {@code AB}-style two-letter
+     * abbreviations.
+     */
+    private static boolean looksLikeAJavaIdentifier(final String token) {
+        if (token.length() < 3) {
+            return false;
+        }
+        boolean hasUpper = false;
+        boolean hasLower = false;
+        for (int i = 0; i < token.length(); i++) {
+            final char c = token.charAt(i);
+            if (Character.isUpperCase(c)) {
+                hasUpper = true;
+            } else if (Character.isLowerCase(c)) {
+                hasLower = true;
+            }
+            if (hasUpper && hasLower) {
+                return true;
+            }
+        }
+        return false;
     }
 }
