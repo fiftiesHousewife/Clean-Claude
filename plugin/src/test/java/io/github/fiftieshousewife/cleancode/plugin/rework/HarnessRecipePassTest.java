@@ -49,6 +49,37 @@ class HarnessRecipePassTest {
     }
 
     @Test
+    void slf4jTransformsRecipeIsWiredIntoTheSweep() throws IOException {
+        // The classpath-gated Slf4j transform (loaded from
+        // fifties-recipes 0.8 via OpenRewrite Environment) deliberately
+        // skips files whose classpath doesn't carry Lombok, so we can't
+        // assert it actually rewrites a System.out fixture without a
+        // synthetic classpath. What we CAN assert: a System.out file
+        // passes through the harness without an exception, the Lombok-
+        // less fixture remains unchanged (gate fired), and the harness
+        // doesn't blow up loading the YAML composite from the runtime
+        // classpath.
+        final Path file = tempDir.resolve("Logger.java");
+        final String before = """
+                package com.example;
+                public class Logger {
+                    public void shout(final String message) {
+                        System.out.println("hi: " + message);
+                    }
+                }
+                """;
+        Files.writeString(file, before);
+
+        final HarnessRecipePass.PassSummary summary = HarnessRecipePass.apply(List.of(file));
+
+        assertAll(
+                () -> assertEquals(0, summary.filesChanged(),
+                        "without Lombok on the source classpath, the gated transform skips and the file is unchanged: " + summary),
+                () -> assertEquals(before, Files.readString(file),
+                        "file content stays byte-identical when the gate skips"));
+    }
+
+    @Test
     void leavesFileUntouchedWhenNoRecipeFires() throws IOException {
         final Path file = tempDir.resolve("Clean.java");
         final String before = """

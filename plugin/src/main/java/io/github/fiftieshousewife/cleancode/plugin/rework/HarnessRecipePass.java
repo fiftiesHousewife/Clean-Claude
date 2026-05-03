@@ -20,6 +20,7 @@ import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
 import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
+import org.openrewrite.config.Environment;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
 
@@ -44,31 +45,24 @@ import java.util.Set;
  */
 public final class HarnessRecipePass {
 
-    // The published Lombok/Log4j2 recipe is paused as of 2026-04-20.
-    // HarnessRecipePass runs per-file, so the default variant's
-    // Gradle-build-file dep injection silently no-ops while the Java
-    // transform still inserts @Log4j2 + log4j imports. The NoDeps variant
-    // has the same problem (still does the Java transform, still assumes
-    // Lombok on the classpath). Reintroduce once the recipe ships a
-    // variant that either (a) adds Lombok to the calling module's build
-    // out-of-band or (b) only fires when the module already declares it.
-    //
-    // 2026-04-21 check against 0.5: the 0.5 bundle renames the recipe to
-    // `io.github.fiftieshousewife.SystemOutToSlf4jRecipe(NoDeps)` and
-    // introduces `ConvertManualLoggerToSlf4jRecipe` + a standalone
-    // `AddLombokDependency`. The per-module classpath-gating gap is NOT
-    // closed: NoDeps still unconditionally adds `@Slf4j` + imports. Stays
-    // paused until we either add a target-module Lombok sniff here or
-    // upstream grows a classpath gate.
-    //
-    // 2026-05-03: 0.7 expected to land the classpath gate. Hold rewiring
-    // until then. When 0.7 ships, bump fifties-recipes in libs.versions.toml
-    // and either (a) instantiate the four Java transforms directly via a
-    // refactoring/Slf4jTransforms wrapper, or (b) load the YAML composite
-    // through Environment.builder().scanRuntimeClasspath().build()
-    // .activateRecipe("io.github.fiftieshousewife.SystemOutToSlf4jRecipeNoDeps").
-    // private static final String SYSTEM_OUT_TO_SLF4J_RECIPE =
-    //         "io.github.fiftieshousewife.SystemOutToSlf4jRecipeNoDeps";
+    // 2026-05-03: re-enabled at fifties-recipes 0.8. The previous variants
+    // (`SystemOutToSlf4jRecipeNoDeps` etc.) unconditionally added `@Slf4j`
+    // + Lombok imports even on classes whose classpath had no Lombok,
+    // producing files that wouldn't compile. 0.8 ships
+    // `JavaTransformsClasspathGated`, where the @Slf4j / System.out /
+    // PrintStackTrace / JulToSlf4j transforms only fire when
+    // `lombok.extern.slf4j.Slf4j` is resolvable on the source's
+    // classpath. Loaded via OpenRewrite's Environment so we don't have
+    // to instantiate the four Java visitors directly.
+    private static final String SLF4J_TRANSFORMS_RECIPE =
+            "io.github.fiftieshousewife.JavaTransformsClasspathGated";
+
+    private static Recipe loadSlf4jTransformsRecipe() {
+        return Environment.builder()
+                .scanRuntimeClasspath()
+                .build()
+                .activateRecipes(SLF4J_TRANSFORMS_RECIPE);
+    }
 
     /**
      * Builds the recipe pipeline for a given sweep. {@code
@@ -95,7 +89,8 @@ public final class HarnessRecipePass {
                 new UseTryWithResourcesRecipe(),
                 new AddFinalRecipe(),
                 new InvertNegativeConditionalRecipe(),
-                new ShortenFullyQualifiedReferencesRecipe());
+                new ShortenFullyQualifiedReferencesRecipe(),
+                loadSlf4jTransformsRecipe());
     }
 
     private HarnessRecipePass() {}
@@ -136,7 +131,7 @@ public final class HarnessRecipePass {
         for (final Recipe recipe : recipes) {
             final String after = runOne(file, current, recipe);
             if (!after.equals(current)) {
-                fired.add(recipe.getClass().getSimpleName());
+                fired.add(recipeShortName(recipe));
                 current = after;
             }
         }
@@ -144,6 +139,23 @@ public final class HarnessRecipePass {
             Files.writeString(file, current);
         }
         return fired;
+    }
+
+    /**
+     * Friendly name for the summary. For Java recipes the FQN's simple
+     * tail equals the class's simple name. For YAML composites loaded via
+     * {@link Environment} the FQN is the YAML's {@code name:} field, so
+     * this returns the rightmost segment (e.g.
+     * {@code JavaTransformsClasspathGated}) instead of an internal wrapper
+     * class name.
+     */
+    private static String recipeShortName(final Recipe recipe) {
+        final String name = recipe.getName();
+        if (name == null || name.isEmpty()) {
+            return recipe.getClass().getSimpleName();
+        }
+        final int dot = name.lastIndexOf('.');
+        return dot >= 0 ? name.substring(dot + 1) : name;
     }
 
     private static String runOne(final Path file, final String source, final Recipe recipe) {
