@@ -30,7 +30,12 @@ public record RecipeThresholds(
     public static final int DEFAULT_STRING_SWITCH_MIN_CASES = 3;
     public static final int DEFAULT_SHORT_NAME_MIN_LENGTH = 2;
     public static final int DEFAULT_CPD_MINIMUM_TOKENS = 50;
-    public static final int DEFAULT_MAGIC_NUMBER_MIN_VALUE = 1;
+    // Numbers ≤ this are considered trivial (loop indices, small
+    // counts) and not flagged as magic. 4 keeps 0/1/2/3/4 quiet —
+    // these are almost always indices or short-array offsets — while
+    // still catching real magic values like 60 (seconds), 100
+    // (percent), 120 (columns), 1000 (ms→s).
+    public static final int DEFAULT_MAGIC_NUMBER_MIN_VALUE = 4;
     public static final int DEFAULT_SECTION_COMMENT_THRESHOLD = 2;
     public static final int DEFAULT_HARDCODED_LIST_MIN_LITERALS = 5;
     public static final int DEFAULT_TEMPORAL_COUPLING_MIN_CALLS = 3;

@@ -5,6 +5,8 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.NameTree;
+import org.openrewrite.java.tree.TypeTree;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,9 +51,42 @@ public class BadClassNameRecipe extends ScanningRecipe<BadClassNameRecipe.Accumu
                 final String name = c.getSimpleName();
                 BAD_SUFFIXES.stream()
                         .filter(name::endsWith)
+                        .filter(suffix -> !suffixIsContractMandated(c, suffix))
                         .findFirst()
                         .ifPresent(suffix -> acc.rows.add(new Row(name, suffix)));
                 return c;
+            }
+
+            /**
+             * True when the class implements or extends a supertype whose
+             * simple name ends with the same suffix — e.g. a record that
+             * {@code implements HttpHandler} legitimately ends in
+             * "Handler" because the contract dictates it.
+             */
+            private boolean suffixIsContractMandated(final J.ClassDeclaration c, final String suffix) {
+                if (c.getImplements() != null
+                        && c.getImplements().stream().anyMatch(t -> typeNameEndsWith(t, suffix))) {
+                    return true;
+                }
+                return c.getExtends() != null && typeNameEndsWith(c.getExtends(), suffix);
+            }
+
+            private boolean typeNameEndsWith(final TypeTree type, final String suffix) {
+                final String typeName = simpleNameOf(type);
+                return typeName != null && typeName.endsWith(suffix);
+            }
+
+            private String simpleNameOf(final NameTree type) {
+                if (type instanceof J.Identifier id) {
+                    return id.getSimpleName();
+                }
+                if (type instanceof J.FieldAccess fa) {
+                    return fa.getSimpleName();
+                }
+                if (type instanceof J.ParameterizedType pt) {
+                    return simpleNameOf(pt.getClazz());
+                }
+                return null;
             }
         };
     }
