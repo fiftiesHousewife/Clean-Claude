@@ -69,24 +69,66 @@ class LineNumberAccuracyIntegrationTest {
      */
     private static final int TOLERANCE = 1;
 
-    private static final Map<HeuristicCode, Pattern> ANCHOR_PATTERNS = new LinkedHashMap<>(Map.of(
-            HeuristicCode.Ch7_1, Pattern.compile("\\bcatch\\s*\\("),
-            // Ch7_2 covers both "return null" (the book heuristic) and
-            // null-density (a method-level smell). Accept either the
-            // explicit `return null` / `Optional` line or a method
-            // declaration line where the density warning legitimately
-            // anchors.
-            HeuristicCode.Ch7_2, Pattern.compile(
-                    "\\breturn\\s+null\\b|\\bOptional\\b"
-                            + "|^\\s*(public|private|protected|static|final|\\S+\\s+\\w+\\s*\\()"),
-            HeuristicCode.F1, Pattern.compile("\\b(public|private|protected|static)\\b.*\\(.*,"),
-            HeuristicCode.G28, Pattern.compile("\\b(if|while|for)\\s*\\(|&&|\\|\\||\\?\\s*[^.]"),
-            HeuristicCode.G29, Pattern.compile("!=|==|!\\s*\\(|!\\w"),
-            HeuristicCode.G24, Pattern.compile(".{120,}"),
-            HeuristicCode.G25, Pattern.compile("[^a-zA-Z_\"]\\d{2,}|\\b\\d+\\.\\d+\\b"),
-            HeuristicCode.G5, Pattern.compile("\".*\""),
-            HeuristicCode.G18, Pattern.compile("\\b(public|private|protected|static)\\b.*\\(")
-    ));
+    /** Generic "real code, not blank" — fallback for fuzzy heuristics. */
+    private static final Pattern ANY_CODE_LINE = Pattern.compile("\\S");
+
+    private static final Map<HeuristicCode, Pattern> ANCHOR_PATTERNS = buildAnchors();
+
+    private static Map<HeuristicCode, Pattern> buildAnchors() {
+        final Map<HeuristicCode, Pattern> p = new LinkedHashMap<>();
+        p.put(HeuristicCode.Ch7_1, Pattern.compile("\\bcatch\\s*\\("));
+        // Ch7_2 covers "return null" and any null-checking expression
+        // (`== null` / `!= null`). Method-declaration lines are also
+        // acceptable when the density anchor falls back.
+        p.put(HeuristicCode.Ch7_2, Pattern.compile(
+                "\\breturn\\s+null\\b|\\bOptional\\b|==\\s*null\\b|!=\\s*null\\b"
+                        + "|^\\s*(public|private|protected|static|final|\\S+\\s+\\w+\\s*\\()"));
+        p.put(HeuristicCode.F1, Pattern.compile("\\b(public|private|protected|static)\\b.*\\(.*,"));
+        // F2 covers output-arg method signatures AND class-level
+        // InconsistentReturn findings — both anchors are acceptable.
+        p.put(HeuristicCode.F2, Pattern.compile(
+                "\\b(public|private|protected|static)\\b.*\\(|\\b(class|record|interface|enum)\\b"));
+        p.put(HeuristicCode.G28, Pattern.compile("\\b(if|while|for)\\s*\\(|&&|\\|\\||\\?\\s*[^.]"));
+        p.put(HeuristicCode.G29, Pattern.compile("!=|==|!\\s*\\(|!\\w"));
+        p.put(HeuristicCode.G24, Pattern.compile(".{120,}"));
+        p.put(HeuristicCode.G25, Pattern.compile("[^a-zA-Z_\"]\\d{2,}|\\b\\d+\\.\\d+\\b"));
+        p.put(HeuristicCode.G5, Pattern.compile("\".*\""));
+        p.put(HeuristicCode.G18, Pattern.compile("\\b(public|private|protected|static)\\b.*\\("));
+        // Class-level (Ch10_1 file-too-long, EI_EXPOSE on records): the
+        // SnippetReader slides forward to the type declaration, so accept
+        // the declaration keyword OR a body line.
+        p.put(HeuristicCode.Ch10_1, Pattern.compile(
+                "\\b(class|record|interface|enum)\\b|\\S"));
+        // Local-declaration / vertical separation: the offender is a
+        // local variable declaration line.
+        p.put(HeuristicCode.G10, Pattern.compile("\\w+\\s*[=;]"));
+        // G35 covers two shapes:
+        //  - in-method magic numbers (return foo() <= 60, arr[5], if (x==100))
+        //  - field initialisation with a hardcoded list (Map.of(...), List.of(...))
+        // Accept any line that has a digit literal OR looks like a
+        // variable declaration / initialisation.
+        p.put(HeuristicCode.G35, Pattern.compile("\\b\\d+\\b|\\w+\\s*[=;]"));
+        // Comments — C2/C3 redundant-comment, C5 commented-out.
+        p.put(HeuristicCode.C2, Pattern.compile("//|/\\*|^\\s*\\*"));
+        p.put(HeuristicCode.C3, Pattern.compile("//|/\\*|^\\s*\\*"));
+        p.put(HeuristicCode.C5, Pattern.compile("//|/\\*|^\\s*\\*"));
+        // Heuristics where the smell is method-shaped or fuzzy: any
+        // real code line is an acceptable anchor (we just want to keep
+        // findings off comment-only / blank lines).
+        for (final HeuristicCode code : new HeuristicCode[] {
+                HeuristicCode.G1, HeuristicCode.G4, HeuristicCode.G11,
+                HeuristicCode.G12, HeuristicCode.G19, HeuristicCode.G23,
+                HeuristicCode.G26, HeuristicCode.G30, HeuristicCode.G31,
+                HeuristicCode.G33, HeuristicCode.G34, HeuristicCode.G36,
+                HeuristicCode.G15, HeuristicCode.G17, HeuristicCode.G14,
+                HeuristicCode.G16, HeuristicCode.N1, HeuristicCode.N5,
+                HeuristicCode.N6, HeuristicCode.N7, HeuristicCode.J2,
+                HeuristicCode.J3, HeuristicCode.T1
+        }) {
+            p.put(code, ANY_CODE_LINE);
+        }
+        return p;
+    }
 
     @Test
     void serveTaskFindingsAnchorAtTheirActualConstruct(@TempDir Path tempDir) throws Exception {
@@ -133,9 +175,11 @@ class LineNumberAccuracyIntegrationTest {
         final List<String> sourceLines = Files.readAllLines(src);
 
         final List<Drift> drift = new ArrayList<>();
+        final java.util.Set<HeuristicCode> uncoveredCodes = new java.util.LinkedHashSet<>();
         for (final Finding f : findings) {
             final Pattern anchor = ANCHOR_PATTERNS.get(f.code());
             if (anchor == null) {
+                uncoveredCodes.add(f.code());
                 continue;
             }
             if (!matchesAnyLineWithinTolerance(f.startLine(), sourceLines, anchor)) {
@@ -145,7 +189,20 @@ class LineNumberAccuracyIntegrationTest {
                         f.startLine(),
                         lineText(sourceLines, f.startLine()),
                         f.message()));
+                continue;
             }
+            if (isCommentCode(f.code()) && !commentTextMatchesFinding(f, sourceLines)) {
+                drift.add(new Drift(
+                        fixtureName,
+                        f.code(),
+                        f.startLine(),
+                        lineText(sourceLines, f.startLine()),
+                        "comment text mismatch: " + f.message()));
+            }
+        }
+        if (!uncoveredCodes.isEmpty()) {
+            fail("Heuristic code(s) without an anchor pattern in this test: " + uncoveredCodes
+                    + " — add an entry to ANCHOR_PATTERNS so line accuracy is verified for them.");
         }
 
         // The threshold below records the CURRENT drift level for each
@@ -223,6 +280,70 @@ class LineNumberAccuracyIntegrationTest {
             return original;
         }
         return ("package com.example;\n" + text.substring(newline + 1)).getBytes();
+    }
+
+    private static boolean isCommentCode(final HeuristicCode code) {
+        return code == HeuristicCode.C2 || code == HeuristicCode.C3 || code == HeuristicCode.C5;
+    }
+
+    /**
+     * Comment-related findings have to anchor at the line that actually
+     * holds the comment described in the message — not just any comment
+     * marker nearby. We extract the salient token from the message and
+     * confirm the source line (or one of its tolerance neighbours)
+     * contains that token inside a comment.
+     */
+    private static boolean commentTextMatchesFinding(final Finding f, final List<String> sourceLines) {
+        final String needle = extractCommentNeedle(f);
+        if (needle == null || needle.isBlank()) {
+            return true;
+        }
+        for (int offset = -TOLERANCE; offset <= TOLERANCE; offset++) {
+            final int idx = f.startLine() - 1 + offset;
+            if (idx < 0 || idx >= sourceLines.size()) {
+                continue;
+            }
+            final String line = sourceLines.get(idx);
+            final int needleAt = line.indexOf(needle);
+            if (needleAt < 0) {
+                continue;
+            }
+            final int slashSlash = line.indexOf("//");
+            final int slashStar = line.indexOf("/*");
+            final boolean commentMarkerBefore =
+                    (slashSlash >= 0 && slashSlash < needleAt)
+                            || (slashStar >= 0 && slashStar < needleAt)
+                            || line.stripLeading().startsWith("*");
+            if (commentMarkerBefore) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Pulls the salient comment token out of a finding message:
+     *  - C2: identifier in the leading "Comment references 'X'".
+     *  - C3: substring after the colon in "Mumbling comment in 'm': X".
+     *  - C5: substring after "Commented-out code: X".
+     */
+    private static String extractCommentNeedle(final Finding f) {
+        final String msg = f.message();
+        return switch (f.code()) {
+            case C2 -> {
+                final java.util.regex.Matcher m = Pattern.compile("'([^']+)'").matcher(msg);
+                yield m.find() ? m.group(1) : null;
+            }
+            case C3, C5 -> {
+                final int colon = msg.indexOf(": ");
+                if (colon < 0) {
+                    yield null;
+                }
+                final String tail = msg.substring(colon + 2).strip();
+                yield tail.length() > 25 ? tail.substring(0, 25) : tail;
+            }
+            default -> null;
+        };
     }
 
     private static boolean matchesAnyLineWithinTolerance(

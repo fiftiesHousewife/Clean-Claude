@@ -108,6 +108,42 @@ class SnippetReaderTest {
     }
 
     @Test
+    void slidesForwardToClassDeclarationWhenFindingAnchorsAtLine1(@TempDir Path tempDir) throws Exception {
+        // Checkstyle FileLength and some PMD file-level checks emit at
+        // line 1 (the package declaration). The default symmetric window
+        // would show package + import + Javadoc — never the class. Slide
+        // forward to the first class declaration so the snippet shows
+        // the type the user is being warned about.
+        final Path file = tempDir.resolve("src/main/java/Foo.java");
+        Files.createDirectories(file.getParent());
+        Files.write(file, List.of(
+                "package com.example;",                       // 1 — focal
+                "",                                            // 2
+                "import java.util.List;",                      // 3
+                "",                                            // 4
+                "/**",                                         // 5
+                " * Class doc.",                               // 6
+                " */",                                         // 7
+                "public class Foo {",                          // 8
+                "    int a, b, c;",                            // 9
+                "    public void bar() {}",                    // 10
+                "}"));                                         // 11
+
+        final Finding finding = new Finding(HeuristicCode.Ch10_1, "src/main/java/Foo.java",
+                1, 1, "[FileLength] File length too long", Severity.WARNING, Confidence.MEDIUM,
+                "checkstyle", "FileLength", java.util.Map.of());
+
+        final SnippetReader.Snippet snippet = SnippetReader.read(finding, tempDir).orElseThrow();
+        assertAll(
+                () -> assertEquals(8, snippet.focalStartLine(),
+                        "focal slid forward from line 1 to the class declaration line"),
+                () -> assertTrue(snippet.lines().stream().anyMatch(s -> s.contains("public class Foo")),
+                        "the class declaration must appear in the snippet"),
+                () -> assertFalse(snippet.lines().stream().anyMatch(s -> s.contains("package com")),
+                        "package line should not be in the snippet"));
+    }
+
+    @Test
     void slidesWindowDownWhenFocalLineDeclaresAClassPrecededByJavadoc(@TempDir Path tempDir) throws Exception {
         // SpotBugs/PMD class-level findings (Ch10_1, EI_EXPOSE on records,
         // file-length warnings) anchor at the class declaration line. With

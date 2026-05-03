@@ -251,10 +251,10 @@ public class OpenRewriteFindingSource implements FindingSource {
     private List<Finding> mapStringBuilderThreading(List<StringBuilderThreadingRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> switch (r.kind()) {
-                    case NAMING -> finding(HeuristicCode.G24, r.className(),
+                    case NAMING -> findingForMethod(HeuristicCode.G24, r.className(), r.methodName(),
                             "Local StringBuilder named '%s' in '%s' — name it after what it builds (html, markdown, buffer)"
                                     .formatted(r.variableName(), r.methodName()));
-                    case THREADING -> finding(HeuristicCode.F2, r.className(),
+                    case THREADING -> findingForMethod(HeuristicCode.F2, r.className(), r.methodName(),
                             "Method '%s' mutates StringBuilder parameter '%s' via .append() — return the string instead"
                                     .formatted(r.methodName(), r.variableName()));
                 })
@@ -366,10 +366,59 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapNullDensity(List<NullDensityRecipe.Row> rows) {
+        // Per-method null-density: anchor at the first `return null` or
+        // `== null` line inside the method so the snippet shows the
+        // specific null-handling, not just the method header.
         return rows.stream()
-                .map(r -> findingForMethod(HeuristicCode.Ch7_2, r.className(), r.methodName(),
-                        "Method '%s' has %d null checks".formatted(r.methodName(), r.nullCheckCount())))
+                .map(r -> {
+                    final String sourcePath = resolveSourcePath(r.className());
+                    final int line = lineOfFirstNullCheckInMethod(r.className(), r.methodName());
+                    final String message = "Method '%s' has %d null checks"
+                            .formatted(r.methodName(), r.nullCheckCount());
+                    return Finding.at(HeuristicCode.Ch7_2, sourcePath, line, line,
+                            message, severityFor(HeuristicCode.Ch7_2), Confidence.HIGH, TOOL,
+                            HeuristicCode.Ch7_2.name());
+                })
                 .toList();
+    }
+
+    /**
+     * First {@code return null} or {@code == null} / {@code != null}
+     * appearance inside the named method's body. Falls back to the
+     * method declaration line when no match is found.
+     */
+    private int lineOfFirstNullCheckInMethod(final String className, final String methodName) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return lineOfMethod(className, methodName);
+        }
+        final int methodLine = lineOfMethodFromSource(className, methodName);
+        if (methodLine <= 0) {
+            return lineOfMethod(className, methodName);
+        }
+        final java.util.regex.Pattern nullCheck = java.util.regex.Pattern.compile(
+                "\\breturn\\s+null\\b|==\\s*null\\b|!=\\s*null\\b|\\bnull\\s*==|\\bnull\\s*!=");
+        int depth = 0;
+        boolean enteredMethodBody = false;
+        for (int i = methodLine - 1; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            if (enteredMethodBody && depth >= 1 && nullCheck.matcher(line).find()) {
+                return i + 1;
+            }
+            for (int j = 0; j < line.length(); j++) {
+                final char c = line.charAt(j);
+                if (c == '{') {
+                    depth++;
+                    enteredMethodBody = true;
+                } else if (c == '}') {
+                    depth--;
+                    if (enteredMethodBody && depth == 0) {
+                        return methodLine;
+                    }
+                }
+            }
+        }
+        return methodLine;
     }
 
     private List<Finding> mapClassLength(List<ClassLineLengthRecipe.Row> rows) {
@@ -411,10 +460,89 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapMumblingComment(List<MumblingCommentRecipe.Row> rows) {
+        // Recipe records lineNumber=-1; resolve via source-text by
+        // matching the comment preview inside the method's body.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.C3, r.className(), r.lineNumber(),
-                        "Mumbling comment in '%s': %s".formatted(r.methodName(), r.commentPreview())))
+                .map(r -> {
+                    final int line = lineOfCommentInMethod(r.className(), r.methodName(), r.commentPreview());
+                    return finding(HeuristicCode.C3, r.className(), line,
+                            "Mumbling comment in '%s': %s".formatted(r.methodName(), r.commentPreview()));
+                })
                 .toList();
+    }
+
+    /**
+     * Finds the first comment inside the named method that contains the
+     * given preview. Handles both standalone comment lines ({@code // foo})
+     * and inline trailing comments ({@code code(); // foo}) — the
+     * needle just needs to appear somewhere after a comment marker on
+     * the line. Returns the method line if no match.
+     */
+    private int lineOfCommentInMethod(final String className, final String methodName,
+                                       final String commentPreview) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return -1;
+        }
+        final int methodLine = lineOfMethodFromSource(className, methodName);
+        if (methodLine <= 0) {
+            return -1;
+        }
+        final String needle = commentPreview.substring(0, Math.min(30, commentPreview.length())).strip();
+        int depth = 0;
+        boolean enteredMethodBody = false;
+        for (int i = methodLine - 1; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            if (enteredMethodBody && depth >= 1 && lineHasCommentContaining(line, needle)) {
+                return i + 1;
+            }
+            for (int j = 0; j < line.length(); j++) {
+                final char c = line.charAt(j);
+                if (c == '{') {
+                    depth++;
+                    enteredMethodBody = true;
+                } else if (c == '}') {
+                    depth--;
+                    if (enteredMethodBody && depth == 0) {
+                        return methodLine;
+                    }
+                }
+            }
+        }
+        return methodLine;
+    }
+
+    /**
+     * Returns true when the line contains a comment ({@code //},
+     * {@code /*}, or a continuation {@code *} after leading whitespace)
+     * whose body includes {@code needle}. This accepts inline trailing
+     * comments — {@code stmt(); // note} — which standalone-only checks
+     * would reject.
+     */
+    private static boolean lineHasCommentContaining(final String line, final String needle) {
+        if (needle.isEmpty()) {
+            return false;
+        }
+        final int needleAt = line.indexOf(needle);
+        if (needleAt < 0) {
+            return false;
+        }
+        final int slashSlash = line.indexOf("//");
+        if (slashSlash >= 0 && slashSlash < needleAt) {
+            return true;
+        }
+        final int slashStar = line.indexOf("/*");
+        if (slashStar >= 0 && slashStar < needleAt) {
+            return true;
+        }
+        // Javadoc continuation: a line whose first non-space char is `*`
+        // is part of a block comment. Anything to the right of that `*`
+        // counts as comment body.
+        final String stripped = line.stripLeading();
+        if (stripped.startsWith("*")) {
+            return true;
+        }
+        return false;
     }
 
     private List<Finding> mapSectionComment(List<SectionCommentRecipe.Row> rows) {
@@ -432,11 +560,64 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapVerticalSeparation(List<VerticalSeparationRecipe.Row> rows) {
+        // Row.declarationLine is the variable's offset within the method
+        // body, NOT a file line. Resolve to the actual file line by
+        // walking the method body for the first declaration of varName.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G10, r.className(), r.declarationLine(),
-                        "'%s' is declared in %s() but not used until %d lines later — move the declaration closer to line %d".formatted(
-                                r.variableName(), r.methodName(), r.distance(), r.firstUseLine())))
+                .map(r -> {
+                    final int line = lineOfLocalDeclaration(r.className(), r.methodName(), r.variableName());
+                    return finding(HeuristicCode.G10, r.className(), line,
+                            "'%s' is declared in %s() but not used until %d lines later — move the declaration closer to line %d"
+                                    .formatted(r.variableName(), r.methodName(), r.distance(), r.firstUseLine()));
+                })
                 .toList();
+    }
+
+    /**
+     * Source-text scan: returns the line number of the first local
+     * variable declaration of {@code variableName} inside the named
+     * method. Falls back to the method declaration line if no match.
+     */
+    private int lineOfLocalDeclaration(final String className, final String methodName,
+                                       final String variableName) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return -1;
+        }
+        final int methodLine = lineOfMethodFromSource(className, methodName);
+        if (methodLine <= 0) {
+            return -1;
+        }
+        // Heuristic for "this line declares a local named varName": some
+        // word boundary, then varName, then = or ;. Skip lines that
+        // begin with `*`, `//`, or `@` (Javadoc / annotations).
+        final java.util.regex.Pattern decl = java.util.regex.Pattern.compile(
+                "\\b" + java.util.regex.Pattern.quote(variableName) + "\\s*[=;]");
+        int depth = 0;
+        boolean enteredMethodBody = false;
+        for (int i = methodLine - 1; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            final String stripped = line.strip();
+            if (enteredMethodBody && depth >= 1
+                    && !stripped.startsWith("*") && !stripped.startsWith("//")
+                    && !stripped.startsWith("@")
+                    && decl.matcher(line).find()) {
+                return i + 1;
+            }
+            for (int j = 0; j < line.length(); j++) {
+                final char c = line.charAt(j);
+                if (c == '{') {
+                    depth++;
+                    enteredMethodBody = true;
+                } else if (c == '}') {
+                    depth--;
+                    if (enteredMethodBody && depth == 0) {
+                        return methodLine;
+                    }
+                }
+            }
+        }
+        return methodLine;
     }
 
     private List<Finding> mapInheritConstants(List<InheritConstantsRecipe.Row> rows) {
@@ -707,10 +888,51 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapConfigurableData(List<ConfigurableDataRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> findingForMethod(HeuristicCode.G35, r.className(), r.methodName(),
-                        "Magic number %s in private method '%s' — extract to a named constant".formatted(
-                                r.literalValue(), r.methodName())))
+                .map(r -> {
+                    final int line = lineOfLiteralInMethod(r.className(), r.methodName(), r.literalValue());
+                    return finding(HeuristicCode.G35, r.className(), line,
+                            "Magic number %s in private method '%s' — extract to a named constant"
+                                    .formatted(r.literalValue(), r.methodName()));
+                })
                 .toList();
+    }
+
+    /**
+     * Finds the first line inside the named method's body that contains
+     * the literal token. Used by G35 to anchor at the magic number's
+     * actual line rather than the method declaration.
+     */
+    private int lineOfLiteralInMethod(final String className, final String methodName,
+                                      final String literal) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return -1;
+        }
+        final int methodLine = lineOfMethodFromSource(className, methodName);
+        if (methodLine <= 0) {
+            return -1;
+        }
+        int depth = 0;
+        boolean enteredMethodBody = false;
+        for (int i = methodLine - 1; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            if (enteredMethodBody && depth >= 1 && line.contains(literal)) {
+                return i + 1;
+            }
+            for (int j = 0; j < line.length(); j++) {
+                final char c = line.charAt(j);
+                if (c == '{') {
+                    depth++;
+                    enteredMethodBody = true;
+                } else if (c == '}') {
+                    depth--;
+                    if (enteredMethodBody && depth == 0) {
+                        return methodLine;
+                    }
+                }
+            }
+        }
+        return methodLine;
     }
 
     private List<Finding> mapEmbeddedLanguage(List<EmbeddedLanguageRecipe.Row> rows) {
@@ -746,11 +968,44 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapHardcodedList(List<HardcodedListRecipe.Row> rows) {
+        // The recipe doesn't record a line; locate the actual field
+        // declaration ("<type> fieldName = " or "<type> fieldName;")
+        // so the snippet shows the offending hardcoded list rather
+        // than the class header.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G35, r.className(),
-                        "'%s' is initialised with %d literal values outside a static-final field — extract to a constant table or enum".formatted(
-                                r.fieldName(), r.literalCount())))
+                .map(r -> {
+                    final int line = lineOfFieldDeclaration(r.className(), r.fieldName());
+                    return finding(HeuristicCode.G35, r.className(), line,
+                            "'%s' is initialised with %d literal values outside a static-final field — extract to a constant table or enum".formatted(
+                                    r.fieldName(), r.literalCount()));
+                })
                 .toList();
+    }
+
+    /**
+     * First non-comment line in the file containing what looks like a
+     * declaration of {@code fieldName} — i.e. the name followed by
+     * {@code =} or {@code ;}. Returns -1 if not found, which lets
+     * {@link #finding(HeuristicCode, String, int, String)} fall back
+     * to the class line.
+     */
+    private int lineOfFieldDeclaration(final String className, final String fieldName) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty() || fieldName == null || fieldName.isEmpty()) {
+            return -1;
+        }
+        final java.util.regex.Pattern decl = java.util.regex.Pattern.compile(
+                "\\b" + java.util.regex.Pattern.quote(fieldName) + "\\s*[=;]");
+        for (int i = 0; i < lines.size(); i++) {
+            final String stripped = lines.get(i).strip();
+            if (stripped.startsWith("*") || stripped.startsWith("/*") || stripped.startsWith("//")) {
+                continue;
+            }
+            if (decl.matcher(lines.get(i)).find()) {
+                return i + 1;
+            }
+        }
+        return -1;
     }
 
     private List<Finding> mapSelectorArgument(List<SelectorArgumentRecipe.Row> rows) {
@@ -762,11 +1017,40 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapObsoleteComment(List<ObsoleteCommentRecipe.Row> rows) {
+        // Recipe doesn't record a line number — anchor at the first
+        // comment line in the file that mentions the missing identifier.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.C2, r.className(),
-                        "Comment references '%s' which is not in scope — update or remove".formatted(
-                                r.missingIdentifier())))
+                .map(r -> {
+                    final int line = lineOfCommentMentioning(r.className(), r.missingIdentifier());
+                    return finding(HeuristicCode.C2, r.className(), line,
+                            "Comment references '%s' which is not in scope — update or remove".formatted(
+                                    r.missingIdentifier()));
+                })
                 .toList();
+    }
+
+    /**
+     * First line in the file containing a comment whose body includes
+     * {@code identifier} as a whole word. Accepts inline trailing
+     * comments and Javadoc continuation lines. Returns -1 if no match.
+     */
+    private int lineOfCommentMentioning(final String className, final String identifier) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty() || identifier == null || identifier.isEmpty()) {
+            return -1;
+        }
+        final java.util.regex.Pattern wholeWord = java.util.regex.Pattern.compile(
+                "\\b" + java.util.regex.Pattern.quote(identifier) + "\\b");
+        for (int i = 0; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            if (!wholeWord.matcher(line).find()) {
+                continue;
+            }
+            if (lineHasCommentContaining(line, identifier)) {
+                return i + 1;
+            }
+        }
+        return -1;
     }
 
     private List<Finding> mapTemporalCoupling(List<TemporalCouplingRecipe.Row> rows) {
@@ -881,6 +1165,27 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private int lineOfClass(final String className) {
+        // Source-text scan first: AST line index lands on the closing
+        // `*/` of the Javadoc above the class, not on the class line
+        // itself. Walk source for the actual `class|record|interface|
+        // enum <name>` token so the snippet anchors where the user
+        // expects.
+        final List<String> lines = readSourceLines(className);
+        if (lines != null && !lines.isEmpty()) {
+            final java.util.regex.Pattern decl = java.util.regex.Pattern.compile(
+                    "\\b(class|record|interface|enum)\\s+"
+                            + java.util.regex.Pattern.quote(className)
+                            + "\\b");
+            for (int i = 0; i < lines.size(); i++) {
+                final String stripped = lines.get(i).strip();
+                if (stripped.startsWith("*") || stripped.startsWith("/*") || stripped.startsWith("//")) {
+                    continue;
+                }
+                if (decl.matcher(lines.get(i)).find()) {
+                    return i + 1;
+                }
+            }
+        }
         final J.CompilationUnit cu = classNameToCompilationUnit.get(className);
         if (cu == null) {
             return -1;
@@ -1034,13 +1339,16 @@ public class OpenRewriteFindingSource implements FindingSource {
         if (lines == null || lines.isEmpty()) {
             return -1;
         }
-        // Match `<word>+ methodName(` so we only catch declarations.
-        // Lambdas (`entry -> appendCodeGroup(html, ...)`) are excluded
-        // by skipping any line that contains `->`. Lines containing `=`
-        // before `methodName(` are call sites (assignments / returns
-        // capturing a result), not declarations — also skip.
+        // Match `<token> methodName(` where <token> is the previous
+        // chunk of the declaration (return type or modifier). Allow
+        // `>` / `]` immediately before whitespace so generic return
+        // types (`Map<String, String> name(`) and array returns
+        // (`String[] name(`) match too. Lambdas (`x -> name(...)`) are
+        // excluded by skipping any line that contains `->`. Lines
+        // containing ` = ` before `methodName(` are assignments / call
+        // sites — also skip.
         final java.util.regex.Pattern decl = java.util.regex.Pattern.compile(
-                "\\w\\s+" + java.util.regex.Pattern.quote(methodName) + "\\s*\\(");
+                "[\\w>\\]]\\s+" + java.util.regex.Pattern.quote(methodName) + "\\s*\\(");
         for (int i = 0; i < lines.size(); i++) {
             final String line = lines.get(i);
             final String stripped = line.strip();

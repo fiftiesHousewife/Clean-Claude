@@ -50,8 +50,23 @@ public final class SnippetReader {
         }
 
         final int totalLines = all.size();
-        final int startLine = clamp(finding.startLine(), 1, totalLines);
-        final int endLine = clamp(Math.max(finding.endLine(), finding.startLine()), startLine, totalLines);
+        int startLine = clamp(finding.startLine(), 1, totalLines);
+        // Tools that anchor at line 1 (Checkstyle FileLength, some PMD
+        // file-level checks) leave the snippet pointing at the package
+        // declaration — three lines of header context, no glimpse of the
+        // class. Slide forward to the first class/record/interface/enum
+        // declaration so the user sees the type they're being warned
+        // about. Only slide when the focal line itself is file-header
+        // content (package/import/blank/comment); a finding that
+        // legitimately lands on a meaningful line near the top of a file
+        // stays where it is.
+        if (isFileHeaderLine(all.get(startLine - 1))) {
+            final int classDeclLine = findFirstTypeDeclaration(all);
+            if (classDeclLine > 0) {
+                startLine = classDeclLine;
+            }
+        }
+        final int endLine = clamp(Math.max(finding.endLine(), startLine), startLine, totalLines);
 
         // The default symmetric window pulls Javadoc / annotations from above
         // the focal line into the snippet. For class- and method-level
@@ -110,6 +125,47 @@ public final class SnippetReader {
                 || stripped.startsWith("/*")        // block comment opening
                 || stripped.startsWith("//")        // line comment
                 || stripped.startsWith("@");        // annotation (e.g. @Override)
+    }
+
+    private static boolean isFileHeaderLine(final String line) {
+        final String stripped = line.strip();
+        return stripped.isEmpty()
+                || stripped.startsWith("package ")
+                || stripped.startsWith("import ")
+                || stripped.startsWith("*")
+                || stripped.startsWith("/*")
+                || stripped.startsWith("//");
+    }
+
+    /**
+     * Returns the 1-indexed line number of the first top-level type
+     * declaration in the file (class / record / interface / enum), or
+     * -1 if none is found. Skips comment, package, import, and
+     * annotation lines.
+     */
+    private static int findFirstTypeDeclaration(final List<String> all) {
+        for (int i = 0; i < all.size(); i++) {
+            final String stripped = all.get(i).strip();
+            if (stripped.isEmpty()
+                    || stripped.startsWith("*")
+                    || stripped.startsWith("/*")
+                    || stripped.startsWith("//")
+                    || stripped.startsWith("@")
+                    || stripped.startsWith("package ")
+                    || stripped.startsWith("import ")) {
+                continue;
+            }
+            // Look for `class`, `record`, `interface`, `enum` as standalone
+            // tokens. They might be preceded by modifiers (public, abstract,
+            // sealed, etc.) which all match "[\\w\\s-]*".
+            if (stripped.matches(".*\\b(class|record|interface|enum)\\b.*")) {
+                return i + 1;
+            }
+            // First non-comment, non-import line that isn't a type
+            // declaration — bail to avoid misclassifying.
+            return -1;
+        }
+        return -1;
     }
 
     private static int clamp(final int value, final int min, final int max) {
