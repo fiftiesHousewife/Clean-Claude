@@ -61,6 +61,13 @@ public final class HarnessRecipePass {
     // closed: NoDeps still unconditionally adds `@Slf4j` + imports. Stays
     // paused until we either add a target-module Lombok sniff here or
     // upstream grows a classpath gate.
+    //
+    // 2026-05-03: 0.7 expected to land the classpath gate. Hold rewiring
+    // until then. When 0.7 ships, bump fifties-recipes in libs.versions.toml
+    // and either (a) instantiate the four Java transforms directly via a
+    // refactoring/Slf4jTransforms wrapper, or (b) load the YAML composite
+    // through Environment.builder().scanRuntimeClasspath().build()
+    // .activateRecipe("io.github.fiftieshousewife.SystemOutToSlf4jRecipeNoDeps").
     // private static final String SYSTEM_OUT_TO_SLF4J_RECIPE =
     //         "io.github.fiftieshousewife.SystemOutToSlf4jRecipeNoDeps";
 
