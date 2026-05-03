@@ -370,8 +370,8 @@ class HtmlReportWriterTest {
                         "JS handler hooks via data-action"),
                 () -> assertTrue(html.contains("System.out.println"),
                         "the focal line itself is included in the snippet"),
-                () -> assertTrue(html.contains("class=\"focal\""),
-                        "focal line gets highlighted styling"));
+                () -> assertTrue(html.contains("ln-row focal"),
+                        "focal line gets the focal highlight class"));
     }
 
     @Test

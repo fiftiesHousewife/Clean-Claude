@@ -109,11 +109,13 @@ public final class HtmlReportWriter {
         html.append("font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; ");
         html.append("line-height: 1.45; overflow-x: auto; color: #333; ");
         html.append("background: transparent; }\n");
+        html.append("    tr.snippet-row .ln-row { display: block; ");
+        html.append("white-space: pre; }\n");
         html.append("    tr.snippet-row .ln { display: inline-block; width: 2.5rem; ");
         html.append("text-align: right; padding-right: 0.7rem; color: #bbb; user-select: none; }\n");
-        html.append("    tr.snippet-row .focal { background: #fff8dc; display: block; ");
+        html.append("    tr.snippet-row .ln-row.focal { background: #fff8dc; ");
         html.append("margin: 0 -0.9rem; padding: 0 0.9rem; }\n");
-        html.append("    tr.snippet-row .focal .ln { color: #888; font-weight: 600; }\n");
+        html.append("    tr.snippet-row .ln-row.focal .ln { color: #888; font-weight: 600; }\n");
         html.append("    .snippet-toggle { display: inline-block; margin-left: 0.4rem; ");
         html.append("font-size: 0.75rem; color: #2980b9; cursor: pointer; user-select: none; }\n");
         html.append("    .snippet-toggle:hover { text-decoration: underline; }\n");
@@ -860,20 +862,14 @@ public final class HtmlReportWriter {
         for (int i = 0; i < snippet.lines().size(); i++) {
             final int lineNumber = snippet.firstLineNumber() + i;
             final boolean focal = lineNumber >= snippet.focalStartLine() && lineNumber <= snippet.focalEndLine();
-            // The focal span deliberately excludes the trailing newline:
-            // with display:block the highlight would otherwise extend into
-            // the row that follows.
-            if (focal) {
-                html.append("<span class=\"focal\">");
-            }
+            // Every snippet line is its own CSS block; we never emit
+            // literal newlines between rows because <pre> would render
+            // them as extra blank lines on top of the block layout.
+            html.append("<span class=\"ln-row").append(focal ? " focal" : "").append("\">");
             html.append("<span class=\"ln\">").append(lineNumber).append("</span>");
-            html.append(escape(snippet.lines().get(i)));
-            if (focal) {
-                html.append("</span>");
-            }
-            if (i < snippet.lines().size() - 1) {
-                html.append('\n');
-            }
+            final String content = snippet.lines().get(i);
+            html.append(content.isEmpty() ? "&#8203;" : escape(content));
+            html.append("</span>");
         }
         html.append("</pre></td></tr>\n");
     }
