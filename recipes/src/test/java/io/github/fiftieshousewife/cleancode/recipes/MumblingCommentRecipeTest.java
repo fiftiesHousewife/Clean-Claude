@@ -128,4 +128,28 @@ class MumblingCommentRecipeTest {
 
         assertEquals(1, recipe.collectedRows().size());
     }
+
+    @Test
+    void doesNotFireOnSingleParamWhenParamNameIsACommonEnglishWord() {
+        // Real false-positive shape: SnippetReader.isNoise(line) had
+        // `// line comment` describing the SHAPE OF "//" — the comment
+        // happened to share the param name `line` and triggered the
+        // param-overlap path because matchCount(1) >= paramNames.size(1).
+        // Param-name overlap as the only signal needs at least 2 params
+        // matched, otherwise any comment containing a common word fires.
+        final var recipe = new MumblingCommentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    boolean isNoise(String line) {
+                        // line comment
+                        return line.startsWith("//");
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "single-param method whose param name is a common word "
+                        + "should not fire on every comment that mentions it");
+    }
 }

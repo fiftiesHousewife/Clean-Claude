@@ -114,7 +114,13 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
                     return true;
                 }
 
-                if (!paramNames.isEmpty()) {
+                // Single-param methods generate false positives when the
+                // param name is a common English word (`line`, `all`,
+                // `value`): any comment that uses the word — even one
+                // describing something unrelated — fires. Require at
+                // least two params with a full match before treating
+                // param-name overlap as mumbling.
+                if (paramNames.size() >= 2) {
                     final long matchCount = paramNames.stream()
                             .filter(p -> normalisedComment.contains(normalise(p)))
                             .count();

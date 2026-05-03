@@ -694,8 +694,10 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapSectionComment(List<SectionCommentRecipe.Row> rows) {
+        // Recipe lineNumber=-1; anchor at the method holding the section
+        // comments instead of letting all G34 collapse onto the class.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G34, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.G34, r.className(), r.methodName(),
                         "Method '%s' has %d section comments".formatted(r.methodName(), r.sectionCount())))
                 .toList();
     }
@@ -904,8 +906,9 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapWhitespaceSplit(List<WhitespaceSplitMethodRecipe.Row> rows) {
+        // Recipe lineNumber=-1; anchor at the method itself.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G30, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.G30, r.className(), r.methodName(),
                         "Method '%s' has %d blank-line sections across %d lines — each section should be its own method".formatted(
                                 r.methodName(), r.blankLineCount(), r.totalLines())))
                 .toList();
@@ -1015,8 +1018,9 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapFeatureEnvy(List<FeatureEnvyRecipe.Row> rows) {
+        // Recipe lineNumber=-1; anchor at the envying method.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G14, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.G14, r.className(), r.methodName(),
                         "Method '%s' calls %d methods on '%s' but only %d on its own class — it wants to live elsewhere".formatted(
                                 r.methodName(), r.externalCallCount(), r.enviedClass(), r.selfCallCount())))
                 .toList();
@@ -1035,24 +1039,29 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapMissingExplanatory(List<MissingExplanatoryVariableRecipe.Row> rows) {
+        // Recipe lineNumber=-1; without resolution every G19 collapses
+        // onto the class declaration. Anchor at the enclosing method.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G19, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.G19, r.className(), r.methodName(),
                         "Complex expression in '%s' should be extracted to a named variable: %s".formatted(
                                 r.methodName(), r.expressionPreview())))
                 .toList();
     }
 
     private List<Finding> mapBoundaryCondition(List<BoundaryConditionRecipe.Row> rows) {
+        // Recipe lineNumber=-1; anchor at the method holding the boundary
+        // expression.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G33, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.G33, r.className(), r.methodName(),
                         "Boundary adjustment '%s' in '%s' — extract to a named variable".formatted(
                                 r.expression(), r.methodName())))
                 .toList();
     }
 
     private List<Finding> mapSideEffectNaming(List<SideEffectNamingRecipe.Row> rows) {
+        // Recipe lineNumber=-1; anchor at the misnamed method.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.N7, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.N7, r.className(), r.methodName(),
                         "Method '%s' is named like a query but %s — rename to reveal the side effect".formatted(
                                 r.methodName(), r.sideEffect())))
                 .toList();
