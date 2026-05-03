@@ -53,6 +53,16 @@ public class OutputArgumentRecipe extends ScanningRecipe<OutputArgumentRecipe.Ac
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
                     return m;
                 }
+                // The fix for F2 is "return the result instead of mutating
+                // the argument" — but you can't change the signature of
+                // an @Override method without breaking the supertype
+                // contract. Skip overrides regardless of who the
+                // supertype is (visitor, Consumer, custom interface):
+                // the rule generalises to any contract-mandated
+                // signature.
+                if (BoilerplateMethodSkip.isOverride(m)) {
+                    return m;
+                }
                 if (isPrivateOrStatic(m)) {
                     return m;
                 }

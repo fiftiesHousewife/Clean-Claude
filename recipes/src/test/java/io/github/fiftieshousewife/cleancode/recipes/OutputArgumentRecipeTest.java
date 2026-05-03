@@ -91,4 +91,49 @@ class OutputArgumentRecipeTest {
         assertEquals(1, recipe.collectedRows().size(),
                 "Public methods that mutate args are genuine API smells — F2 must still fire");
     }
+
+    @Test
+    void ignoresOverrideMethodsBecauseTheirSignatureIsContractDefined() {
+        // Generalises the OpenRewrite visitor case: any @Override method
+        // has a signature dictated by its supertype. The F2 fix is
+        // "return the result instead of mutating the argument" — but
+        // you can't change the signature of an override without
+        // breaking the contract. Same applies to Consumer.accept(T),
+        // BiConsumer.accept(T,U), custom Visitor.visitX(...), etc.
+        final var recipe = new OutputArgumentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.List;
+                import java.util.function.Consumer;
+                public class Foo implements Consumer<List<String>> {
+                    @Override
+                    public void accept(List<String> out) {
+                        out.add("item");
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "@Override methods are signature-frozen — F2's fix doesn't apply");
+    }
+
+    @Test
+    void stillDetectsNonOverrideMethodsWithIdenticalShape() {
+        // Sanity check: it's the @Override that matters, not the
+        // method's name or shape. A non-override `accept(List<...>)` is
+        // still a real F2 candidate — the user CAN return the result.
+        final var recipe = new OutputArgumentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.List;
+                public class Foo {
+                    public void accept(List<String> out) {
+                        out.add("item");
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "non-override methods are not signature-frozen — F2 still applies");
+    }
 }

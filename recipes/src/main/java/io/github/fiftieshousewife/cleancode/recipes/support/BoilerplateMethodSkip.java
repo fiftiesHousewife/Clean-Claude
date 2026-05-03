@@ -76,6 +76,25 @@ public final class BoilerplateMethodSkip {
         return false;
     }
 
+    /**
+     * True when the method carries {@code @Override}, i.e. its signature
+     * is dictated by a supertype contract. Use this to skip findings
+     * whose remediation would require changing the signature: the
+     * caller can't do that without breaking the override.
+     */
+    public static boolean isOverride(final J.MethodDeclaration method) {
+        final List<J.Annotation> annotations = method.getLeadingAnnotations();
+        if (annotations == null || annotations.isEmpty()) {
+            return false;
+        }
+        for (final J.Annotation a : annotations) {
+            if ("Override".equals(simpleNameOf(a))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean matchesEqualsOrHashCodeShape(final J.MethodDeclaration method) {
         final String name = method.getSimpleName();
         if ("hashCode".equals(name)) {
