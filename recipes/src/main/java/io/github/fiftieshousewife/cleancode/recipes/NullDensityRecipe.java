@@ -105,7 +105,12 @@ public class NullDensityRecipe extends ScanningRecipe<NullDensityRecipe.Accumula
 
             private boolean isObjectsNullCheck(J.MethodInvocation invocation) {
                 final String name = invocation.getSimpleName();
-                return "isNull".equals(name) || "nonNull".equals(name) || "requireNonNull".equals(name);
+                // requireNonNull is fail-fast boundary validation —
+                // exactly the pattern Clean Code recommends. Counting
+                // it as a null-density smell discourages the right
+                // habit. isNull / nonNull are control-flow checks, so
+                // those still count.
+                return "isNull".equals(name) || "nonNull".equals(name);
             }
 
             private String findEnclosingClassName() {

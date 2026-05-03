@@ -41,7 +41,12 @@ class NullDensityRecipeTest {
     }
 
     @Test
-    void countsObjectsIsNullCalls() {
+    void countsObjectsIsNullAndNonNullButNotRequireNonNull() {
+        // Objects.requireNonNull is fail-fast boundary validation —
+        // exactly the pattern Clean Code recommends — so counting it
+        // as a null-density smell discourages the right habit.
+        // Objects.isNull / nonNull are control-flow checks and still
+        // count.
         final var recipe = new NullDensityRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
@@ -50,11 +55,34 @@ class NullDensityRecipeTest {
                     void dense(Object a, Object b, Object c) {
                         Objects.isNull(a);
                         Objects.nonNull(b);
+                        Objects.isNull(c);
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "isNull + nonNull + isNull = 3 control-flow null checks");
+    }
+
+    @Test
+    void doesNotCountRequireNonNullBoundaryValidation() {
+        // A method that fails fast on three null arguments via
+        // requireNonNull is doing boundary validation right; it should
+        // not be flagged as null-dense.
+        final var recipe = new NullDensityRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.Objects;
+                public class Foo {
+                    Foo(Object a, Object b, Object c) {
+                        Objects.requireNonNull(a);
+                        Objects.requireNonNull(b);
                         Objects.requireNonNull(c);
                     }
                 }
                 """);
 
-        assertEquals(1, recipe.collectedRows().size());
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "fail-fast requireNonNull at the boundary is the recommended pattern, not a smell");
     }
 }
