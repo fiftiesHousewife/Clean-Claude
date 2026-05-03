@@ -25,6 +25,12 @@ dependencies {
 }
 
 tasks.withType<JavaCompile>().configureEach {
+    // Compile with the JDK 25 toolchain but emit JDK 21 bytecode so the
+    // plugin is consumable from any Gradle build running on JDK 21 or
+    // newer. Without --release, the toolchain version becomes the
+    // minimum runtime requirement (class file version 69), which forced
+    // every consumer onto JDK 25.
+    options.release.set(21)
     options.compilerArgs.addAll(listOf("-Xlint:all", "-Xlint:-processing", "-Werror"))
 }
 
