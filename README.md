@@ -359,9 +359,10 @@ Key context when reading the numbers:
 Regenerate locally with (self-applied via init script, no changes to committed build files):
 
 ```bash
-./gradlew publishToMavenLocal
-./gradlew --init-script scripts/cleancode-dogfood.init.gradle.kts analyseCleanCode
+./scripts/dogfood.sh
 ```
+
+The script publishes all modules to mavenLocal, runs `analyseCleanCode` against every Java module via the init script, copies each module's `findings.html` into `docs/reports/`, and regenerates `docs/reports/index.html` via `cleanCodeSummary`. CI runs the same script and fails if `docs/reports/` drifts from the committed state, so the summary on this README always matches `main`.
 
 ## Experiment: Manual vs Recipe-Assisted Fix
 

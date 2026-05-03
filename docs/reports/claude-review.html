@@ -10,9 +10,14 @@
     header { background: #1a1a2e; color: #fff; padding: 2rem; }
     header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
     header p { opacity: 0.8; font-size: 0.95rem; }
-    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+    .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+    .feedback-btn { background: #34495e; color: #fff; border: 1px solid #4a627a; border-radius: 6px; padding: 0.55rem 0.9rem; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+    .feedback-btn:hover { background: #46627e; }
+    main { max-width: min(1800px, 96vw); margin: 2rem auto; padding: 0 1rem; }
     .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }
-    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; }
+    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; color: #fff; cursor: pointer; border: 0; font-family: inherit; user-select: none; transition: opacity 0.15s, transform 0.15s; }
+    .summary .badge:hover { transform: scale(1.03); }
+    .summary .badge.off { opacity: 0.35; text-decoration: line-through; }
     .badge.error { background: #c0392b; }
     .badge.warning { background: #e67e22; }
     .badge.info { background: #95a5a6; }
@@ -26,124 +31,692 @@
     .group-body { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
     th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
-    col.severity { width: 6rem; }
-    col.location { width: 30%; }
+    col.severity { width: 5rem; }
+    col.confidence { width: 5.5rem; }
+    col.location { width: 35%; }
     col.message { width: auto; }
+    .confidence-pill { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .confidence-pill.high { background: #27ae60; color: #fff; }
+    .confidence-pill.medium { background: #fff; color: #d35400; border: 1px solid #d35400; }
+    .confidence-pill.low { background: #fff; color: #95a5a6; border: 1px solid #bdc3c7; }
     td:first-child { white-space: nowrap; }
-    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; }
-    td:nth-child(3) { overflow-wrap: anywhere; }
+    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; word-break: break-all; }
+    td:nth-child(3) { overflow-wrap: anywhere; word-break: break-word; }
     th { color: #777; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
     .sev-error { color: #c0392b; font-weight: 600; }
     .sev-warning { color: #e67e22; font-weight: 600; }
     .sev-info { color: #95a5a6; }
     .location a { color: #2980b9; text-decoration: none; }
     .location a:hover { text-decoration: underline; }
+    .location .repo-link { font-size: 0.75rem; color: #999; margin-left: 0.4rem; }
+    .location .copy-link { cursor: pointer; user-select: none; font-size: 0.75rem; color: #999; margin-left: 0.4rem; }
+    .location .copy-link:hover { color: #2980b9; }
+    .location .copy-link.copied { color: #27ae60; }
     .location { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+    .ide-picker { font-size: 0.85rem; color: #555; margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+    .ide-picker select { font-size: 0.85rem; padding: 0.2rem 0.4rem; }
     .tool-summary { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
     .tool-summary h2 { font-size: 1rem; margin-bottom: 0.5rem; }
     .clean { font-size: 1.1rem; color: #27ae60; font-weight: 600; }
     footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999; }
+    tr.snippet-row td { padding: 0; background: #fafafa; border-bottom: 1px solid #eee; }
+    tr.snippet-row pre { margin: 0; padding: 0.6rem 0.9rem; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; line-height: 1.45; overflow-x: auto; color: #333; background: transparent; }
+    tr.snippet-row .ln-row { display: block; white-space: pre; }
+    tr.snippet-row .ln { display: inline-block; width: 2.5rem; text-align: right; padding-right: 0.7rem; color: #bbb; user-select: none; }
+    tr.snippet-row .ln-row.focal { background: #fff8dc; margin: 0 -0.9rem; padding: 0 0.9rem; }
+    tr.snippet-row .ln-row.focal .ln { color: #888; font-weight: 600; }
+    .snippet-toggle { display: inline-block; margin-left: 0.4rem; font-size: 0.75rem; color: #2980b9; cursor: pointer; user-select: none; }
+    .snippet-toggle:hover { text-decoration: underline; }
+    col.actions { width: 11rem; }
+    td.actions { white-space: nowrap; text-align: right; }
+    .code-actions { margin-left: 0.75rem; display: inline-flex; gap: 0.4rem; }
+    .action-btn { font-size: 0.75rem; padding: 0.2rem 0.5rem; border: 1px solid #ccc; background: #fff; color: #333; border-radius: 4px; cursor: pointer; font-family: inherit; }
+    .action-btn:hover { background: #f0f0f0; border-color: #999; }
+    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .action-btn.staged { background: #fff8dc; border-color: #d4a017; }
+    #staging-bar { position: sticky; top: 0; z-index: 10; background: #fff8dc; border-bottom: 2px solid #d4a017; padding: 0.75rem 1rem; display: none; align-items: center; gap: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    #staging-bar.has-changes { display: flex; }
+    #staging-bar.server-down { background: #fce4e4; border-color: #c0392b; }
+    #staging-bar .pending-count { font-weight: 600; }
+    #staging-bar button { font-size: 0.85rem; padding: 0.4rem 0.8rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-family: inherit; }
+    #staging-bar .confirm-btn { background: #27ae60; color: #fff; border-color: #27ae60; }
+    #staging-bar .confirm-btn:hover { background: #219653; }
+    #staging-bar .discard-btn { background: #fff; color: #c0392b; border-color: #c0392b; }
+    #staging-bar .discard-btn:hover { background: #fce4e4; }
+    #staging-bar .stop-btn { background: #fff; color: #34495e; border-color: #7f8c8d; }
+    #staging-bar .stop-btn:hover { background: #ecf0f1; }
+    #staging-bar.server-stopped { background: #ecf0f1; border-color: #7f8c8d; display: flex; }
+    #staging-bar.server-stopped button { display: none; }
+    #staging-bar.server-stopped details { color: #34495e; font-weight: 600; }
+    #staging-bar details { background: transparent; border: 0; margin: 0; flex: 1; }
+    #staging-bar summary { padding: 0; font-size: 0.85rem; font-weight: normal; color: #555; }
+    #staging-bar .pending-list { font-size: 0.8rem; color: #555; margin-top: 0.5rem; max-height: 30vh; overflow-y: auto; }
+    #staging-bar .pending-list .row { padding: 0.2rem 0; border-bottom: 1px dashed #d4a017; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .modal-backdrop.open { display: flex; }
+    .modal { background: #fff; border-radius: 6px; padding: 1.5rem; width: min(500px, 90vw); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+    .modal h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .modal .summary-line { font-size: 0.85rem; color: #555; margin-bottom: 1rem; font-family: 'SF Mono', monospace; }
+    .modal label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 0.25rem; }
+    .modal textarea, .modal input { width: 100%; padding: 0.5rem; font: inherit; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem; }
+    .modal textarea { resize: vertical; min-height: 4rem; }
+    .modal .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .modal button { font-size: 0.9rem; padding: 0.4rem 1rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-family: inherit; background: #fff; }
+    .modal button.primary { background: #2980b9; color: #fff; border-color: #2980b9; }
+    .modal button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .modal .threshold-row { display: flex; gap: 1rem; align-items: end; }
+    .modal .threshold-row > div { flex: 1; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Clean Code Analysis</h1>
-    <p>claude-review v1.0-SNAPSHOT</p>
+    <div class="header-row">
+      <div>
+        <h1>Clean Code Analysis</h1>
+        <p>claude-review v0.1.2</p>
+      </div>
+      <button type="button" class="feedback-btn" id="open-feedback" title="Capture a thought about this finding or the report itself — saved to clean-code-feedback.md">&#128172; Request a change</button>
+    </div>
   </header>
   <main>
-    <div class="summary">
-      <span class="badge error">1 errors</span>
-      <span class="badge warning">8 warnings</span>
-      <span class="badge info">0 info</span>
-    </div>
+  <div id="staging-bar">
     <details>
-      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (1)</summary>
+      <summary><span class="pending-count">0</span> pending change(s) &mdash; <span class="server-status"></span></summary>
+      <div class="pending-list"></div>
+    </details>
+    <button class="confirm-btn" type="button">Confirm &amp; apply</button>
+    <button class="discard-btn" type="button">Discard</button>
+    <button class="stop-btn" type="button" title="Stop the cleanCodeServe task">&#128721; Stop server</button>
+  </div>
+    <div class="ide-picker">
+      Open clicked links in: <select id="ide-scheme"><option value="vscode">vscode</option><option value="idea" selected>idea</option><option value="cursor">cursor</option></select>
+      <span style="color:#999;margin-left:1rem;">If clicking does nothing, your IDE's URL handler isn't registered — use the &#128203; icon to copy a CLI command instead.</span>
+    </div>
+    <div class="summary" id="severity-filter" title="Click a badge to hide findings of that severity">
+      <button type="button" class="badge error" data-severity-toggle="error">7 errors</button>
+      <button type="button" class="badge warning" data-severity-toggle="warning">19 warnings</button>
+      <button type="button" class="badge info" data-severity-toggle="info">0 info</button>
+    </div>
+    <details data-code="Ch10_1">
+      <summary><span class="code-label">Ch10_1</span>Classes Should Be Small (2)<span class="code-actions"><button type="button" class="action-btn disable-btn" data-code="Ch10_1" title="Disable this rule project-wide">&#10060; Disable</button><button type="button" class="action-btn tune-btn" data-code="Ch10_1" data-threshold="classLineCount" title="Raise the threshold to silence borderline cases">&#9881;&#65039; Tune</button></span></summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.10 'Classes' p.136</p>
         <p class="guidance">The first rule of classes is that they should be small. The second rule is that they should be smaller than that. With functions, we measured size by counting physical lines. With classes, we use a different measure: responsibilities. A class should have one, and only one, reason to change. If you need the word 'and' to describe what a class does, it's too big.</p>
         <table>
-          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:1</td><td>File length is 276 lines (max allowed is 150).</td></tr>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=40" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:40</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Copy CLI command to clipboard">&#128203;</span></td><td>Class 'ClaudeReviewFindingSource' is 239 lines<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="Ch10_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">38</span>import java.util.stream.Stream;</span><span class="ln-row"><span class="ln">39</span>&#8203;</span><span class="ln-row focal"><span class="ln">40</span>public class ClaudeReviewFindingSource implements FindingSource {</span><span class="ln-row"><span class="ln">41</span>&#8203;</span><span class="ln-row"><span class="ln">42</span>    private static final String TOOL = &quot;claude-review&quot;;</span></pre></td></tr>
+          <tr data-severity="warning" data-confidence="medium"><td class="sev-warning">WARNING</td><td><span class="confidence-pill medium">MEDIUM</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=1" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="1">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:1</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="1" title="Copy CLI command to clipboard">&#128203;</span></td><td>[FileLength] File length is 276 lines (max allowed is 150).<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="Ch10_1" data-file="src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="1" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="medium" hidden><td colspan="5"><pre><span class="ln-row focal"><span class="ln">1</span>package io.github.fiftieshousewife.cleancode.claudereview;</span><span class="ln-row"><span class="ln">2</span>&#8203;</span><span class="ln-row"><span class="ln">3</span>import com.anthropic.client.AnthropicClient;</span></pre></td></tr>
         </table>
       </div>
     </details>
-    <details>
-      <summary><span class="code-label">F1</span>Too Many Arguments (1)</summary>
+    <details data-code="Ch7_1">
+      <summary><span class="code-label">Ch7_1</span>Use Exceptions Rather Than Return Codes (6)<span class="code-actions"><button type="button" class="action-btn fix-all-btn" data-code="Ch7_1" title="Apply the registered refactoring recipe across every file in this project">&#128295; Fix all</button><button type="button" class="action-btn disable-btn" data-code="Ch7_1" title="Disable this rule project-wide">&#10060; Disable</button></span></summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.7 'Error Handling' p.103</p>
+        <p class="guidance">Exceptions are for exceptional circumstances. When you catch an exception and merely log it — or worse, leave the catch block empty — you've told the calling code that everything is fine when it isn't. The caller makes decisions based on a lie. Either handle the exception meaningfully, or let it propagate to someone who can.</p>
+        <table>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=66" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="66">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:66</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="66" title="Copy CLI command to clipboard">&#128203;</span></td><td>Catch block in 'collectFindings' only logs or is empty<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn fix-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="66" title="Apply the registered refactoring recipe to this file">&#128295; Fix</button><button type="button" class="action-btn suppress-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="66" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="error" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">64</span>    }</span><span class="ln-row"><span class="ln">65</span>&#8203;</span><span class="ln-row focal"><span class="ln">66</span>    @Override</span><span class="ln-row"><span class="ln">67</span>    public boolean isAvailable(ProjectContext context) {</span><span class="ln-row"><span class="ln">68</span>        return config.enabled() &amp;&amp; config.hasApiKey();</span></pre></td></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=66" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="66">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:66</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="66" title="Copy CLI command to clipboard">&#128203;</span></td><td>Catch block in 'collectFindings' only logs or is empty<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn fix-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="66" title="Apply the registered refactoring recipe to this file">&#128295; Fix</button><button type="button" class="action-btn suppress-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="66" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="error" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">64</span>    }</span><span class="ln-row"><span class="ln">65</span>&#8203;</span><span class="ln-row focal"><span class="ln">66</span>    @Override</span><span class="ln-row"><span class="ln">67</span>    public boolean isAvailable(ProjectContext context) {</span><span class="ln-row"><span class="ln">68</span>        return config.enabled() &amp;&amp; config.hasApiKey();</span></pre></td></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=125" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="125">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:125</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="125" title="Copy CLI command to clipboard">&#128203;</span></td><td>Catch block in 'parseFindings' only logs or is empty<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn fix-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="125" title="Apply the registered refactoring recipe to this file">&#128295; Fix</button><button type="button" class="action-btn suppress-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="125" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="error" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">123</span>            LOG.log(Level.WARNING, &quot;Failed to save review cache&quot;, e);</span><span class="ln-row"><span class="ln">124</span>        }</span><span class="ln-row focal"><span class="ln">125</span>&#8203;</span><span class="ln-row"><span class="ln">126</span>        return allFindings;</span><span class="ln-row"><span class="ln">127</span>    }</span></pre></td></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=156" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="156">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:156</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="156" title="Copy CLI command to clipboard">&#128203;</span></td><td>Catch block in 'collectSourceFiles' only logs or is empty<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn fix-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="156" title="Apply the registered refactoring recipe to this file">&#128295; Fix</button><button type="button" class="action-btn suppress-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="156" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="error" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">154</span>            LOG.log(Level.WARNING, &quot;Claude review failed for &quot; + relativePath + &quot;: &quot; + e.getMessage());</span><span class="ln-row"><span class="ln">155</span>            return List.of();</span><span class="ln-row focal"><span class="ln">156</span>        }</span><span class="ln-row"><span class="ln">157</span>    }</span><span class="ln-row"><span class="ln">158</span>&#8203;</span></pre></td></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=110" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="110">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:110</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="110" title="Copy CLI command to clipboard">&#128203;</span></td><td>Method 'analyseFile' catches Exception — catch specific exception types instead<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn fix-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="110" title="Apply the registered refactoring recipe to this file">&#128295; Fix</button><button type="button" class="action-btn suppress-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="110" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="error" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">108</span>                }</span><span class="ln-row"><span class="ln">109</span>&#8203;</span><span class="ln-row focal"><span class="ln">110</span>                final List&lt;Finding&gt; findings = analyseFile(client, content, relativePath, systemPrompt, codesKey);</span><span class="ln-row"><span class="ln">111</span>                final List&lt;ReviewCache.CachedFinding&gt; cachedFindings = toCachedFindings(findings);</span><span class="ln-row"><span class="ln">112</span>                cache.store(hash, cachedFindings);</span></pre></td></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=125" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="125">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:125</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="125" title="Copy CLI command to clipboard">&#128203;</span></td><td>Method 'parseFindings' catches Exception — catch specific exception types instead<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn fix-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="125" title="Apply the registered refactoring recipe to this file">&#128295; Fix</button><button type="button" class="action-btn suppress-btn" data-code="Ch7_1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="125" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="error" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">123</span>            LOG.log(Level.WARNING, &quot;Failed to save review cache&quot;, e);</span><span class="ln-row"><span class="ln">124</span>        }</span><span class="ln-row focal"><span class="ln">125</span>&#8203;</span><span class="ln-row"><span class="ln">126</span>        return allFindings;</span><span class="ln-row"><span class="ln">127</span>    }</span></pre></td></tr>
+        </table>
+      </div>
+    </details>
+    <details data-code="F1">
+      <summary><span class="code-label">F1</span>Too Many Arguments (2)<span class="code-actions"><button type="button" class="action-btn disable-btn" data-code="F1" title="Disable this rule project-wide">&#10060; Disable</button><button type="button" class="action-btn tune-btn" data-code="F1" data-threshold="recordComponentCount" title="Raise the threshold to silence borderline cases">&#9881;&#65039; Tune</button></span></summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Functions' p.288</p>
         <p class="guidance">Functions should have a small number of arguments. The ideal number is zero. Next comes one, followed closely by two. Three arguments should be avoided where possible. More than three requires very special justification — and then shouldn't be used anyway.</p>
         <table>
-          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:129</td><td>More than 4 parameters (found 5).</td></tr>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java&amp;line=8" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Copy CLI command to clipboard">&#128203;</span></td><td>Record 'ClaudeReviewConfig' has 7 components — too many constructor parameters<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="F1" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">6</span>import java.util.Set;</span><span class="ln-row"><span class="ln">7</span>&#8203;</span><span class="ln-row focal"><span class="ln">8</span>public record ClaudeReviewConfig(</span><span class="ln-row"><span class="ln">9</span>        boolean enabled,</span><span class="ln-row"><span class="ln">10</span>        String apiKey,</span></pre></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=129" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="129">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:129</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="129" title="Copy CLI command to clipboard">&#128203;</span></td><td>[ParameterNumber] More than 4 parameters (found 5).<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="F1" data-file="src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="129" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">127</span>    }</span><span class="ln-row"><span class="ln">128</span>&#8203;</span><span class="ln-row focal"><span class="ln">129</span>    List&lt;Finding&gt; analyseFile(AnthropicClient client, String content, String relativePath,</span><span class="ln-row"><span class="ln">130</span>                              String systemPrompt, String codesKey) {</span><span class="ln-row"><span class="ln">131</span>        try {</span></pre></td></tr>
         </table>
       </div>
     </details>
-    <details>
-      <summary><span class="code-label">G12</span>Clutter (1)</summary>
+    <details data-code="G10">
+      <summary><span class="code-label">G10</span>Vertical Separation (4)<span class="code-actions"><button type="button" class="action-btn disable-btn" data-code="G10" title="Disable this rule project-wide">&#10060; Disable</button></span></summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.292</p>
+        <p class="guidance">Local variables should be declared just before their first use. Vertical separation between declaration and use makes the reader hold a mental placeholder — 'what was that variable for again?' — while reading unrelated code. Declare variables at the point of need, not at the top of the method.</p>
+        <table>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=8" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="8">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:8</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="8" title="Copy CLI command to clipboard">&#128203;</span></td><td>'client' is declared in collectFindings() but not used until 33 lines later — move the declaration closer to line 41<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G10" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="8" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">6</span>import com.anthropic.models.messages.ContentBlock;</span><span class="ln-row"><span class="ln">7</span>import com.anthropic.models.messages.Message;</span><span class="ln-row focal"><span class="ln">8</span>import com.anthropic.models.messages.MessageCreateParams;</span><span class="ln-row"><span class="ln">9</span>import com.anthropic.models.messages.TextBlockParam;</span><span class="ln-row"><span class="ln">10</span>import com.google.gson.Gson;</span></pre></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=12" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="12">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:12</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="12" title="Copy CLI command to clipboard">&#128203;</span></td><td>'systemPrompt' is declared in collectFindings() but not used until 29 lines later — move the declaration closer to line 41<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G10" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="12" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">10</span>import com.google.gson.Gson;</span><span class="ln-row"><span class="ln">11</span>import com.google.gson.JsonArray;</span><span class="ln-row focal"><span class="ln">12</span>import com.google.gson.JsonElement;</span><span class="ln-row"><span class="ln">13</span>import com.google.gson.JsonObject;</span><span class="ln-row"><span class="ln">14</span>import com.google.gson.JsonParser;</span></pre></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=13" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="13">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:13</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="13" title="Copy CLI command to clipboard">&#128203;</span></td><td>'codesKey' is declared in collectFindings() but not used until 20 lines later — move the declaration closer to line 33<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G10" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="13" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">11</span>import com.google.gson.JsonArray;</span><span class="ln-row"><span class="ln">12</span>import com.google.gson.JsonElement;</span><span class="ln-row focal"><span class="ln">13</span>import com.google.gson.JsonObject;</span><span class="ln-row"><span class="ln">14</span>import com.google.gson.JsonParser;</span><span class="ln-row"><span class="ln">15</span>import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;</span></pre></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=22" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="22">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:22</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="22" title="Copy CLI command to clipboard">&#128203;</span></td><td>'allFindings' is declared in collectFindings() but not used until 15 lines later — move the declaration closer to line 37<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G10" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="22" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">20</span>import io.github.fiftieshousewife.cleancode.core.ProjectContext;</span><span class="ln-row"><span class="ln">21</span>import io.github.fiftieshousewife.cleancode.core.Severity;</span><span class="ln-row focal"><span class="ln">22</span>&#8203;</span><span class="ln-row"><span class="ln">23</span>import java.io.IOException;</span><span class="ln-row"><span class="ln">24</span>import java.io.InputStream;</span></pre></td></tr>
+        </table>
+      </div>
+    </details>
+    <details data-code="G12">
+      <summary><span class="code-label">G12</span>Clutter (3)<span class="code-actions"><button type="button" class="action-btn fix-all-btn" data-code="G12" title="Apply the registered refactoring recipe across every file in this project">&#128295; Fix all</button><button type="button" class="action-btn disable-btn" data-code="G12" title="Disable this rule project-wide">&#10060; Disable</button></span></summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.293</p>
         <p class="guidance">Clutter is anything that adds noise without adding value: unused variables, never-called functions, redundant imports, purposeless comments. Keep your source files clean. A lean source file is easier to read, easier to understand, and easier to change.</p>
         <table>
-          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:10</td><td>Unused import - com.google.gson.Gson.</td></tr>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=1" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="1">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="1" title="Copy CLI command to clipboard">&#128203;</span></td><td>9 inline fully-qualified type reference(s); first: this.config — run ShortenFullyQualifiedReferencesRecipe</td><td class="actions"></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ReviewCache.java&amp;line=1" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ReviewCache.java" data-line="1">io/github/fiftieshousewife/cleancode/claudereview/ReviewCache.java</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ReviewCache.java" data-line="1" title="Copy CLI command to clipboard">&#128203;</span></td><td>5 inline fully-qualified type reference(s); first: this.entries — run ShortenFullyQualifiedReferencesRecipe</td><td class="actions"></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=10" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="10">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:10</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="10" title="Copy CLI command to clipboard">&#128203;</span></td><td>[UnusedImports] Unused import - com.google.gson.Gson.<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn fix-btn" data-code="G12" data-file="src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="10" title="Apply the registered refactoring recipe to this file">&#128295; Fix</button><button type="button" class="action-btn suppress-btn" data-code="G12" data-file="src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="10" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">8</span>import com.anthropic.models.messages.MessageCreateParams;</span><span class="ln-row"><span class="ln">9</span>import com.anthropic.models.messages.TextBlockParam;</span><span class="ln-row focal"><span class="ln">10</span>import com.google.gson.Gson;</span><span class="ln-row"><span class="ln">11</span>import com.google.gson.JsonArray;</span><span class="ln-row"><span class="ln">12</span>import com.google.gson.JsonElement;</span></pre></td></tr>
         </table>
       </div>
     </details>
-    <details>
-      <summary><span class="code-label">G30</span>Functions Should Do One Thing (1)</summary>
+    <details data-code="G19">
+      <summary><span class="code-label">G19</span>Use Explanatory Variables (1)<span class="code-actions"><button type="button" class="action-btn fix-all-btn" data-code="G19" title="Apply the registered refactoring recipe across every file in this project">&#128295; Fix all</button><button type="button" class="action-btn disable-btn" data-code="G19" title="Disable this rule project-wide">&#10060; Disable</button></span></summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.296</p>
+        <p class="guidance">Complex expressions should be broken into intermediate variables with explanatory names. 'wasPressed' is better than 'event.getTarget().isButton() &amp;&amp; event.getState() == CLICKED'. The intermediate variable documents the programmer's intent and makes the code read like a well-written paragraph.</p>
+        <table>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=40" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:40</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Copy CLI command to clipboard">&#128203;</span></td><td>Complex expression in 'analyseFile' should be extracted to a named variable: TextBlockParam.builder() .text(systemPrompt) .cacheControl(C<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn fix-btn" data-code="G19" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Apply the registered refactoring recipe to this file">&#128295; Fix</button><button type="button" class="action-btn suppress-btn" data-code="G19" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">38</span>import java.util.stream.Stream;</span><span class="ln-row"><span class="ln">39</span>&#8203;</span><span class="ln-row focal"><span class="ln">40</span>public class ClaudeReviewFindingSource implements FindingSource {</span><span class="ln-row"><span class="ln">41</span>&#8203;</span><span class="ln-row"><span class="ln">42</span>    private static final String TOOL = &quot;claude-review&quot;;</span></pre></td></tr>
+        </table>
+      </div>
+    </details>
+    <details data-code="G24">
+      <summary><span class="code-label">G24</span>Follow Standard Conventions (1)<span class="code-actions"><button type="button" class="action-btn disable-btn" data-code="G24" title="Disable this rule project-wide">&#10060; Disable</button></span></summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.299</p>
+        <p class="guidance">Every team should follow a coding standard. The standard should specify things like where to declare instance variables, consistent naming, brace style, and so forth. The standard should not need a document to describe it because the code itself should be the exemplar.</p>
+        <table>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=40" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:40</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Copy CLI command to clipboard">&#128203;</span></td><td>Local StringBuilder named 'sb' in 'addLineNumbers' — name it after what it builds (html, markdown, buffer)<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G24" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">38</span>import java.util.stream.Stream;</span><span class="ln-row"><span class="ln">39</span>&#8203;</span><span class="ln-row focal"><span class="ln">40</span>public class ClaudeReviewFindingSource implements FindingSource {</span><span class="ln-row"><span class="ln">41</span>&#8203;</span><span class="ln-row"><span class="ln">42</span>    private static final String TOOL = &quot;claude-review&quot;;</span></pre></td></tr>
+        </table>
+      </div>
+    </details>
+    <details data-code="G30">
+      <summary><span class="code-label">G30</span>Functions Should Do One Thing (2)<span class="code-actions"><button type="button" class="action-btn disable-btn" data-code="G30" title="Disable this rule project-wide">&#10060; Disable</button><button type="button" class="action-btn tune-btn" data-code="G30" data-threshold="methodBlankLineSections" title="Raise the threshold to silence borderline cases">&#9881;&#65039; Tune</button></span></summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.302</p>
         <p class="guidance">Functions should do one thing. They should do it well. They should do it only. A function that is too long is probably doing too many things. If you can extract another function from it with a name that is not merely a restatement of its implementation, then the original is doing more than one thing.</p>
         <table>
-          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:71</td><td>Method collectFindings length is 56 lines (max allowed is 50).</td></tr>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=40" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:40</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Copy CLI command to clipboard">&#128203;</span></td><td>Method 'collectFindings' has 10 blank-line sections across 56 lines — each section should be its own method<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G30" data-file="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="40" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="high" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">38</span>import java.util.stream.Stream;</span><span class="ln-row"><span class="ln">39</span>&#8203;</span><span class="ln-row focal"><span class="ln">40</span>public class ClaudeReviewFindingSource implements FindingSource {</span><span class="ln-row"><span class="ln">41</span>&#8203;</span><span class="ln-row"><span class="ln">42</span>    private static final String TOOL = &quot;claude-review&quot;;</span></pre></td></tr>
+          <tr data-severity="warning" data-confidence="medium"><td class="sev-warning">WARNING</td><td><span class="confidence-pill medium">MEDIUM</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java&amp;line=71" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="71">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java:71</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="71" title="Copy CLI command to clipboard">&#128203;</span></td><td>[MethodLength] Method collectFindings length is 56 lines (max allowed is 50).<span class="snippet-toggle" data-action="toggle-snippet">&#9656; snippet</span></td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G30" data-file="src/main/java/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewFindingSource.java" data-line="71" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr class="snippet-row" data-severity="warning" data-confidence="medium" hidden><td colspan="5"><pre><span class="ln-row"><span class="ln">69</span>    }</span><span class="ln-row"><span class="ln">70</span>&#8203;</span><span class="ln-row focal"><span class="ln">71</span>    @Override</span><span class="ln-row"><span class="ln">72</span>    public List&lt;Finding&gt; collectFindings(ProjectContext context) throws FindingSourceException {</span><span class="ln-row"><span class="ln">73</span>        if (!config.hasApiKey()) {</span></pre></td></tr>
         </table>
       </div>
     </details>
-    <details>
-      <summary><span class="code-label">G8</span>Too Much Information (4)</summary>
+    <details data-code="G8">
+      <summary><span class="code-label">G8</span>Too Much Information (4)<span class="code-actions"><button type="button" class="action-btn disable-btn" data-code="G8" title="Disable this rule project-wide">&#10060; Disable</button></span></summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — General' p.291</p>
         <p class="guidance">Well-defined modules have very small interfaces that allow you to do a lot with a little. A class with too many public methods, too many fields, or too many dependencies has exposed too much of itself. Keep interfaces tight. Fewer things to know means fewer things to go wrong.</p>
         <table>
-          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</td><td>May expose internal representation by returning reference to mutable object</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</td><td>May expose internal representation by returning reference to mutable object</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</td><td>May expose internal representation by incorporating reference to mutable object</td></tr>
-          <tr><td class="sev-warning">WARNING</td><td class="location">org/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</td><td>May expose internal representation by incorporating reference to mutable object</td></tr>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java&amp;line=8" data-path="/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Copy CLI command to clipboard">&#128203;</span></td><td>May expose internal representation by returning reference to mutable object</td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G8" data-file="io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java&amp;line=8" data-path="/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Copy CLI command to clipboard">&#128203;</span></td><td>May expose internal representation by returning reference to mutable object</td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G8" data-file="io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java&amp;line=8" data-path="/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Copy CLI command to clipboard">&#128203;</span></td><td>May expose internal representation by incorporating reference to mutable object</td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G8" data-file="io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
+          <tr data-severity="warning" data-confidence="high"><td class="sev-warning">WARNING</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java&amp;line=8" data-path="/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8">io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java:8</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/claude-review/io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Copy CLI command to clipboard">&#128203;</span></td><td>May expose internal representation by incorporating reference to mutable object</td><td class="actions"><button type="button" class="action-btn suppress-btn" data-code="G8" data-file="io/github/fiftieshousewife/cleancode/claudereview/ClaudeReviewConfig.java" data-line="8" title="Suppress this specific finding with @SuppressWarnings">&#128264; Suppress</button></td></tr>
         </table>
       </div>
     </details>
-    <details>
-      <summary><span class="code-label">T1</span>Insufficient Tests (1)</summary>
+    <details data-code="T1">
+      <summary><span class="code-label">T1</span>Insufficient Tests (1)<span class="code-actions"><button type="button" class="action-btn disable-btn" data-code="T1" title="Disable this rule project-wide">&#10060; Disable</button><button type="button" class="action-btn tune-btn" data-code="T1" data-threshold="privateMethodMinLines" title="Raise the threshold to silence borderline cases">&#9881;&#65039; Tune</button></span></summary>
       <div class="group-body">
         <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.313</p>
         <p class="guidance">A test suite is insufficient so long as there are conditions that have not been explored by tests, or calculations that have not been validated. Coverage tools report gaps in your testing strategy — they tell you where untested code lurks, waiting to surprise you in production.</p>
         <table>
-          <colgroup><col class="severity"><col class="location"><col class="message"></colgroup>
-          <tr><th>Severity</th><th>Location</th><th>Message</th></tr>
-          <tr><td class="sev-error">ERROR</td><td class="location">(project)</td><td>Overall line coverage: 35.3% (60/170 lines covered)</td></tr>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location">(project)</td><td>Overall line coverage: 35.3% (60/170 lines covered)</td><td class="actions"></td></tr>
         </table>
       </div>
     </details>
     <div class="tool-summary">
       <h2>Sources</h2>
       <table>
-        <tr><th>Tool</th><th>Findings</th></tr>
-        <tr><td>spotbugs</td><td>4</td></tr>
-        <tr><td>checkstyle</td><td>4</td></tr>
-        <tr><td>jacoco</td><td>1</td></tr>
+        <tr><th>Tool</th><th>Status</th></tr>
+        <tr><td>OpenRewrite</td><td>17 findings</td></tr>
+        <tr><td>Checkstyle</td><td>4 findings</td></tr>
+        <tr><td>SpotBugs</td><td>4 findings</td></tr>
+        <tr><td>JaCoCo</td><td>1 findings</td></tr>
+        <tr><td>CPD</td><td>ran, no findings</td></tr>
+        <tr><td>Claude Review</td><td>not available — report not found</td></tr>
+        <tr><td>Dependency Updates</td><td>ran, no findings</td></tr>
+        <tr><td>PMD</td><td>ran, no findings</td></tr>
+        <tr><td>Surefire</td><td>ran, no findings</td></tr>
+      </table>
+    </div>
+    <div class="optional-rules">
+      <h2>Optional rules</h2>
+      <p>Disabled by default. To enable, add to <code>cleanCode.enabledOptionalRules</code> in your build script.</p>
+      <table>
+        <tr><th>Rule</th><th>Code</th><th>What it enforces</th></tr>
+        <tr><td><code>pmd:UseLocaleWithCaseConversions</code></td><td>G26</td><td>Require an explicit Locale on String.toLowerCase / toUpperCase</td></tr>
+        <tr><td><code>checkstyle:FinalLocalVariable</code></td><td>G22</td><td>Require all local variables to be declared final</td></tr>
       </table>
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-04-17 16:30:20 Z</p>
-    <p>9 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-05-03 11:01:13 Z</p>
+    <p>26 total findings</p>
   </footer>
+  <div class="modal-backdrop" id="stage-modal">
+    <form class="modal" id="stage-modal-form">
+      <h3 id="modal-title">Stage change</h3>
+      <p class="summary-line" id="modal-summary"></p>
+      <div id="modal-threshold-row" class="threshold-row" style="display:none">
+        <div><label>Current</label><input type="text" id="modal-current" disabled></div>
+        <div><label>New value</label><input type="number" id="modal-new-value" min="1"></div>
+      </div>
+      <label for="modal-reason">Reason (required, min 5 chars)</label>
+      <textarea id="modal-reason" required minlength="5" placeholder="Why are you making this change? This goes into the suppression annotation / build script comment."></textarea>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn">Cancel</button>
+        <button type="submit" class="primary" disabled>Stage</button>
+      </div>
+    </form>
+  </div>
+  <div class="modal-backdrop" id="feedback-modal">
+    <form class="modal" id="feedback-form">
+      <h3>Request a change</h3>
+      <p class="summary-line">Saved locally to <code>clean-code-feedback.md</code> at the project root. Review before commit.</p>
+      <label for="feedback-message">What would make this report more useful?</label>
+      <textarea id="feedback-message" required minlength="10" rows="5" placeholder="Tell us what's missing, wrong, or noisy."></textarea>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn">Cancel</button>
+        <button type="submit" class="primary" disabled>Save feedback</button>
+      </div>
+    </form>
+  </div>
+  <script>
+    (function() {
+      const ROOT = "/Users/pippanewbold/CleanClaude/claude-review";
+      const select = document.getElementById('ide-scheme');
+      const stored = localStorage.getItem('cleanCodeIdeScheme');
+      if (stored) select.value = stored;
+      function buildIdeUrl(scheme, path, line) {
+        switch (scheme) {
+          case 'vscode': return 'vscode://file' + path + ':' + line + ':1';
+          case 'cursor': return 'cursor://file' + path + ':' + line + ':1';
+          case 'idea':   return 'idea://open?file=' + encodeURIComponent(path) + '&line=' + line;
+        }
+        return 'file://' + path;
+      }
+      function buildCliCommand(scheme, path, line) {
+        switch (scheme) {
+          case 'vscode': return 'code -g ' + path + ':' + line;
+          case 'cursor': return 'cursor -g ' + path + ':' + line;
+          case 'idea':   return 'idea --line ' + line + ' ' + path;
+        }
+        return path + ':' + line;
+      }
+      function rewire() {
+        const scheme = select.value;
+        document.querySelectorAll('a.ide-link').forEach(a => {
+          const path = a.dataset.path; const line = a.dataset.line;
+          a.href = buildIdeUrl(scheme, path, line);
+        });
+        document.querySelectorAll('span.copy-link').forEach(span => {
+          const path = span.dataset.path; const line = span.dataset.line;
+          span.title = 'Copy: ' + buildCliCommand(scheme, path, line);
+        });
+      }
+      select.addEventListener('change', () => {
+        localStorage.setItem('cleanCodeIdeScheme', select.value);
+        rewire();
+      });
+      document.addEventListener('click', e => {
+        const span = e.target.closest('span.copy-link');
+        if (!span) return;
+        const cmd = buildCliCommand(select.value, span.dataset.path, span.dataset.line);
+        navigator.clipboard.writeText(cmd).then(() => {
+          span.classList.add('copied');
+          const original = span.textContent;
+          span.textContent = '✓';
+          setTimeout(() => { span.classList.remove('copied'); span.textContent = original; }, 1200);
+        });
+      });
+      rewire();
+    })();
+  </script>
+  <script>
+    (function() {
+      const STORAGE_KEY = 'cleanCodeSeverityFilter';
+      const bar = document.getElementById('severity-filter');
+      if (!bar) return;
+      const badges = bar.querySelectorAll('[data-severity-toggle]');
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      const visible = stored || { error: true, warning: true, info: true };
+      function apply() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(visible));
+        badges.forEach(b => b.classList.toggle('off', !visible[b.dataset.severityToggle]));
+        document.querySelectorAll('tr[data-severity]').forEach(row => {
+          const show = visible[row.dataset.severity];
+          if (row.classList.contains('snippet-row')) {
+            if (!show) row.hidden = true;
+            row.style.display = show ? '' : 'none';
+          } else {
+            row.style.display = show ? '' : 'none';
+          }
+        });
+        document.querySelectorAll('details[data-code]').forEach(group => {
+          const rows = Array.from(group.querySelectorAll('tr[data-severity]'))
+              .filter(r => !r.classList.contains('snippet-row'));
+          const anyVisible = rows.some(r => r.style.display !== 'none');
+          group.style.display = anyVisible ? '' : 'none';
+        });
+      }
+      badges.forEach(b => b.addEventListener('click', () => {
+        const key = b.dataset.severityToggle;
+        visible[key] = !visible[key];
+        apply();
+      }));
+      apply();
+    })();
+  </script>
+  <script>
+    document.addEventListener('click', e => {
+      const toggle = e.target.closest('[data-action="toggle-snippet"]');
+      if (!toggle) return;
+      const row = toggle.closest('tr');
+      const next = row.nextElementSibling;
+      if (!next || !next.classList.contains('snippet-row')) return;
+      const open = !next.hidden;
+      next.hidden = open;
+      toggle.innerHTML = open ? '&#9656; snippet' : '&#9662; hide';
+    });
+  </script>
+  <script>
+    (function() {
+      const modal = document.getElementById('feedback-modal');
+      const form = document.getElementById('feedback-form');
+      const openBtn = document.getElementById('open-feedback');
+      if (!openBtn || !modal || !form) return;
+      const textarea = document.getElementById('feedback-message');
+      const submit = form.querySelector('button[type=submit]');
+      const cancelBtn = form.querySelector('.cancel-btn');
+      function close() { modal.classList.remove('open'); textarea.value = ''; submit.disabled = true; }
+      openBtn.addEventListener('click', () => {
+        textarea.value = '';
+        submit.disabled = true;
+        modal.classList.add('open');
+        textarea.focus();
+      });
+      textarea.addEventListener('input', () => {
+        submit.disabled = textarea.value.trim().length < 10;
+      });
+      cancelBtn.addEventListener('click', close);
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        if (textarea.value.trim().length < 10) return;
+        submit.disabled = true;
+        submit.textContent = 'Saving...';
+        fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: textarea.value.trim() })
+        }).then(r => r.json().then(j => ({ status: r.status, body: j })))
+          .then(({ status, body }) => {
+            if (status === 200 && body.success) {
+              alert('Saved to ' + body.savedTo);
+              close();
+              submit.textContent = 'Save feedback';
+            } else {
+              alert('Could not save: ' + (body.error || 'unknown'));
+              submit.disabled = false;
+              submit.textContent = 'Save feedback';
+            }
+          }).catch(err => {
+            alert('Network error: ' + err.message);
+            submit.disabled = false;
+            submit.textContent = 'Save feedback';
+          });
+      });
+    })();
+  </script>
+  <script>
+    (function() {
+      const STORAGE_KEY = 'cleanCodePendingChanges';
+      const bar = document.getElementById('staging-bar');
+      const countEl = bar.querySelector('.pending-count');
+      const statusEl = bar.querySelector('.server-status');
+      const listEl = bar.querySelector('.pending-list');
+      const confirmBtn = bar.querySelector('.confirm-btn');
+      const discardBtn = bar.querySelector('.discard-btn');
+      const stopBtn = bar.querySelector('.stop-btn');
+      const modal = document.getElementById('stage-modal');
+      const modalForm = document.getElementById('stage-modal-form');
+      const modalTitle = document.getElementById('modal-title');
+      const modalSummary = document.getElementById('modal-summary');
+      const modalThreshold = document.getElementById('modal-threshold-row');
+      const modalCurrent = document.getElementById('modal-current');
+      const modalNewValue = document.getElementById('modal-new-value');
+      const modalReason = document.getElementById('modal-reason');
+      const modalSubmit = modalForm.querySelector('button[type=submit]');
+      let pending = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      let serverState = null;
+      let pendingDraft = null;
+
+      function load() {
+        fetch('/api/state').then(r => r.ok ? r.json() : null).then(state => {
+          serverState = state;
+          if (state) { statusEl.textContent = 'server connected'; }
+          else { setServerDown(); }
+          render();
+        }).catch(() => { setServerDown(); render(); });
+      }
+
+      function setServerDown() {
+        bar.classList.add('server-down');
+        statusEl.textContent = 'server not running — start ./gradlew cleanCodeServe to enable';
+        document.querySelectorAll('.action-btn').forEach(b => {
+          b.disabled = true;
+          b.title = 'Run ./gradlew cleanCodeServe to enable';
+        });
+        confirmBtn.disabled = true;
+        stopBtn.disabled = true;
+      }
+
+      function setServerStopped() {
+        bar.classList.remove('server-down');
+        bar.classList.remove('has-changes');
+        bar.classList.add('server-stopped');
+        statusEl.textContent = 'Server stopped — re-run ./gradlew cleanCodeServe to resume';
+        document.querySelectorAll('.action-btn').forEach(b => {
+          b.disabled = true;
+          b.title = 'Server stopped';
+        });
+      }
+
+      function render() {
+        countEl.textContent = pending.length;
+        if (pending.length > 0) bar.classList.add('has-changes');
+        else bar.classList.remove('has-changes');
+        listEl.innerHTML = pending.map(c => {
+          const params = Object.entries(c.params).map(([k,v]) => k+'='+v).join(' ');
+          return '<div class="row">' + esc(c.kind) + ' &middot; ' + esc(params)
+              + ' &middot; <em>' + esc(c.reason) + '</em></div>';
+        }).join('');
+        markStagedButtons();
+      }
+
+      function markStagedButtons() {
+        document.querySelectorAll('.action-btn.staged').forEach(b => b.classList.remove('staged'));
+        pending.forEach(c => {
+          let selector;
+          if (c.kind === 'suppressFinding') {
+            selector = '.suppress-btn[data-code="'+c.params.code+'"][data-file="'+c.params.file+'"][data-line="'+c.params.line+'"]';
+          } else if (c.kind === 'disableRecipe') {
+            selector = '.disable-btn[data-code="'+c.params.code+'"]';
+          } else if (c.kind === 'tuneThreshold') {
+            selector = '.tune-btn[data-code="'+c.params.code+'"]';
+          }
+          if (selector) document.querySelectorAll(selector).forEach(b => b.classList.add('staged'));
+          if (c.kind === 'applyRefactoring') {
+            const file = c.params.file || '';
+            if (file) {
+              const sel = '.fix-btn[data-code="'+c.params.code+'"][data-file="'+file+'"]';
+              document.querySelectorAll(sel).forEach(b => b.classList.add('staged'));
+            } else {
+              const sel = '.fix-all-btn[data-code="'+c.params.code+'"]';
+              document.querySelectorAll(sel).forEach(b => b.classList.add('staged'));
+            }
+          }
+        });
+      }
+
+      function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+      function openModal(draft) {
+        pendingDraft = draft;
+        modalTitle.textContent = draft.title;
+        modalSummary.innerHTML = draft.summary;
+        modalReason.value = '';
+        if (draft.kind === 'tuneThreshold') {
+          modalThreshold.style.display = 'flex';
+          modalCurrent.value = draft.currentValue;
+          modalNewValue.value = draft.suggestedValue;
+        } else {
+          modalThreshold.style.display = 'none';
+        }
+        modal.classList.add('open');
+        modalReason.focus();
+        validateModal();
+      }
+
+      function closeModal() { modal.classList.remove('open'); pendingDraft = null; }
+
+      function validateModal() {
+        const reasonOk = modalReason.value.trim().length >= 5;
+        const valueOk = pendingDraft && pendingDraft.kind === 'tuneThreshold'
+          ? Number(modalNewValue.value) > 0 : true;
+        modalSubmit.disabled = !(reasonOk && valueOk);
+      }
+
+      modalReason.addEventListener('input', validateModal);
+      modalNewValue.addEventListener('input', validateModal);
+      modalForm.querySelector('.cancel-btn').addEventListener('click', closeModal);
+      modalForm.addEventListener('submit', e => {
+        e.preventDefault();
+        if (!pendingDraft) return;
+        const change = { kind: pendingDraft.kind, params: pendingDraft.params, reason: modalReason.value.trim() };
+        if (pendingDraft.kind === 'tuneThreshold') {
+          change.params.newValue = String(Number(modalNewValue.value));
+        }
+        pending.push(change);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pending));
+        closeModal();
+        render();
+      });
+
+      document.addEventListener('click', e => {
+        const suppress = e.target.closest('.suppress-btn');
+        if (suppress) {
+          openModal({ kind: 'suppressFinding', title: 'Suppress finding',
+            summary: 'Adds <code>@SuppressWarnings("CleanCode:'+suppress.dataset.code+'")</code> in ' + esc(suppress.dataset.file) + ':' + suppress.dataset.line,
+            params: { code: suppress.dataset.code, file: suppress.dataset.file, line: suppress.dataset.line } });
+          return;
+        }
+        const disable = e.target.closest('.disable-btn');
+        if (disable) {
+          openModal({ kind: 'disableRecipe', title: 'Disable rule project-wide',
+            summary: 'Adds <code>"'+disable.dataset.code+'"</code> to <code>cleanCode.disabledRecipes</code>',
+            params: { code: disable.dataset.code } });
+          return;
+        }
+        const tune = e.target.closest('.tune-btn');
+        if (tune) {
+          const key = tune.dataset.threshold;
+          const current = serverState && serverState.thresholds ? serverState.thresholds[key] : '?';
+          openModal({ kind: 'tuneThreshold', title: 'Tune threshold',
+            summary: 'Updates <code>cleanCode.thresholds.'+key+'</code> in build.gradle.kts',
+            params: { code: tune.dataset.code, threshold: key },
+            currentValue: current, suggestedValue: typeof current === 'number' ? current + 2 : 1 });
+          return;
+        }
+        const fix = e.target.closest('.fix-btn');
+        if (fix) {
+          openModal({ kind: 'applyRefactoring', title: 'Apply fix recipe',
+            summary: 'Runs the registered recipe(s) for <code>'+fix.dataset.code+'</code> against ' + esc(fix.dataset.file),
+            params: { code: fix.dataset.code, file: fix.dataset.file, line: fix.dataset.line } });
+          return;
+        }
+        const fixAll = e.target.closest('.fix-all-btn');
+        if (fixAll) {
+          openModal({ kind: 'applyRefactoring', title: 'Apply fix across project',
+            summary: 'Runs the registered recipe(s) for <code>'+fixAll.dataset.code+'</code> against every .java file in the project',
+            params: { code: fixAll.dataset.code, file: '' } });
+          return;
+        }
+      });
+
+      stopBtn.addEventListener('click', () => {
+        if (!confirm('Stop the cleanCodeServe task? You will need to re-run ./gradlew cleanCodeServe to resume.')) return;
+        stopBtn.disabled = true;
+        stopBtn.textContent = 'Stopping...';
+        fetch('/api/shutdown', { method: 'POST' })
+          .then(() => setServerStopped())
+          .catch(() => setServerStopped());
+      });
+
+      discardBtn.addEventListener('click', () => {
+        if (pending.length === 0) return;
+        if (!confirm('Discard ' + pending.length + ' pending change(s)?')) return;
+        pending = [];
+        localStorage.removeItem(STORAGE_KEY);
+        render();
+      });
+
+      confirmBtn.addEventListener('click', () => {
+        if (pending.length === 0) return;
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Applying...';
+        fetch('/api/apply-changes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ changes: pending })
+        }).then(r => r.json().then(j => ({ status: r.status, body: j })))
+          .then(({ status, body }) => {
+            if (status === 200 && body.success) {
+              pending = [];
+              localStorage.removeItem(STORAGE_KEY);
+              location.reload();
+            } else {
+              const errs = (body.errors || ['unknown error']).join('\n');
+              alert('Apply failed:\n' + errs);
+              confirmBtn.disabled = false;
+              confirmBtn.textContent = 'Confirm & apply';
+            }
+          }).catch(err => {
+            alert('Network error: ' + err.message);
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Confirm & apply';
+          });
+      });
+
+      load();
+    })();
+  </script>
 </body>
 </html>

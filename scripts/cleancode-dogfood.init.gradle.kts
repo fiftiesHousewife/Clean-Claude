@@ -9,14 +9,23 @@
 // Package-level suppressions come from @SuppressCleanCode on package-info.java
 // in each module - no extra config is set here.
 
+// Version is supplied by scripts/dogfood.sh via -DcleanCodePluginVersion=<x.y.z>
+// (parsed from the root build.gradle.kts so init script and source of truth
+// never drift). Falls back to a sentinel that will fail with an obvious error
+// rather than silently resolving an old artifact.
+val cleanCodeVersion: String = System.getProperty("cleanCodePluginVersion")
+    ?: error("cleanCodePluginVersion system property not set — run via scripts/dogfood.sh")
+
 initscript {
+    val version = System.getProperty("cleanCodePluginVersion")
+        ?: error("cleanCodePluginVersion system property not set — run via scripts/dogfood.sh")
     repositories {
         mavenLocal()
         gradlePluginPortal()
         mavenCentral()
     }
     dependencies {
-        classpath("io.github.fiftieshousewife.cleancode:plugin:1.0-SNAPSHOT")
+        classpath("io.github.fiftieshousewife:clean-code:$version")
         classpath("com.github.ben-manes:gradle-versions-plugin:0.53.0")
     }
 }

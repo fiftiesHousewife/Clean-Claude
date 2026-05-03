@@ -11,6 +11,12 @@ experiment/cron-logs/
 # their own via `./gradlew :mcp:jar` and point Claude Code at it.
 .mcp.json
 
+# Plugin-generated agent briefs and per-module agent instruction files. The
+# dogfood self-apply produces these locally; the canonical CLAUDE.md is the
+# committed root file.
+.agent/
+**/AGENTS.md
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

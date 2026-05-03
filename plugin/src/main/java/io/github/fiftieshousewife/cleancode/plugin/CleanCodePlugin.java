@@ -177,7 +177,7 @@ public class CleanCodePlugin implements Plugin<Project> {
 
     private void configureJacoco(Project project) {
         project.getExtensions().configure(JacocoPluginExtension.class, jacoco ->
-                jacoco.setToolVersion("0.8.12"));
+                jacoco.setToolVersion("0.8.14"));
 
         project.getTasks().withType(JacocoReport.class).configureEach(task -> {
             task.getReports().getXml().getRequired().set(true);
