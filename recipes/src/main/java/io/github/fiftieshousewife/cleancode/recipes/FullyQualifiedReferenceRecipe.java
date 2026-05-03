@@ -82,7 +82,31 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
                 if ("class".equals(fa.getName().getSimpleName())) {
                     return false;
                 }
-                return fq.getFullyQualifiedName().contains(".");
+                if (!fq.getFullyQualifiedName().contains(".")) {
+                    return false;
+                }
+                // The printed source must literally equal the type's
+                // fully-qualified name. That's the signature of a real
+                // FQ type reference like `java.util.List` — the access
+                // expression IS the FQN. For any field / method access
+                // (this.x, CLAUDE.x, foo.bar) where x's TYPE is
+                // FullyQualified the expression text and the type's
+                // FQN diverge, so we don't fire.
+                final String printedRoot = stripGenericsAndArrays(fa.printTrimmed(getCursor()));
+                return printedRoot.equals(fq.getFullyQualifiedName());
+            }
+
+            private static String stripGenericsAndArrays(final String text) {
+                int end = text.length();
+                final int gen = text.indexOf('<');
+                if (gen >= 0) {
+                    end = Math.min(end, gen);
+                }
+                final int arr = text.indexOf('[');
+                if (arr >= 0) {
+                    end = Math.min(end, arr);
+                }
+                return text.substring(0, end).trim();
             }
         };
     }
