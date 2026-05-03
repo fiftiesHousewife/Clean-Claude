@@ -130,6 +130,28 @@ class MumblingCommentRecipeTest {
     }
 
     @Test
+    void doesNotFireOnLongElaboratingCommentThatHappensToMentionMethodWords() {
+        // Real false-positive shape: lineOfClass() had a 14-word comment
+        // explaining a Javadoc constraint that incidentally contained the
+        // words `line`, `of`, `class`. allWordsPresent matched, so the
+        // recipe flagged a clearly informative comment. A genuine mumbling
+        // comment is a CONCISE restatement, not an elaboration.
+        final var recipe = new MumblingCommentRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    int lineOfClass() {
+                        // `*/` of the Javadoc above the class, not on the class line
+                        return 0;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "long elaborating comment that incidentally mentions method words is not mumbling");
+    }
+
+    @Test
     void doesNotFireOnSingleParamWhenParamNameIsACommonEnglishWord() {
         // Real false-positive shape: SnippetReader.isNoise(line) had
         // `// line comment` describing the SHAPE OF "//" — the comment

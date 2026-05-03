@@ -110,7 +110,15 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
                                        Set<String> paramNames, String nextCodeLine) {
                 final String[] methodWords = normalise(camelToWords(methodName)).split("\\s+");
 
-                if (allWordsPresent(normalisedComment, methodWords)) {
+                // Restatement: comment words ≤ method words + 2. A
+                // longer comment that happens to mention the method's
+                // words is elaborating, not restating. `lineOfClass` +
+                // "*/ of the Javadoc above the class, not on the class
+                // line" should not fire — the comment is explaining a
+                // constraint, not parroting the method name.
+                final int commentWordCount = normalisedComment.split("\\s+").length;
+                if (commentWordCount <= methodWords.length + 2
+                        && allWordsPresent(normalisedComment, methodWords)) {
                     return true;
                 }
 
