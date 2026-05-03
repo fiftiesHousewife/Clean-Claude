@@ -130,6 +130,23 @@ public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumula
         if (value.length() < 15 && TOOL_ID_PATTERN.matcher(value).matches()) {
             return false;
         }
+        // Short formatting / separator literals like "  - ", " — ",
+        // "|---|", " = " are typographic noise. Extracting them to
+        // named constants adds ceremony without aiding intent.
+        // Real magic strings ("POST", ".java", "LINE", "\\s+") have at
+        // least one letter or digit even when short.
+        if (value.length() <= 5 && hasNoLettersOrDigits(value)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean hasNoLettersOrDigits(final String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (Character.isLetterOrDigit(value.charAt(i))) {
+                return false;
+            }
+        }
         return true;
     }
 

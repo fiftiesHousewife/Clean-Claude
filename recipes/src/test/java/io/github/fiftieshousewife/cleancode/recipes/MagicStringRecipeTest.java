@@ -77,4 +77,39 @@ class MagicStringRecipeTest {
 
         assertTrue(recipe.collectedRows().isEmpty());
     }
+
+    @Test
+    void ignoresShortFormattingSeparatorLiterals() {
+        // "  - ", " — ", "|---|", " = " — short literals with no
+        // letters or digits are typographic noise, not magic strings.
+        // Extracting them adds ceremony without aiding intent.
+        final var recipe = new MagicStringRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void render() {
+                        System.out.println("a" + "  - " + "b");
+                        System.out.println("c" + "  - " + "d");
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "punctuation-only short literals are typographic noise");
+    }
+
+    @Test
+    void stillFlagsShortAlphanumericLiterals() {
+        final var recipe = new MagicStringRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    boolean isPost(String method) { return "POST".equals(method); }
+                    boolean checkPost(String m) { return "POST".equals(m); }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "POST has letters — still a magic string");
+    }
 }
