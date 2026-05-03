@@ -55,7 +55,12 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
                     return m;
                 }
 
-                if (isPrivate(m) || isConstructor(m)) {
+                // F3 is about API design. Internal helpers (private,
+                // package-private, protected) often pass booleans through
+                // a chain of overloads; flagging them is noise. Restrict
+                // F3 to public methods so the smell only fires where it
+                // matters.
+                if (!isPublic(m) || isConstructor(m)) {
                     return m;
                 }
 
@@ -80,9 +85,9 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
                 return m;
             }
 
-            private boolean isPrivate(J.MethodDeclaration method) {
+            private boolean isPublic(J.MethodDeclaration method) {
                 return method.getModifiers().stream()
-                        .anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
+                        .anyMatch(mod -> mod.getType() == J.Modifier.Type.Public);
             }
 
             private boolean isConstructor(J.MethodDeclaration method) {

@@ -26,7 +26,10 @@ class FlagArgumentRecipeTest {
     }
 
     @Test
-    void detectsBooleanParamOnPackagePrivateMethod() {
+    void ignoresBooleanParamOnPackagePrivateMethod() {
+        // F3 is about API design — internal helpers (package-private)
+        // shouldn't fire because passing a flag through a chain of
+        // internal overloads is a different concern.
         final var recipe = new FlagArgumentRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
@@ -35,10 +38,7 @@ class FlagArgumentRecipeTest {
                 }
                 """);
 
-        assertAll(
-                () -> assertEquals(1, recipe.collectedRows().size()),
-                () -> assertEquals("dryRun", recipe.collectedRows().getFirst().paramName())
-        );
+        assertTrue(recipe.collectedRows().isEmpty());
     }
 
     @Test
@@ -81,7 +81,9 @@ class FlagArgumentRecipeTest {
     }
 
     @Test
-    void detectsProtectedMethodBooleanParam() {
+    void ignoresProtectedMethodBooleanParam() {
+        // protected is reachable from subclasses but isn't part of the
+        // module's public API — F3 is API-design noise here.
         final var recipe = new FlagArgumentRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
@@ -90,6 +92,6 @@ class FlagArgumentRecipeTest {
                 }
                 """);
 
-        assertEquals(1, recipe.collectedRows().size());
+        assertTrue(recipe.collectedRows().isEmpty());
     }
 }
