@@ -846,11 +846,15 @@ public final class HtmlReportWriter {
         if (finding.sourceFile() == null || finding.startLine() <= 0) {
             return "";
         }
-        return "<button type=\"button\" class=\"action-btn fix-btn\""
+        // Disabled until the code-mutation pipeline is fully validated
+        // end-to-end (recipe correctness, working-tree safety, undo,
+        // serve-side rerun-after-apply). The button is rendered so its
+        // shape and tooltip remain visible, but it can't be clicked.
+        return "<button type=\"button\" class=\"action-btn fix-btn\" disabled"
                 + " data-code=\"" + escape(code.name()) + "\""
                 + " data-file=\"" + escape(finding.sourceFile()) + "\""
                 + " data-line=\"" + finding.startLine() + "\""
-                + " title=\"Apply the registered refactoring recipe to this file\""
+                + " title=\"Disabled — Fix is being verified end-to-end before re-enabling\""
                 + ">&#128295; Fix</button>";
     }
 
@@ -878,32 +882,36 @@ public final class HtmlReportWriter {
         if (finding.sourceFile() == null || finding.startLine() <= 0) {
             return "";
         }
-        return "<button type=\"button\" class=\"action-btn suppress-btn\""
+        // Disabled alongside Fix — see buildFixButton for the rationale.
+        return "<button type=\"button\" class=\"action-btn suppress-btn\" disabled"
                 + " data-code=\"" + escape(code.name()) + "\""
                 + " data-file=\"" + escape(finding.sourceFile()) + "\""
                 + " data-line=\"" + finding.startLine() + "\""
-                + " title=\"Suppress this specific finding with @SuppressWarnings\""
+                + " title=\"Disabled — Suppress is being verified end-to-end before re-enabling\""
                 + ">&#128264; Suppress</button>";
     }
 
     private static void appendCodeActions(final StringBuilder html, final HeuristicCode code) {
+        // All per-code actions are disabled while end-to-end verification
+        // of the cleanCodeServe mutation pipeline is in progress. Buttons
+        // remain visible so the layout doesn't shift.
         html.append("<span class=\"code-actions\">");
         if (RefactoringRegistry.hasRecipeFor(code)) {
-            html.append("<button type=\"button\" class=\"action-btn fix-all-btn\"")
+            html.append("<button type=\"button\" class=\"action-btn fix-all-btn\" disabled")
                     .append(" data-code=\"").append(escape(code.name())).append("\"")
-                    .append(" title=\"Apply the registered refactoring recipe across every file in this project\"")
+                    .append(" title=\"Disabled — Fix all is being verified end-to-end before re-enabling\"")
                     .append(">&#128295; Fix all</button>");
         }
-        html.append("<button type=\"button\" class=\"action-btn disable-btn\"")
+        html.append("<button type=\"button\" class=\"action-btn disable-btn\" disabled")
                 .append(" data-code=\"").append(escape(code.name())).append("\"")
-                .append(" title=\"Disable this rule project-wide\"")
+                .append(" title=\"Disabled — Disable is being verified end-to-end before re-enabling\"")
                 .append(">&#10060; Disable</button>");
         final String thresholdKey = thresholdKeyFor(code);
         if (thresholdKey != null) {
-            html.append("<button type=\"button\" class=\"action-btn tune-btn\"")
+            html.append("<button type=\"button\" class=\"action-btn tune-btn\" disabled")
                     .append(" data-code=\"").append(escape(code.name())).append("\"")
                     .append(" data-threshold=\"").append(escape(thresholdKey)).append("\"")
-                    .append(" title=\"Raise the threshold to silence borderline cases\"")
+                    .append(" title=\"Disabled — Tune is being verified end-to-end before re-enabling\"")
                     .append(">&#9881;&#65039; Tune</button>");
         }
         html.append("</span>");
