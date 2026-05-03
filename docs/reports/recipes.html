@@ -113,7 +113,7 @@
     <div class="header-row">
       <div>
         <h1>Clean Code Analysis</h1>
-        <p>recipes v0.1.2</p>
+        <p>recipes v0.1.3</p>
       </div>
       <button type="button" class="feedback-btn" id="open-feedback" title="Capture a thought about this finding or the report itself — saved to clean-code-feedback.md">&#128172; Request a change</button>
     </div>
@@ -133,7 +133,7 @@
       <span style="color:#999;margin-left:1rem;">If clicking does nothing, your IDE's URL handler isn't registered — use the &#128203; icon to copy a CLI command instead.</span>
     </div>
     <div class="summary" id="severity-filter" title="Click a badge to hide findings of that severity">
-      <button type="button" class="badge error" data-severity-toggle="error">8 errors</button>
+      <button type="button" class="badge error" data-severity-toggle="error">11 errors</button>
       <button type="button" class="badge warning" data-severity-toggle="warning">281 warnings</button>
       <button type="button" class="badge info" data-severity-toggle="info">1 info</button>
     </div>
@@ -868,6 +868,20 @@
         </table>
       </div>
     </details>
+    <details data-code="T9">
+      <summary><span class="code-label">T9</span>Tests Should Be Fast (3)<span class="code-actions"><button type="button" class="action-btn disable-btn" disabled data-code="T9" title="Disabled — Disable is being verified end-to-end before re-enabling">&#10060; Disable</button></span></summary>
+      <div class="group-body">
+        <p class="reference">Clean Code Ch.17 'Smells and Heuristics — Tests' p.314</p>
+        <p class="guidance">A slow test is a test that won't get run. When things get tight, the slow tests are the ones that get dropped from the suite. Keep your tests fast. Ruthlessly refactor tests that take too long to run.</p>
+        <table>
+          <colgroup><col class="severity"><col class="confidence"><col class="location"><col class="message"><col class="actions"></colgroup>
+          <tr><th>Severity</th><th>Confidence</th><th>Location</th><th>Message</th><th></th></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/ArtificialCouplingRecipeTest.java&amp;line=1" data-path="/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/ArtificialCouplingRecipeTest.java" data-line="1">io/github/fiftieshousewife/cleancode/recipes/ArtificialCouplingRecipeTest.java</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/ArtificialCouplingRecipeTest.java" data-line="1" title="Copy CLI command to clipboard">&#128203;</span></td><td>Test 'ignoresConstantUsedInSameClass()' took 913.9s (exceeds 30s threshold)</td><td class="actions"></td></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/LegacyTypesRecipeTest.java&amp;line=1" data-path="/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/LegacyTypesRecipeTest.java" data-line="1">io/github/fiftieshousewife/cleancode/recipes/LegacyTypesRecipeTest.java</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/LegacyTypesRecipeTest.java" data-line="1" title="Copy CLI command to clipboard">&#128203;</span></td><td>Test 'detectsLegacyDateAndCalendar()' took 948.7s (exceeds 30s threshold)</td><td class="actions"></td></tr>
+          <tr data-severity="error" data-confidence="high"><td class="sev-error">ERROR</td><td><span class="confidence-pill high">HIGH</span></td><td class="location"><a class="ide-link" href="idea://open?file=/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/StringlyTypedDispatchRecipeTest.java&amp;line=1" data-path="/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/StringlyTypedDispatchRecipeTest.java" data-line="1">io/github/fiftieshousewife/cleancode/recipes/StringlyTypedDispatchRecipeTest.java</a><span class="copy-link" data-path="/Users/pippanewbold/CleanClaude/recipes/io/github/fiftieshousewife/cleancode/recipes/StringlyTypedDispatchRecipeTest.java" data-line="1" title="Copy CLI command to clipboard">&#128203;</span></td><td>Test 'ignoresStringParamNotUsedForDispatch()' took 923.5s (exceeds 30s threshold)</td><td class="actions"></td></tr>
+        </table>
+      </div>
+    </details>
     <div class="tool-summary">
       <h2>Sources</h2>
       <table>
@@ -875,12 +889,12 @@
         <tr><td>CPD</td><td>493 findings</td></tr>
         <tr><td>OpenRewrite</td><td>267 findings</td></tr>
         <tr><td>Checkstyle</td><td>79 findings</td></tr>
+        <tr><td>Surefire</td><td>3 findings</td></tr>
         <tr><td>JaCoCo</td><td>1 findings</td></tr>
         <tr><td>SpotBugs</td><td>1 findings</td></tr>
         <tr><td>Claude Review</td><td>not available — report not found</td></tr>
         <tr><td>Dependency Updates</td><td>ran, no findings</td></tr>
         <tr><td>PMD</td><td>ran, no findings</td></tr>
-        <tr><td>Surefire</td><td>ran, no findings</td></tr>
       </table>
     </div>
     <div class="optional-rules">
@@ -894,8 +908,8 @@
     </div>
   </main>
   <footer>
-    <p>Generated by Clean Code Plugin &mdash; 2026-05-03 14:25:32 Z</p>
-    <p>290 total findings</p>
+    <p>Generated by Clean Code Plugin &mdash; 2026-05-03 18:11:51 Z</p>
+    <p>293 total findings</p>
   </footer>
   <div class="modal-backdrop" id="stage-modal">
     <form class="modal" id="stage-modal-form">
