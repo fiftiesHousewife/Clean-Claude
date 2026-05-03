@@ -19,7 +19,8 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
             String className,
             String methodName,
             String paramName,
-            int lineNumber
+            int lineNumber,
+            int paramCount
     ) {}
 
     public static class Accumulator {
@@ -65,6 +66,11 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
                 }
 
                 String className = findEnclosingClassName();
+                // m.getParameters() returns a single J.Empty for no-arg
+                // methods; count only the actual VariableDeclarations.
+                final int paramCount = (int) m.getParameters().stream()
+                        .filter(J.VariableDeclarations.class::isInstance)
+                        .count();
 
                 for (Statement param : m.getParameters()) {
                     if (param instanceof J.VariableDeclarations varDecl) {
@@ -75,7 +81,8 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
                                         className,
                                         m.getSimpleName(),
                                         var.getSimpleName(),
-                                        -1
+                                        -1,
+                                        paramCount
                                 ));
                             }
                         }

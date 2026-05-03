@@ -272,7 +272,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapFlagArgs(List<FlagArgumentRecipe.FlagArgumentRow> rows) {
         return rows.stream()
-                .map(r -> findingForMethod(HeuristicCode.F3, r.className(), r.methodName(),
+                .map(r -> findingForMethod(HeuristicCode.F3, r.className(), r.methodName(), r.paramCount(),
                         "Method '%s' takes boolean parameter '%s' — split into two methods instead".formatted(r.methodName(), r.paramName())))
                 .toList();
     }
@@ -1154,8 +1154,18 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private Finding findingForMethod(HeuristicCode code, String className, String methodName, String message) {
+        return findingForMethod(code, className, methodName, -1, message);
+    }
+
+    /**
+     * Method-level finding, disambiguated by parameter count when the
+     * caller knows it. Falls back to the first-match behaviour when
+     * {@code paramCount} is negative.
+     */
+    private Finding findingForMethod(HeuristicCode code, String className, String methodName,
+                                      int paramCount, String message) {
         final String sourcePath = resolveSourcePath(className);
-        final int line = lineOfMethod(className, methodName);
+        final int line = lineOfMethod(className, methodName, paramCount);
         return Finding.at(code, sourcePath, line, line,
                 message, severityFor(code), Confidence.HIGH, TOOL, code.name());
     }
@@ -1297,10 +1307,14 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private int lineOfMethod(final String className, final String methodName) {
+        return lineOfMethod(className, methodName, -1);
+    }
+
+    private int lineOfMethod(final String className, final String methodName, final int paramCount) {
         // Prefer source-text scan: AST line index drifts on lambdas,
         // multiline annotations, and other Spaces we don't fully count.
         // The text-based answer matches what the user sees in their editor.
-        final int textLine = lineOfMethodFromSource(className, methodName);
+        final int textLine = lineOfMethodFromSource(className, methodName, paramCount);
         if (textLine > 0) {
             return textLine;
         }
@@ -1315,6 +1329,9 @@ public class OpenRewriteFindingSource implements FindingSource {
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration m, Object o) {
                 if (line[0] < 0 && methodName.equals(m.getSimpleName())) {
+                    if (paramCount >= 0 && m.getParameters().size() != paramCount) {
+                        return super.visitMethodDeclaration(m, o);
+                    }
                     final J.ClassDeclaration enclosing = getCursor().firstEnclosing(J.ClassDeclaration.class);
                     if (enclosing != null && className.equals(enclosing.getSimpleName())) {
                         line[0] = idx.getOrDefault(m.getId(), -1);
@@ -1335,20 +1352,27 @@ public class OpenRewriteFindingSource implements FindingSource {
      * token, e.g. {@code public void <name>(} or {@code Foo <name>(}).
      */
     private int lineOfMethodFromSource(final String className, final String methodName) {
+        return lineOfMethodFromSource(className, methodName, -1);
+    }
+
+    /**
+     * Same as {@link #lineOfMethodFromSource(String, String)}, but when
+     * {@code paramCount >= 0} disambiguates between overloads by counting
+     * top-level parameters in the declaration's parenthesised list.
+     * Generics ({@code Map<String, Integer>}) are handled — only commas
+     * outside of angle brackets and nested parens count as separators.
+     * If no overload matches the requested arity the first by-name match
+     * is returned, so partial information still does better than nothing.
+     */
+    private int lineOfMethodFromSource(final String className, final String methodName,
+                                        final int paramCount) {
         final List<String> lines = readSourceLines(className);
         if (lines == null || lines.isEmpty()) {
             return -1;
         }
-        // Match `<token> methodName(` where <token> is the previous
-        // chunk of the declaration (return type or modifier). Allow
-        // `>` / `]` immediately before whitespace so generic return
-        // types (`Map<String, String> name(`) and array returns
-        // (`String[] name(`) match too. Lambdas (`x -> name(...)`) are
-        // excluded by skipping any line that contains `->`. Lines
-        // containing ` = ` before `methodName(` are assignments / call
-        // sites — also skip.
         final java.util.regex.Pattern decl = java.util.regex.Pattern.compile(
                 "[\\w>\\]]\\s+" + java.util.regex.Pattern.quote(methodName) + "\\s*\\(");
+        int firstMatchLine = -1;
         for (int i = 0; i < lines.size(); i++) {
             final String line = lines.get(i);
             final String stripped = line.strip();
@@ -1358,8 +1382,78 @@ public class OpenRewriteFindingSource implements FindingSource {
             if (line.contains("->") || line.contains(" = ")) {
                 continue;
             }
-            if (decl.matcher(line).find()) {
+            final java.util.regex.Matcher m = decl.matcher(line);
+            if (!m.find()) {
+                continue;
+            }
+            if (firstMatchLine < 0) {
+                firstMatchLine = i + 1;
+            }
+            if (paramCount < 0) {
                 return i + 1;
+            }
+            // Count parameters by walking from just after the `(` that
+            // closes the regex match. The parameter list can wrap onto
+            // subsequent lines; readUntilMatchingParen handles that.
+            final int parenAt = m.end() - 1;
+            if (countTopLevelParams(lines, i, parenAt) == paramCount) {
+                return i + 1;
+            }
+        }
+        return firstMatchLine;
+    }
+
+    /**
+     * Counts top-level parameters inside the parenthesis whose opening
+     * char is at {@code openLine.charAt(openCol)}. Walks lines forward
+     * tracking paren / angle-bracket / brace depth. The parameter list
+     * is empty when the first non-whitespace character is {@code )}.
+     * Otherwise the count is one plus the number of commas at depth 0.
+     */
+    private static int countTopLevelParams(final List<String> lines,
+                                            final int openLineIdx,
+                                            final int openCol) {
+        int parenDepth = 0;
+        int angleDepth = 0;
+        int braceDepth = 0;
+        int commas = 0;
+        boolean sawAnyContent = false;
+        for (int i = openLineIdx; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            final int from = (i == openLineIdx) ? openCol : 0;
+            for (int j = from; j < line.length(); j++) {
+                final char c = line.charAt(j);
+                switch (c) {
+                    case '(' -> parenDepth++;
+                    case ')' -> {
+                        parenDepth--;
+                        if (parenDepth == 0) {
+                            return sawAnyContent ? commas + 1 : 0;
+                        }
+                    }
+                    case '<' -> angleDepth++;
+                    case '>' -> {
+                        if (angleDepth > 0) {
+                            angleDepth--;
+                        }
+                    }
+                    case '{' -> braceDepth++;
+                    case '}' -> {
+                        if (braceDepth > 0) {
+                            braceDepth--;
+                        }
+                    }
+                    case ',' -> {
+                        if (parenDepth == 1 && angleDepth == 0 && braceDepth == 0) {
+                            commas++;
+                        }
+                    }
+                    default -> {
+                        if (parenDepth >= 1 && !Character.isWhitespace(c)) {
+                            sawAnyContent = true;
+                        }
+                    }
+                }
             }
         }
         return -1;

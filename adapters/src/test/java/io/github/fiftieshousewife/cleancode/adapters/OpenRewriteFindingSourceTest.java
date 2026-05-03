@@ -192,4 +192,49 @@ class OpenRewriteFindingSourceTest {
         List<Finding> findings = source.collectFindings(ctx);
         assertTrue(findings.isEmpty());
     }
+
+    @Test
+    void collectFindings_disambiguatesOverloadedMethodsByParamCount(@TempDir Path tempDir) throws Exception {
+        // Two public methods named `process` differ only in arity. F3
+        // should fire for the FOUR-parameter overload (the one with the
+        // boolean) and the finding line MUST land on the four-arg
+        // declaration, not the first matching name.
+        final Path sourceDir = tempDir.resolve("src/main/java/com/example");
+        Files.createDirectories(sourceDir);
+        final String src = """
+                package com.example;
+                public class Foo {
+                    public void process(String name) {
+                        // 1-arg overload — no flag, no F3 fires here.
+                    }
+
+                    public void process(String name,
+                                        java.util.Map<String, Integer> labels,
+                                        int retries,
+                                        boolean dryRun) {
+                        // 4-arg overload — F3 should land here.
+                    }
+                }
+                """;
+        Files.writeString(sourceDir.resolve("Foo.java"), src);
+
+        final ProjectContext ctx = new ProjectContext(
+                tempDir, "test", "1.0", "21",
+                List.of(tempDir.resolve("src/main/java")),
+                List.of(), tempDir.resolve("build"), tempDir.resolve("build/reports"), List.of());
+
+        final Finding f3 = source.collectFindings(ctx).stream()
+                .filter(f -> f.code() == HeuristicCode.F3)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected an F3 finding"));
+
+        // The 4-arg `process` declaration starts on line 7 of the fixture
+        // (1-indexed package=line 1). Without param-count disambiguation
+        // the finding would land on line 3 (the 1-arg overload), which
+        // is wildly misleading because that overload doesn't even have
+        // a boolean parameter.
+        assertEquals(7, f3.startLine(),
+                "F3 must anchor at the 4-arg overload (line 7), not the 1-arg one (line 3). Got: "
+                        + f3.startLine());
+    }
 }
