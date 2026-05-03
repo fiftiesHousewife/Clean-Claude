@@ -796,6 +796,22 @@ public class OpenRewriteFindingSource implements FindingSource {
                 index.put(node.getId(), line[0]);
                 return node;
             }
+
+            @Override
+            public J.Block visitBlock(final J.Block block, final Object o) {
+                final J.Block result = super.visitBlock(block, o);
+                // Block.end is the whitespace + comments between the last
+                // statement and the closing `}`. preVisit only sees J nodes,
+                // so without this hook the line counter never advances past
+                // a method body's closing brace — every subsequent sibling
+                // ends up on a wrong line. The drift compounds: each missed
+                // brace shifts the next method one line earlier than truth.
+                line[0] += countNewlines(result.getEnd().getWhitespace());
+                for (final Comment c : result.getEnd().getComments()) {
+                    line[0] += countNewlines(c.printComment(getCursor()));
+                }
+                return result;
+            }
         }.visit(cu, new Object());
         return index;
     }

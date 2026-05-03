@@ -82,6 +82,66 @@ class OpenRewriteFindingSourceTest {
     }
 
     @Test
+    void collectFindings_reportsCorrectLineForMethodAfterAnotherMethod(@TempDir Path tempDir) throws Exception {
+        // Reproduces a widespread line-number bug seen in real reports: every
+        // method after the first lands on a wrong line because buildLineIndex
+        // misses whitespace inside the previous method's J.Block.end (the
+        // closing-brace region). The Ch7_1 finding for catchOnlyLogs MUST
+        // report the line of the catchOnlyLogs declaration itself, not some
+        // earlier line that drifts further off with each preceding method.
+        final Path sourceDir = tempDir.resolve("src/main/java/com/example");
+        Files.createDirectories(sourceDir);
+        // Build the fixture so the *catchOnlyLogs* method declaration lands on
+        // a known line (12). The recipe reports method-level findings, and
+        // findingForMethod resolves to the method declaration line.
+        final String src = """
+                package com.example;
+                public class Foo {
+                    public void first() {
+                        System.out.println("hi");
+                    }
+
+                    public void second() {
+                        System.out.println("hi");
+                    }
+
+                    public void catchOnlyLogs() {
+                        try {
+                            doSomething();
+                        } catch (Exception e) {
+                            System.out.println(e);
+                        }
+                    }
+
+                    private void doSomething() throws Exception {}
+                }
+                """;
+        Files.writeString(sourceDir.resolve("Foo.java"), src);
+
+        final ProjectContext ctx = new ProjectContext(
+                tempDir, "test", "1.0", "21",
+                List.of(tempDir.resolve("src/main/java")),
+                List.of(), tempDir.resolve("build"), tempDir.resolve("build/reports"), List.of());
+
+        final List<Finding> findings = source.collectFindings(ctx);
+        final Finding catchFinding = findings.stream()
+                .filter(f -> f.code() == HeuristicCode.Ch7_1)
+                .filter(f -> f.message().contains("catchOnlyLogs"))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "No Ch7_1 finding for catchOnlyLogs in: " + findings));
+
+        // catchOnlyLogs is declared on line 11 of the source above (1-indexed,
+        // counting the 'package' line as 1). If buildLineIndex is correct,
+        // startLine resolves to 11. The bug reports it lower — typically a
+        // line inside `second()` or even on `first()` because the indexer
+        // never advances past previous methods' closing braces.
+        assertEquals(11, catchFinding.startLine(),
+                "Ch7_1 finding should point at the declaration of catchOnlyLogs (line 11), "
+                        + "not drift back into preceding methods. Got: " + catchFinding.startLine());
+    }
+
+    @Test
     void collectFindings_emptySourceSet(@TempDir Path tempDir) throws Exception {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
