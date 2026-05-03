@@ -14,7 +14,31 @@ class AddFinalRecipeTest implements RewriteTest {
     }
 
     @Test
-    void addsFinalToNonReassignedLocal() {
+    void addsFinalToMethodParameterInOrdinaryClass() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Foo {
+                            void method(int value) {
+                                System.out.println(value);
+                            }
+                        }
+                        """,
+                        """
+                        package com.example;
+                        public class Foo {
+                            void method(final int value) {
+                                System.out.println(value);
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void leavesOrdinaryLocalVariableAloneInNonSealedClass() {
         rewriteRun(
                 java(
                         """
@@ -25,76 +49,49 @@ class AddFinalRecipeTest implements RewriteTest {
                                 System.out.println(name);
                             }
                         }
-                        """,
-                        """
-                        package com.example;
-                        public class Foo {
-                            void method() {
-                                final String name = "hello";
-                                System.out.println(name);
-                            }
-                        }
                         """
                 )
         );
     }
 
     @Test
-    void doesNotAddFinalToReassignedVariable() {
+    void addsFinalToLocalVariableInsideSealedClass() {
         rewriteRun(
                 java(
                         """
                         package com.example;
-                        public class Foo {
+                        public sealed class Foo permits Foo.Bar {
                             void method() {
                                 String name = "hello";
-                                name = "world";
                                 System.out.println(name);
                             }
-                        }
-                        """
-                )
-        );
-    }
-
-    @Test
-    void doesNotAddFinalToAlreadyFinalVariable() {
-        rewriteRun(
-                java(
-                        """
-                        package com.example;
-                        public class Foo {
-                            void method() {
-                                final String name = "hello";
-                                System.out.println(name);
-                            }
-                        }
-                        """
-                )
-        );
-    }
-
-    @Test
-    void addsFinalToMultipleVariablesInSameMethod() {
-        rewriteRun(
-                java(
-                        """
-                        package com.example;
-                        public class Foo {
-                            void method() {
-                                String a = "hello";
-                                int b = 42;
-                                System.out.println(a + b);
-                            }
+                            public static final class Bar extends Foo {}
                         }
                         """,
                         """
                         package com.example;
-                        public class Foo {
+                        public sealed class Foo permits Foo.Bar {
                             void method() {
-                                final String a = "hello";
-                                final int b = 42;
-                                System.out.println(a + b);
+                                final String name = "hello";
+                                System.out.println(name);
+                            }
+                            public static final class Bar extends Foo {}
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void doesNotAddFinalToReassignedParameter() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Foo {
+                            void method(int value) {
+                                value = value + 1;
+                                System.out.println(value);
                             }
                         }
                         """
@@ -103,14 +100,29 @@ class AddFinalRecipeTest implements RewriteTest {
     }
 
     @Test
-    void doesNotAddFinalToIncrementedVariable() {
+    void doesNotAddFinalToAlreadyFinalParameter() {
         rewriteRun(
                 java(
                         """
                         package com.example;
                         public class Foo {
-                            void method() {
-                                int count = 0;
+                            void method(final String name) {
+                                System.out.println(name);
+                            }
+                        }
+                        """
+                )
+        );
+    }
+
+    @Test
+    void doesNotAddFinalToIncrementedParameter() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        public class Foo {
+                            void method(int count) {
                                 count++;
                                 System.out.println(count);
                             }
@@ -121,51 +133,27 @@ class AddFinalRecipeTest implements RewriteTest {
     }
 
     @Test
-    void leavesLambdaParametersAlone() {
+    void leavesLambdaParametersAloneEvenInsideSealedClass() {
         rewriteRun(
                 java(
                         """
                         package com.example;
                         import java.util.List;
-                        public class Foo {
+                        public sealed class Foo permits Foo.Bar {
                             void each(List<String> xs) {
                                 xs.forEach(x -> System.out.println(x));
                             }
+                            public static final class Bar extends Foo {}
                         }
                         """,
                         """
                         package com.example;
                         import java.util.List;
-                        public class Foo {
+                        public sealed class Foo permits Foo.Bar {
                             void each(final List<String> xs) {
                                 xs.forEach(x -> System.out.println(x));
                             }
-                        }
-                        """
-                )
-        );
-    }
-
-    @Test
-    void leavesMethodReferenceArgumentsAlone() {
-        rewriteRun(
-                java(
-                        """
-                        package com.example;
-                        import java.util.List;
-                        public class Foo {
-                            void each(List<String> xs) {
-                                xs.forEach(System.out::println);
-                            }
-                        }
-                        """,
-                        """
-                        package com.example;
-                        import java.util.List;
-                        public class Foo {
-                            void each(final List<String> xs) {
-                                xs.forEach(System.out::println);
-                            }
+                            public static final class Bar extends Foo {}
                         }
                         """
                 )
@@ -180,7 +168,7 @@ class AddFinalRecipeTest implements RewriteTest {
                         package com.example;
                         public class Foo {
                             public Foo(@SuppressWarnings("unused") int value) {
-                                int x = value;
+                                System.out.println(value);
                             }
                         }
                         """,
@@ -188,31 +176,7 @@ class AddFinalRecipeTest implements RewriteTest {
                         package com.example;
                         public class Foo {
                             public Foo(@SuppressWarnings("unused") final int value) {
-                                final int x = value;
-                            }
-                        }
-                        """
-                )
-        );
-    }
-
-    @Test
-    void addsFinalWhenNoModifiersOrAnnotationsOnParameter() {
-        rewriteRun(
-                java(
-                        """
-                        package com.example;
-                        public class Foo {
-                            void method(int value) {
-                                int x = value;
-                            }
-                        }
-                        """,
-                        """
-                        package com.example;
-                        public class Foo {
-                            void method(final int value) {
-                                final int x = value;
+                                System.out.println(value);
                             }
                         }
                         """

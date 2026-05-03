@@ -16,8 +16,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adds {@code final} to local variable declarations and method
- * parameters that the method body never reassigns.
+ * Adds {@code final} to method parameters that are never reassigned, and
+ * to local variables inside sealed classes (where finality is part of
+ * the structural promise the seal makes).
+ *
+ * <p>The recipe deliberately does <em>not</em> add {@code final} to
+ * everyday local variables in non-sealed classes. The marginal benefit
+ * doesn't survive the report-noise cost: every method body grows a
+ * cluster of low-confidence findings the user must dismiss.
  *
  * <p>Deliberately skipped:
  * <ul>
@@ -31,6 +37,8 @@ import java.util.Set;
  *       by the language spec.</li>
  *   <li><b>For-each loop variables.</b> Same reasoning as catch.</li>
  *   <li><b>Fields.</b> Outside the recipe's scope; different rules.</li>
+ *   <li><b>Local variables outside sealed classes.</b> Too noisy for the
+ *       value delivered.</li>
  * </ul>
  *
  * <p>When the variable already has at least one modifier
@@ -45,15 +53,16 @@ public class AddFinalRecipe extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Add final to non-reassigned local variables";
+        return "Add final to method parameters and locals inside sealed classes";
     }
 
     @Override
     public String getDescription() {
-        return "Adds the final modifier to local variables and method parameters that are "
-                + "never reassigned after declaration. Skips lambda, catch, try-with-resources, "
-                + "and for-each parameters — where final is either already implied or would "
-                + "produce awkward whitespace.";
+        return "Adds the final modifier to method parameters that are never reassigned, and to "
+                + "local variables declared inside a sealed class. Skips lambda, catch, "
+                + "try-with-resources, and for-each parameters where final is either already "
+                + "implied or would produce awkward whitespace, and skips ordinary locals "
+                + "outside sealed classes to keep the noise floor low.";
     }
 
     @Override
@@ -67,6 +76,7 @@ public class AddFinalRecipe extends Recipe {
                     return m;
                 }
 
+                final boolean enclosingIsSealed = isInsideSealedClass(getCursor());
                 final Set<String> reassigned = collectReassignedVariables(m);
 
                 return (J.MethodDeclaration) new JavaIsoVisitor<Set<String>>() {
@@ -79,6 +89,9 @@ public class AddFinalRecipe extends Recipe {
                             return v;
                         }
                         if (isField(v) || isAlreadyFinal(v)) {
+                            return v;
+                        }
+                        if (!isParameter(getCursor()) && !enclosingIsSealed) {
                             return v;
                         }
 
@@ -153,6 +166,21 @@ public class AddFinalRecipe extends Recipe {
             }
         }.visit(method.getBody(), reassigned);
         return reassigned;
+    }
+
+    private static boolean isParameter(final Cursor cursor) {
+        // Parameters live directly under the J.MethodDeclaration in the
+        // cursor chain. Anything wrapped in a Block/Lambda/etc. is by
+        // definition a non-parameter declaration.
+        final Object parent = cursor.getParentTreeCursor().getValue();
+        return parent instanceof J.MethodDeclaration;
+    }
+
+    private static boolean isInsideSealedClass(final Cursor cursor) {
+        final J.ClassDeclaration enclosing = cursor.firstEnclosing(J.ClassDeclaration.class);
+        return enclosing != null
+                && enclosing.getModifiers().stream()
+                        .anyMatch(m -> m.getType() == J.Modifier.Type.Sealed);
     }
 
     private static boolean isField(final J.VariableDeclarations varDecls) {
