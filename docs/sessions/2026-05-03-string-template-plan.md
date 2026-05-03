@@ -38,7 +38,8 @@ Confidence: MEDIUM. String templates are a JDK 21 preview / JDK 25 stable featur
 
 Once the detection candidate ships and produces clean diffs, build a paired transform in `refactoring/`:
 
-- `ConvertConcatToStringTemplateRecipe` — rewrites the matched `+` chain into `STR."..."` form, escaping inner quotes and dropping redundant `String.valueOf(...)` calls.
+- `ConvertConcatToStringTemplateRecipe` — rewrites the matched `+` chain into a named-constant `String FORMAT = "...{module}...";` plus `String.format` (or `STR.` if string templates are enabled). Keeping the template as a constant rather than inlining it makes the message reusable, testable, and discoverable in IDE search.
+- Each rewrite extracts the literal scaffolding to a `private static final String <name>_FORMAT = ...;` constant adjacent to the call site (or hoists to the class's existing constants block if one exists). Reuse the same constant when the recipe sees the same shape twice in one file.
 - Gate by a per-project switch (extension property) since not every host project has previewed string templates yet.
 
 ## Acceptance
