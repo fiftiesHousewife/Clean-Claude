@@ -153,19 +153,19 @@ receiver is a non-static field/local (not a freshly-built chain like
 repeated with different arguments are usually a registration pattern,
 not temporal coupling.
 
-### F2 — output-argument flag on OpenRewrite visitor accumulators
+### F2 — output-argument flag on `@Override` methods (FIXED)
 
-`visitMethodInvocation`, `visitSwitch`, `visitCatch` are required by
-the OpenRewrite `JavaIsoVisitor` contract. They take a mutable
-accumulator parameter (a `Set<String>`, `List<Integer>`) and append to
-it. The recipe's flag is technically correct but the pattern is
-mandated by the framework — there's no "return the result instead"
-option.
+OpenRewrite visitor methods are one instance of a general rule: any
+`@Override` method has a signature dictated by its supertype. The F2
+fix is "return the result instead of mutating the argument" — but you
+can't change the signature of an override without breaking the
+contract. Same applies to `Consumer.accept`, `BiConsumer`, custom
+visitor interfaces, etc.
 
-**Suggested recipe fix:** in `OutputArgumentRecipe`, skip method
-declarations whose enclosing class extends `JavaIsoVisitor` (or has a
-`@Override` annotation on a method called `visit*`). Alternative: ship
-a package-level `@SuppressCleanCode({F2})` on `recipes/package-info.java`.
+**Fix shipped:** new `BoilerplateMethodSkip.isOverride` helper, called
+from `OutputArgumentRecipe`. Did NOT fold into `isContractMethod`
+because other recipes (e.g. C3 mumbling comment) legitimately fire on
+`@Override` methods.
 
 ### G5 — duplication on template placeholder strings
 
@@ -219,17 +219,18 @@ matches the rest of the G30 messages from
 
 ## Summary
 
-- **Recipe fixes shipped:** 6 (3 anchor fixes, 1 dedup, 2 C3 tightenings)
-- **Total findings:** 1465 → 1464 (the C3 fixes removed 10 false
-  positives; G34 increased by 8 because previously-collapsed duplicates
-  now anchor at distinct methods — net is 1 less)
+- **Recipe fixes shipped:** 7 (3 anchor fixes, 1 dedup, 2 C3 tightenings,
+  1 F2 generalisation)
+- **Total findings:** 1465 → 1435 (-30: F2 dropped 92 → 63 from the
+  `@Override` skip; C3 dropped 16 → 6; G34 increased by 8 because
+  previously class-line-collapsed duplicates now anchor at distinct
+  methods)
 - **Codebase cleanups deferred:** G30 / G24 / G10 / Ch10_1 — structural
   refactors better tackled per-file
 - **Recipe tunings to consider next:**
   1. `TemporalCouplingRecipe` should require same-receiver chains
-  2. `OutputArgumentRecipe` should skip OpenRewrite visitor methods
-  3. `MagicStringRecipe` should ignore literals inside comments
-  4. `ObsoleteCommentRecipe` should not flag tokens that aren't Java
+  2. `MagicStringRecipe` should ignore literals inside comments
+  3. `ObsoleteCommentRecipe` should not flag tokens that aren't Java
      identifiers in the project's class index
-  5. `CheckstyleFindingSource` should rewrite `MethodLength` messages
+  4. `CheckstyleFindingSource` should rewrite `MethodLength` messages
      into Clean Code phrasing
