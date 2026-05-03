@@ -94,6 +94,31 @@ class LineNumberAccuracyIntegrationTest {
         p.put(HeuristicCode.G25, Pattern.compile("[^a-zA-Z_\"]\\d{2,}|\\b\\d+\\.\\d+\\b"));
         p.put(HeuristicCode.G5, Pattern.compile("\".*\""));
         p.put(HeuristicCode.G18, Pattern.compile("\\b(public|private|protected|static)\\b.*\\("));
+        // Method-level findings: the line MUST contain a method
+        // declaration, not just any code. Rejects the common "fell back
+        // to lineOfClass" failure mode where every method-level finding
+        // collapses onto the `public class Foo {` line.
+        final Pattern methodDecl = Pattern.compile(
+                "\\b(public|private|protected|static)\\b[^=]*\\([^=]*\\)|\\b\\w[\\w]*\\s+\\w+\\s*\\(");
+        p.put(HeuristicCode.T1, methodDecl);
+        p.put(HeuristicCode.G30, methodDecl);
+        p.put(HeuristicCode.G15, methodDecl);
+        p.put(HeuristicCode.G31, methodDecl);
+        // Field-shaped: `<modifiers>? <type> name = ...` or `name;`.
+        // Rejects the class declaration for G8 / J3 / G4 / N6.
+        final Pattern fieldOrMethod = Pattern.compile(
+                "\\w+\\s*[=;]|\\b(public|private|protected|static)\\b.*\\(");
+        p.put(HeuristicCode.G8, fieldOrMethod);
+        p.put(HeuristicCode.J3, fieldOrMethod);
+        p.put(HeuristicCode.G4, fieldOrMethod);
+        p.put(HeuristicCode.N6, fieldOrMethod);
+        // J1 wildcard imports: line must be an `import ... *;` statement.
+        p.put(HeuristicCode.J1, Pattern.compile("^\\s*import\\s+.*\\*\\s*;"));
+        // J2 inherited constants: implements/extends line.
+        p.put(HeuristicCode.J2, Pattern.compile("\\b(implements|extends)\\b|\\b(class|interface|enum)\\b"));
+        // G1 embedded language: must be a string literal line, not a
+        // method declaration.
+        p.put(HeuristicCode.G1, Pattern.compile("\".*\""));
         // Class-level (Ch10_1 file-too-long, EI_EXPOSE on records): the
         // SnippetReader slides forward to the type declaration, so accept
         // the declaration keyword OR a body line.

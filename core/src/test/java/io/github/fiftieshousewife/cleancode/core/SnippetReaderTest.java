@@ -144,6 +144,36 @@ class SnippetReaderTest {
     }
 
     @Test
+    void doesNotSlideForwardForImportLineFindings(@TempDir Path tempDir) throws Exception {
+        // J1 (Checkstyle AvoidStarImport) emits at the wildcard-import
+        // line above the class. The previous slide-when-header rule
+        // jumped the snippet onto the class declaration, hiding the
+        // import the user is being warned about. Only line-1 file-level
+        // findings should slide.
+        final Path file = tempDir.resolve("src/main/java/Foo.java");
+        Files.createDirectories(file.getParent());
+        Files.write(file, List.of(
+                "package com.example;",                       // 1
+                "",                                            // 2
+                "import java.util.*;",                         // 3 — focal
+                "",                                            // 4
+                "public class Foo {",                          // 5
+                "    void bar() {}",                           // 6
+                "}"));                                         // 7
+
+        final Finding finding = new Finding(HeuristicCode.J1, "src/main/java/Foo.java",
+                3, 3, "[AvoidStarImport] Avoid wildcard imports",
+                Severity.WARNING, Confidence.HIGH, "checkstyle", "AvoidStarImport", java.util.Map.of());
+
+        final SnippetReader.Snippet snippet = SnippetReader.read(finding, tempDir).orElseThrow();
+        assertAll(
+                () -> assertEquals(3, snippet.focalStartLine(),
+                        "import-line finding must NOT slide to the class declaration"),
+                () -> assertTrue(snippet.lines().stream().anyMatch(s -> s.contains("import java.util.*")),
+                        "the wildcard import must appear in the snippet"));
+    }
+
+    @Test
     void doesNotSlideForwardWhenCommentFindingAnchorsBelowTheClassDeclaration(@TempDir Path tempDir) throws Exception {
         // C2 / C3 / C5 findings deliberately anchor at a comment line
         // INSIDE a method's body. The earlier "slide forward when focal

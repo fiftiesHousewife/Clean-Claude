@@ -24,7 +24,7 @@ public class EmbeddedLanguageRecipe extends ScanningRecipe<EmbeddedLanguageRecip
     private static final Pattern CSS_PATTERN = Pattern.compile(
             "\\{[^}]*(?:font-family|color|background|margin|padding|display|border|width|height)\\s*:");
 
-    public record Row(String className, String methodName, String language) {}
+    public record Row(String className, String methodName, String language, String literalPreview) {}
 
     public static class Accumulator {
         final List<Row> rows = new ArrayList<>();
@@ -71,7 +71,10 @@ public class EmbeddedLanguageRecipe extends ScanningRecipe<EmbeddedLanguageRecip
                     final String methodName = methodDecl != null ? methodDecl.getSimpleName() : "<field>";
                     final String key = className + "." + methodName + "." + language;
                     if (seen.add(key)) {
-                        acc.rows.add(new Row(className, methodName, language));
+                        // Record up to ~60 chars of the literal so the
+                        // adapter can locate the actual line in source.
+                        final String preview = text.length() > 60 ? text.substring(0, 60) : text;
+                        acc.rows.add(new Row(className, methodName, language, preview));
                     }
                 }
                 return lit;

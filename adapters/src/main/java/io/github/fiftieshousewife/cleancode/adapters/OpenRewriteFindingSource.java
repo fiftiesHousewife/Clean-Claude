@@ -279,7 +279,7 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapOutputArgs(List<OutputArgumentRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> finding(HeuristicCode.F2, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.F2, r.className(), r.methodName(),
                         "Method '%s' mutates its argument '%s' (%s) — return the result instead".formatted(
                                 r.methodName(), r.paramName(), r.paramType())))
                 .toList();
@@ -306,10 +306,74 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapDemeter(List<LawOfDemeterRecipe.Row> rows) {
+        // Anchor at the actual chain expression inside the named method
+        // so the snippet shows `a.b().c().d()`, not just the class
+        // declaration. Falls back to the method line, then the class.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G36, r.className(),
-                        "Method chain depth %d: %s".formatted(r.depth(), r.chain())))
+                .map(r -> {
+                    final int line = lineOfChainInMethod(r.className(), r.methodName(), r.chain());
+                    return finding(HeuristicCode.G36, r.className(), line,
+                            "Method chain depth %d: %s".formatted(r.depth(), r.chain()));
+                })
                 .toList();
+    }
+
+    /**
+     * Source-text scan: returns the first line inside {@code methodName}'s
+     * body that contains the chain string (or its salient prefix). Falls
+     * back to the method declaration line if no match.
+     */
+    private int lineOfChainInMethod(final String className, final String methodName,
+                                     final String chain) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return -1;
+        }
+        final int methodLine = lineOfMethodFromSource(className, methodName);
+        if (methodLine <= 0) {
+            return -1;
+        }
+        // Match the first segment of the chain (everything up to the
+        // first space) — chain strings can contain whitespace + arrows
+        // we summarised but the source uses concrete syntax.
+        final String needle = chain == null ? null : firstChainSegment(chain);
+        if (needle == null || needle.isEmpty()) {
+            return methodLine;
+        }
+        int depth = 0;
+        boolean enteredMethodBody = false;
+        for (int i = methodLine - 1; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            if (enteredMethodBody && depth >= 1 && line.contains(needle)) {
+                return i + 1;
+            }
+            for (int j = 0; j < line.length(); j++) {
+                final char c = line.charAt(j);
+                if (c == '{') {
+                    depth++;
+                    enteredMethodBody = true;
+                } else if (c == '}') {
+                    depth--;
+                    if (enteredMethodBody && depth == 0) {
+                        return methodLine;
+                    }
+                }
+            }
+        }
+        return methodLine;
+    }
+
+    /**
+     * First syntactically-meaningful segment of a chain string (e.g.
+     * "a.b().c()" → "a.b()"). Used as the search needle so we don't
+     * try to match arrow-summarised chain strings against concrete
+     * source syntax.
+     */
+    private static String firstChainSegment(final String chain) {
+        final int firstSpace = chain.indexOf(' ');
+        final String head = firstSpace > 0 ? chain.substring(0, firstSpace) : chain;
+        // Trim arrow / bullet / ellipsis chars the recipe may insert.
+        return head.replaceAll("[→\\u2026.…]+$", "");
     }
 
     private List<Finding> mapEncapCond(List<EncapsulateConditionalRecipe.Row> rows) {
@@ -628,11 +692,42 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapEnumForConstants(List<EnumForConstantsRecipe.Row> rows) {
+        // Recipe records lineNumber=-1; resolve to the first
+        // `<prefix>_<word>` field declaration line so the snippet
+        // shows the offending constants, not the class header.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.J3, r.className(), r.lineNumber(),
-                        "%d static final fields with prefix '%s' should be an enum".formatted(
-                                r.fieldCount(), r.prefix())))
+                .map(r -> {
+                    final int line = lineOfFieldWithPrefix(r.className(), r.prefix());
+                    return finding(HeuristicCode.J3, r.className(), line,
+                            "%d static final fields with prefix '%s' should be an enum".formatted(
+                                    r.fieldCount(), r.prefix()));
+                })
                 .toList();
+    }
+
+    /**
+     * First non-comment line in {@code className}'s file containing what
+     * looks like a declaration of a {@code <prefix>_<word>} identifier.
+     * Used by J3 to land on the offending constants, not the class
+     * declaration. Returns -1 if no match.
+     */
+    private int lineOfFieldWithPrefix(final String className, final String prefix) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty() || prefix == null || prefix.isEmpty()) {
+            return -1;
+        }
+        final java.util.regex.Pattern decl = java.util.regex.Pattern.compile(
+                "\\b" + java.util.regex.Pattern.quote(prefix) + "_\\w+\\s*[=;]");
+        for (int i = 0; i < lines.size(); i++) {
+            final String stripped = lines.get(i).strip();
+            if (stripped.startsWith("*") || stripped.startsWith("/*") || stripped.startsWith("//")) {
+                continue;
+            }
+            if (decl.matcher(lines.get(i)).find()) {
+                return i + 1;
+            }
+        }
+        return -1;
     }
 
     private List<Finding> mapShortNames(List<ShortVariableNameRecipe.Row> rows) {
@@ -733,8 +828,12 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapPrivateMethod(List<PrivateMethodTestabilityRecipe.PrivateMethodTestabilityRow> rows) {
+        // The recipe records lineNumber=-1, so finding(code, className,
+        // -1, ...) used to fall back to lineOfClass, putting the snippet
+        // on the class declaration. Resolve via the source-text method
+        // scan instead so T1 lands on the private method itself.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.T1, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.T1, r.className(), r.methodName(),
                         "Private method '%s' (%d lines) should be package-private so it can be tested directly".formatted(
                                 r.methodName(), r.lineCount())))
                 .toList();
@@ -749,26 +848,44 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapVisibility(List<VisibilityReductionRecipe.Row> rows) {
+        // Recipe records lineNumber=-1; without a real line every G8 on
+        // the same class collapses onto the class declaration and looks
+        // like duplicates. Resolve to the actual field declaration line.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G8, r.className(), r.lineNumber(),
-                        "Field '%s' is %s and mutable — should be private".formatted(
-                                r.fieldName(), r.currentVisibility())))
+                .map(r -> {
+                    final int line = lineOfFieldDeclaration(r.className(), r.fieldName());
+                    return finding(HeuristicCode.G8, r.className(), line,
+                            "Field '%s' is %s and mutable — should be private".formatted(
+                                    r.fieldName(), r.currentVisibility()));
+                })
                 .toList();
     }
 
     private List<Finding> mapImperativeLoop(List<ImperativeLoopRecipe.Row> rows) {
+        // Recipe lineNumber=-1; route through findingForMethod so the
+        // anchor is the actual method, not the class header.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G30, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.G30, r.className(), r.methodName(),
                         "Loop in '%s' (%s) can be replaced with a stream operation".formatted(
                                 r.methodName(), r.loopPattern())))
                 .toList();
     }
 
     private List<Finding> mapUncheckedCast(List<UncheckedCastRecipe.Row> rows) {
+        // Recipe lineNumber=-1; memberName can be a method or a field.
+        // Try the method line first (covers most @SuppressWarnings on
+        // methods); fall back to field declaration; final fallback is
+        // the class line.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G4, r.className(), r.lineNumber(),
-                        "@SuppressWarnings(\"unchecked\") on '%s' — redesign to avoid unsafe casts".formatted(
-                                r.memberName())))
+                .map(r -> {
+                    int line = lineOfMethodFromSource(r.className(), r.memberName());
+                    if (line <= 0) {
+                        line = lineOfFieldDeclaration(r.className(), r.memberName());
+                    }
+                    return finding(HeuristicCode.G4, r.className(), line,
+                            "@SuppressWarnings(\"unchecked\") on '%s' — redesign to avoid unsafe casts".formatted(
+                                    r.memberName()));
+                })
                 .toList();
     }
 
@@ -936,10 +1053,32 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapEmbeddedLanguage(List<EmbeddedLanguageRecipe.Row> rows) {
-        return rows.stream()
-                .map(r -> findingForMethod(HeuristicCode.G1, r.className(), r.methodName(),
-                        "Embedded %s in method '%s' — extract to a template or resource file".formatted(
-                                r.language().toUpperCase(), r.methodName())))
+        // Roll up by (className, language) so a file with thirty
+        // append("<html>") methods produces ONE G1, not thirty.
+        // Anchor at the first literal's line so the snippet shows the
+        // actual embedded fragment instead of the method declaration.
+        final java.util.Map<String, List<EmbeddedLanguageRecipe.Row>> grouped =
+                new java.util.LinkedHashMap<>();
+        rows.forEach(r -> grouped
+                .computeIfAbsent(r.className() + "/" + r.language(), k -> new ArrayList<>())
+                .add(r));
+        return grouped.values().stream()
+                .map(group -> {
+                    final EmbeddedLanguageRecipe.Row first = group.getFirst();
+                    final int line = lineOfFirstStringLiteral(first.className(), first.literalPreview());
+                    final String methodList = group.stream()
+                            .map(EmbeddedLanguageRecipe.Row::methodName)
+                            .distinct()
+                            .limit(5)
+                            .reduce((a, b) -> a + ", " + b)
+                            .orElse(first.methodName());
+                    final int extra = group.size() - 5;
+                    final String suffix = extra > 0 ? " (+" + extra + " more)" : "";
+                    return finding(HeuristicCode.G1, first.className(), line,
+                            "Embedded %s across %d method(s) in '%s': %s%s — extract to a template or resource file"
+                                    .formatted(first.language().toUpperCase(), group.size(),
+                                            first.className(), methodList, suffix));
+                })
                 .toList();
     }
 
