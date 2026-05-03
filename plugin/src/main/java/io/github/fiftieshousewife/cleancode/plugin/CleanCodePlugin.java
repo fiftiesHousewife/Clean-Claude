@@ -155,7 +155,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         project.getExtensions().configure(PmdExtension.class, pmd -> {
             pmd.setConsoleOutput(false);
             pmd.setIgnoreFailures(true);
-            pmd.setToolVersion("7.9.0");
+            pmd.setToolVersion("7.24.0");
         });
         project.getTasks().withType(Pmd.class).configureEach(task ->
                 task.getReports().getXml().getRequired().set(true));
@@ -164,7 +164,7 @@ public class CleanCodePlugin implements Plugin<Project> {
     private void configureCheckstyle(Project project) {
         project.getExtensions().configure(CheckstyleExtension.class, cs -> {
             cs.setIgnoreFailures(true);
-            cs.setToolVersion("10.21.4");
+            cs.setToolVersion("10.26.1");
             final var defaultConfigFile = project.file("config/checkstyle/checkstyle.xml");
             if (!defaultConfigFile.exists()) {
                 final String configContent = loadClasspathResource("/cleancode-checkstyle.xml");
@@ -220,8 +220,8 @@ public class CleanCodePlugin implements Plugin<Project> {
             conf.setCanBeConsumed(false);
         });
 
-        project.getDependencies().add("cpd", "net.sourceforge.pmd:pmd-cli:7.9.0");
-        project.getDependencies().add("cpd", "net.sourceforge.pmd:pmd-java:7.9.0");
+        project.getDependencies().add("cpd", "net.sourceforge.pmd:pmd-cli:7.24.0");
+        project.getDependencies().add("cpd", "net.sourceforge.pmd:pmd-java:7.24.0");
 
         final var minimumTokens = ext.getThresholds().getCpdMinimumTokens();
 
