@@ -131,14 +131,55 @@ class OpenRewriteFindingSourceTest {
                 .orElseThrow(() -> new AssertionError(
                         "No Ch7_1 finding for catchOnlyLogs in: " + findings));
 
-        // catchOnlyLogs is declared on line 11 of the source above (1-indexed,
-        // counting the 'package' line as 1). If buildLineIndex is correct,
-        // startLine resolves to 11. The bug reports it lower — typically a
-        // line inside `second()` or even on `first()` because the indexer
-        // never advances past previous methods' closing braces.
-        assertEquals(11, catchFinding.startLine(),
-                "Ch7_1 finding should point at the declaration of catchOnlyLogs (line 11), "
-                        + "not drift back into preceding methods. Got: " + catchFinding.startLine());
+        // The catch keyword for catchOnlyLogs sits on line 14 of the source
+        // above (1-indexed, package line is 1). Ch7_1 now anchors at the
+        // catch keyword (per the user's "highlight the actual issue, not
+        // the surrounding method" feedback). Pre-fix this would have
+        // landed on line 9 because the indexer never advanced past
+        // first()'s closing brace; today it correctly resolves to 14.
+        assertEquals(14, catchFinding.startLine(),
+                "Ch7_1 finding should point at the catch keyword line (14), not drift earlier. "
+                        + "Got: " + catchFinding.startLine());
+    }
+
+    @Test
+    void collectFindings_pointsCh7_1AtCatchKeywordNotMethodDeclaration(@TempDir Path tempDir) throws Exception {
+        // The catch keyword may sit many lines below the method
+        // declaration. The snippet should show the empty/log-only catch
+        // body, not the method's signature/Javadoc.
+        final Path sourceDir = tempDir.resolve("src/main/java/com/example");
+        Files.createDirectories(sourceDir);
+        Files.writeString(sourceDir.resolve("Foo.java"), """
+                package com.example;
+                public class Foo {
+                    /** Some Javadoc that should not be the highlighted line. */
+                    public void doIt() {
+                        try {
+                            workItem();
+                            workItem();
+                            workItem();
+                        } catch (java.io.IOException e) {
+                            System.out.println(e);
+                        }
+                    }
+                    private void workItem() throws java.io.IOException {}
+                }
+                """);
+
+        final ProjectContext ctx = new ProjectContext(
+                tempDir, "test", "1.0", "21",
+                List.of(tempDir.resolve("src/main/java")),
+                List.of(), tempDir.resolve("build"), tempDir.resolve("build/reports"), List.of());
+
+        final Finding catchFinding = source.collectFindings(ctx).stream()
+                .filter(f -> f.code() == HeuristicCode.Ch7_1)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected a Ch7_1 finding"));
+
+        // Line 9 in the fixture above contains `} catch (java.io.IOException e) {`.
+        assertEquals(9, catchFinding.startLine(),
+                "Ch7_1 should point at the catch keyword line, not the method declaration. Got: "
+                        + catchFinding.startLine());
     }
 
     @Test

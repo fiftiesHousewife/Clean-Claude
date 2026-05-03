@@ -287,8 +287,14 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapCatchLog(List<CatchLogContinueRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> findingForMethod(HeuristicCode.Ch7_1, r.className(), r.methodName(),
-                        "Catch block in '%s' only logs or is empty".formatted(r.methodName())))
+                .map(r -> {
+                    final String sourcePath = resolveSourcePath(r.className());
+                    final int line = lineOfCatchInMethod(r.className(), r.methodName(), r.exceptionType());
+                    final String message = "Catch block in '%s' only logs or is empty".formatted(r.methodName());
+                    return Finding.at(HeuristicCode.Ch7_1, sourcePath, line, line,
+                            message, severityFor(HeuristicCode.Ch7_1), Confidence.HIGH, TOOL,
+                            HeuristicCode.Ch7_1.name());
+                })
                 .toList();
     }
 
@@ -418,13 +424,43 @@ public class OpenRewriteFindingSource implements FindingSource {
         // G25 in Clean Code is specifically about magic NUMBERS. Repeated
         // string literals are duplication — G5. The fix (extract to a
         // named constant) is the same shape, but the heuristic banner the
-        // user reads should match the kind of smell: numbers vs duplicated
-        // text. Mapping these to G5 keeps the G25 column purely numeric.
+        // user reads should match the kind of smell.
+        //
+        // The recipe currently records lineNumber=-1 for each occurrence,
+        // so we resolve the line ourselves by searching the source for
+        // the first appearance of the literal.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G5, r.className(), r.lineNumber(),
-                        "String \"%s\" appears %d times — extract to a named constant".formatted(
-                                r.value(), r.count())))
+                .map(r -> {
+                    final int line = lineOfFirstStringLiteral(r.className(), r.value());
+                    return finding(HeuristicCode.G5, r.className(), line,
+                            "String \"%s\" appears %d times — extract to a named constant".formatted(
+                                    r.value(), r.count()));
+                })
                 .toList();
+    }
+
+    /**
+     * Returns the source line of the first appearance of {@code "literal"}
+     * in the file containing {@code className}, or -1 if the file isn't
+     * readable. Skips comment lines so a Javadoc that mentions the literal
+     * doesn't pull the snippet onto the wrong line.
+     */
+    private int lineOfFirstStringLiteral(final String className, final String literal) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return -1;
+        }
+        final String quoted = '"' + literal + '"';
+        for (int i = 0; i < lines.size(); i++) {
+            final String stripped = lines.get(i).strip();
+            if (stripped.startsWith("*") || stripped.startsWith("/*") || stripped.startsWith("//")) {
+                continue;
+            }
+            if (lines.get(i).contains(quoted)) {
+                return i + 1;
+            }
+        }
+        return -1;
     }
 
     private List<Finding> mapWhitespaceSplit(List<WhitespaceSplitMethodRecipe.Row> rows) {
@@ -663,9 +699,15 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapBroadCatch(List<BroadCatchRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> findingForMethod(HeuristicCode.Ch7_1, r.className(), r.methodName(),
-                        "Method '%s' catches %s — catch specific exception types instead".formatted(
-                                r.methodName(), r.caughtType())))
+                .map(r -> {
+                    final String sourcePath = resolveSourcePath(r.className());
+                    final int line = lineOfCatchInMethod(r.className(), r.methodName(), r.caughtType());
+                    final String message = "Method '%s' catches %s — catch specific exception types instead"
+                            .formatted(r.methodName(), r.caughtType());
+                    return Finding.at(HeuristicCode.Ch7_1, sourcePath, line, line,
+                            message, severityFor(HeuristicCode.Ch7_1), Confidence.HIGH, TOOL,
+                            HeuristicCode.Ch7_1.name());
+                })
                 .toList();
     }
 
@@ -679,9 +721,15 @@ public class OpenRewriteFindingSource implements FindingSource {
 
     private List<Finding> mapSwallowedException(List<SwallowedExceptionRecipe.Row> rows) {
         return rows.stream()
-                .map(r -> findingForMethod(HeuristicCode.G4, r.className(), r.methodName(),
-                        "Method '%s' catches %s and silently swallows it — handle or propagate".formatted(
-                                r.methodName(), r.exceptionType())))
+                .map(r -> {
+                    final String sourcePath = resolveSourcePath(r.className());
+                    final int line = lineOfCatchInMethod(r.className(), r.methodName(), r.exceptionType());
+                    final String message = "Method '%s' catches %s and silently swallows it — handle or propagate"
+                            .formatted(r.methodName(), r.exceptionType());
+                    return Finding.at(HeuristicCode.G4, sourcePath, line, line,
+                            message, severityFor(HeuristicCode.G4), Confidence.HIGH, TOOL,
+                            HeuristicCode.G4.name());
+                })
                 .toList();
     }
 
@@ -764,7 +812,114 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .orElse(-1);
     }
 
+    /**
+     * Returns the source line of the first {@code catch} clause whose
+     * exception simple-name matches {@code exceptionType} inside a method
+     * named {@code methodName} in the file containing {@code className}.
+     *
+     * <p>Source-text-driven on purpose. The AST line index accumulates
+     * drift across methods, so anchoring at AST node lines is unreliable.
+     * Instead, find the method declaration via a regex on actual source
+     * text, then scan its body with brace-depth tracking for the first
+     * matching catch keyword.
+     *
+     * <p>Falls back to a best-guess method line if no matching catch is
+     * found or the source can't be read.
+     */
+    private int lineOfCatchInMethod(final String className, final String methodName,
+                                    final String exceptionType) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return lineOfMethod(className, methodName);
+        }
+        final String wantedSimple = simpleName(exceptionType);
+        // Method declaration regex: any modifiers, optional generic +
+        // return type, then `methodName(`. We only need to anchor at the
+        // method's opening line; brace tracking handles the rest.
+        final java.util.regex.Pattern methodDecl = java.util.regex.Pattern.compile(
+                "\\b" + java.util.regex.Pattern.quote(methodName) + "\\s*\\(");
+        final java.util.regex.Pattern catchPattern = java.util.regex.Pattern.compile(
+                "\\bcatch\\s*\\([^)]*\\b"
+                        + java.util.regex.Pattern.quote(wantedSimple)
+                        + "\\b");
+
+        for (int startIdx = 0; startIdx < lines.size(); startIdx++) {
+            if (!methodDecl.matcher(lines.get(startIdx)).find()) {
+                continue;
+            }
+            // Skip method calls / declarations that aren't real method
+            // openings: they should contain `methodName(` AND end with `{`
+            // or at least look like a declaration. The brace walker below
+            // will exit immediately on a non-method match (depth never
+            // increases), so we'd just continue scanning — keep this
+            // permissive.
+            final int catchLine = scanCatchInMethodBody(lines, startIdx, catchPattern);
+            if (catchLine > 0) {
+                return catchLine;
+            }
+        }
+        return lineOfMethod(className, methodName);
+    }
+
+    private static int scanCatchInMethodBody(final List<String> lines, final int startIdx,
+                                              final java.util.regex.Pattern catchPattern) {
+        int depth = 0;
+        boolean enteredMethodBody = false;
+        for (int i = startIdx; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            if (enteredMethodBody && depth >= 1
+                    && catchPattern.matcher(line).find()) {
+                return i + 1;
+            }
+            for (int j = 0; j < line.length(); j++) {
+                final char c = line.charAt(j);
+                if (c == '{') {
+                    depth++;
+                    enteredMethodBody = true;
+                } else if (c == '}') {
+                    depth--;
+                    if (enteredMethodBody && depth == 0) {
+                        return -1;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    private static String simpleName(final String fullyQualifiedOrSimple) {
+        if (fullyQualifiedOrSimple == null || fullyQualifiedOrSimple.isEmpty()) {
+            return fullyQualifiedOrSimple;
+        }
+        final int dot = fullyQualifiedOrSimple.lastIndexOf('.');
+        return dot >= 0 ? fullyQualifiedOrSimple.substring(dot + 1) : fullyQualifiedOrSimple;
+    }
+
+    private final Map<String, List<String>> sourceLinesCache = new HashMap<>();
+
+    private List<String> readSourceLines(final String className) {
+        final String path = classNameToSourcePath.get(className);
+        if (path == null) {
+            return null;
+        }
+        return sourceLinesCache.computeIfAbsent(path, p -> {
+            try {
+                return Files.readAllLines(Path.of(p));
+            } catch (IOException e) {
+                return List.of();
+            }
+        });
+    }
+
     private int lineOfMethod(final String className, final String methodName) {
+        // Prefer source-text scan: AST line index drifts on lambdas,
+        // multiline annotations, and other Spaces we don't fully count.
+        // The text-based answer matches what the user sees in their editor.
+        final int textLine = lineOfMethodFromSource(className, methodName);
+        if (textLine > 0) {
+            return textLine;
+        }
+        // Fallback to AST-based lookup if source can't be read.
         final J.CompilationUnit cu = classNameToCompilationUnit.get(className);
         if (cu == null) {
             return lineOfClass(className);
@@ -784,6 +939,37 @@ public class OpenRewriteFindingSource implements FindingSource {
             }
         }.visit(cu, new Object());
         return line[0] > 0 ? line[0] : lineOfClass(className);
+    }
+
+    /**
+     * Source-text scan for the first line that looks like a method
+     * declaration named {@code methodName}. Skips comment lines (so a
+     * Javadoc {@code @link methodName} reference doesn't match) and
+     * skips simple invocations (a line is treated as a declaration only
+     * when {@code methodName(} is preceded by an identifier-or-modifier
+     * token, e.g. {@code public void <name>(} or {@code Foo <name>(}).
+     */
+    private int lineOfMethodFromSource(final String className, final String methodName) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return -1;
+        }
+        // Match `<word> methodName(` so we only catch declarations, not
+        // free-standing call sites like `methodName()`. Modifiers,
+        // generics, and return types all end at a space-or-`>` boundary
+        // before the method name.
+        final java.util.regex.Pattern decl = java.util.regex.Pattern.compile(
+                "[\\w>]\\s+" + java.util.regex.Pattern.quote(methodName) + "\\s*\\(");
+        for (int i = 0; i < lines.size(); i++) {
+            final String stripped = lines.get(i).strip();
+            if (stripped.startsWith("*") || stripped.startsWith("/*") || stripped.startsWith("//")) {
+                continue;
+            }
+            if (decl.matcher(lines.get(i)).find()) {
+                return i + 1;
+            }
+        }
+        return -1;
     }
 
     private final Map<UUID, Map<UUID, Integer>> lineIndexCache = new HashMap<>();

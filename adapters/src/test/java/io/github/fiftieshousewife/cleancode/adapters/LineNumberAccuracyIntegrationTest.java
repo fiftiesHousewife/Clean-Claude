@@ -71,7 +71,14 @@ class LineNumberAccuracyIntegrationTest {
 
     private static final Map<HeuristicCode, Pattern> ANCHOR_PATTERNS = new LinkedHashMap<>(Map.of(
             HeuristicCode.Ch7_1, Pattern.compile("\\bcatch\\s*\\("),
-            HeuristicCode.Ch7_2, Pattern.compile("\\breturn\\s+null\\b|\\bOptional\\b"),
+            // Ch7_2 covers both "return null" (the book heuristic) and
+            // null-density (a method-level smell). Accept either the
+            // explicit `return null` / `Optional` line or a method
+            // declaration line where the density warning legitimately
+            // anchors.
+            HeuristicCode.Ch7_2, Pattern.compile(
+                    "\\breturn\\s+null\\b|\\bOptional\\b"
+                            + "|^\\s*(public|private|protected|static|final|\\S+\\s+\\w+\\s*\\()"),
             HeuristicCode.F1, Pattern.compile("\\b(public|private|protected|static)\\b.*\\(.*,"),
             HeuristicCode.G28, Pattern.compile("\\b(if|while|for)\\s*\\(|&&|\\|\\||\\?\\s*[^.]"),
             HeuristicCode.G29, Pattern.compile("!=|==|!\\s*\\(|!\\w"),
@@ -161,8 +168,15 @@ class LineNumberAccuracyIntegrationTest {
      */
     private static int currentDriftCapFor(final String fixtureName) {
         return switch (fixtureName) {
-            case "ServeTask.java" -> 3;
-            case "ChangeApplier.java" -> 3;
+            // ServeTask: catch-line pinning landed for catch-only-logs,
+            // broad-catch, and swallowed-exception findings — all 6
+            // checked findings now anchor correctly.
+            case "ServeTask.java" -> 0;
+            // ChangeApplier: G5 magic-string lookup now resolves via
+            // source-text scan; lineOfMethod prefers a source-text scan
+            // over the AST line index. All three checked findings now
+            // anchor correctly.
+            case "ChangeApplier.java" -> 0;
             case "HarnessRecipePass.java" -> 0;
             default -> 0;
         };
