@@ -179,21 +179,20 @@ class ReworkOrchestratorTest {
     @Test
     void harnessRetryReinvokesRecipePassOnTheAgentsOutput()
             throws ReworkOrchestrator.ReworkException, IOException {
-        // Seed a file whose shape will ALSO match a recipe after the retry boundary.
-        // MakeMethodStaticRecipe is deterministic and fires whenever a non-static
-        // method with no instance-state references exists.
+        // Seed a file whose shape matches a deterministic recipe in the
+        // harness sweep — non-final method parameters get final added by
+        // AddFinalRecipe, which is sufficient to verify the harness pass
+        // recorded an action.
         final Path file = seedFile("com/example/Foo.java", """
                 package com.example;
                 public final class Foo {
-                    public int add(final int a, final int b) {
-                        final int s = a + b;
-                        final int d = s * 2;
-                        return d;
+                    public int add(int a, int b) {
+                        return a + b;
                     }
                 }
                 """);
         final AggregatedReport baseline = reportWith(
-                findingOn("com/example/Foo.java", HeuristicCode.G18, 1, "add is static-able"));
+                findingOn("com/example/Foo.java", HeuristicCode.G8, 1, "params should be final"));
         final AggregatedReport postFirstPass = reportWith(
                 findingOn("com/example/Foo.java", HeuristicCode.G29, 1,
                         "residual introduced by agent"));
@@ -211,8 +210,8 @@ class ReworkOrchestratorTest {
         assertTrue(harnessPassCount >= 1,
                 "main pass must record at least one HarnessRecipePass action; got "
                         + report.actionsTaken());
-        assertTrue(Files.readString(file).contains("static"),
-                "MakeMethodStaticRecipe should have made `add` static during the pass");
+        assertTrue(Files.readString(file).contains("final int a"),
+                "AddFinalRecipe should have made `a` final during the pass");
     }
 
     @Test

@@ -19,14 +19,13 @@ class HarnessRecipePassTest {
     Path tempDir;
 
     @Test
-    void appliesMakeStaticAndDeleteSectionCommentsToTheSameFile() throws IOException {
+    void appliesAddFinalAndDeleteSectionCommentsToTheSameFile() throws IOException {
         final Path file = tempDir.resolve("Mixed.java");
         Files.writeString(file, """
                 package com.example;
                 public class Mixed {
-                    public int run() {
+                    public int run(int x) {
                         // Phase 1: start
-                        int x = 1;
                         return x + 1;
                     }
                 }
@@ -38,13 +37,13 @@ class HarnessRecipePassTest {
         assertAll(
                 () -> assertEquals(1, summary.filesChanged(), "one file changed: " + summary),
                 () -> assertTrue(summary.recipeNamesByFile().get(file)
-                                .contains("MakeMethodStaticRecipe"),
-                        "static was added: " + summary),
+                                .contains("AddFinalRecipe"),
+                        "final was added to params: " + summary),
                 () -> assertTrue(summary.recipeNamesByFile().get(file)
                                 .contains("DeleteSectionCommentsRecipe"),
                         "section comment removed: " + summary),
-                () -> assertTrue(after.contains("public static int run()"),
-                        "file updated with static: " + after),
+                () -> assertTrue(after.contains("final int x"),
+                        "file updated with final param: " + after),
                 () -> assertFalse(after.contains("Phase 1"),
                         "section comment stripped: " + after));
     }
@@ -95,7 +94,10 @@ class HarnessRecipePassTest {
         assertAll(
                 () -> assertEquals(2, summary.filesChanged()),
                 () -> assertTrue(summary.allRecipeNames()
-                                .contains("MakeMethodStaticRecipe"),
-                        "both files get static: " + summary));
+                                .contains("DeleteSectionCommentsRecipe"),
+                        "section comment was stripped from A: " + summary),
+                () -> assertTrue(summary.allRecipeNames()
+                                .contains("AddFinalRecipe"),
+                        "AddFinalRecipe fired on B's non-final param: " + summary));
     }
 }
