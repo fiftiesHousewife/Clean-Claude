@@ -68,10 +68,13 @@ public class CatchLogContinueRecipe extends ScanningRecipe<CatchLogContinueRecip
             }
 
             private boolean isCatchLogContinue(J.Try.Catch catchClause) {
-                List<Statement> statements = catchClause.getBody().getStatements();
+                final List<Statement> statements = catchClause.getBody().getStatements();
 
+                // Empty catch is owned by SwallowedExceptionRecipe (G4) —
+                // emitting Ch7.1 here too would double-count the same
+                // catch under "swallowed" and "log-and-continue".
                 if (statements.isEmpty()) {
-                    return true;
+                    return false;
                 }
 
                 if (containsThrow(statements)) {

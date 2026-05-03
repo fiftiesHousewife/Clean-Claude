@@ -35,7 +35,10 @@ class CatchLogContinueRecipeTest {
     }
 
     @Test
-    void detectsEmptyCatchBlock() {
+    void doesNotDetectEmptyCatchBlockBecauseG4OwnsThat() {
+        // An empty catch is the canonical "swallowed exception" — that
+        // belongs to SwallowedExceptionRecipe (G4). If Ch7.1 also fired
+        // here, every empty catch would surface twice (Ch7.1 + G4).
         final var recipe = new CatchLogContinueRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
@@ -47,7 +50,8 @@ class CatchLogContinueRecipeTest {
                 }
                 """);
 
-        assertEquals(1, recipe.collectedRows().size());
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "empty catch is owned by G4 (SwallowedException), not Ch7.1");
     }
 
     @Test

@@ -183,7 +183,26 @@ public class OpenRewriteFindingSource implements FindingSource {
     private List<Finding> extractFindings(List<ScanningRecipe<?>> recipes) {
         final List<Finding> findings = new ArrayList<>();
         recipes.forEach(recipe -> findings.addAll(mapRecipe(recipe)));
-        return findings;
+        return dedupCatchFindings(findings);
+    }
+
+    /**
+     * A single catch block can attract multiple recipes: BroadCatchRecipe
+     * (Ch7.1) for `catch (Exception e)`, and SwallowedExceptionRecipe (G4)
+     * for an empty body. When both fire on the same line G4 wins — it
+     * names the bigger smell. Drop the Ch7.1 finding to avoid the user
+     * seeing the same catch under two heuristics.
+     */
+    private List<Finding> dedupCatchFindings(final List<Finding> findings) {
+        record FileLine(String file, int line) {}
+        final java.util.Set<FileLine> g4Lines = findings.stream()
+                .filter(f -> f.code() == HeuristicCode.G4)
+                .map(f -> new FileLine(f.sourceFile(), f.startLine()))
+                .collect(java.util.stream.Collectors.toSet());
+        return findings.stream()
+                .filter(f -> !(f.code() == HeuristicCode.Ch7_1
+                        && g4Lines.contains(new FileLine(f.sourceFile(), f.startLine()))))
+                .toList();
     }
 
     private List<Finding> mapRecipe(ScanningRecipe<?> recipe) {
@@ -905,11 +924,52 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapStringSwitch(List<StringSwitchRecipe.Row> rows) {
+        // Recipe records lineNumber=-1; without resolution every G23 on a
+        // class lands on the class declaration. Scan inside the method's
+        // body for `switch (selector)` so the snippet shows the switch.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G23, r.className(), r.lineNumber(),
-                        "Switch on String '%s' with %d cases — replace with an enum that encapsulates the behaviour".formatted(
-                                r.selectorName(), r.caseCount())))
+                .map(r -> {
+                    final int line = lineOfSwitchInMethod(r.className(), r.methodName(), r.selectorName());
+                    return finding(HeuristicCode.G23, r.className(), line,
+                            "Switch on String '%s' with %d cases — replace with an enum that encapsulates the behaviour".formatted(
+                                    r.selectorName(), r.caseCount()));
+                })
                 .toList();
+    }
+
+    private int lineOfSwitchInMethod(final String className, final String methodName,
+                                      final String selectorName) {
+        final List<String> lines = readSourceLines(className);
+        if (lines == null || lines.isEmpty()) {
+            return -1;
+        }
+        final int methodLine = lineOfMethodFromSource(className, methodName);
+        if (methodLine <= 0) {
+            return -1;
+        }
+        final java.util.regex.Pattern switchPattern = java.util.regex.Pattern.compile(
+                "\\bswitch\\s*\\(\\s*" + java.util.regex.Pattern.quote(selectorName) + "\\b");
+        int depth = 0;
+        boolean enteredMethodBody = false;
+        for (int i = methodLine - 1; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            if (enteredMethodBody && depth >= 1 && switchPattern.matcher(line).find()) {
+                return i + 1;
+            }
+            for (int j = 0; j < line.length(); j++) {
+                final char c = line.charAt(j);
+                if (c == '{') {
+                    depth++;
+                    enteredMethodBody = true;
+                } else if (c == '}') {
+                    depth--;
+                    if (enteredMethodBody && depth == 0) {
+                        return methodLine;
+                    }
+                }
+            }
+        }
+        return methodLine;
     }
 
     private List<Finding> mapVisibility(List<VisibilityReductionRecipe.Row> rows) {
