@@ -445,21 +445,26 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsConfidenceFilterBarAndPersistenceScript(@TempDir Path tempDir) throws Exception {
+    void severityBadgesActAsClickableFilterTogglesWithPersistence(@TempDir Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
         final String html = Files.readString(output);
 
         assertAll(
-                () -> assertTrue(html.contains("id=\"confidence-filter\""),
-                        "filter bar must be present so the user can hide low-confidence noise"),
-                () -> assertTrue(html.contains("data-confidence-toggle=\"high\"")
-                        && html.contains("data-confidence-toggle=\"medium\"")
-                        && html.contains("data-confidence-toggle=\"low\""),
-                        "all three confidence toggles must be wired"),
-                () -> assertTrue(html.contains("cleanCodeConfidenceFilter"),
-                        "filter selection persists in localStorage so it survives reloads"));
+                () -> assertTrue(html.contains("id=\"severity-filter\""),
+                        "the existing summary badges double as the filter so the UI stays compact"),
+                () -> assertTrue(html.contains("data-severity-toggle=\"error\"")
+                        && html.contains("data-severity-toggle=\"warning\"")
+                        && html.contains("data-severity-toggle=\"info\""),
+                        "every severity badge carries a toggle attribute"),
+                () -> assertTrue(html.contains("data-severity=\"error\"")
+                        || html.contains("data-severity=\"warning\""),
+                        "rows carry data-severity so the filter can match them"),
+                () -> assertTrue(html.contains("cleanCodeSeverityFilter"),
+                        "filter selection persists in localStorage so it survives reloads"),
+                () -> assertTrue(html.contains("classList.toggle('off'"),
+                        "off-state styling makes a hidden severity visually obvious"));
     }
 
     private AggregatedReport sampleReport() {

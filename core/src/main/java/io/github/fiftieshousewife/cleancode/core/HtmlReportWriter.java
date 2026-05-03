@@ -51,7 +51,6 @@ public final class HtmlReportWriter {
         appendStagingBar(html);
         if (!report.findings().isEmpty()) {
             appendIdePicker(html, ideUrlScheme);
-            appendConfidenceFilter(html);
         }
         appendSeveritySummary(html, report);
 
@@ -67,7 +66,7 @@ public final class HtmlReportWriter {
         appendStagingModal(html);
         if (!report.findings().isEmpty()) {
             appendInteractionScript(html, projectRoot);
-            appendConfidenceFilterScript(html);
+            appendSeverityFilterScript(html);
             appendSnippetToggleScript(html);
         }
         appendStagingScript(html);
@@ -122,7 +121,11 @@ public final class HtmlReportWriter {
         html.append("    main { max-width: min(1800px, 96vw); margin: 2rem auto; padding: 0 1rem; }\n");
         html.append("    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }\n");
         html.append("    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; ");
-        html.append("font-weight: 600; font-size: 1.1rem; color: #fff; }\n");
+        html.append("font-weight: 600; font-size: 1.1rem; color: #fff; cursor: pointer; ");
+        html.append("border: 0; font-family: inherit; user-select: none; ");
+        html.append("transition: opacity 0.15s, transform 0.15s; }\n");
+        html.append("    .summary .badge:hover { transform: scale(1.03); }\n");
+        html.append("    .summary .badge.off { opacity: 0.35; text-decoration: line-through; }\n");
         html.append("    .badge.error { background: #c0392b; }\n");
         html.append("    .badge.warning { background: #e67e22; }\n");
         html.append("    .badge.info { background: #95a5a6; }\n");
@@ -160,13 +163,19 @@ public final class HtmlReportWriter {
         html.append("    .confidence-summary .high { color: #27ae60; font-weight: 600; }\n");
         html.append("    .confidence-summary .medium { color: #d35400; }\n");
         html.append("    .confidence-summary .low { color: #95a5a6; }\n");
-        html.append("    .confidence-filter { font-size: 0.85rem; color: #555; ");
+        html.append("    .severity-filter { font-size: 0.85rem; color: #555; ");
         html.append("margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: #fff; ");
         html.append("border: 1px solid #ddd; border-radius: 6px; ");
         html.append("display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }\n");
-        html.append("    .confidence-filter label { display: inline-flex; align-items: center; ");
+        html.append("    .severity-filter label { display: inline-flex; align-items: center; ");
         html.append("gap: 0.3rem; cursor: pointer; }\n");
-        html.append("    .confidence-filter input { margin: 0; }\n");
+        html.append("    .severity-filter input { margin: 0; }\n");
+        html.append("    .sev-pill { display: inline-block; font-size: 0.7rem; ");
+        html.append("font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 999px; ");
+        html.append("text-transform: uppercase; letter-spacing: 0.04em; }\n");
+        html.append("    .sev-pill.error { background: #c0392b; color: #fff; }\n");
+        html.append("    .sev-pill.warning { background: #e67e22; color: #fff; }\n");
+        html.append("    .sev-pill.info { background: #95a5a6; color: #fff; }\n");
         html.append("    td:first-child { white-space: nowrap; }\n");
         html.append("    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; word-break: break-all; }\n");
         html.append("    td:nth-child(3) { overflow-wrap: anywhere; word-break: break-word; }\n");
@@ -269,18 +278,6 @@ public final class HtmlReportWriter {
         html.append("    .modal .threshold-row > div { flex: 1; }\n");
     }
 
-    private static void appendConfidenceFilter(final StringBuilder html) {
-        html.append("    <div class=\"confidence-filter\" id=\"confidence-filter\">\n");
-        html.append("      <span style=\"color:#999;\">Show findings:</span>\n");
-        html.append("      <label><input type=\"checkbox\" data-confidence-toggle=\"high\" checked>");
-        html.append("<span class=\"confidence-pill high\">High</span></label>\n");
-        html.append("      <label><input type=\"checkbox\" data-confidence-toggle=\"medium\" checked>");
-        html.append("<span class=\"confidence-pill medium\">Medium</span></label>\n");
-        html.append("      <label><input type=\"checkbox\" data-confidence-toggle=\"low\" checked>");
-        html.append("<span class=\"confidence-pill low\">Low</span></label>\n");
-        html.append("    </div>\n");
-    }
-
     private static void appendIdePicker(StringBuilder html, String ideUrlScheme) {
         html.append("    <div class=\"ide-picker\">\n");
         html.append("      Open clicked links in: <select id=\"ide-scheme\">");
@@ -370,31 +367,39 @@ public final class HtmlReportWriter {
         html.append("  </script>\n");
     }
 
-    private static void appendConfidenceFilterScript(final StringBuilder html) {
+    private static void appendSeverityFilterScript(final StringBuilder html) {
         html.append("  <script>\n");
         html.append("    (function() {\n");
-        html.append("      const STORAGE_KEY = 'cleanCodeConfidenceFilter';\n");
-        html.append("      const filter = document.getElementById('confidence-filter');\n");
-        html.append("      if (!filter) return;\n");
-        html.append("      const toggles = filter.querySelectorAll('input[data-confidence-toggle]');\n");
+        html.append("      const STORAGE_KEY = 'cleanCodeSeverityFilter';\n");
+        html.append("      const bar = document.getElementById('severity-filter');\n");
+        html.append("      if (!bar) return;\n");
+        html.append("      const badges = bar.querySelectorAll('[data-severity-toggle]');\n");
         html.append("      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');\n");
-        html.append("      if (stored) {\n");
-        html.append("        toggles.forEach(t => { t.checked = !!stored[t.dataset.confidenceToggle]; });\n");
-        html.append("      }\n");
+        html.append("      const visible = stored || { error: true, warning: true, info: true };\n");
         html.append("      function apply() {\n");
-        html.append("        const visible = {};\n");
-        html.append("        toggles.forEach(t => { visible[t.dataset.confidenceToggle] = t.checked; });\n");
         html.append("        localStorage.setItem(STORAGE_KEY, JSON.stringify(visible));\n");
-        html.append("        document.querySelectorAll('tr[data-confidence]').forEach(row => {\n");
-        html.append("          row.style.display = visible[row.dataset.confidence] ? '' : 'none';\n");
+        html.append("        badges.forEach(b => b.classList.toggle('off', !visible[b.dataset.severityToggle]));\n");
+        html.append("        document.querySelectorAll('tr[data-severity]').forEach(row => {\n");
+        html.append("          const show = visible[row.dataset.severity];\n");
+        html.append("          if (row.classList.contains('snippet-row')) {\n");
+        html.append("            if (!show) row.hidden = true;\n");
+        html.append("            row.style.display = show ? '' : 'none';\n");
+        html.append("          } else {\n");
+        html.append("            row.style.display = show ? '' : 'none';\n");
+        html.append("          }\n");
         html.append("        });\n");
         html.append("        document.querySelectorAll('details[data-code]').forEach(group => {\n");
-        html.append("          const anyVisible = Array.from(group.querySelectorAll('tr[data-confidence]'))\n");
-        html.append("              .some(r => r.style.display !== 'none');\n");
+        html.append("          const rows = Array.from(group.querySelectorAll('tr[data-severity]'))\n");
+        html.append("              .filter(r => !r.classList.contains('snippet-row'));\n");
+        html.append("          const anyVisible = rows.some(r => r.style.display !== 'none');\n");
         html.append("          group.style.display = anyVisible ? '' : 'none';\n");
         html.append("        });\n");
         html.append("      }\n");
-        html.append("      toggles.forEach(t => t.addEventListener('change', apply));\n");
+        html.append("      badges.forEach(b => b.addEventListener('click', () => {\n");
+        html.append("        const key = b.dataset.severityToggle;\n");
+        html.append("        visible[key] = !visible[key];\n");
+        html.append("        apply();\n");
+        html.append("      }));\n");
         html.append("      apply();\n");
         html.append("    })();\n");
         html.append("  </script>\n");
@@ -666,11 +671,14 @@ public final class HtmlReportWriter {
         final int warnings = bySeverity.getOrDefault(Severity.WARNING, List.of()).size();
         final int info = bySeverity.getOrDefault(Severity.INFO, List.of()).size();
 
-        html.append("    <div class=\"summary\">\n");
-        html.append("      <span class=\"badge error\">").append(errors).append(" errors</span>\n");
-        html.append("      <span class=\"badge warning\">").append(warnings);
-        html.append(" warnings</span>\n");
-        html.append("      <span class=\"badge info\">").append(info).append(" info</span>\n");
+        html.append("    <div class=\"summary\" id=\"severity-filter\" ");
+        html.append("title=\"Click a badge to hide findings of that severity\">\n");
+        html.append("      <button type=\"button\" class=\"badge error\" data-severity-toggle=\"error\">");
+        html.append(errors).append(" errors</button>\n");
+        html.append("      <button type=\"button\" class=\"badge warning\" data-severity-toggle=\"warning\">");
+        html.append(warnings).append(" warnings</button>\n");
+        html.append("      <button type=\"button\" class=\"badge info\" data-severity-toggle=\"info\">");
+        html.append(info).append(" info</button>\n");
         html.append("    </div>\n");
     }
 
@@ -733,14 +741,16 @@ public final class HtmlReportWriter {
                                           HeuristicCode code,
                                           String repositoryUrl, Path projectRoot,
                                           String ideUrlScheme) {
-        final String severityClass = "sev-" + finding.severity().name().toLowerCase();
+        final String severityLevel = finding.severity().name().toLowerCase();
+        final String severityClass = "sev-" + severityLevel;
         final String confidenceLevel = finding.confidence().name().toLowerCase();
         final String location = formatLocation(finding);
         final String locationHtml = buildLocationHtml(finding, location, repositoryUrl,
                 projectRoot, ideUrlScheme);
         final java.util.Optional<SnippetReader.Snippet> snippet = SnippetReader.read(finding, projectRoot);
 
-        html.append("          <tr data-confidence=\"").append(confidenceLevel).append("\">");
+        html.append("          <tr data-severity=\"").append(severityLevel)
+                .append("\" data-confidence=\"").append(confidenceLevel).append("\">");
         html.append("<td class=\"").append(severityClass).append("\">");
         html.append(finding.severity().name()).append("</td>");
         html.append("<td><span class=\"confidence-pill ").append(confidenceLevel).append("\">");
@@ -759,7 +769,7 @@ public final class HtmlReportWriter {
         html.append("</tr>\n");
 
         if (snippet.isPresent()) {
-            appendSnippetRow(html, snippet.get(), confidenceLevel);
+            appendSnippetRow(html, snippet.get(), severityLevel, confidenceLevel);
         }
     }
 
@@ -779,8 +789,9 @@ public final class HtmlReportWriter {
     }
 
     private static void appendSnippetRow(final StringBuilder html, final SnippetReader.Snippet snippet,
-                                          final String confidenceLevel) {
-        html.append("          <tr class=\"snippet-row\" data-confidence=\"").append(confidenceLevel);
+                                          final String severityLevel, final String confidenceLevel) {
+        html.append("          <tr class=\"snippet-row\" data-severity=\"").append(severityLevel);
+        html.append("\" data-confidence=\"").append(confidenceLevel);
         html.append("\" hidden><td colspan=\"5\"><pre>");
         for (int i = 0; i < snippet.lines().size(); i++) {
             final int lineNumber = snippet.firstLineNumber() + i;
