@@ -144,6 +144,39 @@ class SnippetReaderTest {
     }
 
     @Test
+    void doesNotSlideForwardWhenCommentFindingAnchorsBelowTheClassDeclaration(@TempDir Path tempDir) throws Exception {
+        // C2 / C3 / C5 findings deliberately anchor at a comment line
+        // INSIDE a method's body. The earlier "slide forward when focal
+        // looks like a header" rule fired for those because it didn't
+        // distinguish between header-region comments and in-body
+        // comments. The user complaint: "C2 still points to completely
+        // wrong place". Make sure a comment-anchored finding inside the
+        // class stays put.
+        final Path file = tempDir.resolve("src/main/java/Foo.java");
+        Files.createDirectories(file.getParent());
+        Files.write(file, List.of(
+                "package com.example;",                       // 1
+                "",                                            // 2
+                "public class Foo {",                          // 3
+                "    public void bar() {",                     // 4
+                "        // mumbling comment about getType",   // 5 — focal
+                "        int x = 1;",                          // 6
+                "    }",                                       // 7
+                "}"));                                         // 8
+
+        final Finding finding = new Finding(HeuristicCode.C2, "src/main/java/Foo.java",
+                5, 5, "Comment references 'getType' which is not in scope — update or remove",
+                Severity.WARNING, Confidence.HIGH, "openrewrite", "C2", java.util.Map.of());
+
+        final SnippetReader.Snippet snippet = SnippetReader.read(finding, tempDir).orElseThrow();
+        assertAll(
+                () -> assertEquals(5, snippet.focalStartLine(),
+                        "comment-anchored finding inside the class must NOT slide to the class declaration"),
+                () -> assertTrue(snippet.lines().stream().anyMatch(s -> s.contains("mumbling comment about getType")),
+                        "the offending comment must appear in the snippet"));
+    }
+
+    @Test
     void slidesWindowDownWhenFocalLineDeclaresAClassPrecededByJavadoc(@TempDir Path tempDir) throws Exception {
         // SpotBugs/PMD class-level findings (Ch10_1, EI_EXPOSE on records,
         // file-length warnings) anchor at the class declaration line. With

@@ -60,11 +60,16 @@ public final class SnippetReader {
         // content (package/import/blank/comment); a finding that
         // legitimately lands on a meaningful line near the top of a file
         // stays where it is.
-        if (isFileHeaderLine(all.get(startLine - 1))) {
-            final int classDeclLine = findFirstTypeDeclaration(all);
-            if (classDeclLine > 0) {
-                startLine = classDeclLine;
-            }
+        // Only slide forward when the focal line is in the FILE HEADER
+        // region — i.e. above the first type declaration. C2 / C3 / C5
+        // findings legitimately anchor at comment lines INSIDE the body
+        // of the class; sliding those onto the type declaration drops
+        // the snippet on completely the wrong place.
+        final int classDeclLine = findFirstTypeDeclaration(all);
+        if (classDeclLine > 0
+                && startLine < classDeclLine
+                && isFileHeaderLine(all.get(startLine - 1))) {
+            startLine = classDeclLine;
         }
         final int endLine = clamp(Math.max(finding.endLine(), startLine), startLine, totalLines);
 
