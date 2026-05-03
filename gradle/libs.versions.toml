@@ -2,7 +2,7 @@
 junit = "5.14.4"
 javaparser = "3.26.2"
 gson = "2.11.0"
-openrewrite = "8.79.5"
+openrewrite = "8.81.3"
 fifties-recipes = "0.8"
 versions = "0.53.0"
 gradle-tooling = "9.0.0"
