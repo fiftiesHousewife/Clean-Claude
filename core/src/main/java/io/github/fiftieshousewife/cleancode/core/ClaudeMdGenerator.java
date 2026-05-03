@@ -7,7 +7,11 @@ import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public final class ClaudeMdGenerator {

@@ -1,7 +1,12 @@
 package io.github.fiftieshousewife.cleancode.adapters;
 
 import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
-import io.github.fiftieshousewife.cleancode.core.*;
+import io.github.fiftieshousewife.cleancode.core.Confidence;
+import io.github.fiftieshousewife.cleancode.core.Finding;
+import io.github.fiftieshousewife.cleancode.core.FindingSource;
+import io.github.fiftieshousewife.cleancode.core.FindingSourceException;
+import io.github.fiftieshousewife.cleancode.core.ProjectContext;
+import io.github.fiftieshousewife.cleancode.core.Severity;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -9,7 +14,12 @@ import org.w3c.dom.NodeList;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PmdFindingSource implements FindingSource {
 

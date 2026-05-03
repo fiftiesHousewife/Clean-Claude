@@ -5,7 +5,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
-import io.github.fiftieshousewife.cleancode.core.*;
+import io.github.fiftieshousewife.cleancode.core.Confidence;
+import io.github.fiftieshousewife.cleancode.core.Finding;
+import io.github.fiftieshousewife.cleancode.core.FindingSource;
+import io.github.fiftieshousewife.cleancode.core.FindingSourceException;
+import io.github.fiftieshousewife.cleancode.core.ProjectContext;
+import io.github.fiftieshousewife.cleancode.core.Severity;
 
 import java.io.IOException;
 import java.io.Reader;

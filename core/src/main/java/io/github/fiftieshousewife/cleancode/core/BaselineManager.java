@@ -8,7 +8,11 @@ import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public final class BaselineManager {
