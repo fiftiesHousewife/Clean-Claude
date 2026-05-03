@@ -1023,8 +1023,12 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapNestedTernary(List<NestedTernaryRecipe.Row> rows) {
+        // Recipe lineNumber=-1; without resolution every G16 collapses
+        // onto the class declaration. Anchor at the method that holds the
+        // ternary so the snippet shows the offending expression in
+        // context.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G16, r.className(), r.lineNumber(),
+                .map(r -> findingForMethod(HeuristicCode.G16, r.className(), r.methodName(),
                         "Ternary nested %d deep in '%s' — extract to an if/else or a named method".formatted(
                                 r.depth(), r.methodName())))
                 .toList();
