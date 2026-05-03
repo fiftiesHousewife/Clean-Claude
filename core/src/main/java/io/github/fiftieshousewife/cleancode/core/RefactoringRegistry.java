@@ -49,8 +49,10 @@ public final class RefactoringRegistry {
             Map.entry(HeuristicCode.G12, List.of(
                     REFACTORING + "ShortenFullyQualifiedReferencesRecipe",
                     REFACTORING + "DeleteUnusedImportRecipe")),
-            // G25 — magic strings extracted to local constants
-            Map.entry(HeuristicCode.G25, List.of(REFACTORING + "ExtractConstantRecipe")),
+            // G5 — duplicated string literals extracted to named constants.
+            // ExtractConstantRecipe operates on string literals, so it
+            // belongs under Duplication (G5), not Magic Numbers (G25).
+            Map.entry(HeuristicCode.G5, List.of(REFACTORING + "ExtractConstantRecipe")),
             // G35 — hardcoded list extracted to class constant
             Map.entry(HeuristicCode.G35, List.of(REFACTORING + "ExtractClassConstantRecipe")),
             // G28 — remove nested ternary

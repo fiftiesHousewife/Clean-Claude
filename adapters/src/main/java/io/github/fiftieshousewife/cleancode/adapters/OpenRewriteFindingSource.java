@@ -307,8 +307,12 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapEncapCond(List<EncapsulateConditionalRecipe.Row> rows) {
+        // Row.lineNumber is captured by the recipe at the actual `if`/`while`
+        // expression — use it directly instead of falling back to the class
+        // line, which would land the snippet on the class declaration
+        // (showing Javadoc and imports instead of the offending condition).
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G28, r.className(),
+                .map(r -> finding(HeuristicCode.G28, r.className(), r.lineNumber(),
                         "Complex condition (depth %d) should be extracted".formatted(r.depth())))
                 .toList();
     }
@@ -411,8 +415,13 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapMagicStrings(List<MagicStringRecipe.Row> rows) {
+        // G25 in Clean Code is specifically about magic NUMBERS. Repeated
+        // string literals are duplication — G5. The fix (extract to a
+        // named constant) is the same shape, but the heuristic banner the
+        // user reads should match the kind of smell: numbers vs duplicated
+        // text. Mapping these to G5 keeps the G25 column purely numeric.
         return rows.stream()
-                .map(r -> finding(HeuristicCode.G25, r.className(), r.lineNumber(),
+                .map(r -> finding(HeuristicCode.G5, r.className(), r.lineNumber(),
                         "String \"%s\" appears %d times — extract to a named constant".formatted(
                                 r.value(), r.count())))
                 .toList();
