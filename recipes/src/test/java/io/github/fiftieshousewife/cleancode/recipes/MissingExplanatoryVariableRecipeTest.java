@@ -7,7 +7,35 @@ import static org.junit.jupiter.api.Assertions.*;
 class MissingExplanatoryVariableRecipeTest {
 
     @Test
-    void detectsDeeplyChainedMethodCallInArgument() {
+    void detectsDeeplyChainedMethodCallWithIntermediateArguments() {
+        // The G19 smell is hidden complexity in an expression — typically
+        // a stream-style pipeline whose intermediate steps deserve names.
+        // A chain with arg-taking intermediate calls (filter, map, reduce)
+        // qualifies because each step is computing something.
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.List;
+                import java.util.stream.Collectors;
+                public class Foo {
+                    List<String> bar;
+                    void process() {
+                        System.out.println(bar.stream().filter(s -> s.length() > 0).collect(Collectors.joining(",")));
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "stream().filter(...).collect(...) has intermediate arg-taking calls — fire");
+    }
+
+    @Test
+    void ignoresPureGetterChainBecauseEachSegmentIsNavigationNotComputation() {
+        // bar.getX().transform().serialize() and Gradle-style
+        // reportFile.get().getAsFile().toPath() are deep but trivial:
+        // every segment is a no-arg accessor / path step. Naming the
+        // intermediates wouldn't add information; the chain reads as
+        // a path expression. The G19 fix doesn't apply.
         final var recipe = new MissingExplanatoryVariableRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
@@ -19,11 +47,8 @@ class MissingExplanatoryVariableRecipeTest {
                 }
                 """);
 
-        assertAll(
-                () -> assertEquals(1, recipe.collectedRows().size()),
-                () -> assertEquals("Foo", recipe.collectedRows().getFirst().className()),
-                () -> assertEquals("process", recipe.collectedRows().getFirst().methodName())
-        );
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "no-arg navigation chain is not the G19 smell");
     }
 
     @Test

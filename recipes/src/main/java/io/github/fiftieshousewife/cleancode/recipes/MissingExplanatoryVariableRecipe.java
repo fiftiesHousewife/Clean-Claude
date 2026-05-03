@@ -60,7 +60,8 @@ public class MissingExplanatoryVariableRecipe
                 }
 
                 for (Expression argument : m.getArguments()) {
-                    if (chainDepth(argument) >= CHAIN_DEPTH_THRESHOLD) {
+                    if (chainDepth(argument) >= CHAIN_DEPTH_THRESHOLD
+                            && hasNonTrivialSegment(argument)) {
                         acc.rows.add(new Row(
                                 findEnclosingClassName(),
                                 findEnclosingMethodName(),
@@ -70,6 +71,35 @@ public class MissingExplanatoryVariableRecipe
                 }
 
                 return m;
+            }
+
+            /**
+             * Pure getter / path-navigation chains like
+             * {@code reportFile.get().getAsFile().toPath()} or
+             * {@code project.getResources().getText().fromString(x)} look
+             * deep but carry no hidden complexity — each segment is a
+             * no-arg accessor (or final argument-taking call). The G19
+             * smell is about complex expressions whose intermediate
+             * results deserve names; pure navigation doesn't qualify.
+             *
+             * <p>Require at least one INTERMEDIATE segment (not the
+             * outermost call) to take arguments before firing — that's
+             * where the real "what does this compute?" complexity lives
+             * (e.g. a stream {@code filter(predicate).map(transform)}).
+             */
+            private boolean hasNonTrivialSegment(final Expression expression) {
+                if (!(expression instanceof J.MethodInvocation invocation)) {
+                    return false;
+                }
+                Expression select = invocation.getSelect();
+                while (select instanceof J.MethodInvocation inner) {
+                    if (!inner.getArguments().isEmpty()
+                            && !(inner.getArguments().getFirst() instanceof J.Empty)) {
+                        return true;
+                    }
+                    select = inner.getSelect();
+                }
+                return false;
             }
 
             private boolean isInitializerOfVariableDeclaration(final J.MethodInvocation invocation) {
