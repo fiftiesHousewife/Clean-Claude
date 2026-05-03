@@ -8,7 +8,9 @@ import org.openrewrite.java.tree.J;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class BoundaryConditionRecipe extends ScanningRecipe<BoundaryConditionRecipe.Accumulator> {
@@ -44,29 +46,60 @@ public class BoundaryConditionRecipe extends ScanningRecipe<BoundaryConditionRec
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<>() {
+            // Per Clean Code G33 the smell is a boundary expression
+            // (`level + 1`) repeated in the same method body — pulling
+            // it into a named variable removes the duplication. A
+            // single `size() - 1` or `lastIndexOf('/') + 1` is the
+            // idiomatic substring/last-element shape, not a smell.
+            // Track occurrences per method and emit only when ≥2.
+            private final Map<String, Integer> currentMethodCounts = new HashMap<>();
+            private String currentMethodName;
+
+            @Override
+            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                final String previousName = currentMethodName;
+                currentMethodName = method.getSimpleName();
+                final Map<String, Integer> previousCounts = new HashMap<>(currentMethodCounts);
+                currentMethodCounts.clear();
+
+                final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
+
+                currentMethodCounts.forEach((expr, count) -> {
+                    if (count >= 2) {
+                        acc.rows.add(new Row(
+                                findEnclosingClassName(),
+                                m.getSimpleName(),
+                                expr,
+                                -1));
+                    }
+                });
+
+                currentMethodCounts.clear();
+                currentMethodCounts.putAll(previousCounts);
+                currentMethodName = previousName;
+                return m;
+            }
+
             @Override
             public J.Binary visitBinary(J.Binary binary, ExecutionContext ctx) {
                 final J.Binary b = super.visitBinary(binary, ctx);
-
-                if (!BOUNDARY_OPERATORS.contains(b.getOperator())) {
-                    return b;
+                if (currentMethodName != null && isBoundaryExpression(b)) {
+                    final String key = b.printTrimmed(getCursor());
+                    currentMethodCounts.merge(key, 1, Integer::sum);
                 }
+                return b;
+            }
 
+            private boolean isBoundaryExpression(final J.Binary b) {
+                if (!BOUNDARY_OPERATORS.contains(b.getOperator())) {
+                    return false;
+                }
                 final boolean leftIsMethodCall = b.getLeft() instanceof J.MethodInvocation;
                 final boolean rightIsMethodCall = b.getRight() instanceof J.MethodInvocation;
                 final boolean leftIsLiteralOne = isLiteralOne(b.getLeft());
                 final boolean rightIsLiteralOne = isLiteralOne(b.getRight());
-
-                if ((leftIsMethodCall && rightIsLiteralOne) || (rightIsMethodCall && leftIsLiteralOne)) {
-                    acc.rows.add(new Row(
-                            findEnclosingClassName(),
-                            findEnclosingMethodName(),
-                            b.printTrimmed(getCursor()),
-                            -1
-                    ));
-                }
-
-                return b;
+                return (leftIsMethodCall && rightIsLiteralOne)
+                        || (rightIsMethodCall && leftIsLiteralOne);
             }
 
             private boolean isLiteralOne(org.openrewrite.java.tree.Expression expr) {
