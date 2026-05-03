@@ -5,7 +5,6 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Expression;
 
 import java.util.ArrayList;
 import java.util.Collections;
