@@ -860,14 +860,19 @@ public final class HtmlReportWriter {
         for (int i = 0; i < snippet.lines().size(); i++) {
             final int lineNumber = snippet.firstLineNumber() + i;
             final boolean focal = lineNumber >= snippet.focalStartLine() && lineNumber <= snippet.focalEndLine();
+            // The focal span deliberately excludes the trailing newline:
+            // with display:block the highlight would otherwise extend into
+            // the row that follows.
             if (focal) {
                 html.append("<span class=\"focal\">");
             }
             html.append("<span class=\"ln\">").append(lineNumber).append("</span>");
             html.append(escape(snippet.lines().get(i)));
-            html.append('\n');
             if (focal) {
                 html.append("</span>");
+            }
+            if (i < snippet.lines().size() - 1) {
+                html.append('\n');
             }
         }
         html.append("</pre></td></tr>\n");
