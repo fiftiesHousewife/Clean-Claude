@@ -262,12 +262,77 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapFullyQualifiedReferences(List<FullyQualifiedReferenceRecipe.Row> rows) {
-        return rows.stream()
-                .map(r -> Finding.at(HeuristicCode.G12, r.sourceFile(), 0, 0,
-                        "%d inline fully-qualified type reference(s); first: %s"
-                                .formatted(r.count(), r.samplePreview()),
-                        Severity.WARNING, Confidence.HIGH, TOOL, "FullyQualifiedReferenceRecipe"))
+        // Resolve each occurrence to the source line where it appears,
+        // then group by (sourceFile, line) so multiple FQ refs on the
+        // same line collapse to one finding (with the FQ list in the
+        // message). Different lines stay as separate findings, so the
+        // user sees each occurrence with its own snippet.
+        record FileLine(String file, int line) {}
+        final java.util.Map<FileLine, List<String>> grouped = new java.util.LinkedHashMap<>();
+        rows.forEach(r -> {
+            final int line = lineOfFqInSource(r.sourceFile(), r.fqText());
+            if (line <= 0) {
+                return;
+            }
+            grouped.computeIfAbsent(new FileLine(r.sourceFile(), line), k -> new ArrayList<>())
+                    .add(r.fqText());
+        });
+        return grouped.entrySet().stream()
+                .map(e -> {
+                    final FileLine key = e.getKey();
+                    final List<String> distinctRefs = e.getValue().stream().distinct().toList();
+                    final String preview = distinctRefs.size() == 1
+                            ? distinctRefs.getFirst()
+                            : distinctRefs.size() + " refs (" + String.join(", ",
+                                    distinctRefs.subList(0, Math.min(3, distinctRefs.size())))
+                                    + (distinctRefs.size() > 3 ? ", ..." : "") + ")";
+                    return Finding.at(HeuristicCode.G12, key.file(), key.line(), key.line(),
+                            "Inline fully-qualified type reference: " + preview,
+                            Severity.WARNING, Confidence.HIGH, TOOL, "FullyQualifiedReferenceRecipe");
+                })
                 .toList();
+    }
+
+    /**
+     * First non-comment, non-import line in {@code sourceFile} that
+     * contains the fully-qualified text. The recipe excludes import
+     * lines from emission, but be defensive — if the only match is an
+     * import, return -1 so the finding is dropped (it'd anchor on a
+     * legitimate import).
+     */
+    private int lineOfFqInSource(final String sourceFile, final String fqText) {
+        if (fqText == null || fqText.isEmpty()) {
+            return -1;
+        }
+        final List<String> lines = readSourceLinesByPath(sourceFile);
+        if (lines == null || lines.isEmpty()) {
+            return -1;
+        }
+        for (int i = 0; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            final String stripped = line.strip();
+            if (stripped.startsWith("import ") || stripped.startsWith("package ")) {
+                continue;
+            }
+            if (stripped.startsWith("*") || stripped.startsWith("/*") || stripped.startsWith("//")) {
+                continue;
+            }
+            if (line.contains(fqText)) {
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+
+    private List<String> readSourceLinesByPath(final String relativeOrAbsolute) {
+        final Path candidate = Path.of(relativeOrAbsolute);
+        try {
+            if (Files.exists(candidate)) {
+                return Files.readAllLines(candidate);
+            }
+        } catch (IOException ignored) {
+        }
+        return null;
     }
 
     private List<Finding> mapFlagArgs(List<FlagArgumentRecipe.FlagArgumentRow> rows) {

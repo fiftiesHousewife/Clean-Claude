@@ -9,13 +9,11 @@ import org.openrewrite.java.tree.JavaType;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualifiedReferenceRecipe.Accumulator> {
 
-    public record Row(String sourceFile, int count, String samplePreview) {}
+    public record Row(String sourceFile, String fqText) {}
 
     public static class Accumulator {
         final List<Row> rows = new ArrayList<>();
@@ -43,20 +41,12 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
-            private final Map<String, List<String>> perFile = new HashMap<>();
             private String currentSource;
 
             @Override
             public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 currentSource = cu.getSourcePath().toString();
-                perFile.putIfAbsent(currentSource, new ArrayList<>());
-                final J.CompilationUnit result = super.visitCompilationUnit(cu, ctx);
-                final List<String> samples = perFile.getOrDefault(currentSource, List.of());
-                if (!samples.isEmpty()) {
-                    acc.rows.add(new Row(currentSource, samples.size(), samples.getFirst()));
-                    perFile.remove(currentSource);
-                }
-                return result;
+                return super.visitCompilationUnit(cu, ctx);
             }
 
             @Override
@@ -73,10 +63,7 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
             public J.FieldAccess visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
                 final J.FieldAccess fa = super.visitFieldAccess(fieldAccess, ctx);
                 if (isOutermost() && isFullyQualifiedTypeReference(fa)) {
-                    final List<String> samples = perFile.get(currentSource);
-                    if (samples != null) {
-                        samples.add(fa.printTrimmed(getCursor()));
-                    }
+                    acc.rows.add(new Row(currentSource, fa.printTrimmed(getCursor())));
                 }
                 return fa;
             }

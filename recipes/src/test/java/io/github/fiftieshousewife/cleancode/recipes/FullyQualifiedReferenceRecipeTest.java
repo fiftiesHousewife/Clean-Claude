@@ -19,9 +19,9 @@ class FullyQualifiedReferenceRecipeTest {
         final var rows = recipe.collectedRows();
         assertAll(
                 () -> assertEquals(1, rows.size()),
-                () -> assertTrue(rows.getFirst().samplePreview().contains("java.util.List"),
-                        "preview should include the offending reference, got: "
-                                + rows.getFirst().samplePreview()));
+                () -> assertTrue(rows.getFirst().fqText().contains("java.util.List"),
+                        "fqText should include the offending reference, got: "
+                                + rows.getFirst().fqText()));
     }
 
     @Test
@@ -103,7 +103,7 @@ class FullyQualifiedReferenceRecipeTest {
     }
 
     @Test
-    void collapsesMultipleReferencesInSameFileToOneFinding() {
+    void emitsOneRowPerOccurrenceSoTheAdapterCanAnchorEachAtItsLine() {
         final var recipe = new FullyQualifiedReferenceRecipe();
         RecipeTestHelper.runAgainst(recipe, """
                 package com.example;
@@ -113,10 +113,11 @@ class FullyQualifiedReferenceRecipeTest {
                 }
                 """);
 
+        final var rows = recipe.collectedRows();
         assertAll(
-                () -> assertEquals(1, recipe.collectedRows().size(),
-                        "per-file aggregation: one row per source file regardless of reference count"),
-                () -> assertEquals(2, recipe.collectedRows().getFirst().count(),
-                        "count reflects the number of FQN references in the file"));
+                () -> assertEquals(2, rows.size(),
+                        "one Row per occurrence — the adapter resolves the line by source-text"),
+                () -> assertTrue(rows.stream().anyMatch(r -> r.fqText().contains("java.util.List"))),
+                () -> assertTrue(rows.stream().anyMatch(r -> r.fqText().contains("java.util.Map"))));
     }
 }
