@@ -1333,7 +1333,7 @@ public class OpenRewriteFindingSource implements FindingSource {
     private List<Finding> mapTemporalCoupling(List<TemporalCouplingRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G31, r.className(), r.methodName(),
-                        "Method '%s' has %d consecutive void calls with no data dependency — make the order explicit".formatted(
+                        "Method '%s' has %d distinct void calls in sequence — make the order explicit".formatted(
                                 r.methodName(), r.callCount())))
                 .toList();
     }

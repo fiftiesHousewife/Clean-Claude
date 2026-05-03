@@ -4,12 +4,15 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
 public class TemporalCouplingRecipe extends ScanningRecipe<TemporalCouplingRecipe.Accumulator> {
@@ -80,23 +83,34 @@ public class TemporalCouplingRecipe extends ScanningRecipe<TemporalCouplingRecip
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
+    /**
+     * Returns the largest count of <em>distinct</em> {@code (receiver,
+     * methodName)} pairs found in any contiguous run of standalone method
+     * calls. A run of identical calls — e.g. a registration loop like
+     * {@code plugins.apply(X); plugins.apply(Y); plugins.apply(Z);} —
+     * collapses to 1 distinct pair and so does not fire. Genuine temporal
+     * coupling (e.g. {@code setHost(); setPort(); connect();}) has many
+     * distinct pairs.
+     */
     private static int longestVoidCallRun(List<Statement> statements) {
-        int maxRun = 0;
-        int currentRun = 0;
+        int maxDistinct = 0;
+        Set<String> currentRun = new HashSet<>();
 
         for (final Statement stmt : statements) {
-            if (isStandaloneMethodCall(stmt)) {
-                currentRun++;
-                maxRun = Math.max(maxRun, currentRun);
+            if (stmt instanceof J.MethodInvocation invocation) {
+                currentRun.add(callKey(invocation));
+                maxDistinct = Math.max(maxDistinct, currentRun.size());
             } else {
-                currentRun = 0;
+                currentRun = new HashSet<>();
             }
         }
 
-        return maxRun;
+        return maxDistinct;
     }
 
-    private static boolean isStandaloneMethodCall(Statement stmt) {
-        return stmt instanceof J.MethodInvocation;
+    private static String callKey(final J.MethodInvocation invocation) {
+        final Expression select = invocation.getSelect();
+        final String receiver = select == null ? "" : select.toString();
+        return receiver + "::" + invocation.getSimpleName();
     }
 }

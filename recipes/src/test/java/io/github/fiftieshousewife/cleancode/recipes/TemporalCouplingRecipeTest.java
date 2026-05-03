@@ -67,4 +67,58 @@ class TemporalCouplingRecipeTest {
 
         assertTrue(recipe.collectedRows().isEmpty());
     }
+
+    @Test
+    void ignoresRegistrationLoopBecauseTheCallsAreNotDistinct() {
+        // The same method called repeatedly with different arguments —
+        // e.g. plugin registration, listener wiring — is a registration
+        // loop, not temporal coupling. Order between identical calls
+        // doesn't matter, so the smell does not apply.
+        final var recipe = new TemporalCouplingRecipe(3);
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.ArrayList;
+                import java.util.List;
+                public class Foo {
+                    void register() {
+                        List<String> plugins = new ArrayList<>();
+                        plugins.add("a");
+                        plugins.add("b");
+                        plugins.add("c");
+                        plugins.add("d");
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "consecutive calls of the same method (different args) "
+                        + "are a registration loop, not temporal coupling");
+    }
+
+    @Test
+    void stillDetectsCouplingWhenSomeCallsRepeat() {
+        // A run that mixes a repeating call with distinct ones still
+        // hits the threshold on distinct count. Three distinct
+        // (receiver, method) pairs → fires.
+        final var recipe = new TemporalCouplingRecipe(3);
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void setup() {
+                        register("a");
+                        register("b");
+                        configure();
+                        start();
+                        validate();
+                    }
+                    void register(String s) {}
+                    void configure() {}
+                    void start() {}
+                    void validate() {}
+                }
+                """);
+
+        assertFalse(recipe.collectedRows().isEmpty(),
+                "register/register collapses but configure/start/validate are 3 distinct calls");
+    }
 }
