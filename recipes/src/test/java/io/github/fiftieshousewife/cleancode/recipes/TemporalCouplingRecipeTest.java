@@ -69,6 +69,33 @@ class TemporalCouplingRecipeTest {
     }
 
     @Test
+    void ignoresRegistrationLoopWithChainedReceiver() {
+        // The plugin's own CleanCodePlugin.applyStaticAnalysisPlugins
+        // shape: project.getPluginManager().apply(...) repeated for
+        // each plugin id. Each invocation has its own AST select node,
+        // so Expression.toString() (which includes AST internals)
+        // makes them look distinct. The recipe must use printTrimmed
+        // so identical SOURCE collapses to one (receiver, method) key.
+        final var recipe = new TemporalCouplingRecipe(3);
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void apply(Project project) {
+                        project.getPluginManager().apply("java");
+                        project.getPluginManager().apply("pmd");
+                        project.getPluginManager().apply("checkstyle");
+                        project.getPluginManager().apply("jacoco");
+                    }
+                    interface Project { PluginManager getPluginManager(); }
+                    interface PluginManager { void apply(String id); }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "identical chained-receiver registrations should not fire");
+    }
+
+    @Test
     void ignoresRegistrationLoopBecauseTheCallsAreNotDistinct() {
         // The same method called repeatedly with different arguments —
         // e.g. plugin registration, listener wiring — is a registration

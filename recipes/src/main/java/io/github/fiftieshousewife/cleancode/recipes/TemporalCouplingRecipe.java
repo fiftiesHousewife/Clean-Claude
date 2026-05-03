@@ -71,6 +71,41 @@ public class TemporalCouplingRecipe extends ScanningRecipe<TemporalCouplingRecip
 
                 return m;
             }
+
+            /**
+             * Returns the largest count of <em>distinct</em> {@code (receiver,
+             * methodName)} pairs in any contiguous run of standalone method
+             * calls within the body. A run of identical calls — e.g. a
+             * registration loop like {@code plugins.apply(X);
+             * plugins.apply(Y);} — collapses to 1 distinct pair and does
+             * not fire. Genuine temporal coupling like {@code setHost();
+             * setPort(); connect();} has many distinct pairs.
+             */
+            private int longestVoidCallRun(final List<Statement> statements) {
+                int maxDistinct = 0;
+                Set<String> currentRun = new HashSet<>();
+
+                for (final Statement stmt : statements) {
+                    if (stmt instanceof J.MethodInvocation invocation) {
+                        currentRun.add(callKey(invocation));
+                        maxDistinct = Math.max(maxDistinct, currentRun.size());
+                    } else {
+                        currentRun = new HashSet<>();
+                    }
+                }
+
+                return maxDistinct;
+            }
+
+            private String callKey(final J.MethodInvocation invocation) {
+                final Expression select = invocation.getSelect();
+                // Use printTrimmed for a stable source-form receiver
+                // text. Expression.toString() includes AST internals so
+                // two identical chains in the source produce different
+                // strings, which would defeat the distinct-count.
+                final String receiver = select == null ? "" : select.printTrimmed(getCursor());
+                return receiver + "::" + invocation.getSimpleName();
+            }
         };
     }
 
@@ -81,36 +116,5 @@ public class TemporalCouplingRecipe extends ScanningRecipe<TemporalCouplingRecip
 
     public List<Row> collectedRows() {
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
-    }
-
-    /**
-     * Returns the largest count of <em>distinct</em> {@code (receiver,
-     * methodName)} pairs found in any contiguous run of standalone method
-     * calls. A run of identical calls — e.g. a registration loop like
-     * {@code plugins.apply(X); plugins.apply(Y); plugins.apply(Z);} —
-     * collapses to 1 distinct pair and so does not fire. Genuine temporal
-     * coupling (e.g. {@code setHost(); setPort(); connect();}) has many
-     * distinct pairs.
-     */
-    private static int longestVoidCallRun(List<Statement> statements) {
-        int maxDistinct = 0;
-        Set<String> currentRun = new HashSet<>();
-
-        for (final Statement stmt : statements) {
-            if (stmt instanceof J.MethodInvocation invocation) {
-                currentRun.add(callKey(invocation));
-                maxDistinct = Math.max(maxDistinct, currentRun.size());
-            } else {
-                currentRun = new HashSet<>();
-            }
-        }
-
-        return maxDistinct;
-    }
-
-    private static String callKey(final J.MethodInvocation invocation) {
-        final Expression select = invocation.getSelect();
-        final String receiver = select == null ? "" : select.toString();
-        return receiver + "::" + invocation.getSimpleName();
     }
 }
