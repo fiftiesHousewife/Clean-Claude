@@ -119,7 +119,14 @@ public class SpotBugsFindingSource implements FindingSource {
             Element sourceLine = (Element) sourceLines.item(0);
             int startLine = Integer.parseInt(sourceLine.getAttribute("start"));
             int endLine = Integer.parseInt(sourceLine.getAttribute("end"));
-            String sourcePath = sourceLine.getAttribute("sourcepath");
+            // SpotBugs writes sourcepath relative to the source ROOT
+            // (`io/github/.../Foo.java`). SnippetReader resolves paths
+            // against the project root, which would land on a non-
+            // existent `<root>/io/github/...` and silently produce no
+            // snippet. Resolve through the project's source-set list
+            // so the reader gets a path that actually exists on disk.
+            String sourcePath = resolveAgainstSourceRoots(
+                    context, sourceLine.getAttribute("sourcepath"));
 
             // Get message
             NodeList shortMessages = bug.getElementsByTagName("ShortMessage");
@@ -141,5 +148,27 @@ public class SpotBugsFindingSource implements FindingSource {
 
     private Path reportPath(ProjectContext context) {
         return context.reportsDir().resolve("spotbugs/main.xml");
+    }
+
+    /**
+     * The SpotBugs XML stores {@code sourcepath} as a path relative to a
+     * source root (e.g. {@code io/github/.../Foo.java}), but SnippetReader
+     * resolves paths against the project root. Walk the project's known
+     * source directories and return the first one that resolves to an
+     * existing file. Falls back to the original relative path if none
+     * match — the snippet then quietly empties out, same as before this
+     * fix, but at least we tried.
+     */
+    private String resolveAgainstSourceRoots(final ProjectContext context, final String relative) {
+        if (relative == null || relative.isEmpty()) {
+            return relative;
+        }
+        for (final Path src : context.sourceRoots()) {
+            final Path candidate = src.resolve(relative);
+            if (Files.exists(candidate)) {
+                return context.projectRoot().relativize(candidate).toString();
+            }
+        }
+        return relative;
     }
 }

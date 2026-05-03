@@ -1,0 +1,178 @@
+package io.github.fiftieshousewife.cleancode.plugin.rework;
+
+import io.github.fiftieshousewife.cleancode.refactoring.AddFinalRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.ChainConsecutiveBuilderCallsRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.CollapseSiblingGuardsRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.DeleteMumblingLogRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.DeleteSectionCommentsRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.InvertNegativeConditionalRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.MathMinCapRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.MergeInlineValidationRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.ReplaceForAddNCopiesRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.ReplaceStringBuilderWithTextBlockRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.RestoreInterruptFlagRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.ReturnInsteadOfMutateArgRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.ShortenFullyQualifiedReferencesRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.UseTryWithResourcesRecipe;
+import io.github.fiftieshousewife.cleancode.refactoring.support.SuperCallScanner;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Parser;
+import org.openrewrite.Recipe;
+import org.openrewrite.Result;
+import org.openrewrite.SourceFile;
+import org.openrewrite.internal.InMemoryLargeSourceSet;
+import org.openrewrite.java.JavaParser;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Applies every deterministic refactoring recipe to each target file
+ * before the agent sees it, for the {@link RunVariant#HARNESS_RECIPES_THEN_AGENT}
+ * variant. Runs entirely in-process via OpenRewrite; no Gradle detour.
+ *
+ * <p>The pass is conservative: recipes that run are ones the team has
+ * tested against a mature sandbox corpus and trusts to land without LLM
+ * judgement. Anything requiring naming choices, record design, or
+ * type redesign is explicitly left to the agent.
+ */
+public final class HarnessRecipePass {
+
+    // The published Lombok/Log4j2 recipe is paused as of 2026-04-20.
+    // HarnessRecipePass runs per-file, so the default variant's
+    // Gradle-build-file dep injection silently no-ops while the Java
+    // transform still inserts @Log4j2 + log4j imports. The NoDeps variant
+    // has the same problem (still does the Java transform, still assumes
+    // Lombok on the classpath). Reintroduce once the recipe ships a
+    // variant that either (a) adds Lombok to the calling module's build
+    // out-of-band or (b) only fires when the module already declares it.
+    //
+    // 2026-04-21 check against 0.5: the 0.5 bundle renames the recipe to
+    // `io.github.fiftieshousewife.SystemOutToSlf4jRecipe(NoDeps)` and
+    // introduces `ConvertManualLoggerToSlf4jRecipe` + a standalone
+    // `AddLombokDependency`. The per-module classpath-gating gap is NOT
+    // closed: NoDeps still unconditionally adds `@Slf4j` + imports. Stays
+    // paused until we either add a target-module Lombok sniff here or
+    // upstream grows a classpath gate.
+    //
+    // 2026-05-03: 0.7 expected to land the classpath gate. Hold rewiring
+    // until then. When 0.7 ships, bump fifties-recipes in libs.versions.toml
+    // and either (a) instantiate the four Java transforms directly via a
+    // refactoring/Slf4jTransforms wrapper, or (b) load the YAML composite
+    // through Environment.builder().scanRuntimeClasspath().build()
+    // .activateRecipe("io.github.fiftieshousewife.SystemOutToSlf4jRecipeNoDeps").
+    // private static final String SYSTEM_OUT_TO_SLF4J_RECIPE =
+    //         "io.github.fiftieshousewife.SystemOutToSlf4jRecipeNoDeps";
+
+    /**
+     * Builds the recipe pipeline for a given sweep. {@code
+     * externalSuperCalledNames} is no longer consumed — it's still computed
+     * upstream in case a future recipe needs it, but {@code
+     * MakeMethodStaticRecipe} was removed from this pipeline because it
+     * goes against the spirit of Robert Martin's G18 ("prefer non-static
+     * methods to static methods"); auto-applying it would make the
+     * codebase MORE static, not less. The standalone refactoring is still
+     * in the module for tests, just not in the harness sweep.
+     */
+    private static List<Recipe> deterministicRecipes(final Set<String> externalSuperCalledNames) {
+        return List.of(
+                new RestoreInterruptFlagRecipe(),
+                new DeleteSectionCommentsRecipe(),
+                new DeleteMumblingLogRecipe(),
+                new ChainConsecutiveBuilderCallsRecipe(),
+                new ReplaceStringBuilderWithTextBlockRecipe(),
+                new MathMinCapRecipe(),
+                new ReplaceForAddNCopiesRecipe(),
+                new CollapseSiblingGuardsRecipe(),
+                new MergeInlineValidationRecipe(),
+                new ReturnInsteadOfMutateArgRecipe(),
+                new UseTryWithResourcesRecipe(),
+                new AddFinalRecipe(),
+                new InvertNegativeConditionalRecipe(),
+                new ShortenFullyQualifiedReferencesRecipe());
+    }
+
+    private HarnessRecipePass() {}
+
+    public record PassSummary(Map<Path, List<String>> recipeNamesByFile) {
+        public int filesChanged() {
+            return recipeNamesByFile.size();
+        }
+
+        public List<String> allRecipeNames() {
+            final List<String> flat = new ArrayList<>();
+            recipeNamesByFile.values().forEach(flat::addAll);
+            return flat;
+        }
+    }
+
+    public static PassSummary apply(final List<Path> files) throws IOException {
+        // One project-wide scan for super.X() names, so per-file recipe
+        // invocations see the cross-file callers they would otherwise
+        // miss. Regex-based; false positives only cause us to skip a
+        // rewrite, which is always safe.
+        final Set<String> superCalledNames = SuperCallScanner.scan(files);
+        final List<Recipe> recipes = deterministicRecipes(superCalledNames);
+        final Map<Path, List<String>> byFile = new LinkedHashMap<>();
+        for (final Path file : files) {
+            final List<String> fired = applyToFile(file, recipes);
+            if (!fired.isEmpty()) {
+                byFile.put(file, fired);
+            }
+        }
+        return new PassSummary(byFile);
+    }
+
+    public static List<String> applyToFile(final Path file, final List<Recipe> recipes)
+            throws IOException {
+        String current = Files.readString(file);
+        final List<String> fired = new ArrayList<>();
+        for (final Recipe recipe : recipes) {
+            final String after = runOne(file, current, recipe);
+            if (!after.equals(current)) {
+                fired.add(recipe.getClass().getSimpleName());
+                current = after;
+            }
+        }
+        if (!fired.isEmpty()) {
+            Files.writeString(file, current);
+        }
+        return fired;
+    }
+
+    private static String runOne(final Path file, final String source, final Recipe recipe) {
+        final InMemoryExecutionContext ctx = new InMemoryExecutionContext(Throwable::printStackTrace);
+        final Parser.Input input = Parser.Input.fromString(file, source);
+        final List<SourceFile> parsed = JavaParser.fromJavaVersion()
+                .logCompilationWarningsAndErrors(false)
+                .build()
+                .parseInputs(List.of(input), null, ctx)
+                .toList();
+        if (parsed.isEmpty()) {
+            return source;
+        }
+        final InMemoryLargeSourceSet sourceSet = new InMemoryLargeSourceSet(parsed);
+        final List<Result> results = recipe.run(sourceSet, ctx).getChangeset().getAllResults();
+        // Recipes can produce results for files OTHER than our input — for
+        // example SystemOutToSlf4jRecipe creates a fresh log4j2.xml.
+        // Filter to the result whose source path matches our input file so
+        // we don't blow our Java fixture away with someone else's output.
+        for (final Result result : results) {
+            final SourceFile after = result.getAfter();
+            if (after == null) {
+                continue;
+            }
+            if (after.getSourcePath().equals(file)
+                    || after.getSourcePath().endsWith(file.getFileName())) {
+                return after.printAll();
+            }
+        }
+        return source;
+    }
+}
