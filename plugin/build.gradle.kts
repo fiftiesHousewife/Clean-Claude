@@ -121,7 +121,7 @@ gradlePlugin {
 }
 
 mavenPublishing {
-    publishToMavenCentral(automaticRelease = false)
+    publishToMavenCentral(automaticRelease = true)
     signAllPublications()
     configure(GradlePlugin(javadocJar = JavadocJar.Empty()))
     coordinates("io.github.fiftieshousewife", "clean-code", project.version.toString())
