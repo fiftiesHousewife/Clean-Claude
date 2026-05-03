@@ -7,6 +7,9 @@ import io.github.fiftieshousewife.cleancode.core.SourceState;
 import io.github.fiftieshousewife.cleancode.plugin.serve.ApplyChangesResponse;
 import io.github.fiftieshousewife.cleancode.plugin.serve.ChangeApplier;
 import io.github.fiftieshousewife.cleancode.plugin.serve.ConfigSnapshot;
+import io.github.fiftieshousewife.cleancode.plugin.serve.FeedbackHandler;
+import io.github.fiftieshousewife.cleancode.plugin.serve.FeedbackRequest;
+import io.github.fiftieshousewife.cleancode.plugin.serve.FeedbackResponse;
 import io.github.fiftieshousewife.cleancode.plugin.serve.ReportServer;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
@@ -64,6 +67,7 @@ public abstract class ServeTask extends DefaultTask {
 
         final int port = ext.getServePort().get();
         final ChangeApplier applier = new ChangeApplier(projectRoot);
+        final FeedbackHandler feedback = new FeedbackHandler(projectRoot);
 
         final CountDownLatch shutdownLatch = new CountDownLatch(1);
         final AtomicBoolean shuttingDown = new AtomicBoolean(false);
@@ -86,6 +90,7 @@ public abstract class ServeTask extends DefaultTask {
                 () -> snapshotConfig(ext),
                 request -> applyAndRegenerate(applier, request.changes(),
                         outputDir, htmlReport, repositoryUrl, ideScheme),
+                request -> handleFeedback(feedback, request),
                 shutdown,
                 getLogger());
         serverRef.set(server);
@@ -100,6 +105,17 @@ public abstract class ServeTask extends DefaultTask {
             shutdown.run();
         }, "cleanCodeServe-shutdown"));
         shutdownLatch.await();
+    }
+
+    private FeedbackResponse handleFeedback(final FeedbackHandler feedback, final FeedbackRequest request) {
+        try {
+            final Path saved = feedback.append(request.message(), request.context());
+            getLogger().lifecycle("feedback saved to {}", saved);
+            return FeedbackResponse.ok(saved.toString());
+        } catch (IOException e) {
+            getLogger().error("could not save feedback", e);
+            return FeedbackResponse.failed("could not save feedback: " + e.getMessage());
+        }
     }
 
     private void writePidFile(final Path pidFile) {

@@ -309,7 +309,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsConfidencePillPerRowAndSummaryPerCodeSection(@TempDir Path tempDir) throws Exception {
+    void emitsConfidencePillPerRow(@TempDir Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         final Finding high = new Finding(HeuristicCode.G30, "A.java", 1, 1,
@@ -327,17 +327,13 @@ class HtmlReportWriterTest {
 
         assertAll(
                 () -> assertTrue(html.contains("data-confidence=\"high\""),
-                        "row carries data-confidence so the filter can hide it"),
+                        "row carries data-confidence so styling can apply"),
                 () -> assertTrue(html.contains("data-confidence=\"medium\"")),
                 () -> assertTrue(html.contains("data-confidence=\"low\"")),
                 () -> assertTrue(html.contains("class=\"confidence-pill high\">HIGH"),
                         "HIGH pill renders with the right class for green styling"),
                 () -> assertTrue(html.contains("class=\"confidence-pill medium\">MEDIUM")),
-                () -> assertTrue(html.contains("class=\"confidence-pill low\">LOW")),
-                () -> assertTrue(html.contains("class=\"high\" title=\"high-confidence findings\">H:1"),
-                        "summary breakdown surfaces the H/M/L counts for the section"),
-                () -> assertTrue(html.contains(">M:1</span>")),
-                () -> assertTrue(html.contains(">L:1</span>")));
+                () -> assertTrue(html.contains("class=\"confidence-pill low\">LOW")));
     }
 
     @Test

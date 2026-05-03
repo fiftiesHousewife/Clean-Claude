@@ -64,11 +64,13 @@ public final class HtmlReportWriter {
 
         appendFooter(html, report);
         appendStagingModal(html);
+        appendFeedbackModal(html);
         if (!report.findings().isEmpty()) {
             appendInteractionScript(html, projectRoot);
             appendSeverityFilterScript(html);
             appendSnippetToggleScript(html);
         }
+        appendFeedbackScript(html);
         appendStagingScript(html);
         appendDocumentEnd(html);
         return html.toString();
@@ -83,12 +85,19 @@ public final class HtmlReportWriter {
         appendStyles(html);
         html.append("</head>\n<body>\n");
         html.append("  <header>\n");
-        html.append("    <h1>Clean Code Analysis</h1>\n");
-        html.append("    <p>").append(escape(report.projectName()));
+        html.append("    <div class=\"header-row\">\n");
+        html.append("      <div>\n");
+        html.append("        <h1>Clean Code Analysis</h1>\n");
+        html.append("        <p>").append(escape(report.projectName()));
         if (report.projectVersion() != null) {
             html.append(" v").append(escape(report.projectVersion()));
         }
         html.append("</p>\n");
+        html.append("      </div>\n");
+        html.append("      <button type=\"button\" class=\"feedback-btn\" id=\"open-feedback\" ");
+        html.append("title=\"Capture a thought about this finding or the report itself — saved to ");
+        html.append("clean-code-feedback.md\">&#128172; Request a change</button>\n");
+        html.append("    </div>\n");
         html.append("  </header>\n");
         html.append("  <main>\n");
     }
@@ -118,6 +127,12 @@ public final class HtmlReportWriter {
         html.append("    header { background: #1a1a2e; color: #fff; padding: 2rem; }\n");
         html.append("    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }\n");
         html.append("    header p { opacity: 0.8; font-size: 0.95rem; }\n");
+        html.append("    .header-row { display: flex; justify-content: space-between; ");
+        html.append("align-items: flex-start; gap: 1rem; flex-wrap: wrap; }\n");
+        html.append("    .feedback-btn { background: #34495e; color: #fff; ");
+        html.append("border: 1px solid #4a627a; border-radius: 6px; padding: 0.55rem 0.9rem; ");
+        html.append("font-size: 0.85rem; cursor: pointer; font-family: inherit; }\n");
+        html.append("    .feedback-btn:hover { background: #46627e; }\n");
         html.append("    main { max-width: min(1800px, 96vw); margin: 2rem auto; padding: 0 1rem; }\n");
         html.append("    .summary { display: flex; gap: 1rem; margin-bottom: 2rem; }\n");
         html.append("    .summary .badge { padding: 0.75rem 1.25rem; border-radius: 6px; ");
@@ -158,24 +173,6 @@ public final class HtmlReportWriter {
         html.append("border: 1px solid #d35400; }\n");
         html.append("    .confidence-pill.low { background: #fff; color: #95a5a6; ");
         html.append("border: 1px solid #bdc3c7; }\n");
-        html.append("    .confidence-summary { font-size: 0.75rem; color: #777; ");
-        html.append("margin-left: 0.5rem; font-weight: 400; }\n");
-        html.append("    .confidence-summary .high { color: #27ae60; font-weight: 600; }\n");
-        html.append("    .confidence-summary .medium { color: #d35400; }\n");
-        html.append("    .confidence-summary .low { color: #95a5a6; }\n");
-        html.append("    .severity-filter { font-size: 0.85rem; color: #555; ");
-        html.append("margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: #fff; ");
-        html.append("border: 1px solid #ddd; border-radius: 6px; ");
-        html.append("display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }\n");
-        html.append("    .severity-filter label { display: inline-flex; align-items: center; ");
-        html.append("gap: 0.3rem; cursor: pointer; }\n");
-        html.append("    .severity-filter input { margin: 0; }\n");
-        html.append("    .sev-pill { display: inline-block; font-size: 0.7rem; ");
-        html.append("font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 999px; ");
-        html.append("text-transform: uppercase; letter-spacing: 0.04em; }\n");
-        html.append("    .sev-pill.error { background: #c0392b; color: #fff; }\n");
-        html.append("    .sev-pill.warning { background: #e67e22; color: #fff; }\n");
-        html.append("    .sev-pill.info { background: #95a5a6; color: #fff; }\n");
         html.append("    td:first-child { white-space: nowrap; }\n");
         html.append("    td:nth-child(2) { font-size: 0.85rem; overflow-wrap: anywhere; word-break: break-all; }\n");
         html.append("    td:nth-child(3) { overflow-wrap: anywhere; word-break: break-word; }\n");
@@ -437,6 +434,74 @@ public final class HtmlReportWriter {
         html.append("      </div>\n");
         html.append("    </form>\n");
         html.append("  </div>\n");
+    }
+
+    private static void appendFeedbackModal(final StringBuilder html) {
+        html.append("  <div class=\"modal-backdrop\" id=\"feedback-modal\">\n");
+        html.append("    <form class=\"modal\" id=\"feedback-form\">\n");
+        html.append("      <h3>Request a change</h3>\n");
+        html.append("      <p class=\"summary-line\">Saved locally to ");
+        html.append("<code>clean-code-feedback.md</code> at the project root. Review before commit.</p>\n");
+        html.append("      <label for=\"feedback-message\">What would make this report more useful?</label>\n");
+        html.append("      <textarea id=\"feedback-message\" required minlength=\"10\" rows=\"5\" ");
+        html.append("placeholder=\"Tell us what's missing, wrong, or noisy.\"></textarea>\n");
+        html.append("      <div class=\"modal-actions\">\n");
+        html.append("        <button type=\"button\" class=\"cancel-btn\">Cancel</button>\n");
+        html.append("        <button type=\"submit\" class=\"primary\" disabled>Save feedback</button>\n");
+        html.append("      </div>\n");
+        html.append("    </form>\n");
+        html.append("  </div>\n");
+    }
+
+    private static void appendFeedbackScript(final StringBuilder html) {
+        html.append("  <script>\n");
+        html.append("    (function() {\n");
+        html.append("      const modal = document.getElementById('feedback-modal');\n");
+        html.append("      const form = document.getElementById('feedback-form');\n");
+        html.append("      const openBtn = document.getElementById('open-feedback');\n");
+        html.append("      if (!openBtn || !modal || !form) return;\n");
+        html.append("      const textarea = document.getElementById('feedback-message');\n");
+        html.append("      const submit = form.querySelector('button[type=submit]');\n");
+        html.append("      const cancelBtn = form.querySelector('.cancel-btn');\n");
+        html.append("      function close() { modal.classList.remove('open'); textarea.value = ''; submit.disabled = true; }\n");
+        html.append("      openBtn.addEventListener('click', () => {\n");
+        html.append("        textarea.value = '';\n");
+        html.append("        submit.disabled = true;\n");
+        html.append("        modal.classList.add('open');\n");
+        html.append("        textarea.focus();\n");
+        html.append("      });\n");
+        html.append("      textarea.addEventListener('input', () => {\n");
+        html.append("        submit.disabled = textarea.value.trim().length < 10;\n");
+        html.append("      });\n");
+        html.append("      cancelBtn.addEventListener('click', close);\n");
+        html.append("      form.addEventListener('submit', e => {\n");
+        html.append("        e.preventDefault();\n");
+        html.append("        if (textarea.value.trim().length < 10) return;\n");
+        html.append("        submit.disabled = true;\n");
+        html.append("        submit.textContent = 'Saving...';\n");
+        html.append("        fetch('/api/feedback', {\n");
+        html.append("          method: 'POST',\n");
+        html.append("          headers: { 'Content-Type': 'application/json' },\n");
+        html.append("          body: JSON.stringify({ message: textarea.value.trim() })\n");
+        html.append("        }).then(r => r.json().then(j => ({ status: r.status, body: j })))\n");
+        html.append("          .then(({ status, body }) => {\n");
+        html.append("            if (status === 200 && body.success) {\n");
+        html.append("              alert('Saved to ' + body.savedTo);\n");
+        html.append("              close();\n");
+        html.append("              submit.textContent = 'Save feedback';\n");
+        html.append("            } else {\n");
+        html.append("              alert('Could not save: ' + (body.error || 'unknown'));\n");
+        html.append("              submit.disabled = false;\n");
+        html.append("              submit.textContent = 'Save feedback';\n");
+        html.append("            }\n");
+        html.append("          }).catch(err => {\n");
+        html.append("            alert('Network error: ' + err.message);\n");
+        html.append("            submit.disabled = false;\n");
+        html.append("            submit.textContent = 'Save feedback';\n");
+        html.append("          });\n");
+        html.append("      });\n");
+        html.append("    })();\n");
+        html.append("  </script>\n");
     }
 
     private static void appendStagingScript(final StringBuilder html) {
@@ -705,7 +770,6 @@ public final class HtmlReportWriter {
         html.append("      <summary><span class=\"code-label\">").append(escape(code.name()));
         html.append("</span>").append(escape(name));
         html.append(" (").append(group.size()).append(")");
-        appendConfidenceSummary(html, group);
         appendCodeActions(html, code);
         html.append("</summary>\n");
         html.append("      <div class=\"group-body\">\n");
@@ -807,20 +871,6 @@ public final class HtmlReportWriter {
             }
         }
         html.append("</pre></td></tr>\n");
-    }
-
-    private static void appendConfidenceSummary(final StringBuilder html, final List<Finding> group) {
-        long high = group.stream().filter(f -> f.confidence() == Confidence.HIGH).count();
-        long medium = group.stream().filter(f -> f.confidence() == Confidence.MEDIUM).count();
-        long low = group.stream().filter(f -> f.confidence() == Confidence.LOW).count();
-        if (high == 0 && medium == 0 && low == 0) {
-            return;
-        }
-        html.append("<span class=\"confidence-summary\">");
-        html.append("<span class=\"high\" title=\"high-confidence findings\">H:").append(high).append("</span> ");
-        html.append("<span class=\"medium\" title=\"medium-confidence findings\">M:").append(medium).append("</span> ");
-        html.append("<span class=\"low\" title=\"low-confidence findings\">L:").append(low).append("</span>");
-        html.append("</span>");
     }
 
     private static String buildSuppressButton(final Finding finding, final HeuristicCode code) {

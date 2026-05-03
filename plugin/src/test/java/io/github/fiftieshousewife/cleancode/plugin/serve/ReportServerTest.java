@@ -155,6 +155,52 @@ class ReportServerTest {
     }
 
     @Test
+    void feedbackEndpointPersistsViaHandler(@TempDir Path tempDir) throws Exception {
+        if (server != null) {
+            server.stop();
+        }
+        final Path report = tempDir.resolve("findings.html");
+        Files.writeString(report, "<html></html>");
+        final ConfigSnapshot snapshot = new ConfigSnapshot(List.of(), List.of(), Map.of());
+        final AtomicReference<FeedbackRequest> received = new AtomicReference<>();
+        server = ReportServer.start(0, () -> report, () -> snapshot,
+                request -> ApplyChangesResponse.ok(0),
+                feedbackRequest -> {
+                    received.set(feedbackRequest);
+                    return FeedbackResponse.ok("/tmp/clean-code-feedback.md");
+                },
+                () -> { }, LOG);
+
+        final HttpResponse<String> response = client.send(
+                HttpRequest.newBuilder(URI.create(server.url() + "api/feedback"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(
+                                "{\"message\":\"please fix this\",\"context\":{\"code\":\"G18\"}}"))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        final JsonObject json = new Gson().fromJson(response.body(), JsonObject.class);
+        assertAll(
+                () -> assertEquals(200, response.statusCode()),
+                () -> assertTrue(json.get("success").getAsBoolean()),
+                () -> assertEquals("please fix this", received.get().message()),
+                () -> assertEquals("G18", received.get().context().get("code")));
+    }
+
+    @Test
+    void feedbackEndpointRejectsBlankMessage() throws Exception {
+        final HttpResponse<String> response = client.send(
+                HttpRequest.newBuilder(URI.create(server.url() + "api/feedback"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"message\":\"\"}"))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(400, response.statusCode(),
+                "blank feedback messages must surface as 400 so the UI can show validation");
+    }
+
+    @Test
     void serverPropagatesApplyHandlerErrorAsBadRequest(@TempDir Path tempDir) throws Exception {
         if (server != null) {
             server.stop();
