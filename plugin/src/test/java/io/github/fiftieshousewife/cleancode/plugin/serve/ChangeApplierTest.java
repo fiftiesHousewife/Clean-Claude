@@ -105,4 +105,73 @@ class ChangeApplierTest {
                         .anyMatch(e -> e.contains("no enclosing declaration")),
                         "out-of-range line surfaces the parser-side message"));
     }
+
+    @Test
+    void refusesApplyRefactoringWhenWorkingTreeIsDirty(@TempDir Path projectRoot) throws Exception {
+        // Initialise a real git repo with one tracked file, then leave the
+        // file modified — `git status --porcelain` will surface the change
+        // and ChangeApplier should refuse to run any Fix click in this state.
+        Files.writeString(projectRoot.resolve("build.gradle.kts"), "cleanCode {}\n");
+        Files.writeString(projectRoot.resolve("Foo.java"), "package x;\nclass Foo {}\n");
+        runGit(projectRoot, "init", "-q");
+        runGit(projectRoot, "config", "user.email", "test@example.com");
+        runGit(projectRoot, "config", "user.name", "Test");
+        runGit(projectRoot, "add", ".");
+        runGit(projectRoot, "commit", "-q", "-m", "init");
+        Files.writeString(projectRoot.resolve("Foo.java"),
+                "package x;\nclass Foo { void modified(){} }\n");
+
+        final ApplyChangesResponse response = new ChangeApplier(projectRoot).apply(List.of(
+                new PendingChange("applyRefactoring",
+                        Map.of("code", "G29", "file", "Foo.java"),
+                        "applying invert-negative recipe")));
+
+        assertAll(
+                () -> assertFalse(response.success(),
+                        "Fix must refuse to run on a dirty tree"),
+                () -> assertEquals(0, response.applied()),
+                () -> assertTrue(response.errors().stream()
+                        .anyMatch(e -> e.contains("Working tree has uncommitted changes")),
+                        "error message should explain the safety rule"));
+    }
+
+    @Test
+    void allowsSuppressionsOnDirtyTreeBecauseTheyAreSmallAndReviewable(@TempDir Path projectRoot)
+            throws Exception {
+        Files.writeString(projectRoot.resolve("build.gradle.kts"), "cleanCode {}\n");
+        Files.writeString(projectRoot.resolve("Foo.java"), """
+                package x;
+                public class Foo {
+                    public void bar() {}
+                }
+                """);
+        runGit(projectRoot, "init", "-q");
+        runGit(projectRoot, "config", "user.email", "test@example.com");
+        runGit(projectRoot, "config", "user.name", "Test");
+        runGit(projectRoot, "add", ".");
+        runGit(projectRoot, "commit", "-q", "-m", "init");
+        Files.writeString(projectRoot.resolve("Foo.java"), """
+                package x;
+                public class Foo {
+                    public void bar() { System.out.println("dirty"); }
+                }
+                """);
+
+        final ApplyChangesResponse response = new ChangeApplier(projectRoot).apply(List.of(
+                new PendingChange("disableRecipe", Map.of("code", "G30"), "noisy")));
+
+        assertTrue(response.success(),
+                "non-applyRefactoring batches must NOT be blocked by a dirty tree: " + response.errors());
+    }
+
+    private static void runGit(final Path repo, final String... args) throws IOException, InterruptedException {
+        final java.util.List<String> cmd = new java.util.ArrayList<>();
+        cmd.add("git");
+        java.util.Collections.addAll(cmd, args);
+        final Process p = new ProcessBuilder(cmd).directory(repo.toFile()).redirectErrorStream(true).start();
+        final String out = new String(p.getInputStream().readAllBytes());
+        if (!p.waitFor(15, java.util.concurrent.TimeUnit.SECONDS) || p.exitValue() != 0) {
+            throw new IOException("git " + String.join(" ", args) + " failed: " + out);
+        }
+    }
 }

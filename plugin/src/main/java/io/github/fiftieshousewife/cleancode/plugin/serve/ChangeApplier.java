@@ -45,6 +45,22 @@ public final class ChangeApplier {
         if (changes == null || changes.isEmpty()) {
             return ApplyChangesResponse.ok(0);
         }
+        // Refuse Fix clicks (applyRefactoring) when the working tree has
+        // uncommitted changes — recipes can rewrite hundreds of lines and
+        // mixing recipe output with in-progress edits makes "git restore" no
+        // longer a clean undo. Suppression edits and build-script tweaks are
+        // small and reviewable, so they're allowed through.
+        final boolean hasRefactoring = changes.stream().anyMatch(c -> "applyRefactoring".equals(c.kind()));
+        if (hasRefactoring) {
+            final Optional<String> dirty = workingTreeDirty();
+            if (dirty.isPresent()) {
+                return new ApplyChangesResponse(false, 0, List.of(
+                        "Working tree has uncommitted changes — commit or stash before clicking Fix. "
+                                + "Recipe rewrites can touch many lines; a clean tree keeps `git restore` "
+                                + "as a single-command undo.",
+                        dirty.get()));
+            }
+        }
         final List<String> errors = new ArrayList<>();
         int applied = 0;
 
@@ -174,5 +190,38 @@ public final class ChangeApplier {
 
     private static String describe(final PendingChange change) {
         return change.kind() + " " + change.params();
+    }
+
+    /**
+     * Returns the porcelain status output if the working tree is dirty,
+     * empty if clean, or empty if git is unavailable (we don't want a
+     * missing git binary to block the fix flow on systems where the
+     * project happens to live outside version control).
+     */
+    Optional<String> workingTreeDirty() {
+        try {
+            final Process process = new ProcessBuilder("git", "status", "--porcelain")
+                    .directory(projectRoot.toFile())
+                    .redirectErrorStream(true)
+                    .start();
+            final String output = new String(process.getInputStream().readAllBytes()).trim();
+            final boolean exited = process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
+            if (!exited) {
+                process.destroyForcibly();
+                return Optional.empty();
+            }
+            if (process.exitValue() != 0) {
+                return Optional.empty();
+            }
+            if (output.isEmpty()) {
+                return Optional.empty();
+            }
+            return Optional.of(output);
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return Optional.empty();
+        }
     }
 }
