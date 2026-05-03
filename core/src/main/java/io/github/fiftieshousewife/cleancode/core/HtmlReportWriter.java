@@ -513,6 +513,16 @@ public final class HtmlReportWriter {
         html.append("            selector = '.tune-btn[data-code=\"'+c.params.code+'\"]';\n");
         html.append("          }\n");
         html.append("          if (selector) document.querySelectorAll(selector).forEach(b => b.classList.add('staged'));\n");
+        html.append("          if (c.kind === 'applyRefactoring') {\n");
+        html.append("            const file = c.params.file || '';\n");
+        html.append("            if (file) {\n");
+        html.append("              const sel = '.fix-btn[data-code=\"'+c.params.code+'\"][data-file=\"'+file+'\"]';\n");
+        html.append("              document.querySelectorAll(sel).forEach(b => b.classList.add('staged'));\n");
+        html.append("            } else {\n");
+        html.append("              const sel = '.fix-all-btn[data-code=\"'+c.params.code+'\"]';\n");
+        html.append("              document.querySelectorAll(sel).forEach(b => b.classList.add('staged'));\n");
+        html.append("            }\n");
+        html.append("          }\n");
         html.append("        });\n");
         html.append("      }\n");
         html.append("\n");
@@ -583,6 +593,20 @@ public final class HtmlReportWriter {
         html.append("            summary: 'Updates <code>cleanCode.thresholds.'+key+'</code> in build.gradle.kts',\n");
         html.append("            params: { code: tune.dataset.code, threshold: key },\n");
         html.append("            currentValue: current, suggestedValue: typeof current === 'number' ? current + 2 : 1 });\n");
+        html.append("          return;\n");
+        html.append("        }\n");
+        html.append("        const fix = e.target.closest('.fix-btn');\n");
+        html.append("        if (fix) {\n");
+        html.append("          openModal({ kind: 'applyRefactoring', title: 'Apply fix recipe',\n");
+        html.append("            summary: 'Runs the registered recipe(s) for <code>'+fix.dataset.code+'</code> against ' + esc(fix.dataset.file),\n");
+        html.append("            params: { code: fix.dataset.code, file: fix.dataset.file, line: fix.dataset.line } });\n");
+        html.append("          return;\n");
+        html.append("        }\n");
+        html.append("        const fixAll = e.target.closest('.fix-all-btn');\n");
+        html.append("        if (fixAll) {\n");
+        html.append("          openModal({ kind: 'applyRefactoring', title: 'Apply fix across project',\n");
+        html.append("            summary: 'Runs the registered recipe(s) for <code>'+fixAll.dataset.code+'</code> against every .java file in the project',\n");
+        html.append("            params: { code: fixAll.dataset.code, file: '' } });\n");
         html.append("          return;\n");
         html.append("        }\n");
         html.append("      });\n");
@@ -728,12 +752,30 @@ public final class HtmlReportWriter {
             html.append("&#9656; snippet</span>");
         }
         html.append("</td>");
-        html.append("<td class=\"actions\">").append(buildSuppressButton(finding, code)).append("</td>");
+        html.append("<td class=\"actions\">");
+        html.append(buildFixButton(finding, code));
+        html.append(buildSuppressButton(finding, code));
+        html.append("</td>");
         html.append("</tr>\n");
 
         if (snippet.isPresent()) {
             appendSnippetRow(html, snippet.get(), confidenceLevel);
         }
+    }
+
+    private static String buildFixButton(final Finding finding, final HeuristicCode code) {
+        if (!RefactoringRegistry.hasRecipeFor(code)) {
+            return "";
+        }
+        if (finding.sourceFile() == null || finding.startLine() <= 0) {
+            return "";
+        }
+        return "<button type=\"button\" class=\"action-btn fix-btn\""
+                + " data-code=\"" + escape(code.name()) + "\""
+                + " data-file=\"" + escape(finding.sourceFile()) + "\""
+                + " data-line=\"" + finding.startLine() + "\""
+                + " title=\"Apply the registered refactoring recipe to this file\""
+                + ">&#128295; Fix</button>";
     }
 
     private static void appendSnippetRow(final StringBuilder html, final SnippetReader.Snippet snippet,
@@ -784,6 +826,12 @@ public final class HtmlReportWriter {
 
     private static void appendCodeActions(final StringBuilder html, final HeuristicCode code) {
         html.append("<span class=\"code-actions\">");
+        if (RefactoringRegistry.hasRecipeFor(code)) {
+            html.append("<button type=\"button\" class=\"action-btn fix-all-btn\"")
+                    .append(" data-code=\"").append(escape(code.name())).append("\"")
+                    .append(" title=\"Apply the registered refactoring recipe across every file in this project\"")
+                    .append(">&#128295; Fix all</button>");
+        }
         html.append("<button type=\"button\" class=\"action-btn disable-btn\"")
                 .append(" data-code=\"").append(escape(code.name())).append("\"")
                 .append(" title=\"Disable this rule project-wide\"")

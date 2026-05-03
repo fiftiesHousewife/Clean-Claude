@@ -398,6 +398,53 @@ class HtmlReportWriterTest {
     }
 
     @Test
+    void emitsFixButtonsForCodesWithRegisteredRecipe(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        final Finding finding = new Finding(HeuristicCode.G34, "Foo.java", 4, 4,
+                "section comment", Severity.WARNING, Confidence.HIGH,
+                "openrewrite", "G34", Map.of());
+        final AggregatedReport report = new AggregatedReport(
+                List.of(finding), Set.of(HeuristicCode.G34),
+                java.time.Instant.now(), "test", "1.0");
+
+        HtmlReportWriter.write(report, output);
+        final String html = Files.readString(output);
+
+        assertAll(
+                () -> assertTrue(html.contains("class=\"action-btn fix-btn\""),
+                        "G34 has a registered recipe so each finding row gets a Fix button"),
+                () -> assertTrue(html.contains("data-code=\"G34\"")
+                        && html.contains("data-file=\"Foo.java\"")
+                        && html.contains("data-line=\"4\""),
+                        "fix button carries the data the applier needs"),
+                () -> assertTrue(html.contains("class=\"action-btn fix-all-btn\""),
+                        "code section gets a Fix all button alongside Disable"),
+                () -> assertTrue(html.contains("applyRefactoring"),
+                        "JS handler wires the new change kind into the staging batch"));
+    }
+
+    @Test
+    void omitsFixButtonsForCodesWithoutRegisteredRecipe(@TempDir Path tempDir) throws Exception {
+        final Path output = tempDir.resolve("report.html");
+
+        final Finding finding = new Finding(HeuristicCode.T1, "Foo.java", 1, 1,
+                "low coverage", Severity.ERROR, Confidence.HIGH,
+                "jacoco", "coverage", Map.of());
+        final AggregatedReport report = new AggregatedReport(
+                List.of(finding), Set.of(HeuristicCode.T1),
+                java.time.Instant.now(), "test", "1.0");
+
+        HtmlReportWriter.write(report, output);
+        final String html = Files.readString(output);
+
+        assertTrue(!html.contains("class=\"action-btn fix-btn\""),
+                "T1 has no registered recipe — Fix button must not appear");
+        assertTrue(!html.contains("class=\"action-btn fix-all-btn\""),
+                "T1 has no registered recipe — Fix all button must not appear");
+    }
+
+    @Test
     void emitsConfidenceFilterBarAndPersistenceScript(@TempDir Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
