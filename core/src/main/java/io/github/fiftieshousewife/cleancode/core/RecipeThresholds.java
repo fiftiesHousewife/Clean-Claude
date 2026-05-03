@@ -31,7 +31,7 @@ public record RecipeThresholds(
     public static final int DEFAULT_SHORT_NAME_MIN_LENGTH = 2;
     public static final int DEFAULT_CPD_MINIMUM_TOKENS = 50;
     public static final int DEFAULT_MAGIC_NUMBER_MIN_VALUE = 1;
-    public static final int DEFAULT_SECTION_COMMENT_THRESHOLD = 1;
+    public static final int DEFAULT_SECTION_COMMENT_THRESHOLD = 2;
     public static final int DEFAULT_HARDCODED_LIST_MIN_LITERALS = 5;
     public static final int DEFAULT_TEMPORAL_COUPLING_MIN_CALLS = 3;
     public static final int DEFAULT_LINE_LENGTH_ERROR_THRESHOLD = 150;

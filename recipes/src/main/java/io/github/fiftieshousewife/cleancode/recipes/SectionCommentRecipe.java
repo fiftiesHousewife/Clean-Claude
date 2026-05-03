@@ -96,7 +96,34 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
                     return false;
                 }
                 final String lower = trimmed.toLowerCase(Locale.ROOT);
-                return ANNOTATION_PREFIXES.stream().noneMatch(lower::startsWith);
+                if (ANNOTATION_PREFIXES.stream().anyMatch(lower::startsWith)) {
+                    return false;
+                }
+                // Per Clean Code G34, a section comment is a short
+                // banner — `// initialisation`, `// processing`,
+                // `// cleanup`, or visual separators like `===`. Long
+                // explanatory comments are documentation, not section
+                // markers; ignore them.
+                return looksLikeASectionBanner(trimmed);
+            }
+
+            private boolean looksLikeASectionBanner(final String trimmed) {
+                if (trimmed.startsWith("=") || trimmed.startsWith("-")
+                        || trimmed.startsWith("*")) {
+                    return true;
+                }
+                final String[] words = trimmed.split("\\s+");
+                if (words.length > 5) {
+                    return false;
+                }
+                // No sentence-ending punctuation — banners are labels,
+                // not sentences. Allow a single trailing colon.
+                final String stripTrailingColon = trimmed.endsWith(":")
+                        ? trimmed.substring(0, trimmed.length() - 1) : trimmed;
+                if (stripTrailingColon.matches(".*[.,?!;].*")) {
+                    return false;
+                }
+                return true;
             }
 
             private String findEnclosingClassName() {

@@ -132,4 +132,67 @@ class SectionCommentRecipeTest {
 
         assertTrue(recipe.collectedRows().isEmpty());
     }
+
+    @Test
+    void ignoresLongExplanatoryCommentsBecauseTheyAreNotBanners() {
+        // Per Clean Code G34 ('Functions Should Descend Only One Level
+        // of Abstraction'), a section comment is a SHORT banner
+        // labelling a chunk of code that should be extracted. Long
+        // sentence-shaped comments are documentation, not banners.
+        final var recipe = new SectionCommentRecipe(1);
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void process() {
+                        // Skip files that can't be parsed because the
+                        // build system might still hand us partial trees.
+                        int x = 1;
+                        // Resolve the line ourselves by searching the
+                        // source for the first appearance of the literal.
+                        int y = 2;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "long sentence-shaped comments are documentation, not section banners");
+    }
+
+    @Test
+    void ignoresSentenceShapedCommentEndingWithPeriod() {
+        final var recipe = new SectionCommentRecipe(1);
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void process() {
+                        // Move closer to the first use.
+                        int x = 1;
+                        // Walk the body once.
+                        int y = 2;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "comments that end with a period are sentences, not banners");
+    }
+
+    @Test
+    void detectsVisualSeparatorBanners() {
+        final var recipe = new SectionCommentRecipe(1);
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    void process() {
+                        // === validate ===
+                        int x = 1;
+                        // === transform ===
+                        int y = 2;
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "=== separators are the canonical banner shape");
+    }
 }
