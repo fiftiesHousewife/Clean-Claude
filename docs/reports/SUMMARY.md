@@ -7,7 +7,7 @@ this file drifts from the committed state.
 
 Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) (extracted from the plugin jar by `./gradlew cleanCodeWriteHeuristics`).
 
-**Total: 1381 findings** (162 errors · 1213 warnings · 6 info)
+**Total: 1382 findings** (160 errors · 1216 warnings · 6 info)
 
 ## By module
 
@@ -17,12 +17,12 @@ Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) (extracted from the
 | adapters | 60 | 219 | 1 | 280 |
 | annotations | 0 | 0 | 1 | 1 |
 | claude-review | 6 | 14 | 0 | 20 |
-| core | 59 | 216 | 2 | 277 |
+| core | 57 | 216 | 2 | 275 |
 | mcp | 0 | 0 | 0 | 0 |
-| plugin | 32 | 283 | 0 | 315 |
+| plugin | 32 | 286 | 0 | 318 |
 | recipes | 0 | 248 | 1 | 249 |
 | refactoring | 5 | 233 | 1 | 239 |
-| **Total** | **162** | **1213** | **6** | **1381** |
+| **Total** | **160** | **1216** | **6** | **1382** |
 
 ## By heuristic code
 
@@ -40,13 +40,13 @@ Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) (extracted from the
 | T1 | 30 |
 | C2 | 27 |
 | Ch7_2 | 25 |
-| G4 | 25 |
 | G8 | 24 |
+| G4 | 23 |
 | Ch7_1 | 22 |
 | G19 | 21 |
 | G35 | 20 |
 | N5 | 19 |
-| G12 | 17 |
+| G12 | 18 |
 | G26 | 10 |
 | G36 | 10 |
 | G23 | 9 |
@@ -55,11 +55,11 @@ Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) (extracted from the
 | T8 | 5 |
 | C3 | 4 |
 | G18 | 4 |
+| T9 | 4 |
 | N1 | 3 |
 | F3 | 2 |
 | G16 | 2 |
 | J3 | 2 |
-| T9 | 2 |
 | G11 | 1 |
 | G13 | 1 |
 | G14 | 1 |
