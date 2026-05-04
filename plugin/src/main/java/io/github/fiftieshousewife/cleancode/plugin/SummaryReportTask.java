@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.github.fiftieshousewife.cleancode.annotations.HeuristicCode;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
@@ -80,6 +81,10 @@ public abstract class SummaryReportTask extends DefaultTask {
             int info = 0;
             for (final JsonElement element : array) {
                 final JsonObject finding = element.getAsJsonObject();
+                final String code = finding.get("code").getAsString();
+                if (isEnvironmentDependent(code)) {
+                    continue;
+                }
                 final String severity = finding.get("severity").getAsString();
                 switch (severity) {
                     case "ERROR" -> errors++;
@@ -87,12 +92,19 @@ public abstract class SummaryReportTask extends DefaultTask {
                     case "INFO" -> info++;
                     default -> { }
                 }
-                final String code = finding.get("code").getAsString();
                 byCode.merge(code, 1, Integer::sum);
             }
             byModule.put(name, new Counts(errors, warnings, info));
         } catch (IOException e) {
             byModule.put(name, new Counts(0, 0, 0));
+        }
+    }
+
+    private static boolean isEnvironmentDependent(final String code) {
+        try {
+            return HeuristicCode.valueOf(code).isEnvironmentDependent();
+        } catch (IllegalArgumentException unknownCode) {
+            return false;
         }
     }
 

@@ -5,22 +5,22 @@ Deterministic: contains no absolute paths, timestamps, or machine-specific
 content, so local and CI runs produce byte-identical output. CI fails if
 this file drifts from the committed state.
 
-**Total: 1333 findings** (165 errors · 1162 warnings · 6 info)
+**Total: 1331 findings** (162 errors · 1163 warnings · 6 info)
 
 ## By module
 
 | Module | Errors | Warnings | Info | Total |
 |---|---:|---:|---:|---:|
-| (root) | 3 | 0 | 0 | 3 |
+| (root) | 0 | 0 | 0 | 0 |
 | adapters | 60 | 217 | 1 | 278 |
 | annotations | 0 | 0 | 1 | 1 |
 | claude-review | 6 | 14 | 0 | 20 |
 | core | 59 | 212 | 2 | 273 |
 | mcp | 0 | 0 | 0 | 0 |
-| plugin | 32 | 281 | 0 | 313 |
+| plugin | 32 | 282 | 0 | 314 |
 | recipes | 0 | 210 | 1 | 211 |
 | refactoring | 5 | 228 | 1 | 234 |
-| **Total** | **165** | **1162** | **6** | **1333** |
+| **Total** | **162** | **1163** | **6** | **1331** |
 
 ## By heuristic code
 
@@ -53,12 +53,11 @@ this file drifts from the committed state.
 | T8 | 5 |
 | C3 | 4 |
 | G18 | 4 |
-| E1 | 3 |
 | N1 | 3 |
+| T9 | 3 |
 | F3 | 2 |
 | G16 | 2 |
 | J3 | 2 |
-| T9 | 2 |
 | G11 | 1 |
 | G13 | 1 |
 | G14 | 1 |

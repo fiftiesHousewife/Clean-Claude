@@ -1,5 +1,8 @@
 package io.github.fiftieshousewife.cleancode.annotations;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 public enum HeuristicCode {
     // Comments
     C1, C2, C3, C4, C5,
@@ -33,5 +36,17 @@ public enum HeuristicCode {
 
     // Meta
     META_SUPPRESSION_EXPIRED,
-    META_SUPPRESSION_NO_REASON
+    META_SUPPRESSION_NO_REASON;
+
+    private static final Set<HeuristicCode> ENVIRONMENT_DEPENDENT = EnumSet.of(E1);
+
+    /**
+     * Whether this heuristic's count varies with factors outside the source tree
+     * (remote dependency resolution, network state, time of day). Such codes are
+     * excluded from the deterministic drift-checked summary so the check
+     * doesn't fire on every new upstream release.
+     */
+    public boolean isEnvironmentDependent() {
+        return ENVIRONMENT_DEPENDENT.contains(this);
+    }
 }
