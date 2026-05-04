@@ -192,7 +192,9 @@ tasks.withType<GenerateModuleMetadata>().configureEach {
 tasks.register<JavaExec>("runHarnessPass") {
     mainClass.set("io.github.fiftieshousewife.cleancode.plugin.rework.HarnessRecipePassCli")
     classpath = sourceSets.main.get().runtimeClasspath
-    args = listOf(project.findProperty("dir")?.toString() ?: rootProject.projectDir.absolutePath)
+    val dir = project.findProperty("dir")?.toString() ?: rootProject.projectDir.absolutePath
+    val recipe = project.findProperty("recipe")?.toString()
+    args = if (recipe != null) listOf(dir, "--recipe=$recipe") else listOf(dir)
 }
 
 tasks.register<JavaExec>("wholeCodebaseSummary") {

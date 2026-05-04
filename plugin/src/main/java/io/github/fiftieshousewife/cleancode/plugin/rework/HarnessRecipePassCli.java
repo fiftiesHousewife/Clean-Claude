@@ -39,11 +39,23 @@ public final class HarnessRecipePassCli {
     private HarnessRecipePassCli() {}
 
     public static void main(final String[] args) throws IOException {
-        final Path root = Path.of(args.length > 0 ? args[0] : ".").toAbsolutePath().normalize();
+        String recipeFilter = null;
+        String rootArg = null;
+        for (final String arg : args) {
+            if (arg.startsWith("--recipe=")) {
+                recipeFilter = arg.substring("--recipe=".length());
+            } else if (rootArg == null) {
+                rootArg = arg;
+            }
+        }
+        final Path root = Path.of(rootArg != null ? rootArg : ".").toAbsolutePath().normalize();
         final List<Path> files = collectJavaFiles(root);
         OUT.println("Found " + files.size() + " .java files under " + root);
+        if (recipeFilter != null) {
+            OUT.println("Recipe filter: " + recipeFilter);
+        }
 
-        final HarnessRecipePass.PassSummary summary = HarnessRecipePass.apply(files);
+        final HarnessRecipePass.PassSummary summary = HarnessRecipePass.apply(files, recipeFilter);
         final Map<Path, List<String>> byFile = summary.recipeNamesByFile();
 
         OUT.println();

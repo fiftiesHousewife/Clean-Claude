@@ -108,12 +108,32 @@ public final class HarnessRecipePass {
     }
 
     public static PassSummary apply(final List<Path> files) throws IOException {
+        return apply(files, null);
+    }
+
+    /**
+     * Variant that filters the deterministic recipe chain to a single recipe
+     * by simple class name (e.g. {@code "DeleteSectionCommentsRecipe"}). When
+     * {@code recipeFilter} is null the full chain runs. Used by the CLI for
+     * cautious one-recipe-at-a-time sweeps.
+     */
+    public static PassSummary apply(final List<Path> files, final String recipeFilter)
+            throws IOException {
         // One project-wide scan for super.X() names, so per-file recipe
         // invocations see the cross-file callers they would otherwise
         // miss. Regex-based; false positives only cause us to skip a
         // rewrite, which is always safe.
         final Set<String> superCalledNames = SuperCallScanner.scan(files);
-        final List<Recipe> recipes = deterministicRecipes(superCalledNames);
+        List<Recipe> recipes = deterministicRecipes(superCalledNames);
+        if (recipeFilter != null && !recipeFilter.isEmpty()) {
+            recipes = recipes.stream()
+                    .filter(r -> recipeShortName(r).equals(recipeFilter))
+                    .toList();
+            if (recipes.isEmpty()) {
+                throw new IllegalArgumentException("Unknown recipe filter '" + recipeFilter
+                        + "'; expected one of the deterministic chain's simple class names");
+            }
+        }
         final Map<Path, List<String>> byFile = new LinkedHashMap<>();
         for (final Path file : files) {
             final List<String> fired = applyToFile(file, recipes);
@@ -149,7 +169,7 @@ public final class HarnessRecipePass {
      * {@code JavaTransformsClasspathGated}) instead of an internal wrapper
      * class name.
      */
-    private static String recipeShortName(final Recipe recipe) {
+    static String recipeShortName(final Recipe recipe) {
         final String name = recipe.getName();
         if (name == null || name.isEmpty()) {
             return recipe.getClass().getSimpleName();
