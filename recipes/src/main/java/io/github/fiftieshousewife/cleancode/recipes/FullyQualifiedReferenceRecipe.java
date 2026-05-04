@@ -29,7 +29,8 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
     @Override
     public String getDescription() {
         return "Detects inline `java.util.List` style type references that could be replaced "
-                + "with an import + short name. Fixed by ShortenFullyQualifiedReferencesRecipe.";
+                + "with an import + short name. Fixed by upstream "
+                + "org.openrewrite.java.ShortenFullyQualifiedTypeReferences.";
     }
 
     @Override

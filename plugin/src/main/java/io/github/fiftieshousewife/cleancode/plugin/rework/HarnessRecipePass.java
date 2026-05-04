@@ -12,7 +12,6 @@ import io.github.fiftieshousewife.cleancode.refactoring.ReplaceForAddNCopiesReci
 import io.github.fiftieshousewife.cleancode.refactoring.ReplaceStringBuilderWithTextBlockRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.RestoreInterruptFlagRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.ReturnInsteadOfMutateArgRecipe;
-import io.github.fiftieshousewife.cleancode.refactoring.ShortenFullyQualifiedReferencesRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.UseTryWithResourcesRecipe;
 import io.github.fiftieshousewife.cleancode.refactoring.support.SuperCallScanner;
 import org.openrewrite.InMemoryExecutionContext;
@@ -23,6 +22,7 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.config.Environment;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -107,7 +107,7 @@ public final class HarnessRecipePass {
                 new UseTryWithResourcesRecipe(),
                 new AddFinalRecipe(),
                 new InvertNegativeConditionalRecipe(),
-                new ShortenFullyQualifiedReferencesRecipe(),
+                new ShortenFullyQualifiedTypeReferences(),
                 loadSlf4jTransformsRecipe(),
                 loadSlf4jBestPracticesRecipe());
     }

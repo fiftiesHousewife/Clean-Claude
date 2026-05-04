@@ -45,13 +45,14 @@ public final class RefactoringRegistry {
             Map.entry(HeuristicCode.F2, List.of(REFACTORING + "ReturnInsteadOfMutateArgRecipe")),
             // G4 — try-with-resources
             Map.entry(HeuristicCode.G4, List.of(REFACTORING + "UseTryWithResourcesRecipe")),
-            // G12 — clutter (unused imports + FQN shortening). Unused-import
-            // removal delegates directly to upstream RemoveUnusedImports;
-            // our DeleteUnusedImportRecipe was a thin wrapper that added no
-            // behaviour and was retired in Phase B of the upstream-recipe
-            // adoption (see docs/sessions/2026-05-04-recipe-research.md).
+            // G12 — clutter (unused imports + FQN shortening). Both fixes
+            // delegate directly to upstream OpenRewrite recipes; our thin
+            // wrappers (DeleteUnusedImportRecipe,
+            // ShortenFullyQualifiedReferencesRecipe) were retired in
+            // Phase B of the upstream-recipe adoption (see
+            // docs/sessions/2026-05-04-recipe-research.md).
             Map.entry(HeuristicCode.G12, List.of(
-                    REFACTORING + "ShortenFullyQualifiedReferencesRecipe",
+                    "org.openrewrite.java.ShortenFullyQualifiedTypeReferences",
                     "org.openrewrite.java.RemoveUnusedImports")),
             // G5 — duplicated string literals extracted to named constants.
             // ExtractConstantRecipe operates on string literals, so it
