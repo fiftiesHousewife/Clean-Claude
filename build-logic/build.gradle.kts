@@ -9,4 +9,5 @@ repositories {
 
 dependencies {
     implementation(libs.ben.manes.versions.plugin)
+    implementation(libs.forbiddenapis.gradle.plugin)
 }

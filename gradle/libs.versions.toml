@@ -19,6 +19,7 @@ cpd-plugin = "3.4"
 spotless-plugin = "6.25.0"
 shadow = "9.4.1"
 vanniktech-maven-publish = "0.36.0"
+forbiddenapis = "3.10"
 
 [libraries]
 anthropic-java = { module = "com.anthropic:anthropic-java", version.ref = "anthropic" }
@@ -43,8 +44,10 @@ fifties-system-out-to-lombok-log4j = { module = "io.github.fiftieshousewife:syst
 ben-manes-versions-plugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versions" }
 gradle-tooling-api = { module = "org.gradle:gradle-tooling-api", version.ref = "gradle-tooling" }
 slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
+forbiddenapis-gradle-plugin = { module = "de.thetaphi:forbiddenapis", version.ref = "forbiddenapis" }
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-maven-publish" }
+forbiddenapis = { id = "de.thetaphi.forbiddenapis", version.ref = "forbiddenapis" }
