@@ -267,4 +267,50 @@ class AddFinalRecipeTest implements RewriteTest {
                 )
         );
     }
+
+    @Test
+    void preservesIndentationOnSiblingMethodThatAlreadyHasFinalParams() {
+        rewriteRun(
+                java(
+                        """
+                        package com.example;
+                        import java.util.Map;
+                        public abstract class Report {
+                            private record Counts(int errors, int warnings) {
+                                Counts plus(Counts other) {
+                                    return new Counts(errors + other.errors, warnings + other.warnings);
+                                }
+                            }
+
+                            private String renderMarkdown(final Map<String, Counts> byModule) {
+                                return byModule.toString();
+                            }
+
+                            private String renderHtml(final Map<String, Counts> byModule, final Counts totals) {
+                                return byModule.toString() + totals;
+                            }
+                        }
+                        """,
+                        """
+                        package com.example;
+                        import java.util.Map;
+                        public abstract class Report {
+                            private record Counts(int errors, int warnings) {
+                                Counts plus(final Counts other) {
+                                    return new Counts(errors + other.errors, warnings + other.warnings);
+                                }
+                            }
+
+                            private String renderMarkdown(final Map<String, Counts> byModule) {
+                                return byModule.toString();
+                            }
+
+                            private String renderHtml(final Map<String, Counts> byModule, final Counts totals) {
+                                return byModule.toString() + totals;
+                            }
+                        }
+                        """
+                )
+        );
+    }
 }
