@@ -50,6 +50,15 @@ public class CleanCodePlugin implements Plugin<Project> {
                     task.setGroup("verification");
                 });
 
+        final TaskProvider<WriteHeuristicsTask> writeHeuristics = project.getTasks()
+                .register("cleanCodeWriteHeuristics", WriteHeuristicsTask.class, task -> {
+                    task.setDescription(
+                            "Extract the bundled HEURISTICS.md reference to docs/clean-code/HEURISTICS.md "
+                                    + "(idempotent; rewrites only when the bundled copy differs)");
+                    task.setGroup("clean code");
+                });
+        analyse.configure(task -> task.finalizedBy(writeHeuristics));
+
         wireTaskDependencies(project, analyse);
 
         project.getTasks()

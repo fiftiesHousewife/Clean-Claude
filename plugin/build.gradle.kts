@@ -78,6 +78,9 @@ tasks.named<ProcessResources>("processResources") {
     from(rootProject.file(".claude/skills")) {
         into("skills")
     }
+    from(rootProject.file("HEURISTICS.md")) {
+        into("clean-code")
+    }
 }
 
 // The shadow jar is the single self-contained artifact we publish: the

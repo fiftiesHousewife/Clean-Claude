@@ -117,6 +117,8 @@ public abstract class SummaryReportTask extends DefaultTask {
         sb.append("Deterministic: contains no absolute paths, timestamps, or machine-specific\n");
         sb.append("content, so local and CI runs produce byte-identical output. CI fails if\n");
         sb.append("this file drifts from the committed state.\n\n");
+        sb.append("Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) ");
+        sb.append("(extracted from the plugin jar by `./gradlew cleanCodeWriteHeuristics`).\n\n");
 
         sb.append("**Total: ").append(totals.total())
                 .append(" findings** (").append(totals.errors()).append(" errors · ")
