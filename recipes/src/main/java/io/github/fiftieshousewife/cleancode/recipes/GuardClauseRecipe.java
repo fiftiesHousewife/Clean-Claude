@@ -37,16 +37,16 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -67,7 +67,7 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
             }
 
             @Override
-            public J.ForEachLoop visitForEachLoop(J.ForEachLoop forLoop, ExecutionContext ctx) {
+            public J.ForEachLoop visitForEachLoop(final J.ForEachLoop forLoop, final ExecutionContext ctx) {
                 final J.ForEachLoop fl = super.visitForEachLoop(forLoop, ctx);
                 if (!(fl.getBody() instanceof J.Block body)) {
                     return fl;
@@ -88,7 +88,7 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -96,7 +96,7 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static int countGuardClauses(List<Statement> statements) {
+    private static int countGuardClauses(final List<Statement> statements) {
         int count = 0;
         for (final Statement stmt : statements) {
             if (isGuardClause(stmt)) {
@@ -106,7 +106,7 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
         return count;
     }
 
-    private static int countContinueGuards(List<Statement> statements) {
+    private static int countContinueGuards(final List<Statement> statements) {
         int count = 0;
         for (final Statement stmt : statements) {
             if (isContinueGuard(stmt)) {
@@ -116,7 +116,7 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
         return count;
     }
 
-    private static boolean isGuardClause(Statement stmt) {
+    private static boolean isGuardClause(final Statement stmt) {
         if (!(stmt instanceof J.If ifStmt)) {
             return false;
         }
@@ -126,7 +126,7 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
         return bodyIsReturnOrThrow(ifStmt.getThenPart());
     }
 
-    private static boolean isContinueGuard(Statement stmt) {
+    private static boolean isContinueGuard(final Statement stmt) {
         if (!(stmt instanceof J.If ifStmt)) {
             return false;
         }
@@ -136,7 +136,7 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
         return bodyIsContinue(ifStmt.getThenPart());
     }
 
-    private static boolean bodyIsReturnOrThrow(Statement body) {
+    private static boolean bodyIsReturnOrThrow(final Statement body) {
         if (body instanceof J.Return || body instanceof J.Throw) {
             return true;
         }
@@ -147,7 +147,7 @@ public class GuardClauseRecipe extends ScanningRecipe<GuardClauseRecipe.Accumula
         return false;
     }
 
-    private static boolean bodyIsContinue(Statement body) {
+    private static boolean bodyIsContinue(final Statement body) {
         if (body instanceof J.Continue) {
             return true;
         }

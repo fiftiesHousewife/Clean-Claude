@@ -32,16 +32,16 @@ public class ImperativeLoopRecipe extends ScanningRecipe<ImperativeLoopRecipe.Ac
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ForEachLoop visitForEachLoop(J.ForEachLoop forEachLoop, ExecutionContext ctx) {
+            public J.ForEachLoop visitForEachLoop(final J.ForEachLoop forEachLoop, final ExecutionContext ctx) {
                 final J.ForEachLoop loop = super.visitForEachLoop(forEachLoop, ctx);
                 final Statement body = extractSingleStatement(loop.getBody());
 
@@ -60,7 +60,7 @@ public class ImperativeLoopRecipe extends ScanningRecipe<ImperativeLoopRecipe.Ac
             }
 
             @Override
-            public J.ForLoop visitForLoop(J.ForLoop forLoop, ExecutionContext ctx) {
+            public J.ForLoop visitForLoop(final J.ForLoop forLoop, final ExecutionContext ctx) {
                 final J.ForLoop loop = super.visitForLoop(forLoop, ctx);
                 final Statement body = extractSingleStatement(loop.getBody());
 
@@ -79,7 +79,7 @@ public class ImperativeLoopRecipe extends ScanningRecipe<ImperativeLoopRecipe.Ac
                 return loop;
             }
 
-            private Statement extractSingleStatement(Statement body) {
+            private Statement extractSingleStatement(final Statement body) {
                 if (body instanceof J.Block block) {
                     final List<Statement> statements = block.getStatements();
                     if (statements.size() != 1) {
@@ -90,7 +90,7 @@ public class ImperativeLoopRecipe extends ScanningRecipe<ImperativeLoopRecipe.Ac
                 return body;
             }
 
-            private String classifyBody(Statement statement) {
+            private String classifyBody(final Statement statement) {
                 if (containsFlowControl(statement)) {
                     return null;
                 }
@@ -109,30 +109,30 @@ public class ImperativeLoopRecipe extends ScanningRecipe<ImperativeLoopRecipe.Ac
                 return null;
             }
 
-            private boolean isAddCall(Statement statement) {
+            private boolean isAddCall(final Statement statement) {
                 if (statement instanceof J.MethodInvocation invocation) {
                     return "add".equals(invocation.getSimpleName());
                 }
                 return false;
             }
 
-            private boolean containsFlowControl(Statement statement) {
+            private boolean containsFlowControl(final Statement statement) {
                 final boolean[] found = {false};
                 new JavaIsoVisitor<Integer>() {
                     @Override
-                    public J.Break visitBreak(J.Break breakStatement, Integer unused) {
+                    public J.Break visitBreak(final J.Break breakStatement, final Integer unused) {
                         found[0] = true;
                         return breakStatement;
                     }
 
                     @Override
-                    public J.Continue visitContinue(J.Continue continueStatement, Integer unused) {
+                    public J.Continue visitContinue(final J.Continue continueStatement, final Integer unused) {
                         found[0] = true;
                         return continueStatement;
                     }
 
                     @Override
-                    public J.Return visitReturn(J.Return returnStatement, Integer unused) {
+                    public J.Return visitReturn(final J.Return returnStatement, final Integer unused) {
                         found[0] = true;
                         return returnStatement;
                     }
@@ -153,7 +153,7 @@ public class ImperativeLoopRecipe extends ScanningRecipe<ImperativeLoopRecipe.Ac
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

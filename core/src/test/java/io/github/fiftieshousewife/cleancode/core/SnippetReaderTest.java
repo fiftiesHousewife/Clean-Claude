@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SnippetReaderTest {
 
     @Test
-    void returnsSurroundingContextForAFinding(@TempDir Path tempDir) throws Exception {
+    void returnsSurroundingContextForAFinding(@TempDir final Path tempDir) throws Exception {
         final Path file = tempDir.resolve("src/main/java/Foo.java");
         Files.createDirectories(file.getParent());
         Files.write(file, List.of(
@@ -48,7 +48,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void returnsEmptyForProjectLevelFindings(@TempDir Path tempDir) {
+    void returnsEmptyForProjectLevelFindings(@TempDir final Path tempDir) {
         final Finding projectFinding = Finding.projectLevel(HeuristicCode.T1, "Low coverage",
                 Severity.ERROR, Confidence.HIGH, "jacoco", "coverage");
 
@@ -57,7 +57,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void returnsEmptyForMissingFile(@TempDir Path tempDir) {
+    void returnsEmptyForMissingFile(@TempDir final Path tempDir) {
         final Finding finding = new Finding(HeuristicCode.G5, "src/main/java/Missing.java",
                 1, 1, "duplicated", Severity.WARNING, Confidence.HIGH,
                 "cpd", "cpd-dup", java.util.Map.of());
@@ -67,7 +67,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void returnsEmptyWhenProjectRootIsNull(@TempDir Path tempDir) {
+    void returnsEmptyWhenProjectRootIsNull(@TempDir final Path tempDir) {
         final Finding finding = new Finding(HeuristicCode.G5, "Foo.java",
                 1, 1, "x", Severity.WARNING, Confidence.HIGH,
                 "cpd", "cpd-dup", java.util.Map.of());
@@ -76,7 +76,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void clampsLineRangeToFileBounds(@TempDir Path tempDir) throws Exception {
+    void clampsLineRangeToFileBounds(@TempDir final Path tempDir) throws Exception {
         final Path file = tempDir.resolve("Foo.java");
         Files.write(file, List.of("line1", "line2", "line3"));
 
@@ -92,7 +92,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void capsLargeWindowsAtMaxLines(@TempDir Path tempDir) throws Exception {
+    void capsLargeWindowsAtMaxLines(@TempDir final Path tempDir) throws Exception {
         final Path file = tempDir.resolve("Big.java");
         Files.write(file, IntStream.rangeClosed(1, 50)
                 .mapToObj(i -> "line " + i)
@@ -108,7 +108,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void slidesForwardToClassDeclarationWhenFindingAnchorsAtLine1(@TempDir Path tempDir) throws Exception {
+    void slidesForwardToClassDeclarationWhenFindingAnchorsAtLine1(@TempDir final Path tempDir) throws Exception {
         // Checkstyle FileLength and some PMD file-level checks emit at
         // line 1 (the package declaration). The default symmetric window
         // would show package + import + Javadoc — never the class. Slide
@@ -144,7 +144,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void doesNotSlideForwardForImportLineFindings(@TempDir Path tempDir) throws Exception {
+    void doesNotSlideForwardForImportLineFindings(@TempDir final Path tempDir) throws Exception {
         // J1 (Checkstyle AvoidStarImport) emits at the wildcard-import
         // line above the class. The previous slide-when-header rule
         // jumped the snippet onto the class declaration, hiding the
@@ -174,7 +174,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void doesNotSlideForwardWhenCommentFindingAnchorsBelowTheClassDeclaration(@TempDir Path tempDir) throws Exception {
+    void doesNotSlideForwardWhenCommentFindingAnchorsBelowTheClassDeclaration(@TempDir final Path tempDir) throws Exception {
         // C2 / C3 / C5 findings deliberately anchor at a comment line
         // INSIDE a method's body. The earlier "slide forward when focal
         // looks like a header" rule fired for those because it didn't
@@ -207,7 +207,7 @@ class SnippetReaderTest {
     }
 
     @Test
-    void slidesWindowDownWhenFocalLineDeclaresAClassPrecededByJavadoc(@TempDir Path tempDir) throws Exception {
+    void slidesWindowDownWhenFocalLineDeclaresAClassPrecededByJavadoc(@TempDir final Path tempDir) throws Exception {
         // SpotBugs/PMD class-level findings (Ch10_1, EI_EXPOSE on records,
         // file-length warnings) anchor at the class declaration line. With
         // the default symmetric context the user sees Javadoc lines above

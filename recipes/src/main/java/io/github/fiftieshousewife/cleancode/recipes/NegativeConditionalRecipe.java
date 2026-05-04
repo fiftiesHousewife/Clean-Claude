@@ -35,16 +35,16 @@ public class NegativeConditionalRecipe extends ScanningRecipe<NegativeConditiona
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Unary visitUnary(J.Unary unary, ExecutionContext ctx) {
+            public J.Unary visitUnary(final J.Unary unary, final ExecutionContext ctx) {
                 final J.Unary u = super.visitUnary(unary, ctx);
 
                 if (u.getOperator() != J.Unary.Type.Not) {
@@ -65,7 +65,7 @@ public class NegativeConditionalRecipe extends ScanningRecipe<NegativeConditiona
                 return u;
             }
 
-            private boolean hasNegativePrefix(String methodName) {
+            private boolean hasNegativePrefix(final String methodName) {
                 return NEGATIVE_PREFIXES.stream().anyMatch(methodName::startsWith);
             }
 
@@ -82,7 +82,7 @@ public class NegativeConditionalRecipe extends ScanningRecipe<NegativeConditiona
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

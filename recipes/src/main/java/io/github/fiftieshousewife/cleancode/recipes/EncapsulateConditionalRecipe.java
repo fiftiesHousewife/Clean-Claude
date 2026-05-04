@@ -35,16 +35,16 @@ public class EncapsulateConditionalRecipe extends ScanningRecipe<EncapsulateCond
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.If visitIf(J.If ifStatement, ExecutionContext ctx) {
+            public J.If visitIf(final J.If ifStatement, final ExecutionContext ctx) {
                 final J.If i = super.visitIf(ifStatement, ctx);
                 final var condition = i.getIfCondition().getTree();
 
@@ -63,7 +63,7 @@ public class EncapsulateConditionalRecipe extends ScanningRecipe<EncapsulateCond
                 return i;
             }
 
-            private int logicalDepth(J.Binary binary) {
+            private int logicalDepth(final J.Binary binary) {
                 if (!LOGICAL_OPERATORS.contains(binary.getOperator())) {
                     return 0;
                 }
@@ -85,7 +85,7 @@ public class EncapsulateConditionalRecipe extends ScanningRecipe<EncapsulateCond
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

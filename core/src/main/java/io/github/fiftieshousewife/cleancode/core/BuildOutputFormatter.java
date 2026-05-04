@@ -17,18 +17,18 @@ public final class BuildOutputFormatter {
 
     private BuildOutputFormatter() {}
 
-    public static String format(AggregatedReport report) {
+    public static String format(final AggregatedReport report) {
         return format(report, Map.of(), List.of());
     }
 
-    public static String format(AggregatedReport report,
-                                Map<HeuristicCode, BaselineManager.Delta> deltas) {
+    public static String format(final AggregatedReport report,
+                                final Map<HeuristicCode, BaselineManager.Delta> deltas) {
         return format(report, deltas, List.of());
     }
 
-    public static String format(AggregatedReport report,
-                                Map<HeuristicCode, BaselineManager.Delta> deltas,
-                                List<SourceState> sourceStates) {
+    public static String format(final AggregatedReport report,
+                                final Map<HeuristicCode, BaselineManager.Delta> deltas,
+                                final List<SourceState> sourceStates) {
         final StringBuilder out = new StringBuilder();
         final List<Finding> findings = report.findings();
 
@@ -58,8 +58,8 @@ public final class BuildOutputFormatter {
         return out.toString();
     }
 
-    private static void appendBaselineDelta(StringBuilder out,
-                                            Map<HeuristicCode, BaselineManager.Delta> deltas) {
+    private static void appendBaselineDelta(final StringBuilder out,
+                                            final Map<HeuristicCode, BaselineManager.Delta> deltas) {
         final int newViolations = deltas.values().stream()
                 .mapToInt(d -> Math.max(0, d.change()))
                 .sum();
@@ -83,7 +83,7 @@ public final class BuildOutputFormatter {
         out.append('\n');
     }
 
-    private static void appendSeveritySummary(StringBuilder out, AggregatedReport report) {
+    private static void appendSeveritySummary(final StringBuilder out, final AggregatedReport report) {
         final Map<Severity, List<Finding>> bySeverity = report.bySeverity();
         final int errors = bySeverity.getOrDefault(Severity.ERROR, List.of()).size();
         final int warnings = bySeverity.getOrDefault(Severity.WARNING, List.of()).size();
@@ -95,7 +95,7 @@ public final class BuildOutputFormatter {
         out.append("  ·  ").append(info).append(" info\n");
     }
 
-    private static void appendFindingsByCode(StringBuilder out, List<Finding> findings) {
+    private static void appendFindingsByCode(final StringBuilder out, final List<Finding> findings) {
         final Map<HeuristicCode, List<Finding>> byCode = findings.stream()
                 .collect(Collectors.groupingBy(Finding::code));
 
@@ -104,7 +104,7 @@ public final class BuildOutputFormatter {
                 .forEach(entry -> appendCodeGroup(out, entry.getKey(), entry.getValue()));
     }
 
-    private static void appendCodeGroup(StringBuilder out, HeuristicCode code, List<Finding> group) {
+    private static void appendCodeGroup(final StringBuilder out, final HeuristicCode code, final List<Finding> group) {
         out.append('\n').append(DIVIDER).append('\n');
 
         final String name = HeuristicDescriptions.name(code);
@@ -133,14 +133,14 @@ public final class BuildOutputFormatter {
                 .forEach(f -> appendFinding(out, f));
     }
 
-    private static void appendFinding(StringBuilder out, Finding finding) {
+    private static void appendFinding(final StringBuilder out, final Finding finding) {
         final String location = formatLocation(finding);
         out.append("    ").append(severityIcon(finding.severity()));
         out.append(" ").append(location);
         out.append("  ").append(finding.message()).append('\n');
     }
 
-    private static void appendWrapped(StringBuilder out, String text, String indent, int width) {
+    private static void appendWrapped(final StringBuilder out, final String text, final String indent, final int width) {
         final String[] words = text.split(" ");
         final StringBuilder line = new StringBuilder(indent);
         for (final String word : words) {
@@ -159,7 +159,7 @@ public final class BuildOutputFormatter {
         }
     }
 
-    private static String formatLocation(Finding finding) {
+    private static String formatLocation(final Finding finding) {
         if (finding.sourceFile() == null) {
             return "(project)";
         }
@@ -170,7 +170,7 @@ public final class BuildOutputFormatter {
         return file;
     }
 
-    private static String severityIcon(Severity severity) {
+    private static String severityIcon(final Severity severity) {
         return switch (severity) {
             case ERROR -> "!!";
             case WARNING -> " !";
@@ -178,7 +178,7 @@ public final class BuildOutputFormatter {
         };
     }
 
-    private static void appendToolSummary(StringBuilder out, List<Finding> findings, List<SourceState> sourceStates) {
+    private static void appendToolSummary(final StringBuilder out, final List<Finding> findings, final List<SourceState> sourceStates) {
         out.append('\n').append(DIVIDER).append('\n');
         out.append("  Sources:\n");
 
@@ -207,7 +207,7 @@ public final class BuildOutputFormatter {
         };
     }
 
-    private static void appendSourceStateSummary(StringBuilder out, List<SourceState> sourceStates) {
+    private static void appendSourceStateSummary(final StringBuilder out, final List<SourceState> sourceStates) {
         if (sourceStates.isEmpty()) {
             return;
         }
@@ -216,7 +216,7 @@ public final class BuildOutputFormatter {
         sourceStates.forEach(state -> out.append("    ").append(formatSourceState(state)).append('\n'));
     }
 
-    private static void appendOptionalRulesSummary(StringBuilder out) {
+    private static void appendOptionalRulesSummary(final StringBuilder out) {
         if (OptionalRules.defaults().isEmpty()) {
             return;
         }
@@ -228,7 +228,7 @@ public final class BuildOutputFormatter {
         });
     }
 
-    private static void appendFooter(StringBuilder out, List<Finding> findings) {
+    private static void appendFooter(final StringBuilder out, final List<Finding> findings) {
         out.append('\n').append(HEADER).append('\n');
         out.append("  ").append(findings.size()).append(" findings");
         out.append("  —  ./gradlew cleanCodeExplain --finding=<code>\n");

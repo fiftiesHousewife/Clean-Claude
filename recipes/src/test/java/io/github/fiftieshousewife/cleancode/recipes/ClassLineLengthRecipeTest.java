@@ -30,7 +30,7 @@ class ClassLineLengthRecipeTest {
         assertTrue(recipe.collectedRows().isEmpty());
     }
 
-    private String generateClassWithLines(int targetLines) {
+    private String generateClassWithLines(final int targetLines) {
         final var sb = new StringBuilder();
         sb.append("package com.example;\npublic class Big {\n");
         for (int i = 0; i < targetLines - 3; i++) {

@@ -15,7 +15,7 @@ class FindingSourceTest {
         FindingSource stub = new FindingSource() {
             @Override public String id() { return "stub"; }
             @Override public String displayName() { return "Stub"; }
-            @Override public List<Finding> collectFindings(ProjectContext context) { return List.of(); }
+            @Override public List<Finding> collectFindings(final ProjectContext context) { return List.of(); }
             @Override public Set<HeuristicCode> coveredCodes() { return Set.of(); }
         };
 
@@ -30,7 +30,7 @@ class FindingSourceTest {
         FindingSource stub = new FindingSource() {
             @Override public String id() { return "stub"; }
             @Override public String displayName() { return "Stub"; }
-            @Override public List<Finding> collectFindings(ProjectContext context) {
+            @Override public List<Finding> collectFindings(final ProjectContext context) {
                 return List.of(expected);
             }
             @Override public Set<HeuristicCode> coveredCodes() { return Set.of(HeuristicCode.G5); }

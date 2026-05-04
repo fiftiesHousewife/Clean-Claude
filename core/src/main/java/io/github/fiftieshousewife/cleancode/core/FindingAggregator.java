@@ -16,13 +16,13 @@ public final class FindingAggregator {
 
     private FindingAggregator() {}
 
-    public static AggregatedReport aggregate(List<FindingSource> sources,
-                                              ProjectContext context) throws FindingSourceException {
+    public static AggregatedReport aggregate(final List<FindingSource> sources,
+                                              final ProjectContext context) throws FindingSourceException {
         return aggregateWithStates(sources, context).report();
     }
 
-    public static Result aggregateWithStates(List<FindingSource> sources,
-                                              ProjectContext context) throws FindingSourceException {
+    public static Result aggregateWithStates(final List<FindingSource> sources,
+                                              final ProjectContext context) throws FindingSourceException {
         final List<Finding> allFindings = new ArrayList<>();
         final Set<HeuristicCode> coveredCodes = EnumSet.noneOf(HeuristicCode.class);
         final List<SourceState> states = new ArrayList<>();

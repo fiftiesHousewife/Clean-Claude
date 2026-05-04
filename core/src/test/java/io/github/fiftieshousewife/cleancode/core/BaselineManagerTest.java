@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BaselineManagerTest {
 
     @Test
-    void writesBaselineSnapshot(@TempDir Path tempDir) throws Exception {
+    void writesBaselineSnapshot(@TempDir final Path tempDir) throws Exception {
         Path baseline = tempDir.resolve("baseline.json");
         AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.G5, "Foo.java", 1, 1, "d", Severity.WARNING, Confidence.HIGH, "cpd", "r"),
@@ -33,7 +33,7 @@ class BaselineManagerTest {
     }
 
     @Test
-    void readsExistingBaseline(@TempDir Path tempDir) throws Exception {
+    void readsExistingBaseline(@TempDir final Path tempDir) throws Exception {
         Path baseline = tempDir.resolve("baseline.json");
         Files.writeString(baseline, """
                 {"counts":{"G5":5,"G4":2}}
@@ -46,7 +46,7 @@ class BaselineManagerTest {
     }
 
     @Test
-    void computesDelta(@TempDir Path tempDir) throws Exception {
+    void computesDelta(@TempDir final Path tempDir) throws Exception {
         Path baseline = tempDir.resolve("baseline.json");
         Files.writeString(baseline, """
                 {"counts":{"G5":5,"G4":2}}
@@ -67,7 +67,7 @@ class BaselineManagerTest {
     }
 
     @Test
-    void handlesMissingBaseline(@TempDir Path tempDir) throws Exception {
+    void handlesMissingBaseline(@TempDir final Path tempDir) throws Exception {
         Path baseline = tempDir.resolve("nonexistent.json");
 
         Map<HeuristicCode, Integer> counts = BaselineManager.readBaseline(baseline);
@@ -76,7 +76,7 @@ class BaselineManagerTest {
     }
 
     @Test
-    void roundTripPreservesCounts(@TempDir Path tempDir) throws Exception {
+    void roundTripPreservesCounts(@TempDir final Path tempDir) throws Exception {
         Path baseline = tempDir.resolve("baseline.json");
         AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.G5, "Foo.java", 1, 1, "d", Severity.WARNING, Confidence.HIGH, "cpd", "r"),
@@ -90,7 +90,7 @@ class BaselineManagerTest {
         assertEquals(1, counts.get(HeuristicCode.T1));
     }
 
-    private AggregatedReport reportWith(Finding... findings) {
+    private AggregatedReport reportWith(final Finding... findings) {
         return new AggregatedReport(List.of(findings), Set.of(), Instant.now(), "test", "1.0");
     }
 }

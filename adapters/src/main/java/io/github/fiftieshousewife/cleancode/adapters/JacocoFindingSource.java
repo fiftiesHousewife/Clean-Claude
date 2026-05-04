@@ -38,12 +38,12 @@ public class JacocoFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         return true; // Always available — absence produces T2
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         Path report = reportPath(context);
 
         if (!Files.exists(report)) {
@@ -67,7 +67,7 @@ public class JacocoFindingSource implements FindingSource {
         }
     }
 
-    private List<Finding> handleMissingReport(ProjectContext context) {
+    private List<Finding> handleMissingReport(final ProjectContext context) {
         boolean hasTestSources = context.testSourceRoots().stream()
                 .anyMatch(Files::exists);
 
@@ -80,7 +80,7 @@ public class JacocoFindingSource implements FindingSource {
         return List.of();
     }
 
-    private void addProjectLevelCoverage(Document doc, List<Finding> findings) {
+    private void addProjectLevelCoverage(final Document doc, final List<Finding> findings) {
         // Find the report-level LINE counter (direct child of <report>)
         Element reportElement = doc.getDocumentElement();
         NodeList counters = reportElement.getChildNodes();
@@ -106,7 +106,7 @@ public class JacocoFindingSource implements FindingSource {
         }
     }
 
-    private void addPerClassFindings(Document doc, List<Finding> findings) {
+    private void addPerClassFindings(final Document doc, final List<Finding> findings) {
         NodeList classNodes = doc.getElementsByTagName("class");
 
         for (int i = 0; i < classNodes.getLength(); i++) {
@@ -145,13 +145,13 @@ public class JacocoFindingSource implements FindingSource {
         }
     }
 
-    private Severity coverageSeverity(double percentage) {
+    private Severity coverageSeverity(final double percentage) {
         if (percentage < 50) return Severity.ERROR;
         if (percentage < 75) return Severity.WARNING;
         return Severity.INFO;
     }
 
-    private Path reportPath(ProjectContext context) {
+    private Path reportPath(final ProjectContext context) {
         return context.reportsDir().resolve("jacoco/test/jacocoTestReport.xml");
     }
 }

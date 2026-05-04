@@ -35,16 +35,16 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
 
                 final List<String> constantNames = c.getBody().getStatements().stream()
@@ -64,7 +64,7 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
                 return c;
             }
 
-            private boolean isStaticFinal(J.VariableDeclarations varDecl) {
+            private boolean isStaticFinal(final J.VariableDeclarations varDecl) {
                 final boolean isStatic = varDecl.getModifiers().stream()
                         .anyMatch(m -> m.getType() == J.Modifier.Type.Static);
                 final boolean isFinal = varDecl.getModifiers().stream()
@@ -72,7 +72,7 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
                 return isStatic && isFinal;
             }
 
-            private Map<String, Long> findPrefixGroups(List<String> names) {
+            private Map<String, Long> findPrefixGroups(final List<String> names) {
                 return names.stream()
                         .filter(n -> n.contains("_"))
                         .map(n -> n.substring(0, n.indexOf('_')))
@@ -82,7 +82,7 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

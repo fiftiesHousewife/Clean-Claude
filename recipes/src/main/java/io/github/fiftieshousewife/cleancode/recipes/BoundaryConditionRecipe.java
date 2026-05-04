@@ -38,13 +38,13 @@ public class BoundaryConditionRecipe extends ScanningRecipe<BoundaryConditionRec
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             // Per Clean Code G33 the smell is a boundary expression
             // (`level + 1`) repeated in the same method body — pulling
@@ -56,7 +56,7 @@ public class BoundaryConditionRecipe extends ScanningRecipe<BoundaryConditionRec
             private String currentMethodName;
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final String previousName = currentMethodName;
                 currentMethodName = method.getSimpleName();
                 final Map<String, Integer> previousCounts = new HashMap<>(currentMethodCounts);
@@ -81,7 +81,7 @@ public class BoundaryConditionRecipe extends ScanningRecipe<BoundaryConditionRec
             }
 
             @Override
-            public J.Binary visitBinary(J.Binary binary, ExecutionContext ctx) {
+            public J.Binary visitBinary(final J.Binary binary, final ExecutionContext ctx) {
                 final J.Binary b = super.visitBinary(binary, ctx);
                 if (currentMethodName != null && isBoundaryExpression(b)) {
                     final String key = b.printTrimmed(getCursor());
@@ -102,7 +102,7 @@ public class BoundaryConditionRecipe extends ScanningRecipe<BoundaryConditionRec
                         || (rightIsMethodCall && leftIsLiteralOne);
             }
 
-            private boolean isLiteralOne(org.openrewrite.java.tree.Expression expr) {
+            private boolean isLiteralOne(final org.openrewrite.java.tree.Expression expr) {
                 if (expr instanceof J.Literal literal) {
                     final Object value = literal.getValue();
                     return value instanceof Integer i && (i == 1 || i == -1);
@@ -129,7 +129,7 @@ public class BoundaryConditionRecipe extends ScanningRecipe<BoundaryConditionRec
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

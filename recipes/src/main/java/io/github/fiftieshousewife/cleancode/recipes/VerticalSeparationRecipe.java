@@ -45,16 +45,16 @@ public class VerticalSeparationRecipe extends ScanningRecipe<VerticalSeparationR
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -87,7 +87,7 @@ public class VerticalSeparationRecipe extends ScanningRecipe<VerticalSeparationR
                 return m;
             }
 
-            private int findLineOf(String[] lines, String varName, int from) {
+            private int findLineOf(final String[] lines, final String varName, final int from) {
                 for (int i = from; i < lines.length; i++) {
                     if (lines[i].contains(varName)) {
                         return i;
@@ -96,7 +96,7 @@ public class VerticalSeparationRecipe extends ScanningRecipe<VerticalSeparationR
                 return -1;
             }
 
-            private int findFirstUseAfter(String[] lines, String varName, int from) {
+            private int findFirstUseAfter(final String[] lines, final String varName, final int from) {
                 for (int i = from; i < lines.length; i++) {
                     if (lines[i].contains(varName)) {
                         return i;
@@ -113,7 +113,7 @@ public class VerticalSeparationRecipe extends ScanningRecipe<VerticalSeparationR
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

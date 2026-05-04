@@ -64,7 +64,7 @@ class MoveDeclarationRecipeTest {
                 "Should not change already-close declarations");
     }
 
-    private String runRecipe(String source) {
+    private String runRecipe(final String source) {
         final var recipe = new MoveDeclarationRecipe(5);
         final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)

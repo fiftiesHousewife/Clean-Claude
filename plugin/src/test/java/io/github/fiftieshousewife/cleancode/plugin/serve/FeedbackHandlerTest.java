@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FeedbackHandlerTest {
 
     @Test
-    void appendsFreshFeedbackEntryWithTimestampAndContext(@TempDir Path projectRoot) throws Exception {
+    void appendsFreshFeedbackEntryWithTimestampAndContext(@TempDir final Path projectRoot) throws Exception {
         final FeedbackHandler handler = new FeedbackHandler(projectRoot,
                 () -> Instant.parse("2026-05-03T10:00:00Z"));
 
@@ -35,7 +35,7 @@ class FeedbackHandlerTest {
     }
 
     @Test
-    void appendsAdditionalEntryWithoutLosingPriorContent(@TempDir Path projectRoot) throws Exception {
+    void appendsAdditionalEntryWithoutLosingPriorContent(@TempDir final Path projectRoot) throws Exception {
         final FeedbackHandler handler = new FeedbackHandler(projectRoot,
                 () -> Instant.parse("2026-05-03T10:00:00Z"));
         handler.append("first", Map.of());
@@ -49,13 +49,13 @@ class FeedbackHandlerTest {
     }
 
     @Test
-    void rejectsBlankMessage(@TempDir Path projectRoot) {
+    void rejectsBlankMessage(@TempDir final Path projectRoot) {
         final FeedbackHandler handler = new FeedbackHandler(projectRoot);
         assertThrows(IllegalArgumentException.class, () -> handler.append("   ", Map.of()));
     }
 
     @Test
-    void escapesPipesAndBackticksInContextValues(@TempDir Path projectRoot) throws Exception {
+    void escapesPipesAndBackticksInContextValues(@TempDir final Path projectRoot) throws Exception {
         final FeedbackHandler handler = new FeedbackHandler(projectRoot,
                 () -> Instant.parse("2026-05-03T10:00:00Z"));
         handler.append("noisy",

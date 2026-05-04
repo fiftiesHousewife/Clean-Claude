@@ -41,7 +41,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void collectFindings_producesProjectLevelT1Finding(@TempDir Path tempDir) throws Exception {
+    void collectFindings_producesProjectLevelT1Finding(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/jacoco/jacocoTestReport.xml",
                 "jacoco/test/jacocoTestReport.xml");
         List<Finding> findings = source.collectFindings(ctx);
@@ -55,7 +55,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void collectFindings_t1SeverityError_whenBelow50Percent(@TempDir Path tempDir) throws Exception {
+    void collectFindings_t1SeverityError_whenBelow50Percent(@TempDir final Path tempDir) throws Exception {
         // 57/(57+133) = 30% — ERROR
         ProjectContext ctx = contextWithFixture(tempDir, "/jacoco/jacocoTestReport.xml",
                 "jacoco/test/jacocoTestReport.xml");
@@ -69,7 +69,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void collectFindings_t1SeverityWarning_whenBetween50And74(@TempDir Path tempDir) throws Exception {
+    void collectFindings_t1SeverityWarning_whenBetween50And74(@TempDir final Path tempDir) throws Exception {
         // 60/(60+40) = 60% — WARNING
         ProjectContext ctx = contextWithFixture(tempDir, "/jacoco/medium-coverage.xml",
                 "jacoco/test/jacocoTestReport.xml");
@@ -83,7 +83,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void collectFindings_t1SeverityInfo_when75OrAbove(@TempDir Path tempDir) throws Exception {
+    void collectFindings_t1SeverityInfo_when75OrAbove(@TempDir final Path tempDir) throws Exception {
         // 95/(95+5) = 95% — INFO
         ProjectContext ctx = contextWithFixture(tempDir, "/jacoco/high-coverage.xml",
                 "jacoco/test/jacocoTestReport.xml");
@@ -97,7 +97,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void collectFindings_producesT8ForLowCoverageClasses(@TempDir Path tempDir) throws Exception {
+    void collectFindings_producesT8ForLowCoverageClasses(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/jacoco/jacocoTestReport.xml",
                 "jacoco/test/jacocoTestReport.xml");
         List<Finding> findings = source.collectFindings(ctx);
@@ -111,7 +111,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void collectFindings_noT8ForSmallClasses(@TempDir Path tempDir) throws Exception {
+    void collectFindings_noT8ForSmallClasses(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/jacoco/jacocoTestReport.xml",
                 "jacoco/test/jacocoTestReport.xml");
         List<Finding> findings = source.collectFindings(ctx);
@@ -125,7 +125,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void collectFindings_producesT2Error_whenReportMissing(@TempDir Path tempDir) throws Exception {
+    void collectFindings_producesT2Error_whenReportMissing(@TempDir final Path tempDir) throws Exception {
         // No report file, but has test sources
         Path testSrc = tempDir.resolve("src/test/java");
         Files.createDirectories(testSrc);
@@ -146,7 +146,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void isAvailable_returnsTrueAlways(@TempDir Path tempDir) {
+    void isAvailable_returnsTrueAlways(@TempDir final Path tempDir) {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
@@ -155,7 +155,7 @@ class JacocoFindingSourceTest {
     }
 
     @Test
-    void collectFindings_messageIncludesCoveragePercentages(@TempDir Path tempDir) throws Exception {
+    void collectFindings_messageIncludesCoveragePercentages(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/jacoco/jacocoTestReport.xml",
                 "jacoco/test/jacocoTestReport.xml");
         List<Finding> findings = source.collectFindings(ctx);
@@ -168,7 +168,7 @@ class JacocoFindingSourceTest {
                 "Expected coverage percentage in message: " + t1.message());
     }
 
-    private ProjectContext contextWithFixture(Path tempDir, String resourcePath, String targetPath)
+    private ProjectContext contextWithFixture(final Path tempDir, final String resourcePath, final String targetPath)
             throws IOException {
         Path reportsDir = tempDir.resolve("reports");
         Path targetFile = reportsDir.resolve(targetPath);

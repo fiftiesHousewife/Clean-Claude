@@ -13,7 +13,7 @@ public interface FindingSource {
 
     Set<HeuristicCode> coveredCodes();
 
-    default boolean isAvailable(ProjectContext context) {
+    default boolean isAvailable(final ProjectContext context) {
         return true;
     }
 }

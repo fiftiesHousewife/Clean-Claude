@@ -43,16 +43,16 @@ public class LargeRecordRecipe extends ScanningRecipe<LargeRecordRecipe.Accumula
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
 
                 if (c.getKind() != J.ClassDeclaration.Kind.Type.Record) {
@@ -67,7 +67,7 @@ public class LargeRecordRecipe extends ScanningRecipe<LargeRecordRecipe.Accumula
                 return c;
             }
 
-            private int countRecordComponents(J.ClassDeclaration record) {
+            private int countRecordComponents(final J.ClassDeclaration record) {
                 if (record.getPrimaryConstructor() == null) {
                     return 0;
                 }
@@ -76,7 +76,7 @@ public class LargeRecordRecipe extends ScanningRecipe<LargeRecordRecipe.Accumula
                         .count();
             }
 
-            private boolean hasNestedBuilder(J.ClassDeclaration record) {
+            private boolean hasNestedBuilder(final J.ClassDeclaration record) {
                 return record.getBody().getStatements().stream()
                         .filter(s -> s instanceof J.ClassDeclaration)
                         .map(s -> (J.ClassDeclaration) s)
@@ -86,7 +86,7 @@ public class LargeRecordRecipe extends ScanningRecipe<LargeRecordRecipe.Accumula
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

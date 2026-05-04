@@ -14,14 +14,14 @@ final class TestContexts {
 
     private TestContexts() {}
 
-    static ProjectContext contextWithFixture(Class<?> testClass, Path tempDir,
-                                             String resourcePath, String targetPath) throws IOException {
+    static ProjectContext contextWithFixture(final Class<?> testClass, final Path tempDir,
+                                             final String resourcePath, final String targetPath) throws IOException {
         return contextWithFixture(testClass, tempDir, resourcePath, targetPath, Path.of("/project"));
     }
 
-    static ProjectContext contextWithFixture(Class<?> testClass, Path tempDir,
-                                             String resourcePath, String targetPath,
-                                             Path projectRoot) throws IOException {
+    static ProjectContext contextWithFixture(final Class<?> testClass, final Path tempDir,
+                                             final String resourcePath, final String targetPath,
+                                             final Path projectRoot) throws IOException {
         Path reportsDir = tempDir.resolve("reports");
         Path targetFile = reportsDir.resolve(targetPath);
         Files.createDirectories(targetFile.getParent());

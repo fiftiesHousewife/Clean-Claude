@@ -52,29 +52,29 @@ public class StringSwitchRecipe extends ScanningRecipe<StringSwitchRecipe.Accumu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Switch visitSwitch(J.Switch switchStatement, ExecutionContext ctx) {
+            public J.Switch visitSwitch(final J.Switch switchStatement, final ExecutionContext ctx) {
                 final J.Switch s = super.visitSwitch(switchStatement, ctx);
                 inspect(s.getSelector(), s.getCases().getStatements().size(), acc);
                 return s;
             }
 
             @Override
-            public J.SwitchExpression visitSwitchExpression(J.SwitchExpression switchExpression, ExecutionContext ctx) {
+            public J.SwitchExpression visitSwitchExpression(final J.SwitchExpression switchExpression, final ExecutionContext ctx) {
                 final J.SwitchExpression s = super.visitSwitchExpression(switchExpression, ctx);
                 inspect(s.getSelector(), s.getCases().getStatements().size(), acc);
                 return s;
             }
 
-            private void inspect(J.ControlParentheses<Expression> selector, int caseCount, Accumulator acc) {
+            private void inspect(final J.ControlParentheses<Expression> selector, final int caseCount, final Accumulator acc) {
                 final Expression selectorExpr = selector.getTree();
 
                 if (!isStringType(selectorExpr) || caseCount < minCaseCount) {
@@ -94,7 +94,7 @@ public class StringSwitchRecipe extends ScanningRecipe<StringSwitchRecipe.Accumu
                 ));
             }
 
-            private boolean isStringType(Expression expression) {
+            private boolean isStringType(final Expression expression) {
                 final JavaType type = expression.getType();
                 return type instanceof JavaType.Class classType
                         && JAVA_LANG_STRING.equals(classType.getFullyQualifiedName());
@@ -113,7 +113,7 @@ public class StringSwitchRecipe extends ScanningRecipe<StringSwitchRecipe.Accumu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

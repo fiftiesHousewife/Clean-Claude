@@ -48,24 +48,24 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
 
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+            public J.CompilationUnit visitCompilationUnit(final J.CompilationUnit cu, final ExecutionContext ctx) {
                 cu.getClasses().forEach(classDecl ->
                         collectProjectTypes(classDecl, packagePrefix(cu), acc));
                 return super.visitCompilationUnit(cu, ctx);
             }
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -81,7 +81,7 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                 new JavaIsoVisitor<CallCounter>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(
-                            J.MethodInvocation method, CallCounter callCounter) {
+                            final J.MethodInvocation method, final CallCounter callCounter) {
                         final J.MethodInvocation mi = super.visitMethodInvocation(method, callCounter);
                         final Expression select = mi.getSelect();
 
@@ -117,8 +117,8 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                 return m;
             }
 
-            private void collectProjectTypes(J.ClassDeclaration classDecl, String pkg,
-                                             Accumulator acc) {
+            private void collectProjectTypes(final J.ClassDeclaration classDecl, final String pkg,
+                                             final Accumulator acc) {
                 final String fqn = pkg.isEmpty()
                         ? classDecl.getSimpleName()
                         : pkg + "." + classDecl.getSimpleName();
@@ -129,13 +129,13 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                         .forEach(inner -> collectProjectTypes(inner, fqn, acc));
             }
 
-            private String packagePrefix(J.CompilationUnit cu) {
+            private String packagePrefix(final J.CompilationUnit cu) {
                 return cu.getPackageDeclaration() != null
                         ? cu.getPackageDeclaration().getExpression().toString()
                         : "";
             }
 
-            private boolean isProjectType(J.Identifier id, Accumulator acc) {
+            private boolean isProjectType(final J.Identifier id, final Accumulator acc) {
                 final JavaType type = id.getType();
                 if (type instanceof JavaType.FullyQualified fq) {
                     return acc.projectTypeNames.contains(fq.getFullyQualifiedName());
@@ -143,7 +143,7 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                 return false;
             }
 
-            private String resolveTypeName(J.Identifier id) {
+            private String resolveTypeName(final J.Identifier id) {
                 final JavaType type = id.getType();
                 if (type instanceof JavaType.FullyQualified fq) {
                     return fq.getClassName();
@@ -151,15 +151,15 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
                 return id.getSimpleName();
             }
 
-            private boolean isVisitorMethod(J.MethodDeclaration method) {
+            private boolean isVisitorMethod(final J.MethodDeclaration method) {
                 return method.getSimpleName().startsWith("visit");
             }
 
-            private boolean isConstructor(J.MethodDeclaration method) {
+            private boolean isConstructor(final J.MethodDeclaration method) {
                 return method.getMethodType() != null && method.getMethodType().isConstructor();
             }
 
-            private boolean isStatic(J.MethodDeclaration method) {
+            private boolean isStatic(final J.MethodDeclaration method) {
                 return method.getModifiers().stream()
                         .anyMatch(mod -> mod.getType() == J.Modifier.Type.Static);
             }
@@ -177,7 +177,7 @@ public class FeatureEnvyRecipe extends ScanningRecipe<FeatureEnvyRecipe.Accumula
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

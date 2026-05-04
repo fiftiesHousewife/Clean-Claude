@@ -13,7 +13,7 @@ public final class XmlReportParser {
 
     private XmlReportParser() {}
 
-    public static Document parse(Path file) throws FindingSourceException {
+    public static Document parse(final Path file) throws FindingSourceException {
         try {
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(false);

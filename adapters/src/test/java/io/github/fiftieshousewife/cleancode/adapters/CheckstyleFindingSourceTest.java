@@ -43,14 +43,14 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_parsesErrors(@TempDir Path tempDir) throws Exception {
+    void collectFindings_parsesErrors(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
         assertEquals(4, findings.size());
     }
 
     @Test
-    void collectFindings_mapsParameterNumberToF1(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsParameterNumberToF1(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -63,7 +63,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsMagicNumberToG25(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsMagicNumberToG25(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -76,7 +76,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsAvoidStarImportToJ1(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsAvoidStarImportToJ1(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -89,7 +89,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsLeftCurlyToG24(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsLeftCurlyToG24(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -102,7 +102,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_setsToolToCheckstyle(@TempDir Path tempDir) throws Exception {
+    void collectFindings_setsToolToCheckstyle(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -110,7 +110,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_setsStartAndEndLineFromLineAttribute(@TempDir Path tempDir) throws Exception {
+    void collectFindings_setsStartAndEndLineFromLineAttribute(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -123,7 +123,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_extractsCheckNameFromSourceFQN(@TempDir Path tempDir) throws Exception {
+    void collectFindings_extractsCheckNameFromSourceFQN(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -132,14 +132,14 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_emptyReport_returnsNoFindings(@TempDir Path tempDir) throws Exception {
+    void collectFindings_emptyReport_returnsNoFindings(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/empty.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
         assertTrue(findings.isEmpty());
     }
 
     @Test
-    void isAvailable_returnsFalseWhenReportMissing(@TempDir Path tempDir) {
+    void isAvailable_returnsFalseWhenReportMissing(@TempDir final Path tempDir) {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
@@ -148,14 +148,14 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_unmappedCheckIsSkipped(@TempDir Path tempDir) throws Exception {
+    void collectFindings_unmappedCheckIsSkipped(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/unknown-check.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
         assertTrue(findings.isEmpty());
     }
 
     @Test
-    void collectFindings_makesSourceFileRelative(@TempDir Path tempDir) throws Exception {
+    void collectFindings_makesSourceFileRelative(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/checkstyle/main.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -167,7 +167,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_lineLengthUnder150StaysWarning(@TempDir Path tempDir) throws Exception {
+    void collectFindings_lineLengthUnder150StaysWarning(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(
                 tempDir, "/checkstyle/line-length.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
@@ -180,7 +180,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_lineLengthAtOrOver150EscalatesToError(@TempDir Path tempDir) throws Exception {
+    void collectFindings_lineLengthAtOrOver150EscalatesToError(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(
                 tempDir, "/checkstyle/line-length.xml", "checkstyle/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
@@ -200,7 +200,7 @@ class CheckstyleFindingSourceTest {
     }
 
     @Test
-    void collectFindings_lineLengthEscalationHonoursConfiguredThreshold(@TempDir Path tempDir) throws Exception {
+    void collectFindings_lineLengthEscalationHonoursConfiguredThreshold(@TempDir final Path tempDir) throws Exception {
         final RecipeThresholds tighter = new RecipeThresholds(
                 RecipeThresholds.DEFAULT_CLASS_LINE_COUNT,
                 RecipeThresholds.DEFAULT_RECORD_COMPONENT_COUNT,
@@ -232,7 +232,7 @@ class CheckstyleFindingSourceTest {
                 "135 escalates to ERROR once the configured threshold is 130");
     }
 
-    private ProjectContext contextWithFixture(Path tempDir, String resourcePath, String targetPath)
+    private ProjectContext contextWithFixture(final Path tempDir, final String resourcePath, final String targetPath)
             throws IOException {
         return TestContexts.contextWithFixture(getClass(), tempDir, resourcePath, targetPath);
     }

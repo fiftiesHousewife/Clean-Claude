@@ -38,7 +38,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_producesOneFindingPerFile(@TempDir Path tempDir) throws Exception {
+    void collectFindings_producesOneFindingPerFile(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
         // 3 duplications × 2 files each = 6 findings
@@ -46,7 +46,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_allFindingsAreG5(@TempDir Path tempDir) throws Exception {
+    void collectFindings_allFindingsAreG5(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -54,7 +54,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_severityWarningFor150Tokens(@TempDir Path tempDir) throws Exception {
+    void collectFindings_severityWarningFor150Tokens(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -67,7 +67,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_severityWarningForUnder100Tokens(@TempDir Path tempDir) throws Exception {
+    void collectFindings_severityWarningForUnder100Tokens(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -80,7 +80,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_severityErrorFor200PlusTokens(@TempDir Path tempDir) throws Exception {
+    void collectFindings_severityErrorFor200PlusTokens(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -93,7 +93,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_metadataContainsOtherFile(@TempDir Path tempDir) throws Exception {
+    void collectFindings_metadataContainsOtherFile(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -106,7 +106,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_metadataContainsTokenCount(@TempDir Path tempDir) throws Exception {
+    void collectFindings_metadataContainsTokenCount(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -118,7 +118,7 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_setsToolToCpd(@TempDir Path tempDir) throws Exception {
+    void collectFindings_setsToolToCpd(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/cpd.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -126,14 +126,14 @@ class CpdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_emptyReport_returnsNoFindings(@TempDir Path tempDir) throws Exception {
+    void collectFindings_emptyReport_returnsNoFindings(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/cpd/empty.xml", "cpd/cpd.xml");
         List<Finding> findings = source.collectFindings(ctx);
         assertTrue(findings.isEmpty());
     }
 
     @Test
-    void isAvailable_returnsFalseWhenReportMissing(@TempDir Path tempDir) {
+    void isAvailable_returnsFalseWhenReportMissing(@TempDir final Path tempDir) {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
@@ -141,7 +141,7 @@ class CpdFindingSourceTest {
         assertFalse(source.isAvailable(ctx));
     }
 
-    private ProjectContext contextWithFixture(Path tempDir, String resourcePath, String targetPath)
+    private ProjectContext contextWithFixture(final Path tempDir, final String resourcePath, final String targetPath)
             throws IOException {
         return TestContexts.contextWithFixture(getClass(), tempDir, resourcePath, targetPath);
     }

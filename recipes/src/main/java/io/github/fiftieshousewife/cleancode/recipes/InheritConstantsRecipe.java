@@ -33,16 +33,16 @@ public class InheritConstantsRecipe extends ScanningRecipe<InheritConstantsRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
 
                 if (c.getImplements() == null) {
@@ -65,7 +65,7 @@ public class InheritConstantsRecipe extends ScanningRecipe<InheritConstantsRecip
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -73,7 +73,7 @@ public class InheritConstantsRecipe extends ScanningRecipe<InheritConstantsRecip
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean isConstantOnlyInterface(TypeTree iface) {
+    private static boolean isConstantOnlyInterface(final TypeTree iface) {
         final JavaType type = iface.getType();
         if (!(type instanceof JavaType.FullyQualified resolved)) {
             return false;

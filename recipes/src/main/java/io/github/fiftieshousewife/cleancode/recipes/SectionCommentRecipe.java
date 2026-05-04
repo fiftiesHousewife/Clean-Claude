@@ -32,7 +32,7 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
 
     private Accumulator lastAccumulator;
 
-    public SectionCommentRecipe(int threshold) {
+    public SectionCommentRecipe(final int threshold) {
         this.threshold = threshold;
     }
 
@@ -47,16 +47,16 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -78,7 +78,7 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
                 return m;
             }
 
-            private int countSectionComments(List<Statement> statements) {
+            private int countSectionComments(final List<Statement> statements) {
                 int count = 0;
                 for (final Statement stmt : statements) {
                     for (final Comment comment : stmt.getComments()) {
@@ -90,7 +90,7 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
                 return count;
             }
 
-            private boolean isSectionComment(String text) {
+            private boolean isSectionComment(final String text) {
                 final String trimmed = text.trim();
                 if (trimmed.isEmpty()) {
                     return false;
@@ -134,7 +134,7 @@ public class SectionCommentRecipe extends ScanningRecipe<SectionCommentRecipe.Ac
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

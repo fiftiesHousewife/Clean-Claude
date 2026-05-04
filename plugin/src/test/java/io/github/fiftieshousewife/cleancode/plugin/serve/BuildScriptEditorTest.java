@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BuildScriptEditorTest {
 
     @Test
-    void appendsCodeToExistingDisabledRecipesList(@TempDir Path tempDir) throws IOException {
+    void appendsCodeToExistingDisabledRecipesList(@TempDir final Path tempDir) throws IOException {
         final Path script = tempDir.resolve("build.gradle.kts");
         Files.writeString(script, """
                 plugins { id("java") }
@@ -36,7 +36,7 @@ class BuildScriptEditorTest {
     }
 
     @Test
-    void createsDisabledRecipesLineWhenAbsent(@TempDir Path tempDir) throws IOException {
+    void createsDisabledRecipesLineWhenAbsent(@TempDir final Path tempDir) throws IOException {
         final Path script = tempDir.resolve("build.gradle.kts");
         Files.writeString(script, """
                 cleanCode {
@@ -54,7 +54,7 @@ class BuildScriptEditorTest {
     }
 
     @Test
-    void createsCleanCodeBlockWhenAbsent(@TempDir Path tempDir) throws IOException {
+    void createsCleanCodeBlockWhenAbsent(@TempDir final Path tempDir) throws IOException {
         final Path script = tempDir.resolve("build.gradle.kts");
         Files.writeString(script, "plugins { id(\"java\") }\n");
 
@@ -69,7 +69,7 @@ class BuildScriptEditorTest {
     }
 
     @Test
-    void disableIsIdempotent(@TempDir Path tempDir) throws IOException {
+    void disableIsIdempotent(@TempDir final Path tempDir) throws IOException {
         final Path script = tempDir.resolve("build.gradle.kts");
         Files.writeString(script, """
                 cleanCode {
@@ -87,7 +87,7 @@ class BuildScriptEditorTest {
     }
 
     @Test
-    void replacesExistingThresholdValue(@TempDir Path tempDir) throws IOException {
+    void replacesExistingThresholdValue(@TempDir final Path tempDir) throws IOException {
         final Path script = tempDir.resolve("build.gradle.kts");
         Files.writeString(script, """
                 cleanCode {
@@ -111,7 +111,7 @@ class BuildScriptEditorTest {
     }
 
     @Test
-    void insertsNewThresholdKeyInsideExistingBlock(@TempDir Path tempDir) throws IOException {
+    void insertsNewThresholdKeyInsideExistingBlock(@TempDir final Path tempDir) throws IOException {
         final Path script = tempDir.resolve("build.gradle.kts");
         Files.writeString(script, """
                 cleanCode {
@@ -132,7 +132,7 @@ class BuildScriptEditorTest {
     }
 
     @Test
-    void createsThresholdsBlockWhenAbsent(@TempDir Path tempDir) throws IOException {
+    void createsThresholdsBlockWhenAbsent(@TempDir final Path tempDir) throws IOException {
         final Path script = tempDir.resolve("build.gradle.kts");
         Files.writeString(script, """
                 cleanCode {
@@ -153,7 +153,7 @@ class BuildScriptEditorTest {
     }
 
     @Test
-    void multipleEditsAccumulateBeforeSave(@TempDir Path tempDir) throws IOException {
+    void multipleEditsAccumulateBeforeSave(@TempDir final Path tempDir) throws IOException {
         final Path script = tempDir.resolve("build.gradle.kts");
         Files.writeString(script, """
                 cleanCode {

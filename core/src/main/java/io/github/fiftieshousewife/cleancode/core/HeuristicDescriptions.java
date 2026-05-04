@@ -512,19 +512,19 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.Ch10_2, "Large records are data clumps. Group fields into smaller types.")
     );
 
-    public static String name(HeuristicCode code) {
+    public static String name(final HeuristicCode code) {
         return NAMES.getOrDefault(code, code.name());
     }
 
-    public static String summary(HeuristicCode code) {
+    public static String summary(final HeuristicCode code) {
         return SUMMARIES.get(code);
     }
 
-    public static String guidance(HeuristicCode code) {
+    public static String guidance(final HeuristicCode code) {
         return GUIDANCE.get(code);
     }
 
-    public static String reference(HeuristicCode code) {
+    public static String reference(final HeuristicCode code) {
         return REFERENCES.get(code);
     }
 }

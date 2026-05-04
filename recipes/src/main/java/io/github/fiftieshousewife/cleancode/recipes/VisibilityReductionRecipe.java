@@ -31,17 +31,17 @@ public class VisibilityReductionRecipe extends ScanningRecipe<VisibilityReductio
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable,
-                                                                    ExecutionContext ctx) {
+            public J.VariableDeclarations visitVariableDeclarations(final J.VariableDeclarations multiVariable,
+                                                                    final ExecutionContext ctx) {
                 final J.VariableDeclarations vd = super.visitVariableDeclarations(multiVariable, ctx);
 
                 if (!isFieldDeclaration()) {
@@ -65,17 +65,17 @@ public class VisibilityReductionRecipe extends ScanningRecipe<VisibilityReductio
                         && getCursor().firstEnclosing(J.ClassDeclaration.class) != null;
             }
 
-            private boolean isPublic(J.VariableDeclarations varDecls) {
+            private boolean isPublic(final J.VariableDeclarations varDecls) {
                 return varDecls.getModifiers().stream()
                         .anyMatch(mod -> mod.getType() == J.Modifier.Type.Public);
             }
 
-            private boolean isStatic(J.VariableDeclarations varDecls) {
+            private boolean isStatic(final J.VariableDeclarations varDecls) {
                 return varDecls.getModifiers().stream()
                         .anyMatch(mod -> mod.getType() == J.Modifier.Type.Static);
             }
 
-            private boolean isFinal(J.VariableDeclarations varDecls) {
+            private boolean isFinal(final J.VariableDeclarations varDecls) {
                 return varDecls.getModifiers().stream()
                         .anyMatch(mod -> mod.getType() == J.Modifier.Type.Final);
             }
@@ -88,7 +88,7 @@ public class VisibilityReductionRecipe extends ScanningRecipe<VisibilityReductio
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

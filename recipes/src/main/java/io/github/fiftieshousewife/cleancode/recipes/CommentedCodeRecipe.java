@@ -37,16 +37,16 @@ public class CommentedCodeRecipe extends ScanningRecipe<CommentedCodeRecipe.Accu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+            public J.CompilationUnit visitCompilationUnit(final J.CompilationUnit cu, final ExecutionContext ctx) {
                 final J.CompilationUnit result = super.visitCompilationUnit(cu, ctx);
                 final String sourcePath = cu.getSourcePath().toString();
 
@@ -54,7 +54,7 @@ public class CommentedCodeRecipe extends ScanningRecipe<CommentedCodeRecipe.Accu
                 return result;
             }
 
-            private void checkComment(Accumulator acc, Comment comment, String sourcePath) {
+            private void checkComment(final Accumulator acc, final Comment comment, final String sourcePath) {
                 if (!(comment instanceof TextComment textComment)) {
                     return;
                 }
@@ -67,7 +67,7 @@ public class CommentedCodeRecipe extends ScanningRecipe<CommentedCodeRecipe.Accu
                 }
             }
 
-            private int codeScore(String text) {
+            private int codeScore(final String text) {
                 int score = 0;
                 for (final String indicator : CODE_INDICATORS) {
                     if (text.contains(indicator)) {
@@ -80,7 +80,7 @@ public class CommentedCodeRecipe extends ScanningRecipe<CommentedCodeRecipe.Accu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

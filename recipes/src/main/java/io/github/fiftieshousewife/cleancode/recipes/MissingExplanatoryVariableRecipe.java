@@ -43,16 +43,16 @@ public class MissingExplanatoryVariableRecipe
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation method, final ExecutionContext ctx) {
                 final J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (isInitializerOfVariableDeclaration(m)) {
@@ -109,7 +109,7 @@ public class MissingExplanatoryVariableRecipe
             }
 
             @Override
-            public J.Return visitReturn(J.Return returnStatement, ExecutionContext ctx) {
+            public J.Return visitReturn(final J.Return returnStatement, final ExecutionContext ctx) {
                 final J.Return r = super.visitReturn(returnStatement, ctx);
                 final Expression expression = r.getExpression();
 
@@ -124,7 +124,7 @@ public class MissingExplanatoryVariableRecipe
                 return r;
             }
 
-            private int chainDepth(Expression expression) {
+            private int chainDepth(final Expression expression) {
                 if (!(expression instanceof J.MethodInvocation invocation)) {
                     return 0;
                 }
@@ -135,14 +135,14 @@ public class MissingExplanatoryVariableRecipe
                 return 1;
             }
 
-            private int countOperators(Expression expression) {
+            private int countOperators(final Expression expression) {
                 if (expression instanceof J.Binary binary) {
                     return 1 + countOperators(binary.getLeft()) + countOperators(binary.getRight());
                 }
                 return 0;
             }
 
-            private String truncate(String text) {
+            private String truncate(final String text) {
                 final String normalized = text.replaceAll("\\s+", " ");
                 if (normalized.length() <= PREVIEW_MAX_LENGTH) {
                     return normalized;
@@ -163,7 +163,7 @@ public class MissingExplanatoryVariableRecipe
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

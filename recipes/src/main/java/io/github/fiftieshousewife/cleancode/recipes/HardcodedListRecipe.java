@@ -25,7 +25,7 @@ public class HardcodedListRecipe extends ScanningRecipe<HardcodedListRecipe.Accu
 
     private Accumulator lastAccumulator;
 
-    public HardcodedListRecipe(int minLiterals) {
+    public HardcodedListRecipe(final int minLiterals) {
         this.minLiterals = minLiterals;
     }
 
@@ -43,16 +43,16 @@ public class HardcodedListRecipe extends ScanningRecipe<HardcodedListRecipe.Accu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations varDecl, ExecutionContext ctx) {
+            public J.VariableDeclarations visitVariableDeclarations(final J.VariableDeclarations varDecl, final ExecutionContext ctx) {
                 final J.VariableDeclarations v = super.visitVariableDeclarations(varDecl, ctx);
 
                 if (isStaticFinal(v)) {
@@ -76,7 +76,7 @@ public class HardcodedListRecipe extends ScanningRecipe<HardcodedListRecipe.Accu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -84,7 +84,7 @@ public class HardcodedListRecipe extends ScanningRecipe<HardcodedListRecipe.Accu
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static int countLiteralsInFactoryCall(J.MethodInvocation mi) {
+    private static int countLiteralsInFactoryCall(final J.MethodInvocation mi) {
         if (!COLLECTION_FACTORIES.contains(mi.getSimpleName())) {
             return 0;
         }
@@ -93,7 +93,7 @@ public class HardcodedListRecipe extends ScanningRecipe<HardcodedListRecipe.Accu
                 .count();
     }
 
-    private static boolean isStaticFinal(J.VariableDeclarations varDecl) {
+    private static boolean isStaticFinal(final J.VariableDeclarations varDecl) {
         boolean isStatic = false;
         boolean isFinal = false;
         for (final J.Modifier mod : varDecl.getModifiers()) {

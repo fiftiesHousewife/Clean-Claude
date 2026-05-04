@@ -12,35 +12,35 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class AnalyseTaskTest {
 
     @Test
-    void detectsIdeaWhenIdeaFolderPresent(@TempDir Path projectRoot) throws IOException {
+    void detectsIdeaWhenIdeaFolderPresent(@TempDir final Path projectRoot) throws IOException {
         Files.createDirectories(projectRoot.resolve(".idea"));
 
         assertEquals("idea", AnalyseTask.detectIdeUrlScheme(projectRoot));
     }
 
     @Test
-    void detectsVscodeWhenVscodeFolderPresent(@TempDir Path projectRoot) throws IOException {
+    void detectsVscodeWhenVscodeFolderPresent(@TempDir final Path projectRoot) throws IOException {
         Files.createDirectories(projectRoot.resolve(".vscode"));
 
         assertEquals("vscode", AnalyseTask.detectIdeUrlScheme(projectRoot));
     }
 
     @Test
-    void detectsCursorWhenCursorFolderPresent(@TempDir Path projectRoot) throws IOException {
+    void detectsCursorWhenCursorFolderPresent(@TempDir final Path projectRoot) throws IOException {
         Files.createDirectories(projectRoot.resolve(".cursor"));
 
         assertEquals("cursor", AnalyseTask.detectIdeUrlScheme(projectRoot));
     }
 
     @Test
-    void defaultsToIdeaWhenNoIdeFolderPresent(@TempDir Path projectRoot) {
+    void defaultsToIdeaWhenNoIdeFolderPresent(@TempDir final Path projectRoot) {
         assertEquals("idea", AnalyseTask.detectIdeUrlScheme(projectRoot),
                 "IDEA is the default — JetBrains has the largest Java IDE share, "
                         + "and 'idea://' is registered by Toolbox without extra setup");
     }
 
     @Test
-    void preferIdeaOverVscodeWhenBothPresent(@TempDir Path projectRoot) throws IOException {
+    void preferIdeaOverVscodeWhenBothPresent(@TempDir final Path projectRoot) throws IOException {
         Files.createDirectories(projectRoot.resolve(".idea"));
         Files.createDirectories(projectRoot.resolve(".vscode"));
 

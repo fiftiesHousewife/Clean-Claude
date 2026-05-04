@@ -36,16 +36,16 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (SKIP_METHODS.contains(m.getSimpleName()) || m.getBody() == null) {
@@ -86,7 +86,7 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -94,7 +94,7 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean isStringType(J.VariableDeclarations varDecls) {
+    private static boolean isStringType(final J.VariableDeclarations varDecls) {
         if (varDecls.getType() instanceof JavaType.FullyQualified fq) {
             return "java.lang.String".equals(fq.getFullyQualifiedName());
         }
@@ -102,11 +102,11 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
                 && "String".equals(varDecls.getTypeExpression().toString().trim());
     }
 
-    private static int countSwitchBranches(J.Block body, String paramName) {
+    private static int countSwitchBranches(final J.Block body, final String paramName) {
         final List<Integer> counts = new ArrayList<>();
         new JavaIsoVisitor<List<Integer>>() {
             @Override
-            public J.Switch visitSwitch(J.Switch sw, List<Integer> out) {
+            public J.Switch visitSwitch(final J.Switch sw, final List<Integer> out) {
                 if (selectorReferencesParam(sw.getSelector(), paramName)) {
                     final int caseCount = (int) sw.getCases().getStatements().stream()
                             .filter(J.Case.class::isInstance)
@@ -120,16 +120,16 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
     }
 
     private static boolean selectorReferencesParam(
-            J.ControlParentheses<org.openrewrite.java.tree.Expression> selector, String paramName) {
+            final J.ControlParentheses<org.openrewrite.java.tree.Expression> selector, final String paramName) {
         final String selectorText = selector.getTree().toString().trim();
         return selectorText.equals(paramName);
     }
 
-    private static int countIfElseBranches(J.Block body, String paramName) {
+    private static int countIfElseBranches(final J.Block body, final String paramName) {
         final List<Integer> counts = new ArrayList<>();
         new JavaIsoVisitor<List<Integer>>() {
             @Override
-            public J.If visitIf(J.If iff, List<Integer> out) {
+            public J.If visitIf(final J.If iff, final List<Integer> out) {
                 final int branches = countChainedEquals(iff, paramName);
                 if (branches >= 2) {
                     out.add(branches);
@@ -140,7 +140,7 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
         return counts.stream().mapToInt(Integer::intValue).max().orElse(0);
     }
 
-    private static int countChainedEquals(J.If iff, String paramName) {
+    private static int countChainedEquals(final J.If iff, final String paramName) {
         int count = 0;
         J.If current = iff;
         while (current != null) {
@@ -156,8 +156,8 @@ public class StringlyTypedDispatchRecipe extends ScanningRecipe<StringlyTypedDis
         return count;
     }
 
-    private static boolean conditionReferencesParamEquals(J.ControlParentheses<org.openrewrite.java.tree.Expression> cond,
-                                                          String paramName) {
+    private static boolean conditionReferencesParamEquals(final J.ControlParentheses<org.openrewrite.java.tree.Expression> cond,
+                                                          final String paramName) {
         final String condStr = cond.toString().trim();
         return condStr.contains(paramName + ".equals(") || condStr.contains(".equals(" + paramName + ")");
     }

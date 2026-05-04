@@ -27,11 +27,11 @@ public final class ReviewCache {
 
     private final Map<String, List<CachedFinding>> entries;
 
-    private ReviewCache(Map<String, List<CachedFinding>> entries) {
+    private ReviewCache(final Map<String, List<CachedFinding>> entries) {
         this.entries = entries;
     }
 
-    static ReviewCache load(Path cacheDir) {
+    static ReviewCache load(final Path cacheDir) {
         final Path cacheFile = cacheDir.resolve(CACHE_FILE);
         if (!Files.exists(cacheFile)) {
             return new ReviewCache(new ConcurrentHashMap<>());
@@ -45,21 +45,21 @@ public final class ReviewCache {
         }
     }
 
-    Optional<List<CachedFinding>> lookup(String hash) {
+    Optional<List<CachedFinding>> lookup(final String hash) {
         return Optional.ofNullable(entries.get(hash));
     }
 
-    void store(String hash, List<CachedFinding> findings) {
+    void store(final String hash, final List<CachedFinding> findings) {
         entries.put(hash, List.copyOf(findings));
     }
 
-    void save(Path cacheDir) throws IOException {
+    void save(final Path cacheDir) throws IOException {
         Files.createDirectories(cacheDir);
         final Path cacheFile = cacheDir.resolve(CACHE_FILE);
         Files.writeString(cacheFile, GSON.toJson(entries, CACHE_TYPE), StandardCharsets.UTF_8);
     }
 
-    static String hash(String fileContent, String enabledCodesKey) {
+    static String hash(final String fileContent, final String enabledCodesKey) {
         try {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.update(fileContent.getBytes(StandardCharsets.UTF_8));

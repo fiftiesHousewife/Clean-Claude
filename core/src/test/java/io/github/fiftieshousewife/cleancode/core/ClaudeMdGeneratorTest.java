@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ClaudeMdGeneratorTest {
 
     @Test
-    void generatesFindingSectionsGroupedByCode(@TempDir Path tempDir) throws Exception {
+    void generatesFindingSectionsGroupedByCode(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("CLAUDE.md");
         AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.G5, "Foo.java", 10, 20, "dup", Severity.WARNING, Confidence.HIGH, "cpd", "r"),
@@ -32,7 +32,7 @@ class ClaudeMdGeneratorTest {
     }
 
     @Test
-    void findingSectionStartsWithSkillPointer(@TempDir Path tempDir) throws Exception {
+    void findingSectionStartsWithSkillPointer(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("CLAUDE.md");
         AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.Ch7_1, "Foo.java", 10, 10, "catch", Severity.WARNING, Confidence.MEDIUM, "openrewrite", "r")
@@ -45,7 +45,7 @@ class ClaudeMdGeneratorTest {
     }
 
     @Test
-    void generatedSectionsWrappedInMarkers(@TempDir Path tempDir) throws Exception {
+    void generatedSectionsWrappedInMarkers(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("CLAUDE.md");
         AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.G5, "Foo.java", 10, 20, "dup", Severity.WARNING, Confidence.HIGH, "cpd", "r")
@@ -59,7 +59,7 @@ class ClaudeMdGeneratorTest {
     }
 
     @Test
-    void annotateSectionsPreservedOnRegeneration(@TempDir Path tempDir) throws Exception {
+    void annotateSectionsPreservedOnRegeneration(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("CLAUDE.md");
         AggregatedReport report = reportWith(
                 Finding.at(HeuristicCode.G5, "Foo.java", 10, 20, "dup", Severity.WARNING, Confidence.HIGH, "cpd", "r")
@@ -81,7 +81,7 @@ class ClaudeMdGeneratorTest {
     }
 
     @Test
-    void preambleAlwaysPresent(@TempDir Path tempDir) throws Exception {
+    void preambleAlwaysPresent(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("CLAUDE.md");
         AggregatedReport report = reportWith();
 
@@ -92,7 +92,7 @@ class ClaudeMdGeneratorTest {
     }
 
     @Test
-    void deltaTableGeneratedWhenBaselineExists(@TempDir Path tempDir) throws Exception {
+    void deltaTableGeneratedWhenBaselineExists(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("CLAUDE.md");
         Path baseline = tempDir.resolve("baseline.json");
 
@@ -113,7 +113,7 @@ class ClaudeMdGeneratorTest {
         assertTrue(content.contains("Delta"));
     }
 
-    private AggregatedReport reportWith(Finding... findings) {
+    private AggregatedReport reportWith(final Finding... findings) {
         Set<HeuristicCode> covered = Set.of();
         return new AggregatedReport(List.of(findings), covered, Instant.now(), "test-project", "1.0");
     }

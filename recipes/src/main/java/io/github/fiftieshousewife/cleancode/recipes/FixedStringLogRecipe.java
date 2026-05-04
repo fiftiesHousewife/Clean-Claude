@@ -65,13 +65,13 @@ public class FixedStringLogRecipe extends ScanningRecipe<FixedStringLogRecipe.Ac
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation method,
@@ -97,7 +97,7 @@ public class FixedStringLogRecipe extends ScanningRecipe<FixedStringLogRecipe.Ac
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

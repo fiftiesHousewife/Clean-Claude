@@ -33,7 +33,7 @@ public final class JsonReportWriter {
             Map<String, String> metadata
     ) {}
 
-    public static void write(AggregatedReport report, Path outputFile) throws IOException {
+    public static void write(final AggregatedReport report, final Path outputFile) throws IOException {
         Files.createDirectories(outputFile.getParent());
 
         List<JsonFinding> jsonFindings = report.findings().stream()

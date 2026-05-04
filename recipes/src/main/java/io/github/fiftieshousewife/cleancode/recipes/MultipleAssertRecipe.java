@@ -22,7 +22,7 @@ public class MultipleAssertRecipe extends ScanningRecipe<MultipleAssertRecipe.Ac
 
     private final int threshold;
 
-    public MultipleAssertRecipe(int threshold) {
+    public MultipleAssertRecipe(final int threshold) {
         this.threshold = threshold;
     }
 
@@ -49,16 +49,16 @@ public class MultipleAssertRecipe extends ScanningRecipe<MultipleAssertRecipe.Ac
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -75,12 +75,12 @@ public class MultipleAssertRecipe extends ScanningRecipe<MultipleAssertRecipe.Ac
                 return m;
             }
 
-            private boolean isTestMethod(J.MethodDeclaration method) {
+            private boolean isTestMethod(final J.MethodDeclaration method) {
                 return method.getLeadingAnnotations().stream()
                         .anyMatch(ann -> "Test".equals(ann.getSimpleName()));
             }
 
-            private int longestAssertRun(List<Statement> statements) {
+            private int longestAssertRun(final List<Statement> statements) {
                 int maxRun = 0;
                 int currentRun = 0;
                 for (final Statement stmt : statements) {
@@ -94,14 +94,14 @@ public class MultipleAssertRecipe extends ScanningRecipe<MultipleAssertRecipe.Ac
                 return maxRun;
             }
 
-            private boolean isAssertCall(Statement stmt) {
+            private boolean isAssertCall(final Statement stmt) {
                 if (!(stmt instanceof J.MethodInvocation invocation)) {
                     return false;
                 }
                 return isAssertInvocation(invocation);
             }
 
-            private boolean isAssertInvocation(J.MethodInvocation invocation) {
+            private boolean isAssertInvocation(final J.MethodInvocation invocation) {
                 if (ASSERT_PREFIXES.stream().anyMatch(p -> invocation.getSimpleName().startsWith(p))) {
                     return true;
                 }
@@ -119,7 +119,7 @@ public class MultipleAssertRecipe extends ScanningRecipe<MultipleAssertRecipe.Ac
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

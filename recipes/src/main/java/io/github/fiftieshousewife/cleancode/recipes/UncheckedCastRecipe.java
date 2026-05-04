@@ -31,16 +31,16 @@ public class UncheckedCastRecipe extends ScanningRecipe<UncheckedCastRecipe.Accu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+            public J.Annotation visitAnnotation(final J.Annotation annotation, final ExecutionContext ctx) {
                 final J.Annotation ann = super.visitAnnotation(annotation, ctx);
 
                 if (!isSuppressWarnings(ann)) {
@@ -58,13 +58,13 @@ public class UncheckedCastRecipe extends ScanningRecipe<UncheckedCastRecipe.Accu
                 return ann;
             }
 
-            private boolean isSuppressWarnings(J.Annotation annotation) {
+            private boolean isSuppressWarnings(final J.Annotation annotation) {
                 final J.Identifier annotationType = annotation.getAnnotationType() instanceof J.Identifier id
                         ? id : null;
                 return annotationType != null && "SuppressWarnings".equals(annotationType.getSimpleName());
             }
 
-            private boolean containsUnchecked(J.Annotation annotation) {
+            private boolean containsUnchecked(final J.Annotation annotation) {
                 if (annotation.getArguments() == null) {
                     return false;
                 }
@@ -124,7 +124,7 @@ public class UncheckedCastRecipe extends ScanningRecipe<UncheckedCastRecipe.Accu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

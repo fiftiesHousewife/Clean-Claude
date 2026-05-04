@@ -6,7 +6,7 @@ public final class PathUtils {
 
     private PathUtils() {}
 
-    public static String relativise(String absolutePath, Path projectRoot) {
+    public static String relativise(final String absolutePath, final Path projectRoot) {
         String root = projectRoot.toString();
         if (absolutePath.startsWith(root)) {
             String relative = absolutePath.substring(root.length());

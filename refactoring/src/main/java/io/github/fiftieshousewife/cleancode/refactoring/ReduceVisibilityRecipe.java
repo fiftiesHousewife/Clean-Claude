@@ -17,7 +17,7 @@ public class ReduceVisibilityRecipe extends Recipe {
     private final int minLines;
 
     @JsonCreator
-    public ReduceVisibilityRecipe(@JsonProperty("minLines") int minLines) {
+    public ReduceVisibilityRecipe(@JsonProperty("minLines") final int minLines) {
         this.minLines = minLines;
     }
 
@@ -36,7 +36,7 @@ public class ReduceVisibilityRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (!ModifierEditor.has(m.getModifiers(), J.Modifier.Type.Private) || m.getBody() == null) {

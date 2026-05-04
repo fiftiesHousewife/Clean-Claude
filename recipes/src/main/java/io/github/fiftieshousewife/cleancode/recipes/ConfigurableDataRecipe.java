@@ -23,7 +23,7 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
 
     private Accumulator lastAccumulator;
 
-    public ConfigurableDataRecipe(int minValue) {
+    public ConfigurableDataRecipe(final int minValue) {
         this.minValue = minValue;
     }
 
@@ -38,16 +38,16 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Literal visitLiteral(J.Literal literal, ExecutionContext ctx) {
+            public J.Literal visitLiteral(final J.Literal literal, final ExecutionContext ctx) {
                 final J.Literal lit = super.visitLiteral(literal, ctx);
 
                 if (!isNumericLiteral(lit)) {
@@ -82,7 +82,7 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -90,7 +90,7 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean isNumericLiteral(J.Literal lit) {
+    private static boolean isNumericLiteral(final J.Literal lit) {
         if (lit.getType() == null) {
             return false;
         }
@@ -99,7 +99,7 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
                 || p == JavaType.Primitive.Double || p == JavaType.Primitive.Float);
     }
 
-    private boolean isTrivialValue(J.Literal lit) {
+    private boolean isTrivialValue(final J.Literal lit) {
         if (lit.getValue() == null) {
             return true;
         }
@@ -109,11 +109,11 @@ public class ConfigurableDataRecipe extends ScanningRecipe<ConfigurableDataRecip
         return false;
     }
 
-    private static boolean isPrivate(J.MethodDeclaration m) {
+    private static boolean isPrivate(final J.MethodDeclaration m) {
         return m.getModifiers().stream().anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
     }
 
-    private static boolean isConstantDeclaration(J.VariableDeclarations varDecls) {
+    private static boolean isConstantDeclaration(final J.VariableDeclarations varDecls) {
         final boolean isStatic = varDecls.getModifiers().stream()
                 .anyMatch(mod -> mod.getType() == J.Modifier.Type.Static);
         final boolean isFinal = varDecls.getModifiers().stream()

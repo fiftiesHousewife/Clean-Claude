@@ -50,16 +50,16 @@ public class ShortVariableNameRecipe extends ScanningRecipe<ShortVariableNameRec
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations varDecls, ExecutionContext ctx) {
+            public J.VariableDeclarations visitVariableDeclarations(final J.VariableDeclarations varDecls, final ExecutionContext ctx) {
                 final J.VariableDeclarations v = super.visitVariableDeclarations(varDecls, ctx);
 
                 v.getVariables().forEach(variable -> {
@@ -82,7 +82,7 @@ public class ShortVariableNameRecipe extends ScanningRecipe<ShortVariableNameRec
             }
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -121,7 +121,7 @@ public class ShortVariableNameRecipe extends ScanningRecipe<ShortVariableNameRec
                 return getCursor().getParentTreeCursor().getValue() instanceof J.MethodDeclaration;
             }
 
-            private String describeContext(J.VariableDeclarations varDecls) {
+            private String describeContext(final J.VariableDeclarations varDecls) {
                 final String typeStr = varDecls.getType() != null
                         ? varDecls.getType().toString()
                         : "unknown";
@@ -141,7 +141,7 @@ public class ShortVariableNameRecipe extends ScanningRecipe<ShortVariableNameRec
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

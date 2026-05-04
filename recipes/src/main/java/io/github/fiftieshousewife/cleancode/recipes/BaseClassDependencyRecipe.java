@@ -39,16 +39,16 @@ public class BaseClassDependencyRecipe extends ScanningRecipe<BaseClassDependenc
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
 
                 if (c.getExtends() != null) {
@@ -62,7 +62,7 @@ public class BaseClassDependencyRecipe extends ScanningRecipe<BaseClassDependenc
             }
 
             @Override
-            public J.InstanceOf visitInstanceOf(J.InstanceOf instanceOf, ExecutionContext ctx) {
+            public J.InstanceOf visitInstanceOf(final J.InstanceOf instanceOf, final ExecutionContext ctx) {
                 final J.InstanceOf io = super.visitInstanceOf(instanceOf, ctx);
 
                 final J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
@@ -83,7 +83,7 @@ public class BaseClassDependencyRecipe extends ScanningRecipe<BaseClassDependenc
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -102,7 +102,7 @@ public class BaseClassDependencyRecipe extends ScanningRecipe<BaseClassDependenc
         return Collections.unmodifiableList(results);
     }
 
-    private static String extractTypeName(J tree) {
+    private static String extractTypeName(final J tree) {
         if (tree instanceof J.Identifier ident) {
             return ident.getSimpleName();
         }

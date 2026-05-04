@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HtmlReportWriterTest {
 
     @Test
-    void writesValidHtmlFile(@TempDir Path tempDir) throws Exception {
+    void writesValidHtmlFile(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -31,7 +31,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void containsFindingDetails(@TempDir Path tempDir) throws Exception {
+    void containsFindingDetails(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -47,7 +47,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void containsSeveritySummary(@TempDir Path tempDir) throws Exception {
+    void containsSeveritySummary(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -61,7 +61,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void containsBookReferences(@TempDir Path tempDir) throws Exception {
+    void containsBookReferences(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -75,7 +75,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsVscodeUrlWithCopyIconWhenSchemeIsVscode(@TempDir Path tempDir) throws Exception {
+    void emitsVscodeUrlWithCopyIconWhenSchemeIsVscode(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");
         Files.createDirectories(projectRoot);
@@ -95,7 +95,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsIdeaUrlWhenSchemeIsIdea(@TempDir Path tempDir) throws Exception {
+    void emitsIdeaUrlWhenSchemeIsIdea(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");
         Files.createDirectories(projectRoot);
@@ -111,7 +111,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsCursorUrlWhenSchemeIsCursor(@TempDir Path tempDir) throws Exception {
+    void emitsCursorUrlWhenSchemeIsCursor(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");
         Files.createDirectories(projectRoot);
@@ -123,7 +123,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void columnWidthsLeaveRoomForLongPathsAndUseFullViewport(@TempDir Path tempDir) throws Exception {
+    void columnWidthsLeaveRoomForLongPathsAndUseFullViewport(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -142,7 +142,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void listsAllConfiguredSourcesIncludingMissingOnes(@TempDir Path tempDir) throws Exception {
+    void listsAllConfiguredSourcesIncludingMissingOnes(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");
         Files.createDirectories(projectRoot);
@@ -166,7 +166,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void includesOptionalRulesPanelByDefault(@TempDir Path tempDir) throws Exception {
+    void includesOptionalRulesPanelByDefault(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -180,7 +180,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsStagingBarAndModalForServeUx(@TempDir Path tempDir) throws Exception {
+    void emitsStagingBarAndModalForServeUx(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -200,7 +200,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsStopServerButtonThatPostsToShutdownEndpoint(@TempDir Path tempDir) throws Exception {
+    void emitsStopServerButtonThatPostsToShutdownEndpoint(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -218,7 +218,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsPerFindingSuppressButtonWithCodeFileAndLine(@TempDir Path tempDir) throws Exception {
+    void emitsPerFindingSuppressButtonWithCodeFileAndLine(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -234,7 +234,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsDisableAndTuneButtonsPerCodeSection(@TempDir Path tempDir) throws Exception {
+    void emitsDisableAndTuneButtonsPerCodeSection(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         final Finding f = new Finding(HeuristicCode.G30, "Foo.java", 1, 1,
@@ -256,7 +256,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void omitsTuneButtonForCodesWithoutThreshold(@TempDir Path tempDir) throws Exception {
+    void omitsTuneButtonForCodesWithoutThreshold(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         final Finding f = new Finding(HeuristicCode.G36, "Foo.java", 1, 1,
@@ -274,7 +274,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void modalRequiresReasonBeforeStaging(@TempDir Path tempDir) throws Exception {
+    void modalRequiresReasonBeforeStaging(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);
@@ -289,7 +289,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsIdePickerWhenFindingsPresent(@TempDir Path tempDir) throws Exception {
+    void emitsIdePickerWhenFindingsPresent(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");
         Files.createDirectories(projectRoot);
@@ -309,7 +309,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsConfidencePillPerRow(@TempDir Path tempDir) throws Exception {
+    void emitsConfidencePillPerRow(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         final Finding high = new Finding(HeuristicCode.G30, "A.java", 1, 1,
@@ -337,7 +337,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsCollapsibleCodeSnippetWhenSourceFilePresent(@TempDir Path tempDir) throws Exception {
+    void emitsCollapsibleCodeSnippetWhenSourceFilePresent(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");
         Files.createDirectories(projectRoot);
@@ -375,7 +375,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void doesNotEmitSnippetForProjectLevelFindings(@TempDir Path tempDir) throws Exception {
+    void doesNotEmitSnippetForProjectLevelFindings(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
         final Path projectRoot = tempDir.resolve("project");
         Files.createDirectories(projectRoot);
@@ -394,7 +394,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void emitsFixButtonsForCodesWithRegisteredRecipe(@TempDir Path tempDir) throws Exception {
+    void emitsFixButtonsForCodesWithRegisteredRecipe(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         final Finding finding = new Finding(HeuristicCode.G34, "Foo.java", 4, 4,
@@ -421,7 +421,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void omitsFixButtonsForCodesWithoutRegisteredRecipe(@TempDir Path tempDir) throws Exception {
+    void omitsFixButtonsForCodesWithoutRegisteredRecipe(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         final Finding finding = new Finding(HeuristicCode.T1, "Foo.java", 1, 1,
@@ -441,7 +441,7 @@ class HtmlReportWriterTest {
     }
 
     @Test
-    void severityBadgesActAsClickableFilterTogglesWithPersistence(@TempDir Path tempDir) throws Exception {
+    void severityBadgesActAsClickableFilterTogglesWithPersistence(@TempDir final Path tempDir) throws Exception {
         final Path output = tempDir.resolve("report.html");
 
         HtmlReportWriter.write(sampleReport(), output);

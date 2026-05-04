@@ -17,7 +17,7 @@ public class RenameShortNameRecipe extends Recipe {
     private final Map<String, String> renames;
 
     @JsonCreator
-    public RenameShortNameRecipe(@JsonProperty("renames") Map<String, String> renames) {
+    public RenameShortNameRecipe(@JsonProperty("renames") final Map<String, String> renames) {
         this.renames = renames == null ? new HashMap<>() : new HashMap<>(renames);
     }
 
@@ -39,7 +39,7 @@ public class RenameShortNameRecipe extends Recipe {
         return new JavaIsoVisitor<>() {
             @Override
             public J.VariableDeclarations.NamedVariable visitVariable(
-                    J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
+                    final J.VariableDeclarations.NamedVariable variable, final ExecutionContext ctx) {
                 final J.VariableDeclarations.NamedVariable visited = super.visitVariable(variable, ctx);
                 final String newName = renames.get(visited.getSimpleName());
                 if (newName == null || insideLoopControl()) {

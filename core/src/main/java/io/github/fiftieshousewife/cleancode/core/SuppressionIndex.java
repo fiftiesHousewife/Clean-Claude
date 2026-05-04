@@ -45,12 +45,12 @@ public class SuppressionIndex {
     private final List<Suppression> suppressions;
     private final List<Finding> metaFindings;
 
-    private SuppressionIndex(List<Suppression> suppressions, List<Finding> metaFindings) {
+    private SuppressionIndex(final List<Suppression> suppressions, final List<Finding> metaFindings) {
         this.suppressions = suppressions;
         this.metaFindings = metaFindings;
     }
 
-    public static SuppressionIndex build(Path sourceRoot) {
+    public static SuppressionIndex build(final Path sourceRoot) {
         List<Suppression> suppressions = new ArrayList<>();
         List<Finding> metaFindings = new ArrayList<>();
         JavaParser parser = new JavaParser();
@@ -75,7 +75,7 @@ public class SuppressionIndex {
         return new SuppressionIndex(suppressions, metaFindings);
     }
 
-    public boolean isSuppressed(Finding finding) {
+    public boolean isSuppressed(final Finding finding) {
         if (finding.sourceFile() == null) {
             return false;
         }
@@ -101,18 +101,18 @@ public class SuppressionIndex {
         return false;
     }
 
-    private static boolean isExpired(Suppression s) {
+    private static boolean isExpired(final Suppression s) {
         if (s.until().isEmpty()) {
             return false;
         }
         return LocalDate.parse(s.until()).isBefore(LocalDate.now());
     }
 
-    private static boolean matchesPackage(String path, String packagePath) {
+    private static boolean matchesPackage(final String path, final String packagePath) {
         return path != null && path.contains(packagePath + "/");
     }
 
-    private static String otherFile(Finding finding) {
+    private static String otherFile(final Finding finding) {
         return finding.metadata() == null ? null : finding.metadata().get("otherFile");
     }
 
@@ -120,9 +120,9 @@ public class SuppressionIndex {
         return Collections.unmodifiableList(metaFindings);
     }
 
-    private static void processCompilationUnit(CompilationUnit cu, String sourceFile,
-                                                List<Suppression> suppressions,
-                                                List<Finding> metaFindings) {
+    private static void processCompilationUnit(final CompilationUnit cu, final String sourceFile,
+                                                final List<Suppression> suppressions,
+                                                final List<Finding> metaFindings) {
         cu.getPackageDeclaration().ifPresent(pkg ->
                 processPackageDeclaration(pkg, sourceFile, suppressions, metaFindings));
         cu.findAll(ClassOrInterfaceDeclaration.class).forEach(cls ->
@@ -133,10 +133,10 @@ public class SuppressionIndex {
                 processAnnotatedNode(ctor, sourceFile, suppressions, metaFindings, null));
     }
 
-    private static void processPackageDeclaration(com.github.javaparser.ast.PackageDeclaration pkg,
-                                                   String sourceFile,
-                                                   List<Suppression> suppressions,
-                                                   List<Finding> metaFindings) {
+    private static void processPackageDeclaration(final com.github.javaparser.ast.PackageDeclaration pkg,
+                                                   final String sourceFile,
+                                                   final List<Suppression> suppressions,
+                                                   final List<Finding> metaFindings) {
         String packagePath = pkg.getNameAsString().replace('.', '/');
         int line = pkg.getBegin().map(p -> p.line).orElse(-1);
         for (AnnotationExpr ann : pkg.getAnnotations()) {
@@ -146,10 +146,10 @@ public class SuppressionIndex {
         }
     }
 
-    private static void processAnnotatedNode(BodyDeclaration<?> node, String sourceFile,
-                                              List<Suppression> suppressions,
-                                              List<Finding> metaFindings,
-                                              String packagePath) {
+    private static void processAnnotatedNode(final BodyDeclaration<?> node, final String sourceFile,
+                                              final List<Suppression> suppressions,
+                                              final List<Finding> metaFindings,
+                                              final String packagePath) {
         int startLine = node.getBegin().map(p -> p.line).orElse(-1);
         int endLine = node.getEnd().map(p -> p.line).orElse(-1);
 
@@ -179,10 +179,10 @@ public class SuppressionIndex {
         }
     }
 
-    private static void processSuppressWarnings(AnnotationExpr ann, String sourceFile,
-                                                  int startLine, int endLine,
-                                                  List<Suppression> suppressions,
-                                                  String packagePath) {
+    private static void processSuppressWarnings(final AnnotationExpr ann, final String sourceFile,
+                                                  final int startLine, final int endLine,
+                                                  final List<Suppression> suppressions,
+                                                  final String packagePath) {
         final Set<HeuristicCode> codes = new HashSet<>();
         if (ann instanceof SingleMemberAnnotationExpr single) {
             collectCleanCodeStrings(single.getMemberValue(), codes);
@@ -199,7 +199,7 @@ public class SuppressionIndex {
         suppressions.add(new Suppression(sourceFile, startLine, endLine, codes, "", "", packagePath));
     }
 
-    private static void collectCleanCodeStrings(Expression expr, Set<HeuristicCode> out) {
+    private static void collectCleanCodeStrings(final Expression expr, final Set<HeuristicCode> out) {
         if (expr.isStringLiteralExpr()) {
             final String value = expr.asStringLiteralExpr().getValue();
             if (value.startsWith("CleanCode:")) {
@@ -215,11 +215,11 @@ public class SuppressionIndex {
         }
     }
 
-    private static void processSingleAnnotation(AnnotationExpr ann, String sourceFile,
-                                                  int startLine, int endLine,
-                                                  List<Suppression> suppressions,
-                                                  List<Finding> metaFindings,
-                                                  String packagePath) {
+    private static void processSingleAnnotation(final AnnotationExpr ann, final String sourceFile,
+                                                  final int startLine, final int endLine,
+                                                  final List<Suppression> suppressions,
+                                                  final List<Finding> metaFindings,
+                                                  final String packagePath) {
         Set<HeuristicCode> codes = new HashSet<>();
         String reason = "";
         String until = "";
@@ -266,7 +266,7 @@ public class SuppressionIndex {
         suppressions.add(new Suppression(sourceFile, startLine, endLine, codes, reason, until, packagePath));
     }
 
-    private static String extractStringValue(Expression expr) {
+    private static String extractStringValue(final Expression expr) {
         if (expr.isStringLiteralExpr()) {
             return expr.asStringLiteralExpr().getValue();
         }
@@ -279,7 +279,7 @@ public class SuppressionIndex {
         return expr.toString();
     }
 
-    private static Set<HeuristicCode> extractCodes(Expression expr) {
+    private static Set<HeuristicCode> extractCodes(final Expression expr) {
         Set<HeuristicCode> codes = new HashSet<>();
         if (expr.isFieldAccessExpr()) {
             String name = expr.asFieldAccessExpr().getNameAsString();
@@ -290,7 +290,7 @@ public class SuppressionIndex {
         return codes;
     }
 
-    private static String deriveSourceFile(CompilationUnit cu, Path file, Path sourceRoot) {
+    private static String deriveSourceFile(final CompilationUnit cu, final Path file, final Path sourceRoot) {
         // Try to derive from package + filename
         String packageName = cu.getPackageDeclaration()
                 .map(pd -> pd.getNameAsString().replace('.', '/'))
@@ -299,7 +299,7 @@ public class SuppressionIndex {
         return packageName.isEmpty() ? fileName : packageName + "/" + fileName;
     }
 
-    private static boolean matchesFile(String findingFile, String suppressionFile) {
+    private static boolean matchesFile(final String findingFile, final String suppressionFile) {
         // Support partial matching — finding file might have a different prefix
         return findingFile.equals(suppressionFile)
                 || findingFile.endsWith(suppressionFile)

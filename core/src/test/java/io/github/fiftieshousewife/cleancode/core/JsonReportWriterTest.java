@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class JsonReportWriterTest {
 
     @Test
-    void writesReportToJsonFile(@TempDir Path tempDir) throws Exception {
+    void writesReportToJsonFile(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("findings.json");
         AggregatedReport report = sampleReport();
 
@@ -29,7 +29,7 @@ class JsonReportWriterTest {
     }
 
     @Test
-    void jsonContainsAllFindingFields(@TempDir Path tempDir) throws Exception {
+    void jsonContainsAllFindingFields(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("findings.json");
         AggregatedReport report = sampleReport();
 
@@ -48,7 +48,7 @@ class JsonReportWriterTest {
     }
 
     @Test
-    void jsonContainsReportMetadata(@TempDir Path tempDir) throws Exception {
+    void jsonContainsReportMetadata(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("findings.json");
         AggregatedReport report = sampleReport();
 
@@ -61,7 +61,7 @@ class JsonReportWriterTest {
     }
 
     @Test
-    void roundTrip_producesEquivalentData(@TempDir Path tempDir) throws Exception {
+    void roundTrip_producesEquivalentData(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("findings.json");
         AggregatedReport original = sampleReport();
 
@@ -82,7 +82,7 @@ class JsonReportWriterTest {
     }
 
     @Test
-    void createsParentDirectories(@TempDir Path tempDir) throws Exception {
+    void createsParentDirectories(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("deep/nested/dir/findings.json");
         AggregatedReport report = sampleReport();
 

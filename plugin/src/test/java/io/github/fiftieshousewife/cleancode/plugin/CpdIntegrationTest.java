@@ -84,7 +84,7 @@ class CpdIntegrationTest {
         );
     }
 
-    private GradleRunner runner(String... args) {
+    private GradleRunner runner(final String... args) {
         return GradleRunner.create()
                 .withProjectDir(projectDir.toFile())
                 .withArguments(args)

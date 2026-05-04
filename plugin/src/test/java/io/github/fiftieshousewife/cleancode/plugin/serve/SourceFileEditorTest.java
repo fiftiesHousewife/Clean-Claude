@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SourceFileEditorTest {
 
     @Test
-    void insertsAnnotationAndCommentAboveTargetMethod(@TempDir Path tempDir) throws IOException {
+    void insertsAnnotationAndCommentAboveTargetMethod(@TempDir final Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """
                 package com.example;
@@ -43,7 +43,7 @@ class SourceFileEditorTest {
     }
 
     @Test
-    void targetsClassDeclarationWhenLineIsAtClassLevel(@TempDir Path tempDir) throws IOException {
+    void targetsClassDeclarationWhenLineIsAtClassLevel(@TempDir final Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """
                 package com.example;
@@ -67,7 +67,7 @@ class SourceFileEditorTest {
     }
 
     @Test
-    void mergesIntoExistingSuppressWarningsWithSingleLiteral(@TempDir Path tempDir) throws IOException {
+    void mergesIntoExistingSuppressWarningsWithSingleLiteral(@TempDir final Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """
                 package com.example;
@@ -91,7 +91,7 @@ class SourceFileEditorTest {
     }
 
     @Test
-    void mergesIntoExistingSuppressWarningsWithArray(@TempDir Path tempDir) throws IOException {
+    void mergesIntoExistingSuppressWarningsWithArray(@TempDir final Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """
                 package com.example;
@@ -111,7 +111,7 @@ class SourceFileEditorTest {
     }
 
     @Test
-    void idempotentWhenSameCodeAlreadySuppressed(@TempDir Path tempDir) throws IOException {
+    void idempotentWhenSameCodeAlreadySuppressed(@TempDir final Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """
                 package com.example;
@@ -131,7 +131,7 @@ class SourceFileEditorTest {
     }
 
     @Test
-    void chooseSmallestEnclosingDeclarationForNestedMethod(@TempDir Path tempDir) throws IOException {
+    void chooseSmallestEnclosingDeclarationForNestedMethod(@TempDir final Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """
                 package com.example;
@@ -158,7 +158,7 @@ class SourceFileEditorTest {
     }
 
     @Test
-    void parsesRecordDeclarationsAndModernJavaSyntax(@TempDir Path tempDir) throws IOException {
+    void parsesRecordDeclarationsAndModernJavaSyntax(@TempDir final Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """
                 package com.example;
@@ -189,7 +189,7 @@ class SourceFileEditorTest {
     }
 
     @Test
-    void failsClearlyWhenLineHasNoEnclosingDeclaration(@TempDir Path tempDir) throws IOException {
+    void failsClearlyWhenLineHasNoEnclosingDeclaration(@TempDir final Path tempDir) throws IOException {
         final Path file = tempDir.resolve("Foo.java");
         Files.writeString(file, """
                 package com.example;

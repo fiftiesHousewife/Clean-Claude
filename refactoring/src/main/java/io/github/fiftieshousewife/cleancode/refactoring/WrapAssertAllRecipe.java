@@ -26,7 +26,7 @@ public class WrapAssertAllRecipe extends Recipe {
     private final int minConsecutive;
 
     @JsonCreator
-    public WrapAssertAllRecipe(@JsonProperty("minConsecutive") int minConsecutive) {
+    public WrapAssertAllRecipe(@JsonProperty("minConsecutive") final int minConsecutive) {
         this.minConsecutive = minConsecutive;
     }
 
@@ -45,7 +45,7 @@ public class WrapAssertAllRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+            public J.Block visitBlock(final J.Block block, final ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
 
                 final J.MethodDeclaration enclosingMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
@@ -97,7 +97,7 @@ public class WrapAssertAllRecipe extends Recipe {
 
     private record AssertRun(int startIndex, int endIndex) {}
 
-    private List<AssertRun> findAssertRuns(List<Statement> statements) {
+    private List<AssertRun> findAssertRuns(final List<Statement> statements) {
         final List<AssertRun> runs = new ArrayList<>();
         int runStart = -1;
         int runLength = 0;
@@ -124,14 +124,14 @@ public class WrapAssertAllRecipe extends Recipe {
         return runs;
     }
 
-    private static boolean isAssertCall(Statement stmt) {
+    private static boolean isAssertCall(final Statement stmt) {
         if (stmt instanceof J.MethodInvocation mi) {
             return ASSERT_PREFIXES.stream().anyMatch(p -> mi.getSimpleName().startsWith(p));
         }
         return false;
     }
 
-    private static boolean isTestMethod(J.MethodDeclaration method) {
+    private static boolean isTestMethod(final J.MethodDeclaration method) {
         return method.getLeadingAnnotations().stream()
                 .anyMatch(a -> "Test".equals(a.getSimpleName()));
     }

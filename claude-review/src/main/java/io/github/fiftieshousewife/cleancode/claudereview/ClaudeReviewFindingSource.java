@@ -43,7 +43,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
 
     private final ClaudeReviewConfig config;
 
-    public ClaudeReviewFindingSource(ClaudeReviewConfig config) {
+    public ClaudeReviewFindingSource(final ClaudeReviewConfig config) {
         this.config = config;
     }
 
@@ -63,12 +63,12 @@ public class ClaudeReviewFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         return config.enabled() && config.hasApiKey();
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         if (!config.hasApiKey()) {
             return List.of();
         }
@@ -125,8 +125,8 @@ public class ClaudeReviewFindingSource implements FindingSource {
         return allFindings;
     }
 
-    List<Finding> analyseFile(AnthropicClient client, String content, String relativePath,
-                              String systemPrompt, String codesKey) {
+    List<Finding> analyseFile(final AnthropicClient client, final String content, final String relativePath,
+                              final String systemPrompt, final String codesKey) {
         try {
             final String numberedContent = addLineNumbers(content);
             final String userPrompt = "Assess this Java file for violations of: %s\n\nFile: %s\n\n%s"
@@ -155,7 +155,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
         }
     }
 
-    List<Finding> parseFindings(String json, String sourceFile) {
+    List<Finding> parseFindings(final String json, final String sourceFile) {
         try {
             final String cleaned = json.strip();
             final String toParse = cleaned.startsWith("[") ? cleaned
@@ -195,7 +195,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
         }
     }
 
-    private List<Path> collectSourceFiles(ProjectContext context) {
+    private List<Path> collectSourceFiles(final ProjectContext context) {
         final List<PathMatcher> excludeMatchers = config.excludePatterns().stream()
                 .map(p -> FileSystems.getDefault().getPathMatcher("glob:" + p))
                 .toList();
@@ -216,11 +216,11 @@ public class ClaudeReviewFindingSource implements FindingSource {
         return files;
     }
 
-    private boolean isExcluded(Path file, List<PathMatcher> matchers) {
+    private boolean isExcluded(final Path file, final List<PathMatcher> matchers) {
         return matchers.stream().anyMatch(m -> m.matches(file));
     }
 
-    private boolean meetsMinLines(Path file) {
+    private boolean meetsMinLines(final Path file) {
         try {
             return Files.lines(file).count() >= config.minFileLines();
         } catch (IOException e) {
@@ -228,7 +228,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
         }
     }
 
-    private static String addLineNumbers(String content) {
+    private static String addLineNumbers(final String content) {
         final String[] lines = content.split("\n", -1);
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < lines.length; i++) {
@@ -237,7 +237,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
         return sb.toString();
     }
 
-    private static String extractJsonArray(String text) {
+    private static String extractJsonArray(final String text) {
         final int start = text.indexOf('[');
         final int end = text.lastIndexOf(']');
         if (start >= 0 && end > start) {
@@ -257,7 +257,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
         }
     }
 
-    private static List<Finding> toCoreFindings(List<ReviewCache.CachedFinding> cached, String sourceFile) {
+    private static List<Finding> toCoreFindings(final List<ReviewCache.CachedFinding> cached, final String sourceFile) {
         return cached.stream()
                 .map(cf -> new Finding(
                         HeuristicCode.valueOf(cf.code()), sourceFile,
@@ -266,7 +266,7 @@ public class ClaudeReviewFindingSource implements FindingSource {
                 .toList();
     }
 
-    private static List<ReviewCache.CachedFinding> toCachedFindings(List<Finding> findings) {
+    private static List<ReviewCache.CachedFinding> toCachedFindings(final List<Finding> findings) {
         return findings.stream()
                 .map(f -> new ReviewCache.CachedFinding(
                         f.code().name(), f.sourceFile(), f.startLine(), f.endLine(), f.message()))

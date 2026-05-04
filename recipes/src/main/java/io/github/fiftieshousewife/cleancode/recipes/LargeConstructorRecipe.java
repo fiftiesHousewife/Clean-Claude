@@ -15,7 +15,7 @@ public class LargeConstructorRecipe extends ScanningRecipe<LargeConstructorRecip
 
     private final int threshold;
 
-    public LargeConstructorRecipe(int threshold) {
+    public LargeConstructorRecipe(final int threshold) {
         this.threshold = threshold;
     }
 
@@ -42,16 +42,16 @@ public class LargeConstructorRecipe extends ScanningRecipe<LargeConstructorRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m, getCursor())) {
@@ -79,7 +79,7 @@ public class LargeConstructorRecipe extends ScanningRecipe<LargeConstructorRecip
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

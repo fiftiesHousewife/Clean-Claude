@@ -145,7 +145,7 @@ public class OpenRewriteFindingSource implements FindingSource {
     private Map<String, J.CompilationUnit> classNameToCompilationUnit = Map.of();
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         final List<Path> javaFiles = collectSourceFiles(context);
         if (javaFiles.isEmpty()) {
             return List.of();
@@ -170,7 +170,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return index;
     }
 
-    private Map<String, String> buildSourcePathIndex(List<SourceFile> parsed) {
+    private Map<String, String> buildSourcePathIndex(final List<SourceFile> parsed) {
         final Map<String, String> index = new HashMap<>();
         parsed.forEach(sf -> {
             final String path = sf.getSourcePath().toString();
@@ -246,7 +246,7 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     @SuppressWarnings("unchecked")
-    private List<Finding> extractFindings(List<ScanningRecipe<?>> recipes) {
+    private List<Finding> extractFindings(final List<ScanningRecipe<?>> recipes) {
         final List<Finding> findings = new ArrayList<>();
         recipes.forEach(recipe -> findings.addAll(mapRecipe(recipe)));
         return dedupCatchFindings(findings);
@@ -271,7 +271,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapRecipe(ScanningRecipe<?> recipe) {
+    private List<Finding> mapRecipe(final ScanningRecipe<?> recipe) {
         return switch (recipe) {
             case FlagArgumentRecipe r -> mapFlagArgs(r.collectedRows());
             case OutputArgumentRecipe r -> mapOutputArgs(r.collectedRows());
@@ -333,7 +333,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         };
     }
 
-    private List<Finding> mapStringBuilderThreading(List<StringBuilderThreadingRecipe.Row> rows) {
+    private List<Finding> mapStringBuilderThreading(final List<StringBuilderThreadingRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> switch (r.kind()) {
                     case NAMING -> findingForMethod(HeuristicCode.G24, r.className(), r.methodName(),
@@ -346,7 +346,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapFullyQualifiedReferences(List<FullyQualifiedReferenceRecipe.Row> rows) {
+    private List<Finding> mapFullyQualifiedReferences(final List<FullyQualifiedReferenceRecipe.Row> rows) {
         // Resolve each occurrence to the source line where it appears,
         // then group by (sourceFile, line) so multiple FQ refs on the
         // same line collapse to one finding (with the FQ list in the
@@ -420,14 +420,14 @@ public class OpenRewriteFindingSource implements FindingSource {
         return null;
     }
 
-    private List<Finding> mapFlagArgs(List<FlagArgumentRecipe.FlagArgumentRow> rows) {
+    private List<Finding> mapFlagArgs(final List<FlagArgumentRecipe.FlagArgumentRow> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.F3, r.className(), r.methodName(), r.paramCount(),
                         "Method '%s' takes boolean parameter '%s' — split into two methods instead".formatted(r.methodName(), r.paramName())))
                 .toList();
     }
 
-    private List<Finding> mapOutputArgs(List<OutputArgumentRecipe.Row> rows) {
+    private List<Finding> mapOutputArgs(final List<OutputArgumentRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.F2, r.className(), r.methodName(),
                         "Method '%s' mutates its argument '%s' (%s) — return the result instead".formatted(
@@ -435,7 +435,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapCatchLog(List<CatchLogContinueRecipe.Row> rows) {
+    private List<Finding> mapCatchLog(final List<CatchLogContinueRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> {
                     final String sourcePath = resolveSourcePath(r.className());
@@ -448,14 +448,14 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapNegCond(List<NegativeConditionalRecipe.Row> rows) {
+    private List<Finding> mapNegCond(final List<NegativeConditionalRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G29, r.className(), r.lineNumber(),
                         "Double negation: %s".formatted(r.expression())))
                 .toList();
     }
 
-    private List<Finding> mapDemeter(List<LawOfDemeterRecipe.Row> rows) {
+    private List<Finding> mapDemeter(final List<LawOfDemeterRecipe.Row> rows) {
         // Anchor at the actual chain expression inside the named method
         // so the snippet shows `a.b().c().d()`, not just the class
         // declaration. Falls back to the method line, then the class.
@@ -526,7 +526,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return head.replaceAll("[→\\u2026.…]+$", "");
     }
 
-    private List<Finding> mapEncapCond(List<EncapsulateConditionalRecipe.Row> rows) {
+    private List<Finding> mapEncapCond(final List<EncapsulateConditionalRecipe.Row> rows) {
         // The recipe records lineNumber=-1, so resolve via source-text:
         // walk the method's body for the first multi-operator `if` line
         // (depth-2 conditional means at least one logical operator).
@@ -579,7 +579,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return methodLine;
     }
 
-    private List<Finding> mapNullDensity(List<NullDensityRecipe.Row> rows) {
+    private List<Finding> mapNullDensity(final List<NullDensityRecipe.Row> rows) {
         // Per-method null-density: anchor at the first `return null` or
         // `== null` line inside the method so the snippet shows the
         // specific null-handling, not just the method header.
@@ -635,14 +635,14 @@ public class OpenRewriteFindingSource implements FindingSource {
         return methodLine;
     }
 
-    private List<Finding> mapClassLength(List<ClassLineLengthRecipe.Row> rows) {
+    private List<Finding> mapClassLength(final List<ClassLineLengthRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.Ch10_1, r.className(),
                         "Class '%s' is %d lines".formatted(r.className(), r.lineCount())))
                 .toList();
     }
 
-    private List<Finding> mapLargeRecord(List<LargeRecordRecipe.Row> rows) {
+    private List<Finding> mapLargeRecord(final List<LargeRecordRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.F1, r.className(), r.lineNumber(),
                         "Record '%s' has %d components — too many constructor parameters".formatted(
@@ -650,7 +650,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapDisabledTest(List<DisabledTestRecipe.Row> rows) {
+    private List<Finding> mapDisabledTest(final List<DisabledTestRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> Finding.at(HeuristicCode.T3, r.className() + ".java", -1, -1,
                         "@%s on '%s' without meaningful reason".formatted(r.annotation(), r.methodName()),
@@ -658,14 +658,14 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapSwitchOnType(List<SwitchOnTypeRecipe.Row> rows) {
+    private List<Finding> mapSwitchOnType(final List<SwitchOnTypeRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G23, r.className(), r.lineNumber(),
                         "Type switch in '%s': %s".formatted(r.methodName(), r.pattern())))
                 .toList();
     }
 
-    private List<Finding> mapCommentedCode(List<CommentedCodeRecipe.Row> rows) {
+    private List<Finding> mapCommentedCode(final List<CommentedCodeRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> Finding.at(HeuristicCode.C5, r.sourceFile(), r.lineNumber(), r.lineNumber(),
                         "Commented-out code: %s".formatted(r.commentPreview()),
@@ -673,7 +673,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapMumblingComment(List<MumblingCommentRecipe.Row> rows) {
+    private List<Finding> mapMumblingComment(final List<MumblingCommentRecipe.Row> rows) {
         // Recipe records lineNumber=-1; resolve via source-text by
         // matching the comment preview inside the method's body.
         return rows.stream()
@@ -759,7 +759,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return false;
     }
 
-    private List<Finding> mapSectionComment(List<SectionCommentRecipe.Row> rows) {
+    private List<Finding> mapSectionComment(final List<SectionCommentRecipe.Row> rows) {
         // Recipe lineNumber=-1; anchor at the method holding the section
         // comments instead of letting all G34 collapse onto the class.
         return rows.stream()
@@ -768,14 +768,14 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapEncodingNaming(List<EncodingNamingRecipe.Row> rows) {
+    private List<Finding> mapEncodingNaming(final List<EncodingNamingRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.N6, r.className(), r.lineNumber(),
                         "%s '%s' uses %s".formatted(r.elementKind(), r.elementName(), r.violationType())))
                 .toList();
     }
 
-    private List<Finding> mapVerticalSeparation(List<VerticalSeparationRecipe.Row> rows) {
+    private List<Finding> mapVerticalSeparation(final List<VerticalSeparationRecipe.Row> rows) {
         // Row.declarationLine is the variable's offset within the method
         // body, NOT a file line. Resolve to the actual file line by
         // walking the method body for the first declaration of varName.
@@ -836,14 +836,14 @@ public class OpenRewriteFindingSource implements FindingSource {
         return methodLine;
     }
 
-    private List<Finding> mapInheritConstants(List<InheritConstantsRecipe.Row> rows) {
+    private List<Finding> mapInheritConstants(final List<InheritConstantsRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.J2, r.className(), r.lineNumber(),
                         "Class inherits constants from interface '%s'".formatted(r.interfaceName())))
                 .toList();
     }
 
-    private List<Finding> mapEnumForConstants(List<EnumForConstantsRecipe.Row> rows) {
+    private List<Finding> mapEnumForConstants(final List<EnumForConstantsRecipe.Row> rows) {
         // Recipe records lineNumber=-1; resolve to the first
         // `<prefix>_<word>` field declaration line so the snippet
         // shows the offending constants, not the class header.
@@ -882,7 +882,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return -1;
     }
 
-    private List<Finding> mapShortNames(List<ShortVariableNameRecipe.Row> rows) {
+    private List<Finding> mapShortNames(final List<ShortVariableNameRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.N5, r.className(), r.lineNumber(),
                         "'%s' in %s() is not a meaningful name — rename to reveal intent (%s)".formatted(
@@ -890,7 +890,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapMagicStrings(List<MagicStringRecipe.Row> rows) {
+    private List<Finding> mapMagicStrings(final List<MagicStringRecipe.Row> rows) {
         // G25 in Clean Code is specifically about magic NUMBERS. Repeated
         // string literals are duplication — G5. The fix (extract to a
         // named constant) is the same shape, but the heuristic banner the
@@ -971,7 +971,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return out.toString();
     }
 
-    private List<Finding> mapWhitespaceSplit(List<WhitespaceSplitMethodRecipe.Row> rows) {
+    private List<Finding> mapWhitespaceSplit(final List<WhitespaceSplitMethodRecipe.Row> rows) {
         // Recipe lineNumber=-1; anchor at the method itself.
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G30, r.className(), r.methodName(),
@@ -980,7 +980,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapPrivateMethod(List<PrivateMethodTestabilityRecipe.PrivateMethodTestabilityRow> rows) {
+    private List<Finding> mapPrivateMethod(final List<PrivateMethodTestabilityRecipe.PrivateMethodTestabilityRow> rows) {
         // The recipe records lineNumber=-1, so finding(code, className,
         // -1, ...) used to fall back to lineOfClass, putting the snippet
         // on the class declaration. Resolve via the source-text method
@@ -992,7 +992,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapStringSwitch(List<StringSwitchRecipe.Row> rows) {
+    private List<Finding> mapStringSwitch(final List<StringSwitchRecipe.Row> rows) {
         // Recipe records lineNumber=-1; without resolution every G23 on a
         // class lands on the class declaration. Scan inside the method's
         // body for `switch (selector)` so the snippet shows the switch.
@@ -1041,7 +1041,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return methodLine;
     }
 
-    private List<Finding> mapVisibility(List<VisibilityReductionRecipe.Row> rows) {
+    private List<Finding> mapVisibility(final List<VisibilityReductionRecipe.Row> rows) {
         // Recipe records lineNumber=-1; without a real line every G8 on
         // the same class collapses onto the class declaration and looks
         // like duplicates. Resolve to the actual field declaration line.
@@ -1055,7 +1055,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapImperativeLoop(List<ImperativeLoopRecipe.Row> rows) {
+    private List<Finding> mapImperativeLoop(final List<ImperativeLoopRecipe.Row> rows) {
         // Recipe lineNumber=-1; route through findingForMethod so the
         // anchor is the actual method, not the class header.
         return rows.stream()
@@ -1065,7 +1065,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapUncheckedCast(List<UncheckedCastRecipe.Row> rows) {
+    private List<Finding> mapUncheckedCast(final List<UncheckedCastRecipe.Row> rows) {
         // Recipe lineNumber=-1; memberName can be a method or a field.
         // Try the method line first (covers most @SuppressWarnings on
         // methods); fall back to field declaration; final fallback is
@@ -1083,7 +1083,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapFeatureEnvy(List<FeatureEnvyRecipe.Row> rows) {
+    private List<Finding> mapFeatureEnvy(final List<FeatureEnvyRecipe.Row> rows) {
         // Recipe lineNumber=-1; anchor at the envying method.
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G14, r.className(), r.methodName(),
@@ -1092,7 +1092,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapNestedTernary(List<NestedTernaryRecipe.Row> rows) {
+    private List<Finding> mapNestedTernary(final List<NestedTernaryRecipe.Row> rows) {
         // Recipe lineNumber=-1; without resolution every G16 collapses
         // onto the class declaration. Anchor at the method that holds the
         // ternary so the snippet shows the offending expression in
@@ -1104,7 +1104,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapMissingExplanatory(List<MissingExplanatoryVariableRecipe.Row> rows) {
+    private List<Finding> mapMissingExplanatory(final List<MissingExplanatoryVariableRecipe.Row> rows) {
         // Recipe lineNumber=-1; without resolution every G19 collapses
         // onto the class declaration. Anchor at the enclosing method.
         return rows.stream()
@@ -1114,7 +1114,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapBoundaryCondition(List<BoundaryConditionRecipe.Row> rows) {
+    private List<Finding> mapBoundaryCondition(final List<BoundaryConditionRecipe.Row> rows) {
         // Recipe lineNumber=-1; anchor at the method holding the boundary
         // expression.
         return rows.stream()
@@ -1124,7 +1124,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapSideEffectNaming(List<SideEffectNamingRecipe.Row> rows) {
+    private List<Finding> mapSideEffectNaming(final List<SideEffectNamingRecipe.Row> rows) {
         // Recipe lineNumber=-1; anchor at the misnamed method.
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.N7, r.className(), r.methodName(),
@@ -1133,7 +1133,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapInconsistentNaming(List<InconsistentNamingRecipe.Row> rows) {
+    private List<Finding> mapInconsistentNaming(final List<InconsistentNamingRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G11, r.className(), r.lineNumber(),
                         "Class uses inconsistent prefixes %s for the same concept: %s".formatted(
@@ -1141,7 +1141,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapBadClassName(List<BadClassNameRecipe.Row> rows) {
+    private List<Finding> mapBadClassName(final List<BadClassNameRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.N1, r.className(),
                         "Class '%s' uses bad suffix '%s' — name after what it represents, not its role".formatted(
@@ -1149,14 +1149,14 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapSystemOut(List<SystemOutRecipe.Row> rows) {
+    private List<Finding> mapSystemOut(final List<SystemOutRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G17, r.className(),
                         "'%s' belongs in a logger, not in business code — move to a structured log call".formatted(r.call())))
                 .toList();
     }
 
-    private List<Finding> mapFixedStringLog(List<FixedStringLogRecipe.Row> rows) {
+    private List<Finding> mapFixedStringLog(final List<FixedStringLogRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G12, r.className(),
                         "log.%s(\"%s\") has no runtime variables — delete the log line or upgrade it to a structured event".formatted(
@@ -1168,14 +1168,14 @@ public class OpenRewriteFindingSource implements FindingSource {
         return s.length() <= 60 ? s : s.substring(0, 57) + "...";
     }
 
-    private List<Finding> mapLegacyTypes(List<LegacyTypesRecipe.Row> rows) {
+    private List<Finding> mapLegacyTypes(final List<LegacyTypesRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G26, r.className(),
                         "'%s' is a legacy API — %s".formatted(r.legacyType(), r.replacement())))
                 .toList();
     }
 
-    private List<Finding> mapMultipleAssert(List<MultipleAssertRecipe.Row> rows) {
+    private List<Finding> mapMultipleAssert(final List<MultipleAssertRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.T1, r.className(), r.methodName(),
                         "Test '%s' has %d consecutive assertions — wrap in assertAll".formatted(
@@ -1183,7 +1183,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapLargeConstructor(List<LargeConstructorRecipe.Row> rows) {
+    private List<Finding> mapLargeConstructor(final List<LargeConstructorRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.F1, r.className(),
                         "Constructor has %d parameters — introduce a parameter object or builder".formatted(
@@ -1191,7 +1191,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapInappropriateStatic(List<InappropriateStaticRecipe.Row> rows) {
+    private List<Finding> mapInappropriateStatic(final List<InappropriateStaticRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G18, r.className(), r.methodName(),
                         "Method '%s' does not use instance state — relocate to a more appropriate class or accept the coupling".formatted(
@@ -1199,7 +1199,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapStringlyTypedDispatch(List<StringlyTypedDispatchRecipe.Row> rows) {
+    private List<Finding> mapStringlyTypedDispatch(final List<StringlyTypedDispatchRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G23, r.className(), r.methodName(),
                         "Method '%s' dispatches on String parameter '%s' with %d branches — use an enum or split into separate methods".formatted(
@@ -1207,7 +1207,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapConfigurableData(List<ConfigurableDataRecipe.Row> rows) {
+    private List<Finding> mapConfigurableData(final List<ConfigurableDataRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> {
                     final int line = lineOfLiteralInMethod(r.className(), r.methodName(), r.literalValue());
@@ -1256,7 +1256,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return methodLine;
     }
 
-    private List<Finding> mapEmbeddedLanguage(List<EmbeddedLanguageRecipe.Row> rows) {
+    private List<Finding> mapEmbeddedLanguage(final List<EmbeddedLanguageRecipe.Row> rows) {
         // Roll up by (className, language) so a file with thirty
         // append("<html>") methods produces ONE G1, not thirty.
         // Anchor at the first literal's line so the snippet shows the
@@ -1286,7 +1286,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapGuardClause(List<GuardClauseRecipe.Row> rows) {
+    private List<Finding> mapGuardClause(final List<GuardClauseRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G30, r.className(), r.methodName(),
                         "Method '%s' has %d guard clauses — the entry conditions suggest it does several things".formatted(
@@ -1294,7 +1294,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapBaseClassDependency(List<BaseClassDependencyRecipe.Row> rows) {
+    private List<Finding> mapBaseClassDependency(final List<BaseClassDependencyRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G7, r.className(),
                         "'%s' depends on its derivative '%s' — invert the dependency".formatted(
@@ -1302,7 +1302,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapArtificialCoupling(List<ArtificialCouplingRecipe.Row> rows) {
+    private List<Finding> mapArtificialCoupling(final List<ArtificialCouplingRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.G13, r.declaringClass(),
                         "Constant '%s' defined in '%s' but only used in '%s' — move it".formatted(
@@ -1310,7 +1310,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapHardcodedList(List<HardcodedListRecipe.Row> rows) {
+    private List<Finding> mapHardcodedList(final List<HardcodedListRecipe.Row> rows) {
         // The recipe doesn't record a line; locate the actual field
         // declaration ("<type> fieldName = " or "<type> fieldName;")
         // so the snippet shows the offending hardcoded list rather
@@ -1351,7 +1351,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return -1;
     }
 
-    private List<Finding> mapSelectorArgument(List<SelectorArgumentRecipe.Row> rows) {
+    private List<Finding> mapSelectorArgument(final List<SelectorArgumentRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G15, r.className(), r.methodName(),
                         "Method '%s' uses %s parameter '%s' to select behaviour — split into separate methods".formatted(
@@ -1359,7 +1359,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapObsoleteComment(List<ObsoleteCommentRecipe.Row> rows) {
+    private List<Finding> mapObsoleteComment(final List<ObsoleteCommentRecipe.Row> rows) {
         // Recipe doesn't record a line number — anchor at the first
         // comment line in the file that mentions the missing identifier.
         return rows.stream()
@@ -1396,7 +1396,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return -1;
     }
 
-    private List<Finding> mapTemporalCoupling(List<TemporalCouplingRecipe.Row> rows) {
+    private List<Finding> mapTemporalCoupling(final List<TemporalCouplingRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G31, r.className(), r.methodName(),
                         "Method '%s' has %d distinct void calls in sequence — make the order explicit".formatted(
@@ -1404,7 +1404,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapBroadCatch(List<BroadCatchRecipe.Row> rows) {
+    private List<Finding> mapBroadCatch(final List<BroadCatchRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> {
                     final String sourcePath = resolveSourcePath(r.className());
@@ -1418,7 +1418,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapRawGeneric(List<RawGenericRecipe.Row> rows) {
+    private List<Finding> mapRawGeneric(final List<RawGenericRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G26, r.className(), r.methodName(),
                         "'%s' in '%s' uses Object type parameter — use a typed record or specific generic".formatted(
@@ -1426,7 +1426,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapSwallowedException(List<SwallowedExceptionRecipe.Row> rows) {
+    private List<Finding> mapSwallowedException(final List<SwallowedExceptionRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> {
                     final String sourcePath = resolveSourcePath(r.className());
@@ -1440,7 +1440,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapInconsistentReturn(List<InconsistentReturnRecipe.Row> rows) {
+    private List<Finding> mapInconsistentReturn(final List<InconsistentReturnRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> finding(HeuristicCode.F2, r.className(),
                         "Class has %d methods returning collections and %d void methods mutating collection params — pick one style".formatted(
@@ -1448,7 +1448,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Finding> mapSuppressedWarning(List<SuppressedWarningRecipe.Row> rows) {
+    private List<Finding> mapSuppressedWarning(final List<SuppressedWarningRecipe.Row> rows) {
         return rows.stream()
                 .map(r -> findingForMethod(HeuristicCode.G4, r.className(), r.methodName(),
                         "@SuppressWarnings(\"%s\") on '%s' — redesign to avoid unsafe operations".formatted(
@@ -1456,7 +1456,7 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private List<Path> collectSourceFiles(ProjectContext context) {
+    private List<Path> collectSourceFiles(final ProjectContext context) {
         final List<Path> files = new ArrayList<>();
         context.sourceRoots().stream()
                 .filter(Files::isDirectory)
@@ -1469,7 +1469,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return files;
     }
 
-    private List<SourceFile> parseSourceFiles(List<Path> files) {
+    private List<SourceFile> parseSourceFiles(final List<Path> files) {
         return JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)
                 .build()
@@ -1477,26 +1477,26 @@ public class OpenRewriteFindingSource implements FindingSource {
                 .toList();
     }
 
-    private void runRecipe(List<SourceFile> parsed, ScanningRecipe<?> recipe) {
+    private void runRecipe(final List<SourceFile> parsed, final ScanningRecipe<?> recipe) {
         final ExecutionContext ctx = new InMemoryExecutionContext(Throwable::printStackTrace);
         recipe.run(new InMemoryLargeSourceSet(parsed), ctx);
     }
 
-    private Finding finding(HeuristicCode code, String className, String message) {
+    private Finding finding(final HeuristicCode code, final String className, final String message) {
         final String sourcePath = resolveSourcePath(className);
         final int line = lineOfClass(className);
         return Finding.at(code, sourcePath, line, line,
                 message, severityFor(code), Confidence.HIGH, TOOL, code.name());
     }
 
-    private Finding finding(HeuristicCode code, String className, int line, String message) {
+    private Finding finding(final HeuristicCode code, final String className, final int line, final String message) {
         final String sourcePath = resolveSourcePath(className);
         final int resolvedLine = line > 0 ? line : lineOfClass(className);
         return Finding.at(code, sourcePath, resolvedLine, resolvedLine,
                 message, severityFor(code), Confidence.HIGH, TOOL, code.name());
     }
 
-    private Finding findingForMethod(HeuristicCode code, String className, String methodName, String message) {
+    private Finding findingForMethod(final HeuristicCode code, final String className, final String methodName, final String message) {
         return findingForMethod(code, className, methodName, -1, message);
     }
 
@@ -1505,15 +1505,15 @@ public class OpenRewriteFindingSource implements FindingSource {
      * caller knows it. Falls back to the first-match behaviour when
      * {@code paramCount} is negative.
      */
-    private Finding findingForMethod(HeuristicCode code, String className, String methodName,
-                                      int paramCount, String message) {
+    private Finding findingForMethod(final HeuristicCode code, final String className, final String methodName,
+                                      final int paramCount, final String message) {
         final String sourcePath = resolveSourcePath(className);
         final int line = lineOfMethod(className, methodName, paramCount);
         return Finding.at(code, sourcePath, line, line,
                 message, severityFor(code), Confidence.HIGH, TOOL, code.name());
     }
 
-    private String resolveSourcePath(String className) {
+    private String resolveSourcePath(final String className) {
         return classNameToSourcePath.getOrDefault(className, className + ".java");
     }
 
@@ -1670,7 +1670,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         final int[] line = {-1};
         new JavaIsoVisitor<Object>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration m, Object o) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration m, final Object o) {
                 if (line[0] < 0 && methodName.equals(m.getSimpleName())) {
                     if (paramCount >= 0 && m.getParameters().size() != paramCount) {
                         return super.visitMethodDeclaration(m, o);

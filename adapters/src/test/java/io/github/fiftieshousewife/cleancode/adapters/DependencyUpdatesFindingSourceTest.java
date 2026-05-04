@@ -23,7 +23,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void returnsE1FindingsForOutdatedDependencies(@TempDir Path tempDir) throws Exception {
+    void returnsE1FindingsForOutdatedDependencies(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """
                 {
@@ -60,7 +60,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void returnsEmptyWhenNoReportExists(@TempDir Path tempDir) throws Exception {
+    void returnsEmptyWhenNoReportExists(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
 
@@ -70,7 +70,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void returnsEmptyWhenNoOutdatedDependencies(@TempDir Path tempDir) throws Exception {
+    void returnsEmptyWhenNoOutdatedDependencies(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """
                 {
@@ -86,7 +86,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void isNotAvailableWhenReportMissing(@TempDir Path tempDir) {
+    void isNotAvailableWhenReportMissing(@TempDir final Path tempDir) {
         final Path buildDir = tempDir.resolve("build");
         final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
 
@@ -94,7 +94,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void isAvailableWhenReportExists(@TempDir Path tempDir) throws Exception {
+    void isAvailableWhenReportExists(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """
                 { "outdated": { "dependencies": [] } }
@@ -106,7 +106,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void anchorsFindingsToVersionCatalogWhenPresent(@TempDir Path tempDir) throws Exception {
+    void anchorsFindingsToVersionCatalogWhenPresent(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """
                 {
@@ -133,7 +133,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void leavesFindingsProjectLevelWhenNoCatalogExists(@TempDir Path tempDir) throws Exception {
+    void leavesFindingsProjectLevelWhenNoCatalogExists(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """
                 {
@@ -158,7 +158,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void skipsE1WhenCatalogLivesInAncestor(@TempDir Path tempDir) throws Exception {
+    void skipsE1WhenCatalogLivesInAncestor(@TempDir final Path tempDir) throws Exception {
         final Path rootDir = tempDir.resolve("repo-root");
         final Path moduleDir = rootDir.resolve("module");
         Files.createDirectories(rootDir.resolve("gradle"));
@@ -193,7 +193,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void deduplicatesCoordinatesAcrossReport(@TempDir Path tempDir) throws Exception {
+    void deduplicatesCoordinatesAcrossReport(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """
                 {
@@ -224,7 +224,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void prefersMilestoneOverReleaseVersion(@TempDir Path tempDir) throws Exception {
+    void prefersMilestoneOverReleaseVersion(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """
                 {
@@ -247,13 +247,13 @@ class DependencyUpdatesFindingSourceTest {
         assertTrue(findings.get(0).message().contains("1.1.0"));
     }
 
-    private void writeReport(Path buildDir, String json) throws Exception {
+    private void writeReport(final Path buildDir, final String json) throws Exception {
         final Path reportFile = buildDir.resolve("dependencyUpdates/report.json");
         Files.createDirectories(reportFile.getParent());
         Files.writeString(reportFile, json);
     }
 
-    private ProjectContext contextWithBuildDir(Path tempDir, Path buildDir) {
+    private ProjectContext contextWithBuildDir(final Path tempDir, final Path buildDir) {
         return new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(),

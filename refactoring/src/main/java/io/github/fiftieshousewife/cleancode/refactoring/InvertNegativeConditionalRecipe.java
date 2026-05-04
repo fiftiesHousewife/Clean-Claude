@@ -26,7 +26,7 @@ public class InvertNegativeConditionalRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.If visitIf(J.If ifStmt, ExecutionContext ctx) {
+            public J.If visitIf(final J.If ifStmt, final ExecutionContext ctx) {
                 final J.If visited = super.visitIf(ifStmt, ctx);
                 final J.If.Else elseBranch = visited.getElsePart();
                 if (elseBranch == null) {

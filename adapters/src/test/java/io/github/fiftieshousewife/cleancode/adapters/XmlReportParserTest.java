@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class XmlReportParserTest {
 
     @Test
-    void parsesValidXml(@TempDir Path tempDir) throws Exception {
+    void parsesValidXml(@TempDir final Path tempDir) throws Exception {
         Path file = tempDir.resolve("test.xml");
         Files.writeString(file, "<?xml version=\"1.0\"?><root><child/></root>");
 
@@ -22,13 +22,13 @@ class XmlReportParserTest {
     }
 
     @Test
-    void throwsOnMissingFile(@TempDir Path tempDir) {
+    void throwsOnMissingFile(@TempDir final Path tempDir) {
         Path missing = tempDir.resolve("nonexistent.xml");
         assertThrows(FindingSourceException.class, () -> XmlReportParser.parse(missing));
     }
 
     @Test
-    void throwsOnMalformedXml(@TempDir Path tempDir) throws Exception {
+    void throwsOnMalformedXml(@TempDir final Path tempDir) throws Exception {
         Path file = tempDir.resolve("bad.xml");
         Files.writeString(file, "this is not xml");
         assertThrows(FindingSourceException.class, () -> XmlReportParser.parse(file));

@@ -36,16 +36,16 @@ public class DisabledTestRecipe extends ScanningRecipe<DisabledTestRecipe.Accumu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -56,13 +56,13 @@ public class DisabledTestRecipe extends ScanningRecipe<DisabledTestRecipe.Accumu
             }
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
                 c.getLeadingAnnotations().forEach(ann -> checkAnnotation(acc, ann, "<class>"));
                 return c;
             }
 
-            private void checkAnnotation(Accumulator acc, J.Annotation ann, String methodName) {
+            private void checkAnnotation(final Accumulator acc, final J.Annotation ann, final String methodName) {
                 final String annName = ann.getSimpleName();
                 if (!DISABLED_ANNOTATIONS.contains(annName)) {
                     return;
@@ -75,7 +75,7 @@ public class DisabledTestRecipe extends ScanningRecipe<DisabledTestRecipe.Accumu
                 }
             }
 
-            private boolean hasMeaningfulReason(J.Annotation ann) {
+            private boolean hasMeaningfulReason(final J.Annotation ann) {
                 if (ann.getArguments() == null || ann.getArguments().isEmpty()) {
                     return false;
                 }
@@ -96,7 +96,7 @@ public class DisabledTestRecipe extends ScanningRecipe<DisabledTestRecipe.Accumu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

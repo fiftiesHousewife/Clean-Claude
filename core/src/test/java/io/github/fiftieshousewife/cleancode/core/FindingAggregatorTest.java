@@ -31,9 +31,9 @@ class FindingAggregatorTest {
         FindingSource unavailable = new FindingSource() {
             @Override public String id() { return "u"; }
             @Override public String displayName() { return "U"; }
-            @Override public List<Finding> collectFindings(ProjectContext ctx) { return List.of(finding(HeuristicCode.T1, "X.java")); }
+            @Override public List<Finding> collectFindings(final ProjectContext ctx) { return List.of(finding(HeuristicCode.T1, "X.java")); }
             @Override public Set<HeuristicCode> coveredCodes() { return Set.of(HeuristicCode.T1); }
-            @Override public boolean isAvailable(ProjectContext ctx) { return false; }
+            @Override public boolean isAvailable(final ProjectContext ctx) { return false; }
         };
 
         AggregatedReport report = FindingAggregator.aggregate(
@@ -66,7 +66,7 @@ class FindingAggregatorTest {
         FindingSource failing = new FindingSource() {
             @Override public String id() { return "fail"; }
             @Override public String displayName() { return "Fail"; }
-            @Override public List<Finding> collectFindings(ProjectContext ctx) throws FindingSourceException {
+            @Override public List<Finding> collectFindings(final ProjectContext ctx) throws FindingSourceException {
                 throw new FindingSourceException("boom");
             }
             @Override public Set<HeuristicCode> coveredCodes() { return Set.of(); }
@@ -84,9 +84,9 @@ class FindingAggregatorTest {
         FindingSource unavailable = new FindingSource() {
             @Override public String id() { return "u"; }
             @Override public String displayName() { return "U"; }
-            @Override public List<Finding> collectFindings(ProjectContext ctx) { return List.of(); }
+            @Override public List<Finding> collectFindings(final ProjectContext ctx) { return List.of(); }
             @Override public Set<HeuristicCode> coveredCodes() { return Set.of(HeuristicCode.T1); }
-            @Override public boolean isAvailable(ProjectContext ctx) { return false; }
+            @Override public boolean isAvailable(final ProjectContext ctx) { return false; }
         };
 
         FindingAggregator.Result result = FindingAggregator.aggregateWithStates(
@@ -107,15 +107,15 @@ class FindingAggregatorTest {
         assertNotNull(report.generatedAt());
     }
 
-    private static Finding finding(HeuristicCode code, String file) {
+    private static Finding finding(final HeuristicCode code, final String file) {
         return Finding.at(code, file, 1, 1, "msg", Severity.WARNING, Confidence.HIGH, "test", "rule");
     }
 
-    private static FindingSource stubSource(String id, Set<HeuristicCode> codes, List<Finding> findings) {
+    private static FindingSource stubSource(final String id, final Set<HeuristicCode> codes, final List<Finding> findings) {
         return new FindingSource() {
             @Override public String id() { return id; }
             @Override public String displayName() { return id; }
-            @Override public List<Finding> collectFindings(ProjectContext ctx) { return findings; }
+            @Override public List<Finding> collectFindings(final ProjectContext ctx) { return findings; }
             @Override public Set<HeuristicCode> coveredCodes() { return codes; }
         };
     }

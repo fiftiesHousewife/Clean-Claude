@@ -35,16 +35,16 @@ public class SideEffectNamingRecipe extends ScanningRecipe<SideEffectNamingRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -76,12 +76,12 @@ public class SideEffectNamingRecipe extends ScanningRecipe<SideEffectNamingRecip
                 return m;
             }
 
-            private boolean hasOverrideAnnotation(J.MethodDeclaration method) {
+            private boolean hasOverrideAnnotation(final J.MethodDeclaration method) {
                 return method.getLeadingAnnotations().stream()
                         .anyMatch(ann -> "Override".equals(ann.getSimpleName()));
             }
 
-            private boolean hasQueryPrefix(String name) {
+            private boolean hasQueryPrefix(final String name) {
                 for (final String prefix : QUERY_PREFIXES) {
                     if (name.startsWith(prefix) && name.length() > prefix.length()
                             && Character.isUpperCase(name.charAt(prefix.length()))) {
@@ -91,7 +91,7 @@ public class SideEffectNamingRecipe extends ScanningRecipe<SideEffectNamingRecip
                 return false;
             }
 
-            private String findSideEffect(J.Block body) {
+            private String findSideEffect(final J.Block body) {
                 for (final var statement : body.getStatements()) {
                     if (statement instanceof J.Assignment assignment) {
                         return "assigns to " + assignment.getVariable().printTrimmed(getCursor());
@@ -111,7 +111,7 @@ public class SideEffectNamingRecipe extends ScanningRecipe<SideEffectNamingRecip
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

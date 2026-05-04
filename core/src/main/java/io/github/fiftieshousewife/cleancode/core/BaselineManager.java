@@ -21,7 +21,7 @@ public final class BaselineManager {
 
     public record Delta(int baseline, int current, int change) {}
 
-    public static void writeBaseline(AggregatedReport report, Path baselineFile) throws IOException {
+    public static void writeBaseline(final AggregatedReport report, final Path baselineFile) throws IOException {
         Map<String, Integer> counts = report.findings().stream()
                 .collect(Collectors.groupingBy(
                         f -> f.code().name(),
@@ -34,7 +34,7 @@ public final class BaselineManager {
         Files.writeString(baselineFile, gson.toJson(wrapper));
     }
 
-    public static Map<HeuristicCode, Integer> readBaseline(Path baselineFile) throws IOException {
+    public static Map<HeuristicCode, Integer> readBaseline(final Path baselineFile) throws IOException {
         if (!Files.exists(baselineFile)) {
             return Map.of();
         }
@@ -60,8 +60,8 @@ public final class BaselineManager {
         return result;
     }
 
-    public static Map<HeuristicCode, Delta> computeDeltas(AggregatedReport report,
-                                                            Path baselineFile) throws IOException {
+    public static Map<HeuristicCode, Delta> computeDeltas(final AggregatedReport report,
+                                                            final Path baselineFile) throws IOException {
         Map<HeuristicCode, Integer> baselineCounts = readBaseline(baselineFile);
 
         Map<HeuristicCode, Long> currentCounts = report.findings().stream()

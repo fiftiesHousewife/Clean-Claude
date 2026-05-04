@@ -16,7 +16,7 @@ import static org.openrewrite.java.Assertions.java;
 class RecordToLombokValueRecipeTest implements RewriteTest {
 
     @Override
-    public void defaults(RecipeSpec spec) {
+    public void defaults(final RecipeSpec spec) {
         spec.recipe(new RecordToLombokValueRecipe(4));
     }
 
@@ -94,7 +94,7 @@ class RecordToLombokValueRecipeTest implements RewriteTest {
         );
     }
 
-    private String runAndGetSource(String source) {
+    private String runAndGetSource(final String source) {
         final var recipe = new RecordToLombokValueRecipe(4);
         final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)

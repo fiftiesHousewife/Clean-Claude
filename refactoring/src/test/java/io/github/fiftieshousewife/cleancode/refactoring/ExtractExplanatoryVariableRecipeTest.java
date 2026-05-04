@@ -55,7 +55,7 @@ class ExtractExplanatoryVariableRecipeTest {
                 "Should not change simple conditions");
     }
 
-    private String runRecipe(String source) {
+    private String runRecipe(final String source) {
         final var recipe = new ExtractExplanatoryVariableRecipe(3);
         final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)

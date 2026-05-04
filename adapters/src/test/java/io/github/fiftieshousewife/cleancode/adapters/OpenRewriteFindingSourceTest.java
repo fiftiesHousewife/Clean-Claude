@@ -57,7 +57,7 @@ class OpenRewriteFindingSourceTest {
     }
 
     @Test
-    void collectFindings_producesF3ForFlagArguments(@TempDir Path tempDir) throws Exception {
+    void collectFindings_producesF3ForFlagArguments(@TempDir final Path tempDir) throws Exception {
         Path sourceDir = tempDir.resolve("src/main/java/com/example");
         Files.createDirectories(sourceDir);
         Files.writeString(sourceDir.resolve("Foo.java"), """
@@ -82,7 +82,7 @@ class OpenRewriteFindingSourceTest {
     }
 
     @Test
-    void collectFindings_reportsCorrectLineForMethodAfterAnotherMethod(@TempDir Path tempDir) throws Exception {
+    void collectFindings_reportsCorrectLineForMethodAfterAnotherMethod(@TempDir final Path tempDir) throws Exception {
         // Reproduces a widespread line-number bug seen in real reports: every
         // method after the first lands on a wrong line because buildLineIndex
         // misses whitespace inside the previous method's J.Block.end (the
@@ -143,7 +143,7 @@ class OpenRewriteFindingSourceTest {
     }
 
     @Test
-    void collectFindings_pointsCh7_1AtCatchKeywordNotMethodDeclaration(@TempDir Path tempDir) throws Exception {
+    void collectFindings_pointsCh7_1AtCatchKeywordNotMethodDeclaration(@TempDir final Path tempDir) throws Exception {
         // The catch keyword may sit many lines below the method
         // declaration. The snippet should show the empty/log-only catch
         // body, not the method's signature/Javadoc.
@@ -183,7 +183,7 @@ class OpenRewriteFindingSourceTest {
     }
 
     @Test
-    void collectFindings_emptySourceSet(@TempDir Path tempDir) throws Exception {
+    void collectFindings_emptySourceSet(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(tempDir.resolve("src/main/java")),
@@ -194,7 +194,7 @@ class OpenRewriteFindingSourceTest {
     }
 
     @Test
-    void collectFindings_disambiguatesOverloadedMethodsByParamCount(@TempDir Path tempDir) throws Exception {
+    void collectFindings_disambiguatesOverloadedMethodsByParamCount(@TempDir final Path tempDir) throws Exception {
         // Two public methods named `process` differ only in arity. F3
         // should fire for the FOUR-parameter overload (the one with the
         // boolean) and the finding line MUST land on the four-arg

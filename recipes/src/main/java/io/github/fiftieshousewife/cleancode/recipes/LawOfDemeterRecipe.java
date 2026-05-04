@@ -68,24 +68,24 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
 
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+            public J.CompilationUnit visitCompilationUnit(final J.CompilationUnit cu, final ExecutionContext ctx) {
                 cu.getClasses().forEach(classDecl ->
                         collectProjectTypes(classDecl, packagePrefix(cu), acc));
                 return super.visitCompilationUnit(cu, ctx);
             }
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation method, final ExecutionContext ctx) {
                 final J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (isPartOfChain(m)) {
@@ -108,8 +108,8 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                 return m;
             }
 
-            private void collectProjectTypes(J.ClassDeclaration classDecl, String pkg,
-                                             Accumulator acc) {
+            private void collectProjectTypes(final J.ClassDeclaration classDecl, final String pkg,
+                                             final Accumulator acc) {
                 final String fqn = pkg.isEmpty()
                         ? classDecl.getSimpleName()
                         : pkg + "." + classDecl.getSimpleName();
@@ -120,13 +120,13 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                         .forEach(inner -> collectProjectTypes(inner, fqn, acc));
             }
 
-            private String packagePrefix(J.CompilationUnit cu) {
+            private String packagePrefix(final J.CompilationUnit cu) {
                 return cu.getPackageDeclaration() != null
                         ? cu.getPackageDeclaration().getExpression().toString()
                         : "";
             }
 
-            private boolean involvesProjectTypes(J.MethodInvocation invocation, Accumulator acc) {
+            private boolean involvesProjectTypes(final J.MethodInvocation invocation, final Accumulator acc) {
                 var current = invocation;
                 while (current != null) {
                     final JavaType returnType = current.getType();
@@ -143,7 +143,7 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                 return false;
             }
 
-            private J.Identifier findChainRoot(J.MethodInvocation invocation) {
+            private J.Identifier findChainRoot(final J.MethodInvocation invocation) {
                 var current = invocation.getSelect();
                 while (current instanceof J.MethodInvocation nested) {
                     current = nested.getSelect();
@@ -151,7 +151,7 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                 return current instanceof J.Identifier id ? id : null;
             }
 
-            private boolean isFluentChain(J.MethodInvocation invocation) {
+            private boolean isFluentChain(final J.MethodInvocation invocation) {
                 int total = 0;
                 int fluent = 0;
                 var current = invocation;
@@ -165,11 +165,11 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                 return fluent > total / 2;
             }
 
-            private boolean isPartOfChain(J.MethodInvocation method) {
+            private boolean isPartOfChain(final J.MethodInvocation method) {
                 return getCursor().getParentTreeCursor().getValue() instanceof J.MethodInvocation;
             }
 
-            private int chainDepth(J.MethodInvocation invocation) {
+            private int chainDepth(final J.MethodInvocation invocation) {
                 int depth = 1;
                 var current = invocation.getSelect();
                 while (current instanceof J.MethodInvocation nested) {
@@ -179,7 +179,7 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
                 return depth;
             }
 
-            private String buildChainString(J.MethodInvocation invocation) {
+            private String buildChainString(final J.MethodInvocation invocation) {
                 final var parts = new ArrayList<String>();
                 parts.add(invocation.getSimpleName() + "()");
                 var current = invocation.getSelect();
@@ -206,7 +206,7 @@ public class LawOfDemeterRecipe extends ScanningRecipe<LawOfDemeterRecipe.Accumu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

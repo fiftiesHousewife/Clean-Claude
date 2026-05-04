@@ -33,7 +33,7 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
@@ -44,23 +44,23 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
             private String currentSource;
 
             @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+            public J.CompilationUnit visitCompilationUnit(final J.CompilationUnit cu, final ExecutionContext ctx) {
                 currentSource = cu.getSourcePath().toString();
                 return super.visitCompilationUnit(cu, ctx);
             }
 
             @Override
-            public J.Import visitImport(J.Import anImport, ExecutionContext ctx) {
+            public J.Import visitImport(final J.Import anImport, final ExecutionContext ctx) {
                 return anImport;
             }
 
             @Override
-            public J.Package visitPackage(J.Package pkg, ExecutionContext ctx) {
+            public J.Package visitPackage(final J.Package pkg, final ExecutionContext ctx) {
                 return pkg;
             }
 
             @Override
-            public J.FieldAccess visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
+            public J.FieldAccess visitFieldAccess(final J.FieldAccess fieldAccess, final ExecutionContext ctx) {
                 final J.FieldAccess fa = super.visitFieldAccess(fieldAccess, ctx);
                 if (isOutermost() && isFullyQualifiedTypeReference(fa)) {
                     acc.rows.add(new Row(currentSource, fa.printTrimmed(getCursor())));
@@ -72,7 +72,7 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
                 return !(getCursor().getParentOrThrow().getValue() instanceof J.FieldAccess);
             }
 
-            private boolean isFullyQualifiedTypeReference(J.FieldAccess fa) {
+            private boolean isFullyQualifiedTypeReference(final J.FieldAccess fa) {
                 if (!(fa.getType() instanceof JavaType.FullyQualified fq)) {
                     return false;
                 }
@@ -112,7 +112,7 @@ public class FullyQualifiedReferenceRecipe extends ScanningRecipe<FullyQualified
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

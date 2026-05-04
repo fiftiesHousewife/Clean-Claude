@@ -33,16 +33,16 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -73,7 +73,7 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -81,46 +81,46 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean isStatic(J.MethodDeclaration m) {
+    private static boolean isStatic(final J.MethodDeclaration m) {
         return m.getModifiers().stream().anyMatch(mod -> mod.getType() == J.Modifier.Type.Static);
     }
 
-    private static boolean isPrivate(J.MethodDeclaration m) {
+    private static boolean isPrivate(final J.MethodDeclaration m) {
         return m.getModifiers().stream().anyMatch(mod -> mod.getType() == J.Modifier.Type.Private);
     }
 
-    private static boolean isConstructor(J.MethodDeclaration m) {
+    private static boolean isConstructor(final J.MethodDeclaration m) {
         return m.getMethodType() != null && m.getMethodType().isConstructor();
     }
 
-    private static boolean isOverride(J.MethodDeclaration m) {
+    private static boolean isOverride(final J.MethodDeclaration m) {
         return m.getLeadingAnnotations().stream()
                 .anyMatch(a -> "Override".equals(a.getSimpleName()));
     }
 
-    private static boolean isMain(J.MethodDeclaration m) {
+    private static boolean isMain(final J.MethodDeclaration m) {
         return "main".equals(m.getSimpleName());
     }
 
-    private static boolean implementsInterface(J.ClassDeclaration classDecl) {
+    private static boolean implementsInterface(final J.ClassDeclaration classDecl) {
         return classDecl.getImplements() != null && !classDecl.getImplements().isEmpty();
     }
 
-    private static int bodyLineCount(J.MethodDeclaration m) {
+    private static int bodyLineCount(final J.MethodDeclaration m) {
         if (m.getBody() == null) {
             return 0;
         }
         return m.getBody().getStatements().size();
     }
 
-    private static boolean referencesInstanceState(J.MethodDeclaration m) {
+    private static boolean referencesInstanceState(final J.MethodDeclaration m) {
         if (m.getBody() == null) {
             return false;
         }
         final AtomicBoolean found = new AtomicBoolean(false);
         new JavaIsoVisitor<AtomicBoolean>() {
             @Override
-            public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean flag) {
+            public J.Identifier visitIdentifier(final J.Identifier identifier, final AtomicBoolean flag) {
                 if ("this".equals(identifier.getSimpleName()) || "super".equals(identifier.getSimpleName())) {
                     flag.set(true);
                     return identifier;
@@ -141,7 +141,7 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
             }
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, AtomicBoolean flag) {
+            public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation method, final AtomicBoolean flag) {
                 final J.MethodInvocation mi = super.visitMethodInvocation(method, flag);
                 if (mi.getSelect() == null && mi.getMethodType() != null
                         && !mi.getMethodType().hasFlags(org.openrewrite.java.tree.Flag.Static)) {

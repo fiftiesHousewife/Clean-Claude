@@ -40,7 +40,7 @@ public abstract class CleanCodeExtension {
     private final ClaudeReviewExtension claudeReview;
 
     @Inject
-    public CleanCodeExtension(ObjectFactory objects) {
+    public CleanCodeExtension(final ObjectFactory objects) {
         getFailOnViolation().convention(true);
         getDisabledRecipes().convention(java.util.List.of());
         getEnabledOptionalRules().convention(java.util.List.of());
@@ -55,7 +55,7 @@ public abstract class CleanCodeExtension {
         claudeReview = objects.newInstance(ClaudeReviewExtension.class);
     }
 
-    public void thresholds(Action<? super ThresholdsExtension> action) {
+    public void thresholds(final Action<? super ThresholdsExtension> action) {
         action.execute(thresholds);
     }
 
@@ -63,7 +63,7 @@ public abstract class CleanCodeExtension {
         return thresholds;
     }
 
-    public void claudeReview(Action<? super ClaudeReviewExtension> action) {
+    public void claudeReview(final Action<? super ClaudeReviewExtension> action) {
         action.execute(claudeReview);
     }
 
@@ -71,7 +71,7 @@ public abstract class CleanCodeExtension {
         return claudeReview;
     }
 
-    public ClaudeReviewConfig buildClaudeReviewConfig(String apiKey) {
+    public ClaudeReviewConfig buildClaudeReviewConfig(final String apiKey) {
         final Set<HeuristicCode> enabledCodes = claudeReview.getCodes().get().stream()
                 .map(HeuristicCode::valueOf)
                 .collect(Collectors.toUnmodifiableSet());

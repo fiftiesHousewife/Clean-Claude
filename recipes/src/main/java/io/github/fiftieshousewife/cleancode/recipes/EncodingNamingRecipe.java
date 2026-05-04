@@ -36,16 +36,16 @@ public class EncodingNamingRecipe extends ScanningRecipe<EncodingNamingRecipe.Ac
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
 
                 if (c.getKind() == J.ClassDeclaration.Kind.Type.Interface
@@ -59,7 +59,7 @@ public class EncodingNamingRecipe extends ScanningRecipe<EncodingNamingRecipe.Ac
 
             @Override
             public J.VariableDeclarations.NamedVariable visitVariable(
-                    J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
+                    final J.VariableDeclarations.NamedVariable variable, final ExecutionContext ctx) {
                 final J.VariableDeclarations.NamedVariable v = super.visitVariable(variable, ctx);
                 final String name = v.getSimpleName();
 
@@ -79,7 +79,7 @@ public class EncodingNamingRecipe extends ScanningRecipe<EncodingNamingRecipe.Ac
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

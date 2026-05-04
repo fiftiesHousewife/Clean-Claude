@@ -33,7 +33,7 @@ class ReportServerTest {
     private HttpClient client;
 
     @BeforeEach
-    void start(@TempDir Path tempDir) throws Exception {
+    void start(@TempDir final Path tempDir) throws Exception {
         final Path report = tempDir.resolve("findings.html");
         Files.writeString(report, "<html><body>findings</body></html>");
 
@@ -120,7 +120,7 @@ class ReportServerTest {
     }
 
     @Test
-    void shutdownEndpointInvokesShutdownCallback(@TempDir Path tempDir) throws Exception {
+    void shutdownEndpointInvokesShutdownCallback(@TempDir final Path tempDir) throws Exception {
         if (server != null) {
             server.stop();
         }
@@ -155,7 +155,7 @@ class ReportServerTest {
     }
 
     @Test
-    void feedbackEndpointPersistsViaHandler(@TempDir Path tempDir) throws Exception {
+    void feedbackEndpointPersistsViaHandler(@TempDir final Path tempDir) throws Exception {
         if (server != null) {
             server.stop();
         }
@@ -201,7 +201,7 @@ class ReportServerTest {
     }
 
     @Test
-    void serverPropagatesApplyHandlerErrorAsBadRequest(@TempDir Path tempDir) throws Exception {
+    void serverPropagatesApplyHandlerErrorAsBadRequest(@TempDir final Path tempDir) throws Exception {
         if (server != null) {
             server.stop();
         }

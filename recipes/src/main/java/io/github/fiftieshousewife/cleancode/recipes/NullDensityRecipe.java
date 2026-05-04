@@ -44,16 +44,16 @@ public class NullDensityRecipe extends ScanningRecipe<NullDensityRecipe.Accumula
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -69,11 +69,11 @@ public class NullDensityRecipe extends ScanningRecipe<NullDensityRecipe.Accumula
                 return m;
             }
 
-            private int countNullChecks(J.MethodDeclaration method) {
+            private int countNullChecks(final J.MethodDeclaration method) {
                 final int[] count = {0};
                 new JavaIsoVisitor<Integer>() {
                     @Override
-                    public J.Binary visitBinary(J.Binary binary, Integer unused) {
+                    public J.Binary visitBinary(final J.Binary binary, final Integer unused) {
                         final J.Binary b = super.visitBinary(binary, unused);
                         if (isNullComparison(b)) {
                             count[0]++;
@@ -82,7 +82,7 @@ public class NullDensityRecipe extends ScanningRecipe<NullDensityRecipe.Accumula
                     }
 
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, Integer unused) {
+                    public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation invocation, final Integer unused) {
                         final J.MethodInvocation mi = super.visitMethodInvocation(invocation, unused);
                         if (isObjectsNullCheck(mi)) {
                             count[0]++;
@@ -93,17 +93,17 @@ public class NullDensityRecipe extends ScanningRecipe<NullDensityRecipe.Accumula
                 return count[0];
             }
 
-            private boolean isNullComparison(J.Binary binary) {
+            private boolean isNullComparison(final J.Binary binary) {
                 return (binary.getOperator() == J.Binary.Type.Equal
                         || binary.getOperator() == J.Binary.Type.NotEqual)
                         && (isNullLiteral(binary.getLeft()) || isNullLiteral(binary.getRight()));
             }
 
-            private boolean isNullLiteral(org.openrewrite.java.tree.Expression expr) {
+            private boolean isNullLiteral(final org.openrewrite.java.tree.Expression expr) {
                 return expr instanceof J.Literal literal && literal.getType() == org.openrewrite.java.tree.JavaType.Primitive.Null;
             }
 
-            private boolean isObjectsNullCheck(J.MethodInvocation invocation) {
+            private boolean isObjectsNullCheck(final J.MethodInvocation invocation) {
                 final String name = invocation.getSimpleName();
                 // requireNonNull is fail-fast boundary validation —
                 // exactly the pattern Clean Code recommends. Counting
@@ -121,7 +121,7 @@ public class NullDensityRecipe extends ScanningRecipe<NullDensityRecipe.Accumula
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

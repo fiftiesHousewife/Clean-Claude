@@ -19,23 +19,23 @@ public final class HtmlReportWriter {
 
     private HtmlReportWriter() {}
 
-    public static void write(AggregatedReport report, Path outputFile) throws IOException {
+    public static void write(final AggregatedReport report, final Path outputFile) throws IOException {
         write(report, outputFile, "", null, "vscode", List.of());
     }
 
-    public static void write(AggregatedReport report, Path outputFile,
-                              String repositoryUrl) throws IOException {
+    public static void write(final AggregatedReport report, final Path outputFile,
+                              final String repositoryUrl) throws IOException {
         write(report, outputFile, repositoryUrl, null, "vscode", List.of());
     }
 
-    public static void write(AggregatedReport report, Path outputFile,
-                              String repositoryUrl, Path projectRoot, String ideUrlScheme) throws IOException {
+    public static void write(final AggregatedReport report, final Path outputFile,
+                              final String repositoryUrl, final Path projectRoot, final String ideUrlScheme) throws IOException {
         write(report, outputFile, repositoryUrl, projectRoot, ideUrlScheme, List.of());
     }
 
-    public static void write(AggregatedReport report, Path outputFile,
-                              String repositoryUrl, Path projectRoot, String ideUrlScheme,
-                              List<SourceState> sourceStates) throws IOException {
+    public static void write(final AggregatedReport report, final Path outputFile,
+                              final String repositoryUrl, final Path projectRoot, final String ideUrlScheme,
+                              final List<SourceState> sourceStates) throws IOException {
         final Path parent = outputFile.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
@@ -43,9 +43,9 @@ public final class HtmlReportWriter {
         Files.writeString(outputFile, render(report, repositoryUrl, projectRoot, ideUrlScheme, sourceStates));
     }
 
-    private static String render(AggregatedReport report, String repositoryUrl,
-                                  Path projectRoot, String ideUrlScheme,
-                                  List<SourceState> sourceStates) {
+    private static String render(final AggregatedReport report, final String repositoryUrl,
+                                  final Path projectRoot, final String ideUrlScheme,
+                                  final List<SourceState> sourceStates) {
         final StringBuilder html = new StringBuilder();
         appendDocumentStart(html, report);
         appendStagingBar(html);
@@ -76,7 +76,7 @@ public final class HtmlReportWriter {
         return html.toString();
     }
 
-    private static void appendDocumentStart(StringBuilder html, AggregatedReport report) {
+    private static void appendDocumentStart(final StringBuilder html, final AggregatedReport report) {
         html.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n");
         html.append("  <meta charset=\"UTF-8\">\n");
         html.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
@@ -121,7 +121,7 @@ public final class HtmlReportWriter {
         html.append("    .snippet-toggle:hover { text-decoration: underline; }\n");
     }
 
-    private static void appendStyles(StringBuilder html) {
+    private static void appendStyles(final StringBuilder html) {
         html.append("  <style>\n");
         html.append("    * { margin: 0; padding: 0; box-sizing: border-box; }\n");
         html.append("    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', ");
@@ -277,7 +277,7 @@ public final class HtmlReportWriter {
         html.append("    .modal .threshold-row > div { flex: 1; }\n");
     }
 
-    private static void appendIdePicker(StringBuilder html, String ideUrlScheme) {
+    private static void appendIdePicker(final StringBuilder html, final String ideUrlScheme) {
         html.append("    <div class=\"ide-picker\">\n");
         html.append("      Open clicked links in: <select id=\"ide-scheme\">");
         for (final String s : new String[] {"vscode", "idea", "cursor"}) {
@@ -292,7 +292,7 @@ public final class HtmlReportWriter {
         html.append("    </div>\n");
     }
 
-    private static void appendInteractionScript(StringBuilder html, Path projectRoot) {
+    private static void appendInteractionScript(final StringBuilder html, final Path projectRoot) {
         final String root = projectRoot == null ? "" : projectRoot.toAbsolutePath().toString();
         html.append("  <script>\n");
         html.append("    (function() {\n");
@@ -347,7 +347,7 @@ public final class HtmlReportWriter {
         html.append("  </script>\n");
     }
 
-    private static String jsString(String s) {
+    private static String jsString(final String s) {
         return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 
@@ -732,7 +732,7 @@ public final class HtmlReportWriter {
         html.append("  </script>\n");
     }
 
-    private static void appendSeveritySummary(StringBuilder html, AggregatedReport report) {
+    private static void appendSeveritySummary(final StringBuilder html, final AggregatedReport report) {
         final Map<Severity, List<Finding>> bySeverity = report.bySeverity();
         final int errors = bySeverity.getOrDefault(Severity.ERROR, List.of()).size();
         final int warnings = bySeverity.getOrDefault(Severity.WARNING, List.of()).size();
@@ -749,9 +749,9 @@ public final class HtmlReportWriter {
         html.append("    </div>\n");
     }
 
-    private static void appendFindingsByCode(StringBuilder html, List<Finding> findings,
-                                               String repositoryUrl, Path projectRoot,
-                                               String ideUrlScheme) {
+    private static void appendFindingsByCode(final StringBuilder html, final List<Finding> findings,
+                                               final String repositoryUrl, final Path projectRoot,
+                                               final String ideUrlScheme) {
         final Map<HeuristicCode, List<Finding>> byCode = findings.stream()
                 .collect(Collectors.groupingBy(Finding::code));
 
@@ -761,9 +761,9 @@ public final class HtmlReportWriter {
                         repositoryUrl, projectRoot, ideUrlScheme));
     }
 
-    private static void appendCodeGroup(StringBuilder html, HeuristicCode code,
-                                         List<Finding> group, String repositoryUrl,
-                                         Path projectRoot, String ideUrlScheme) {
+    private static void appendCodeGroup(final StringBuilder html, final HeuristicCode code,
+                                         final List<Finding> group, final String repositoryUrl,
+                                         final Path projectRoot, final String ideUrlScheme) {
         final String name = HeuristicDescriptions.name(code);
         final String reference = HeuristicDescriptions.reference(code);
         final String guidance = HeuristicDescriptions.guidance(code);
@@ -803,10 +803,10 @@ public final class HtmlReportWriter {
         html.append("    </details>\n");
     }
 
-    private static void appendFindingRow(StringBuilder html, Finding finding,
-                                          HeuristicCode code,
-                                          String repositoryUrl, Path projectRoot,
-                                          String ideUrlScheme) {
+    private static void appendFindingRow(final StringBuilder html, final Finding finding,
+                                          final HeuristicCode code,
+                                          final String repositoryUrl, final Path projectRoot,
+                                          final String ideUrlScheme) {
         final String severityLevel = finding.severity().name().toLowerCase();
         final String severityClass = "sev-" + severityLevel;
         final String confidenceLevel = finding.confidence().name().toLowerCase();
@@ -922,9 +922,9 @@ public final class HtmlReportWriter {
         };
     }
 
-    private static String buildLocationHtml(Finding finding, String location,
-                                             String repositoryUrl, Path projectRoot,
-                                             String ideUrlScheme) {
+    private static String buildLocationHtml(final Finding finding, final String location,
+                                             final String repositoryUrl, final Path projectRoot,
+                                             final String ideUrlScheme) {
         if (finding.sourceFile() == null) {
             return escape(location);
         }
@@ -944,7 +944,7 @@ public final class HtmlReportWriter {
         return primary + copyIcon + (repoLink == null ? "" : " " + repoLink);
     }
 
-    private static String buildIdeUrl(String absolutePath, int line, String ideUrlScheme) {
+    private static String buildIdeUrl(final String absolutePath, final int line, final String ideUrlScheme) {
         if (ideUrlScheme == null || ideUrlScheme.isBlank()
                 || "none".equalsIgnoreCase(ideUrlScheme)) {
             return null;
@@ -957,7 +957,7 @@ public final class HtmlReportWriter {
         };
     }
 
-    private static String buildRepositoryLink(Finding finding, String repositoryUrl) {
+    private static String buildRepositoryLink(final Finding finding, final String repositoryUrl) {
         if (repositoryUrl == null || repositoryUrl.isBlank()) {
             return null;
         }
@@ -971,14 +971,14 @@ public final class HtmlReportWriter {
                 + "\" title=\"View on GitHub\">[gh]</a>";
     }
 
-    private static String absolutise(String sourceFile, Path projectRoot) {
+    private static String absolutise(final String sourceFile, final Path projectRoot) {
         if (sourceFile.startsWith("/")) {
             return sourceFile;
         }
         return projectRoot.resolve(sourceFile).toAbsolutePath().toString();
     }
 
-    private static String relativiseSourceFile(String sourceFile) {
+    private static String relativiseSourceFile(final String sourceFile) {
         final int srcIdx = sourceFile.indexOf("src/");
         if (srcIdx > 0) {
             return sourceFile.substring(srcIdx);
@@ -986,7 +986,7 @@ public final class HtmlReportWriter {
         return sourceFile;
     }
 
-    private static void appendToolSummary(StringBuilder html, List<Finding> findings, List<SourceState> sourceStates) {
+    private static void appendToolSummary(final StringBuilder html, final List<Finding> findings, final List<SourceState> sourceStates) {
         html.append("    <div class=\"tool-summary\">\n");
         html.append("      <h2>Sources</h2>\n");
         html.append("      <table>\n");
@@ -1023,7 +1023,7 @@ public final class HtmlReportWriter {
         };
     }
 
-    private static void appendOptionalRulesSummary(StringBuilder html) {
+    private static void appendOptionalRulesSummary(final StringBuilder html) {
         if (OptionalRules.defaults().isEmpty()) {
             return;
         }
@@ -1042,7 +1042,7 @@ public final class HtmlReportWriter {
         html.append("    </div>\n");
     }
 
-    private static void appendFooter(StringBuilder html, AggregatedReport report) {
+    private static void appendFooter(final StringBuilder html, final AggregatedReport report) {
         final String timestamp = TIMESTAMP_FORMAT.format(report.generatedAt());
         html.append("  </main>\n");
         html.append("  <footer>\n");
@@ -1052,11 +1052,11 @@ public final class HtmlReportWriter {
         html.append("  </footer>\n");
     }
 
-    private static void appendDocumentEnd(StringBuilder html) {
+    private static void appendDocumentEnd(final StringBuilder html) {
         html.append("</body>\n</html>\n");
     }
 
-    private static String formatLocation(Finding finding) {
+    private static String formatLocation(final Finding finding) {
         if (finding.sourceFile() == null) {
             return "(project)";
         }
@@ -1067,7 +1067,7 @@ public final class HtmlReportWriter {
         return file;
     }
 
-    private static String shortenPath(String path) {
+    private static String shortenPath(final String path) {
         final int srcIdx = path.indexOf("src/main/java/");
         if (srcIdx >= 0) {
             return path.substring(srcIdx + "src/main/java/".length());
@@ -1075,7 +1075,7 @@ public final class HtmlReportWriter {
         return path;
     }
 
-    private static String escape(String text) {
+    private static String escape(final String text) {
         return text.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")

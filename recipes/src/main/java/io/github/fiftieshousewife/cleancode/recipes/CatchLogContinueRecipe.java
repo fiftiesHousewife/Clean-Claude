@@ -37,16 +37,16 @@ public class CatchLogContinueRecipe extends ScanningRecipe<CatchLogContinueRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Try visitTry(J.Try tryStatement, ExecutionContext ctx) {
+            public J.Try visitTry(final J.Try tryStatement, final ExecutionContext ctx) {
                 J.Try t = super.visitTry(tryStatement, ctx);
 
                 for (J.Try.Catch catchClause : t.getCatches()) {
@@ -67,7 +67,7 @@ public class CatchLogContinueRecipe extends ScanningRecipe<CatchLogContinueRecip
                 return t;
             }
 
-            private boolean isCatchLogContinue(J.Try.Catch catchClause) {
+            private boolean isCatchLogContinue(final J.Try.Catch catchClause) {
                 final List<Statement> statements = catchClause.getBody().getStatements();
 
                 // Empty catch is owned by SwallowedExceptionRecipe (G4) —
@@ -84,18 +84,18 @@ public class CatchLogContinueRecipe extends ScanningRecipe<CatchLogContinueRecip
                 return statements.stream().allMatch(this::isLoggingStatement);
             }
 
-            private boolean containsThrow(List<Statement> statements) {
+            private boolean containsThrow(final List<Statement> statements) {
                 return statements.stream().anyMatch(s -> s instanceof J.Throw);
             }
 
-            private boolean isLoggingStatement(Statement statement) {
+            private boolean isLoggingStatement(final Statement statement) {
                 if (statement instanceof J.MethodInvocation invocation) {
                     return isLoggerCall(invocation);
                 }
                 return false;
             }
 
-            private boolean isLoggerCall(J.MethodInvocation invocation) {
+            private boolean isLoggerCall(final J.MethodInvocation invocation) {
                 String methodName = invocation.getSimpleName();
                 return LOGGER_METHOD_NAMES.contains(methodName);
             }
@@ -113,7 +113,7 @@ public class CatchLogContinueRecipe extends ScanningRecipe<CatchLogContinueRecip
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

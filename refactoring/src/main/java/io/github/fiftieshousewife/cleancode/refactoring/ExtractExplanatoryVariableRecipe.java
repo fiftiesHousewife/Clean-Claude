@@ -20,7 +20,7 @@ public class ExtractExplanatoryVariableRecipe extends Recipe {
     private final int minChainDepth;
 
     @JsonCreator
-    public ExtractExplanatoryVariableRecipe(@JsonProperty("minChainDepth") int minChainDepth) {
+    public ExtractExplanatoryVariableRecipe(@JsonProperty("minChainDepth") final int minChainDepth) {
         this.minChainDepth = minChainDepth;
     }
 
@@ -39,7 +39,7 @@ public class ExtractExplanatoryVariableRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+            public J.Block visitBlock(final J.Block block, final ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
                 return Statements.rebuild(b, stmt -> {
                     if (!(stmt instanceof J.If ifStmt)) {
@@ -68,7 +68,7 @@ public class ExtractExplanatoryVariableRecipe extends Recipe {
         };
     }
 
-    static int chainDepth(Expression expr) {
+    static int chainDepth(final Expression expr) {
         if (expr instanceof J.MethodInvocation mi) {
             return mi.getSelect() != null ? 1 + chainDepth(mi.getSelect()) : 1;
         }
@@ -84,7 +84,7 @@ public class ExtractExplanatoryVariableRecipe extends Recipe {
         return 0;
     }
 
-    private static String generateVariableName(String conditionText) {
+    private static String generateVariableName(final String conditionText) {
         if (conditionText.contains("startsWith")) {
             return "hasExpectedPrefix";
         }

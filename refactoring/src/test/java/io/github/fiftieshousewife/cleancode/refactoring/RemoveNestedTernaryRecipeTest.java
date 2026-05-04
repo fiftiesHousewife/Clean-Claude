@@ -50,7 +50,7 @@ class RemoveNestedTernaryRecipeTest {
         assertTrue(results.getChangeset().getAllResults().isEmpty());
     }
 
-    private String runRecipe(String source) {
+    private String runRecipe(final String source) {
         final var recipe = new RemoveNestedTernaryRecipe();
         final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)

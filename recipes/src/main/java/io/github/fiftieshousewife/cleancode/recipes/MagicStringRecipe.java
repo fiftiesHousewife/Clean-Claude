@@ -57,23 +57,23 @@ public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumula
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
                 final String className = c.getSimpleName();
                 final List<Occurrence> occurrences = new ArrayList<>();
 
                 new JavaIsoVisitor<List<Occurrence>>() {
                     @Override
-                    public J.Literal visitLiteral(J.Literal literal, List<Occurrence> collected) {
+                    public J.Literal visitLiteral(final J.Literal literal, final List<Occurrence> collected) {
                         final J.Literal lit = super.visitLiteral(literal, collected);
                         if (isInsideAnnotation() || isInsideMapEntry()) {
                             return lit;
@@ -151,7 +151,7 @@ public class MagicStringRecipe extends ScanningRecipe<MagicStringRecipe.Accumula
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

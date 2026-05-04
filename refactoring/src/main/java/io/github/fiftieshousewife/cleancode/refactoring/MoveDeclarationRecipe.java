@@ -17,7 +17,7 @@ public class MoveDeclarationRecipe extends Recipe {
     private final int minDistance;
 
     @JsonCreator
-    public MoveDeclarationRecipe(@JsonProperty("minDistance") int minDistance) {
+    public MoveDeclarationRecipe(@JsonProperty("minDistance") final int minDistance) {
         this.minDistance = minDistance;
     }
 
@@ -36,7 +36,7 @@ public class MoveDeclarationRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+            public J.Block visitBlock(final J.Block block, final ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
                 final List<Statement> statements = b.getStatements();
                 if (statements.size() < minDistance + 1) {
@@ -72,12 +72,12 @@ public class MoveDeclarationRecipe extends Recipe {
         };
     }
 
-    private static boolean isStaticOrFinal(J.VariableDeclarations varDecl) {
+    private static boolean isStaticOrFinal(final J.VariableDeclarations varDecl) {
         return varDecl.getModifiers().stream().anyMatch(m ->
                 m.getType() == J.Modifier.Type.Static || m.getType() == J.Modifier.Type.Final);
     }
 
-    private static int findFirstUse(List<Statement> statements, String varName, int startIndex) {
+    private static int findFirstUse(final List<Statement> statements, final String varName, final int startIndex) {
         for (int i = startIndex; i < statements.size(); i++) {
             if (statements.get(i).toString().contains(varName)) {
                 return i;

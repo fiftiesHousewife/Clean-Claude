@@ -36,16 +36,16 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -83,7 +83,7 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -91,7 +91,7 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean isBooleanOrEnum(J.VariableDeclarations varDecl) {
+    private static boolean isBooleanOrEnum(final J.VariableDeclarations varDecl) {
         if (varDecl.getType() instanceof JavaType.Primitive p) {
             return p == JavaType.Primitive.Boolean;
         }
@@ -100,18 +100,18 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
         return "boolean".equals(typeText) || isLikelyEnum(varDecl);
     }
 
-    private static boolean isLikelyEnum(J.VariableDeclarations varDecl) {
+    private static boolean isLikelyEnum(final J.VariableDeclarations varDecl) {
         if (varDecl.getType() instanceof JavaType.FullyQualified fq) {
             return fq.getKind() == JavaType.FullyQualified.Kind.Enum;
         }
         return false;
     }
 
-    private static boolean isUsedAsSelector(J.Block body, String paramName) {
+    private static boolean isUsedAsSelector(final J.Block body, final String paramName) {
         final List<Boolean> found = new ArrayList<>();
         new JavaIsoVisitor<List<Boolean>>() {
             @Override
-            public J.If visitIf(J.If iff, List<Boolean> out) {
+            public J.If visitIf(final J.If iff, final List<Boolean> out) {
                 if (conditionReferencesParam(iff.getIfCondition().getTree(), paramName)) {
                     out.add(true);
                 }
@@ -119,7 +119,7 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
             }
 
             @Override
-            public J.Switch visitSwitch(J.Switch sw, List<Boolean> out) {
+            public J.Switch visitSwitch(final J.Switch sw, final List<Boolean> out) {
                 if (selectorReferencesParam(sw.getSelector().getTree(), paramName)) {
                     out.add(true);
                 }
@@ -129,17 +129,17 @@ public class SelectorArgumentRecipe extends ScanningRecipe<SelectorArgumentRecip
         return !found.isEmpty();
     }
 
-    private static boolean conditionReferencesParam(Expression condition, String paramName) {
+    private static boolean conditionReferencesParam(final Expression condition, final String paramName) {
         final String condText = condition.toString().trim();
         return condText.equals(paramName) || condText.startsWith(paramName + " ")
                 || condText.startsWith("!" + paramName);
     }
 
-    private static boolean selectorReferencesParam(Expression selector, String paramName) {
+    private static boolean selectorReferencesParam(final Expression selector, final String paramName) {
         return selector.toString().trim().equals(paramName);
     }
 
-    private static String findParamType(J.MethodDeclaration method, String paramName) {
+    private static String findParamType(final J.MethodDeclaration method, final String paramName) {
         return method.getParameters().stream()
                 .filter(J.VariableDeclarations.class::isInstance)
                 .map(J.VariableDeclarations.class::cast)

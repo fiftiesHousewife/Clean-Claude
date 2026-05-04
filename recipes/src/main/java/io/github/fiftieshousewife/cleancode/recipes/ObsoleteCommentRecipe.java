@@ -44,16 +44,16 @@ public class ObsoleteCommentRecipe extends ScanningRecipe<ObsoleteCommentRecipe.
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
                 final String className = c.getSimpleName();
                 final Set<String> classIdentifiers = collectIdentifiers(c);
@@ -76,8 +76,8 @@ public class ObsoleteCommentRecipe extends ScanningRecipe<ObsoleteCommentRecipe.
                 return c;
             }
 
-            private void checkCommentsOnStatement(Statement stmt, String className,
-                                                   Set<String> knownIdentifiers, Accumulator acc) {
+            private void checkCommentsOnStatement(final Statement stmt, final String className,
+                                                   final Set<String> knownIdentifiers, final Accumulator acc) {
                 stmt.getComments().stream()
                         .filter(TextComment.class::isInstance)
                         .map(TextComment.class::cast)
@@ -97,7 +97,7 @@ public class ObsoleteCommentRecipe extends ScanningRecipe<ObsoleteCommentRecipe.
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -105,7 +105,7 @@ public class ObsoleteCommentRecipe extends ScanningRecipe<ObsoleteCommentRecipe.
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static Set<String> collectIdentifiers(J.ClassDeclaration classDecl) {
+    private static Set<String> collectIdentifiers(final J.ClassDeclaration classDecl) {
         final Set<String> ids = new HashSet<>();
         ids.add(classDecl.getSimpleName());
         classDecl.getBody().getStatements().forEach(stmt -> {
@@ -119,7 +119,7 @@ public class ObsoleteCommentRecipe extends ScanningRecipe<ObsoleteCommentRecipe.
         return ids;
     }
 
-    private static Set<String> collectMethodIdentifiers(J.MethodDeclaration method) {
+    private static Set<String> collectMethodIdentifiers(final J.MethodDeclaration method) {
         final Set<String> ids = new HashSet<>();
         ids.add(method.getSimpleName());
         method.getParameters().stream()
@@ -135,7 +135,7 @@ public class ObsoleteCommentRecipe extends ScanningRecipe<ObsoleteCommentRecipe.
         return ids;
     }
 
-    private static Set<String> extractCamelCaseIdentifiers(String text) {
+    private static Set<String> extractCamelCaseIdentifiers(final String text) {
         final Set<String> ids = new HashSet<>();
         final Matcher matcher = CAMEL_CASE_PATTERN.matcher(text);
         while (matcher.find()) {

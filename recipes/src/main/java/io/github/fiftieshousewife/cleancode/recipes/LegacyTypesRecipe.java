@@ -66,24 +66,24 @@ public class LegacyTypesRecipe extends ScanningRecipe<LegacyTypesRecipe.Accumula
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable,
-                    ExecutionContext ctx) {
+            public J.VariableDeclarations visitVariableDeclarations(final J.VariableDeclarations multiVariable,
+                    final ExecutionContext ctx) {
                 final J.VariableDeclarations v = super.visitVariableDeclarations(multiVariable, ctx);
                 checkType(v.getTypeExpression());
                 return v;
             }
 
             @Override
-            public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+            public J.NewClass visitNewClass(final J.NewClass newClass, final ExecutionContext ctx) {
                 final J.NewClass nc = super.visitNewClass(newClass, ctx);
                 if (!(nc.getType() instanceof JavaType.FullyQualified fq)) {
                     return nc;
@@ -106,7 +106,7 @@ public class LegacyTypesRecipe extends ScanningRecipe<LegacyTypesRecipe.Accumula
             }
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation method, final ExecutionContext ctx) {
                 final J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 if (CLASS_NEW_INSTANCE.matches(m)) {
                     acc.rows.add(new Row(findEnclosingClassName(), "Class.newInstance()",
@@ -141,7 +141,7 @@ public class LegacyTypesRecipe extends ScanningRecipe<LegacyTypesRecipe.Accumula
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

@@ -89,12 +89,12 @@ public class CheckstyleFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         return Files.exists(reportPath(context));
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         Path report = reportPath(context);
         if (!Files.exists(report)) {
             return List.of();
@@ -141,11 +141,11 @@ public class CheckstyleFindingSource implements FindingSource {
         }
     }
 
-    private Path reportPath(ProjectContext context) {
+    private Path reportPath(final ProjectContext context) {
         return context.reportsDir().resolve("checkstyle/main.xml");
     }
 
-    private String extractCheckName(String sourceFqn) {
+    private String extractCheckName(final String sourceFqn) {
         int lastDot = sourceFqn.lastIndexOf('.');
         String simpleName = lastDot >= 0 ? sourceFqn.substring(lastDot + 1) : sourceFqn;
         if (simpleName.endsWith("Check")) {
@@ -154,7 +154,7 @@ public class CheckstyleFindingSource implements FindingSource {
         return simpleName;
     }
 
-    private Severity xmlSeverityOrDefault(String xmlSeverity, Severity defaultSeverity) {
+    private Severity xmlSeverityOrDefault(final String xmlSeverity, final Severity defaultSeverity) {
         return switch (xmlSeverity) {
             case "error" -> Severity.ERROR;
             case "info" -> Severity.INFO;
@@ -163,7 +163,7 @@ public class CheckstyleFindingSource implements FindingSource {
         };
     }
 
-    private Severity escalateLineLength(String checkName, String message, Severity current) {
+    private Severity escalateLineLength(final String checkName, final String message, final Severity current) {
         if (!"LineLength".equals(checkName)) {
             return current;
         }

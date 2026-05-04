@@ -37,12 +37,12 @@ public class CpdFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         return Files.exists(reportPath(context));
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         Path report = reportPath(context);
         if (!Files.exists(report)) {
             return List.of();
@@ -59,7 +59,7 @@ public class CpdFindingSource implements FindingSource {
         return findings;
     }
 
-    List<Finding> findingsForDuplication(Element duplication, ProjectContext context) {
+    List<Finding> findingsForDuplication(final Element duplication, final ProjectContext context) {
         int tokens = Integer.parseInt(duplication.getAttribute("tokens"));
         int lines = Integer.parseInt(duplication.getAttribute("lines"));
         Severity severity = severityForTokenCount(tokens);
@@ -72,8 +72,8 @@ public class CpdFindingSource implements FindingSource {
         return findings;
     }
 
-    Finding buildFinding(List<Element> files, int index, int tokens, int lines,
-                         Severity severity, ProjectContext context) {
+    Finding buildFinding(final List<Element> files, final int index, final int tokens, final int lines,
+                         final Severity severity, final ProjectContext context) {
         Element file = files.get(index);
         String relativePath = PathUtils.relativise(file.getAttribute("path"), context.projectRoot());
         int startLine = Integer.parseInt(file.getAttribute("line"));
@@ -91,7 +91,7 @@ public class CpdFindingSource implements FindingSource {
                 "cpd", "cpd-duplication", metadata);
     }
 
-    List<String> otherFilePaths(List<Element> files, int excludeIndex, ProjectContext context) {
+    List<String> otherFilePaths(final List<Element> files, final int excludeIndex, final ProjectContext context) {
         List<String> paths = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             if (i != excludeIndex) {
@@ -101,14 +101,14 @@ public class CpdFindingSource implements FindingSource {
         return paths;
     }
 
-    Severity severityForTokenCount(int tokens) {
+    Severity severityForTokenCount(final int tokens) {
         if (tokens >= 200) {
             return Severity.ERROR;
         }
         return Severity.WARNING;
     }
 
-    private List<Element> extractFileElements(Element duplication) {
+    private List<Element> extractFileElements(final Element duplication) {
         NodeList fileNodes = duplication.getElementsByTagName("file");
         List<Element> files = new ArrayList<>();
         for (int i = 0; i < fileNodes.getLength(); i++) {
@@ -117,7 +117,7 @@ public class CpdFindingSource implements FindingSource {
         return files;
     }
 
-    private Path reportPath(ProjectContext context) {
+    private Path reportPath(final ProjectContext context) {
         return context.reportsDir().resolve("cpd/cpd.xml");
     }
 }

@@ -41,7 +41,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsNullPathToCh7_2(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsNullPathToCh7_2(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -55,7 +55,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsBadPracticeDeMightIgnoreToG4(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsBadPracticeDeMightIgnoreToG4(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -68,7 +68,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsStaticWriteToG18(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsStaticWriteToG18(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -81,7 +81,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsUnreadFieldToG9(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsUnreadFieldToG9(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -94,7 +94,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsBoxedPrimitiveToG26(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsBoxedPrimitiveToG26(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -107,7 +107,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsMutableArrayToG8(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsMutableArrayToG8(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -120,7 +120,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_unknownCategoryTypeSkipped(@TempDir Path tempDir) throws Exception {
+    void collectFindings_unknownCategoryTypeSkipped(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -128,7 +128,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_setsToolToSpotbugs(@TempDir Path tempDir) throws Exception {
+    void collectFindings_setsToolToSpotbugs(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -136,7 +136,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_preservesLineNumbers(@TempDir Path tempDir) throws Exception {
+    void collectFindings_preservesLineNumbers(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -149,7 +149,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_setsSourceFileFromSourcePath(@TempDir Path tempDir) throws Exception {
+    void collectFindings_setsSourceFileFromSourcePath(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -161,7 +161,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void collectFindings_emptyReport_returnsNoFindings(@TempDir Path tempDir) throws Exception {
+    void collectFindings_emptyReport_returnsNoFindings(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = TestContexts.contextWithFixture(getClass(), tempDir,
                 "/spotbugs/empty.xml", "spotbugs/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
@@ -169,7 +169,7 @@ class SpotBugsFindingSourceTest {
     }
 
     @Test
-    void isAvailable_returnsFalseWhenReportMissing(@TempDir Path tempDir) {
+    void isAvailable_returnsFalseWhenReportMissing(@TempDir final Path tempDir) {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
@@ -177,7 +177,7 @@ class SpotBugsFindingSourceTest {
         assertFalse(source.isAvailable(ctx));
     }
 
-    private ProjectContext contextWithFixture(Path tempDir) throws IOException {
+    private ProjectContext contextWithFixture(final Path tempDir) throws IOException {
         return TestContexts.contextWithFixture(getClass(), tempDir,
                 "/spotbugs/main.xml", "spotbugs/main.xml");
     }

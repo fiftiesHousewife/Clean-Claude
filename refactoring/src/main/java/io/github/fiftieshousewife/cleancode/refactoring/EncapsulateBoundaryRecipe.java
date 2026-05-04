@@ -33,7 +33,7 @@ public class EncapsulateBoundaryRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+            public J.Block visitBlock(final J.Block block, final ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
                 return Statements.rebuild(b, stmt -> {
                     final String boundaryExpr = extractBoundaryText(stmt);
@@ -51,11 +51,11 @@ public class EncapsulateBoundaryRecipe extends Recipe {
         };
     }
 
-    static String extractBoundaryText(Statement stmt) {
+    static String extractBoundaryText(final Statement stmt) {
         final List<J.Binary> matches = new ArrayList<>();
         new JavaIsoVisitor<List<J.Binary>>() {
             @Override
-            public J.Binary visitBinary(J.Binary binary, List<J.Binary> out) {
+            public J.Binary visitBinary(final J.Binary binary, final List<J.Binary> out) {
                 if (isBoundaryMinusOne(binary)) {
                     out.add(binary);
                 }
@@ -70,7 +70,7 @@ public class EncapsulateBoundaryRecipe extends Recipe {
         return left + " - 1";
     }
 
-    private static boolean isBoundaryMinusOne(J.Binary binary) {
+    private static boolean isBoundaryMinusOne(final J.Binary binary) {
         if (binary.getOperator() != J.Binary.Type.Subtraction) {
             return false;
         }
@@ -80,7 +80,7 @@ public class EncapsulateBoundaryRecipe extends Recipe {
         return isBoundaryAccess(binary.getLeft());
     }
 
-    private static boolean isBoundaryAccess(Expression expr) {
+    private static boolean isBoundaryAccess(final Expression expr) {
         if (expr instanceof J.FieldAccess fa) {
             return BOUNDARY_METHODS.contains(fa.getSimpleName());
         }

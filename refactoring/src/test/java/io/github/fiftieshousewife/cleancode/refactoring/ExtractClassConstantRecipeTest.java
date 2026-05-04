@@ -16,7 +16,7 @@ import static org.openrewrite.java.Assertions.java;
 class ExtractClassConstantRecipeTest implements RewriteTest {
 
     @Override
-    public void defaults(RecipeSpec spec) {
+    public void defaults(final RecipeSpec spec) {
         spec.recipe(new ExtractClassConstantRecipe(2));
     }
 

@@ -35,16 +35,16 @@ public class SuppressedWarningRecipe extends ScanningRecipe<SuppressedWarningRec
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+            public J.Annotation visitAnnotation(final J.Annotation annotation, final ExecutionContext ctx) {
                 final J.Annotation a = super.visitAnnotation(annotation, ctx);
 
                 if (!"SuppressWarnings".equals(a.getSimpleName())) {
@@ -74,7 +74,7 @@ public class SuppressedWarningRecipe extends ScanningRecipe<SuppressedWarningRec
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

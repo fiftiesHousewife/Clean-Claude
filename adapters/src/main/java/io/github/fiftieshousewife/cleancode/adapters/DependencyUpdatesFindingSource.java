@@ -47,12 +47,12 @@ public class DependencyUpdatesFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         return Files.exists(reportPath(context));
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         final Path report = reportPath(context);
         if (!Files.exists(report)) {
             return List.of();
@@ -90,7 +90,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         return CatalogLocation.NONE;
     }
 
-    private JsonObject parseReport(Path report) throws FindingSourceException {
+    private JsonObject parseReport(final Path report) throws FindingSourceException {
         try (Reader reader = Files.newBufferedReader(report)) {
             return JsonParser.parseReader(reader).getAsJsonObject();
         } catch (IOException e) {
@@ -98,8 +98,8 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         }
     }
 
-    private void extractOutdated(JsonObject root, List<Finding> findings,
-                                 Set<String> seenCoordinates, boolean hasCatalog) {
+    private void extractOutdated(final JsonObject root, final List<Finding> findings,
+                                 final Set<String> seenCoordinates, final boolean hasCatalog) {
         final JsonObject outdated = root.getAsJsonObject("outdated");
         if (outdated == null) {
             return;
@@ -114,8 +114,8 @@ public class DependencyUpdatesFindingSource implements FindingSource {
                 extractDependency(dep.getAsJsonObject(), findings, seenCoordinates, hasCatalog));
     }
 
-    private void extractDependency(JsonObject dep, List<Finding> findings,
-                                   Set<String> seenCoordinates, boolean hasCatalog) {
+    private void extractDependency(final JsonObject dep, final List<Finding> findings,
+                                   final Set<String> seenCoordinates, final boolean hasCatalog) {
         final String group = dep.get("group").getAsString();
         final String name = dep.get("name").getAsString();
         final String currentVersion = dep.get("version").getAsString();
@@ -139,7 +139,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
                         message, Severity.ERROR, Confidence.HIGH, TOOL, coordinate));
     }
 
-    private String latestAvailable(JsonObject dep) {
+    private String latestAvailable(final JsonObject dep) {
         final JsonObject available = dep.getAsJsonObject("available");
         if (available == null) {
             return null;
@@ -147,7 +147,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         return firstNonNull(available, "milestone", "release", "integration");
     }
 
-    private String firstNonNull(JsonObject obj, String... keys) {
+    private String firstNonNull(final JsonObject obj, final String... keys) {
         for (final String key : keys) {
             final JsonElement element = obj.get(key);
             if (element != null && !element.isJsonNull()) {
@@ -157,7 +157,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         return null;
     }
 
-    private Path reportPath(ProjectContext context) {
+    private Path reportPath(final ProjectContext context) {
         return context.buildDir().resolve(REPORT_FILE);
     }
 }

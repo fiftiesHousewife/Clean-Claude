@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ChangeApplierTest {
 
     @Test
-    void appliesAllThreeChangeKindsInOneBatch(@TempDir Path projectRoot) throws IOException {
+    void appliesAllThreeChangeKindsInOneBatch(@TempDir final Path projectRoot) throws IOException {
         Files.writeString(projectRoot.resolve("build.gradle.kts"), """
                 cleanCode {
                     disabledRecipes = listOf("G36")
@@ -53,7 +53,7 @@ class ChangeApplierTest {
     }
 
     @Test
-    void groupsMultipleSuppressionsAgainstSameFileIntoOneWrite(@TempDir Path projectRoot) throws IOException {
+    void groupsMultipleSuppressionsAgainstSameFileIntoOneWrite(@TempDir final Path projectRoot) throws IOException {
         Files.writeString(projectRoot.resolve("build.gradle.kts"), "cleanCode {}\n");
         final Path source = projectRoot.resolve("Foo.java");
         Files.writeString(source, """
@@ -81,7 +81,7 @@ class ChangeApplierTest {
     }
 
     @Test
-    void surfacesErrorsAndReportsPartialSuccess(@TempDir Path projectRoot) throws IOException {
+    void surfacesErrorsAndReportsPartialSuccess(@TempDir final Path projectRoot) throws IOException {
         Files.writeString(projectRoot.resolve("build.gradle.kts"), "cleanCode {}\n");
         final Path source = projectRoot.resolve("Foo.java");
         Files.writeString(source, """
@@ -107,7 +107,7 @@ class ChangeApplierTest {
     }
 
     @Test
-    void refusesApplyRefactoringWhenWorkingTreeIsDirty(@TempDir Path projectRoot) throws Exception {
+    void refusesApplyRefactoringWhenWorkingTreeIsDirty(@TempDir final Path projectRoot) throws Exception {
         // Initialise a real git repo with one tracked file, then leave the
         // file modified — `git status --porcelain` will surface the change
         // and ChangeApplier should refuse to run any Fix click in this state.
@@ -136,7 +136,7 @@ class ChangeApplierTest {
     }
 
     @Test
-    void allowsSuppressionsOnDirtyTreeBecauseTheyAreSmallAndReviewable(@TempDir Path projectRoot)
+    void allowsSuppressionsOnDirtyTreeBecauseTheyAreSmallAndReviewable(@TempDir final Path projectRoot)
             throws Exception {
         Files.writeString(projectRoot.resolve("build.gradle.kts"), "cleanCode {}\n");
         Files.writeString(projectRoot.resolve("Foo.java"), """

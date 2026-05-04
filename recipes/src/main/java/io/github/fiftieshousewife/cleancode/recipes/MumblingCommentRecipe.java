@@ -37,16 +37,16 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 final J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -76,7 +76,7 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
                 return m;
             }
 
-            private String extractLineComment(String line) {
+            private String extractLineComment(final String line) {
                 final String stripped = stripStringLiterals(line);
                 final int idx = stripped.indexOf("//");
                 if (idx >= 0) {
@@ -86,7 +86,7 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
                 return null;
             }
 
-            private String stripStringLiterals(String line) {
+            private String stripStringLiterals(final String line) {
                 final StringBuilder result = new StringBuilder(line.length());
                 boolean inString = false;
                 for (int i = 0; i < line.length(); i++) {
@@ -106,8 +106,8 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
                 return result.toString();
             }
 
-            private boolean isMumbling(String normalisedComment, String methodName,
-                                       Set<String> paramNames, String nextCodeLine) {
+            private boolean isMumbling(final String normalisedComment, final String methodName,
+                                       final Set<String> paramNames, final String nextCodeLine) {
                 final String[] methodWords = normalise(camelToWords(methodName)).split("\\s+");
 
                 // Restatement: comment words ≤ method words + 2. A
@@ -146,7 +146,7 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
                 return false;
             }
 
-            private boolean restatesNextLine(String normalisedComment, String nextCodeLine) {
+            private boolean restatesNextLine(final String normalisedComment, final String nextCodeLine) {
                 final String normalisedCode = normalise(nextCodeLine);
                 final String[] commentWords = normalisedComment.split("\\s+");
                 final String[] codeWords = normalisedCode.split("\\s+");
@@ -167,7 +167,7 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
                 return significantCodeWords >= 2 && codeWordsInComment >= significantCodeWords * 0.6;
             }
 
-            private boolean allWordsPresent(String text, String[] words) {
+            private boolean allWordsPresent(final String text, final String[] words) {
                 if (words.length < 2) {
                     return false;
                 }
@@ -185,7 +185,7 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
                 return true;
             }
 
-            private Set<String> extractParamNames(J.MethodDeclaration method) {
+            private Set<String> extractParamNames(final J.MethodDeclaration method) {
                 final var names = new java.util.HashSet<String>();
                 method.getParameters().stream()
                         .filter(J.VariableDeclarations.class::isInstance)
@@ -202,19 +202,19 @@ public class MumblingCommentRecipe extends ScanningRecipe<MumblingCommentRecipe.
         };
     }
 
-    static String normalise(String text) {
+    static String normalise(final String text) {
         return text.toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9]", " ")
                 .replaceAll("\\s+", " ")
                 .trim();
     }
 
-    static String camelToWords(String camelCase) {
+    static String camelToWords(final String camelCase) {
         return camelCase.replaceAll("([a-z])([A-Z])", "$1 $2");
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

@@ -59,7 +59,7 @@ class NegativeConditionalRecipeTest {
         assertTrue(rows.isEmpty());
     }
 
-    private List<NegativeConditionalRecipe.Row> runRecipe(String source) {
+    private List<NegativeConditionalRecipe.Row> runRecipe(final String source) {
         final var recipe = new NegativeConditionalRecipe();
         final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)

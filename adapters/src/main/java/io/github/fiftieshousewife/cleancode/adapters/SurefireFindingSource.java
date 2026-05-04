@@ -43,7 +43,7 @@ public class SurefireFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         Path dir = reportsDir(context);
         if (!Files.isDirectory(dir)) {
             return false;
@@ -56,7 +56,7 @@ public class SurefireFindingSource implements FindingSource {
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         Path dir = reportsDir(context);
         if (!Files.isDirectory(dir)) {
             return List.of();
@@ -86,7 +86,7 @@ public class SurefireFindingSource implements FindingSource {
         }
     }
 
-    List<Finding> findingsForSuite(Document doc) {
+    List<Finding> findingsForSuite(final Document doc) {
         List<Finding> findings = new ArrayList<>();
         NodeList testcases = doc.getElementsByTagName("testcase");
 
@@ -98,7 +98,7 @@ public class SurefireFindingSource implements FindingSource {
         return findings;
     }
 
-    Optional<Finding> findingForTestCase(Element testcase) {
+    Optional<Finding> findingForTestCase(final Element testcase) {
         String testName = testcase.getAttribute("name");
         String className = testcase.getAttribute("classname");
         String sourceFile = className.replace('.', '/') + ".java";
@@ -113,7 +113,7 @@ public class SurefireFindingSource implements FindingSource {
         return findingForSlowTest(testcase, testName, sourceFile);
     }
 
-    Optional<Finding> findingForSlowTest(Element testcase, String testName, String sourceFile) {
+    Optional<Finding> findingForSlowTest(final Element testcase, final String testName, final String sourceFile) {
         double time = Double.parseDouble(testcase.getAttribute("time"));
 
         if (time > SLOW_TEST_ERROR_SECONDS) {
@@ -135,7 +135,7 @@ public class SurefireFindingSource implements FindingSource {
         return Optional.empty();
     }
 
-    void addSkipPercentageFinding(List<Finding> findings, int totalSkipped, int totalTests) {
+    void addSkipPercentageFinding(final List<Finding> findings, final int totalSkipped, final int totalTests) {
         if (totalTests <= 0) {
             return;
         }
@@ -150,11 +150,11 @@ public class SurefireFindingSource implements FindingSource {
         }
     }
 
-    private boolean isSkipped(Element testcase) {
+    private boolean isSkipped(final Element testcase) {
         return testcase.getElementsByTagName("skipped").getLength() > 0;
     }
 
-    private Path reportsDir(ProjectContext context) {
+    private Path reportsDir(final ProjectContext context) {
         return context.buildDir().resolve("test-results/test");
     }
 }

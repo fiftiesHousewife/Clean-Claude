@@ -37,22 +37,22 @@ public class RawGenericRecipe extends ScanningRecipe<RawGenericRecipe.Accumulato
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations varDecl, ExecutionContext ctx) {
+            public J.VariableDeclarations visitVariableDeclarations(final J.VariableDeclarations varDecl, final ExecutionContext ctx) {
                 final J.VariableDeclarations v = super.visitVariableDeclarations(varDecl, ctx);
                 checkTypeExpression(v.getTypeExpression(), acc);
                 return v;
             }
 
-            private void checkTypeExpression(TypeTree typeExpr, Accumulator acc) {
+            private void checkTypeExpression(final TypeTree typeExpr, final Accumulator acc) {
                 if (typeExpr == null) {
                     return;
                 }
@@ -68,7 +68,7 @@ public class RawGenericRecipe extends ScanningRecipe<RawGenericRecipe.Accumulato
                 acc.rows.add(new Row(className, methodName, typeText));
             }
 
-            private boolean containsObjectParameter(String typeText) {
+            private boolean containsObjectParameter(final String typeText) {
                 return COLLECTION_TYPES.stream().anyMatch(ct ->
                         typeText.startsWith(ct + "<") && typeText.contains("Object")
                         && !typeText.contains("?"));
@@ -77,7 +77,7 @@ public class RawGenericRecipe extends ScanningRecipe<RawGenericRecipe.Accumulato
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

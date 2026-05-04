@@ -22,7 +22,7 @@ import java.util.TreeMap;
 public abstract class SummaryReportTask extends DefaultTask {
 
     private record Counts(int errors, int warnings, int info) {
-        Counts plus(Counts other) {
+        Counts plus(final Counts other) {
             return new Counts(errors + other.errors, warnings + other.warnings, info + other.info);
         }
 
@@ -150,7 +150,7 @@ public abstract class SummaryReportTask extends DefaultTask {
         return sb.toString();
     }
 
-    private String renderHtml(final Map<String, Counts> byModule, final Counts totals) {
+oo    private String renderHtml(final Map<String, Counts> byModule, final Counts totals) {
         final StringBuilder sb = new StringBuilder();
         sb.append("<!DOCTYPE html>\n<html lang=\"en\"><head><meta charset=\"UTF-8\">")
                 .append("<title>Clean Code summary</title><style>")

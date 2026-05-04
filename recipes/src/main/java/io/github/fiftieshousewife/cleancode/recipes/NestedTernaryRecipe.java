@@ -38,16 +38,16 @@ public class NestedTernaryRecipe extends ScanningRecipe<NestedTernaryRecipe.Accu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Ternary visitTernary(J.Ternary ternary, ExecutionContext ctx) {
+            public J.Ternary visitTernary(final J.Ternary ternary, final ExecutionContext ctx) {
                 final J.Ternary t = super.visitTernary(ternary, ctx);
 
                 if (isNestedInsideTernary()) {
@@ -81,13 +81,13 @@ public class NestedTernaryRecipe extends ScanningRecipe<NestedTernaryRecipe.Accu
                 return false;
             }
 
-            private int maxNestingDepth(J.Ternary ternary) {
+            private int maxNestingDepth(final J.Ternary ternary) {
                 final int trueBranchDepth = depthOf(ternary.getTruePart());
                 final int falseBranchDepth = depthOf(ternary.getFalsePart());
                 return 1 + Math.max(trueBranchDepth, falseBranchDepth);
             }
 
-            private int depthOf(Expression expression) {
+            private int depthOf(final Expression expression) {
                 Expression unwrapped = expression;
                 while (unwrapped instanceof J.Parentheses<?> parens) {
                     unwrapped = (Expression) parens.getTree();
@@ -111,7 +111,7 @@ public class NestedTernaryRecipe extends ScanningRecipe<NestedTernaryRecipe.Accu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

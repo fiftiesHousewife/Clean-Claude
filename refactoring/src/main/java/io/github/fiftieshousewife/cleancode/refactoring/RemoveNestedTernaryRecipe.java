@@ -27,7 +27,7 @@ public class RemoveNestedTernaryRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+            public J.Block visitBlock(final J.Block block, final ExecutionContext ctx) {
                 final J.Block b = super.visitBlock(block, ctx);
                 return Statements.rebuild(b, stmt -> {
                     if (!(stmt instanceof J.Return ret) || ret.getExpression() == null
@@ -49,12 +49,12 @@ public class RemoveNestedTernaryRecipe extends Recipe {
         };
     }
 
-    private static boolean hasNestedTernary(J.Ternary ternary) {
+    private static boolean hasNestedTernary(final J.Ternary ternary) {
         return ternary.getTruePart() instanceof J.Ternary
                 || ternary.getFalsePart() instanceof J.Ternary;
     }
 
-    private static String ternaryToIfElse(J.Ternary ternary, String varName) {
+    private static String ternaryToIfElse(final J.Ternary ternary, final String varName) {
         final String condition = ternary.getCondition().toString().trim();
         final var truePart = ternary.getTruePart();
         final var falsePart = ternary.getFalsePart();

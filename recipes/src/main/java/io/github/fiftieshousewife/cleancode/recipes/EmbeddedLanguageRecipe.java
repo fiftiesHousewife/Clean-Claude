@@ -43,18 +43,18 @@ public class EmbeddedLanguageRecipe extends ScanningRecipe<EmbeddedLanguageRecip
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             private final java.util.Set<String> seen = new java.util.HashSet<>();
 
             @Override
-            public J.Literal visitLiteral(J.Literal literal, ExecutionContext ctx) {
+            public J.Literal visitLiteral(final J.Literal literal, final ExecutionContext ctx) {
                 final J.Literal lit = super.visitLiteral(literal, ctx);
                 if (!(lit.getValue() instanceof String text)) {
                     return lit;
@@ -83,7 +83,7 @@ public class EmbeddedLanguageRecipe extends ScanningRecipe<EmbeddedLanguageRecip
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -91,7 +91,7 @@ public class EmbeddedLanguageRecipe extends ScanningRecipe<EmbeddedLanguageRecip
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    static String detectLanguage(String text) {
+    static String detectLanguage(final String text) {
         if (HTML_PATTERN.matcher(text).find()) {
             return "html";
         }

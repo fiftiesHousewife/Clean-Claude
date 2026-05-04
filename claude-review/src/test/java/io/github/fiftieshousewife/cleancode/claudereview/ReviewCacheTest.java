@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ReviewCacheTest {
 
     @Test
-    void roundTripStoreAndLookup(@TempDir Path tempDir) throws Exception {
+    void roundTripStoreAndLookup(@TempDir final Path tempDir) throws Exception {
         final ReviewCache cache = ReviewCache.load(tempDir);
         final List<ReviewCache.CachedFinding> findings = List.of(
                 new ReviewCache.CachedFinding("G6", "Foo.java", 10, 15, "wrong level"));
@@ -31,14 +31,14 @@ class ReviewCacheTest {
     }
 
     @Test
-    void cacheMissReturnsEmpty(@TempDir Path tempDir) {
+    void cacheMissReturnsEmpty(@TempDir final Path tempDir) {
         final ReviewCache cache = ReviewCache.load(tempDir);
 
         assertTrue(cache.lookup("nonexistent").isEmpty());
     }
 
     @Test
-    void differentHashDoesNotMatchExisting(@TempDir Path tempDir) throws Exception {
+    void differentHashDoesNotMatchExisting(@TempDir final Path tempDir) throws Exception {
         final ReviewCache cache = ReviewCache.load(tempDir);
         cache.store("hash1", List.of(
                 new ReviewCache.CachedFinding("G6", "Foo.java", 1, 1, "msg")));
@@ -69,7 +69,7 @@ class ReviewCacheTest {
     }
 
     @Test
-    void loadsGracefullyFromMissingDirectory(@TempDir Path tempDir) {
+    void loadsGracefullyFromMissingDirectory(@TempDir final Path tempDir) {
         final Path nonExistent = tempDir.resolve("missing");
         final ReviewCache cache = ReviewCache.load(nonExistent);
 

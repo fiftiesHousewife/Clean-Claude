@@ -38,16 +38,16 @@ public class ArtificialCouplingRecipe extends ScanningRecipe<ArtificialCouplingR
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations varDecl, ExecutionContext ctx) {
+            public J.VariableDeclarations visitVariableDeclarations(final J.VariableDeclarations varDecl, final ExecutionContext ctx) {
                 final J.VariableDeclarations v = super.visitVariableDeclarations(varDecl, ctx);
 
                 if (isPublicStaticFinal(v)) {
@@ -65,7 +65,7 @@ public class ArtificialCouplingRecipe extends ScanningRecipe<ArtificialCouplingR
             }
 
             @Override
-            public J.FieldAccess visitFieldAccess(J.FieldAccess fieldAccess, ExecutionContext ctx) {
+            public J.FieldAccess visitFieldAccess(final J.FieldAccess fieldAccess, final ExecutionContext ctx) {
                 final J.FieldAccess fa = super.visitFieldAccess(fieldAccess, ctx);
 
                 if (fa.getTarget() instanceof J.Identifier targetIdent) {
@@ -93,7 +93,7 @@ public class ArtificialCouplingRecipe extends ScanningRecipe<ArtificialCouplingR
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -115,7 +115,7 @@ public class ArtificialCouplingRecipe extends ScanningRecipe<ArtificialCouplingR
         return Collections.unmodifiableList(results);
     }
 
-    private static boolean isPublicStaticFinal(J.VariableDeclarations varDecl) {
+    private static boolean isPublicStaticFinal(final J.VariableDeclarations varDecl) {
         boolean isPublic = false;
         boolean isStatic = false;
         boolean isFinal = false;

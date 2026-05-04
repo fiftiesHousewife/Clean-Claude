@@ -33,7 +33,7 @@ public class AddLocaleRecipe extends Recipe {
                     .build();
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation method, final ExecutionContext ctx) {
                 final J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (!LOCALE_METHODS.contains(m.getSimpleName())) {

@@ -16,7 +16,7 @@ import static org.openrewrite.java.Assertions.java;
 class InvertNegativeConditionalRecipeTest implements RewriteTest {
 
     @Override
-    public void defaults(RecipeSpec spec) {
+    public void defaults(final RecipeSpec spec) {
         spec.recipe(new InvertNegativeConditionalRecipe());
     }
 

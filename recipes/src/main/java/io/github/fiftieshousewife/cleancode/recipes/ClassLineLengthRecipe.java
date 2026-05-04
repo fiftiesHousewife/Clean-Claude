@@ -46,16 +46,16 @@ public class ClassLineLengthRecipe extends ScanningRecipe<ClassLineLengthRecipe.
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
                 final int lineCount = computeLineCount(c);
 
@@ -66,7 +66,7 @@ public class ClassLineLengthRecipe extends ScanningRecipe<ClassLineLengthRecipe.
                 return c;
             }
 
-            private int computeLineCount(J.ClassDeclaration classDecl) {
+            private int computeLineCount(final J.ClassDeclaration classDecl) {
                 final String source = classDecl.print(getCursor());
                 return (int) source.lines().count();
             }
@@ -74,7 +74,7 @@ public class ClassLineLengthRecipe extends ScanningRecipe<ClassLineLengthRecipe.
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

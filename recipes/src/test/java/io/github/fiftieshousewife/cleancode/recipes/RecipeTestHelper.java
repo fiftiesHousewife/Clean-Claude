@@ -13,11 +13,11 @@ final class RecipeTestHelper {
 
     private RecipeTestHelper() {}
 
-    static void runAgainst(ScanningRecipe<?> recipe, String source) {
+    static void runAgainst(final ScanningRecipe<?> recipe, final String source) {
         runAgainst(recipe, new String[]{source});
     }
 
-    static void runAgainst(ScanningRecipe<?> recipe, String... sources) {
+    static void runAgainst(final ScanningRecipe<?> recipe, final String... sources) {
         final List<SourceFile> sourceFiles = JavaParser.fromJavaVersion()
                 .logCompilationWarningsAndErrors(false)
                 .build().parse(sources).toList();

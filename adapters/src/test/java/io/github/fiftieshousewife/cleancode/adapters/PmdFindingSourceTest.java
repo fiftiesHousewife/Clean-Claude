@@ -43,14 +43,14 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_parsesViolations(@TempDir Path tempDir) throws Exception {
+    void collectFindings_parsesViolations(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/main.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
         assertEquals(4, findings.size());
     }
 
     @Test
-    void collectFindings_mapsCyclomaticComplexityToG30(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsCyclomaticComplexityToG30(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/main.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -64,7 +64,7 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsUnusedLocalVariableToG9(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsUnusedLocalVariableToG9(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/main.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -78,7 +78,7 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsEmptyCatchBlockToG4(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsEmptyCatchBlockToG4(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/main.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -92,7 +92,7 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_mapsCommentedOutCodeToC5(@TempDir Path tempDir) throws Exception {
+    void collectFindings_mapsCommentedOutCodeToC5(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/main.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -106,7 +106,7 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_setsToolToPmd(@TempDir Path tempDir) throws Exception {
+    void collectFindings_setsToolToPmd(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/main.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -114,7 +114,7 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_preservesLineNumbers(@TempDir Path tempDir) throws Exception {
+    void collectFindings_preservesLineNumbers(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/main.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -127,7 +127,7 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_makesSourceFileRelative(@TempDir Path tempDir) throws Exception {
+    void collectFindings_makesSourceFileRelative(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/main.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -139,14 +139,14 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_emptyReport_returnsNoFindings(@TempDir Path tempDir) throws Exception {
+    void collectFindings_emptyReport_returnsNoFindings(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/empty.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
         assertTrue(findings.isEmpty());
     }
 
     @Test
-    void isAvailable_returnsFalseWhenReportMissing(@TempDir Path tempDir) {
+    void isAvailable_returnsFalseWhenReportMissing(@TempDir final Path tempDir) {
         ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
                 List.of(), List.of(), tempDir, tempDir.resolve("reports"), List.of());
@@ -155,13 +155,13 @@ class PmdFindingSourceTest {
     }
 
     @Test
-    void collectFindings_unknownRuleIsSkipped(@TempDir Path tempDir) throws Exception {
+    void collectFindings_unknownRuleIsSkipped(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixture(tempDir, "/pmd/unknown-rule.xml", "pmd/main.xml");
         List<Finding> findings = source.collectFindings(ctx);
         assertTrue(findings.isEmpty());
     }
 
-    private ProjectContext contextWithFixture(Path tempDir, String resourcePath, String targetPath)
+    private ProjectContext contextWithFixture(final Path tempDir, final String resourcePath, final String targetPath)
             throws IOException {
         return TestContexts.contextWithFixture(getClass(), tempDir, resourcePath, targetPath);
     }

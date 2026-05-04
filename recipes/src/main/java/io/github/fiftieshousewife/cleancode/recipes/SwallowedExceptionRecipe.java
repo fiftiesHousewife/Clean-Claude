@@ -31,16 +31,16 @@ public class SwallowedExceptionRecipe extends ScanningRecipe<SwallowedExceptionR
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.Try.Catch visitCatch(J.Try.Catch catchClause, ExecutionContext ctx) {
+            public J.Try.Catch visitCatch(final J.Try.Catch catchClause, final ExecutionContext ctx) {
                 final J.Try.Catch c = super.visitCatch(catchClause, ctx);
                 final J.Block body = c.getBody();
 
@@ -61,7 +61,7 @@ public class SwallowedExceptionRecipe extends ScanningRecipe<SwallowedExceptionR
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

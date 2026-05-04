@@ -18,7 +18,7 @@ public abstract class ExplainTask extends DefaultTask {
     private String finding = "";
 
     @Option(option = "finding", description = "The finding concern to explain (e.g. error-handling)")
-    public void setFinding(String finding) {
+    public void setFinding(final String finding) {
         this.finding = finding;
     }
 

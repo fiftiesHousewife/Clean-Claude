@@ -89,12 +89,12 @@ public class SpotBugsFindingSource implements FindingSource {
     }
 
     @Override
-    public boolean isAvailable(ProjectContext context) {
+    public boolean isAvailable(final ProjectContext context) {
         return Files.exists(reportPath(context));
     }
 
     @Override
-    public List<Finding> collectFindings(ProjectContext context) throws FindingSourceException {
+    public List<Finding> collectFindings(final ProjectContext context) throws FindingSourceException {
         Path report = reportPath(context);
         if (!Files.exists(report)) {
             return List.of();
@@ -156,7 +156,7 @@ public class SpotBugsFindingSource implements FindingSource {
         return findings;
     }
 
-    private Path reportPath(ProjectContext context) {
+    private Path reportPath(final ProjectContext context) {
         return context.reportsDir().resolve("spotbugs/main.xml");
     }
 

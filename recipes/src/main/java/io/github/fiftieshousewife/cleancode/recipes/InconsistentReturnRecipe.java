@@ -36,16 +36,16 @@ public class InconsistentReturnRecipe extends ScanningRecipe<InconsistentReturnR
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
 
                 int returningMethods = 0;
@@ -73,7 +73,7 @@ public class InconsistentReturnRecipe extends ScanningRecipe<InconsistentReturnR
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 
@@ -81,7 +81,7 @@ public class InconsistentReturnRecipe extends ScanningRecipe<InconsistentReturnR
         return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
     }
 
-    private static boolean returnsCollection(J.MethodDeclaration method) {
+    private static boolean returnsCollection(final J.MethodDeclaration method) {
         if (method.getReturnTypeExpression() == null) {
             return false;
         }
@@ -89,7 +89,7 @@ public class InconsistentReturnRecipe extends ScanningRecipe<InconsistentReturnR
         return COLLECTION_TYPES.stream().anyMatch(returnType::startsWith);
     }
 
-    private static boolean mutatesCollectionParam(J.MethodDeclaration method) {
+    private static boolean mutatesCollectionParam(final J.MethodDeclaration method) {
         if (method.getReturnTypeExpression() == null) {
             return false;
         }

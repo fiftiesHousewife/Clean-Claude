@@ -33,16 +33,16 @@ public class SwitchOnTypeRecipe extends ScanningRecipe<SwitchOnTypeRecipe.Accumu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.If visitIf(J.If ifStatement, ExecutionContext ctx) {
+            public J.If visitIf(final J.If ifStatement, final ExecutionContext ctx) {
                 final J.If i = super.visitIf(ifStatement, ctx);
 
                 if (isPartOfElseIfChain(i)) {
@@ -62,11 +62,11 @@ public class SwitchOnTypeRecipe extends ScanningRecipe<SwitchOnTypeRecipe.Accumu
                 return i;
             }
 
-            private boolean isPartOfElseIfChain(J.If ifStatement) {
+            private boolean isPartOfElseIfChain(final J.If ifStatement) {
                 return getCursor().getParentTreeCursor().getValue() instanceof J.If.Else;
             }
 
-            private int elseIfDepth(J.If ifStatement) {
+            private int elseIfDepth(final J.If ifStatement) {
                 int depth = 1;
                 var elsePart = ifStatement.getElsePart();
                 while (elsePart != null && elsePart.getBody() instanceof J.If nested) {
@@ -76,7 +76,7 @@ public class SwitchOnTypeRecipe extends ScanningRecipe<SwitchOnTypeRecipe.Accumu
                 return depth;
             }
 
-            private boolean involvesTypeCheck(J.If ifStatement) {
+            private boolean involvesTypeCheck(final J.If ifStatement) {
                 final String condition = ifStatement.getIfCondition().toString();
                 return condition.contains("instanceof") || condition.contains("getClass");
             }
@@ -94,7 +94,7 @@ public class SwitchOnTypeRecipe extends ScanningRecipe<SwitchOnTypeRecipe.Accumu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

@@ -27,7 +27,7 @@ public class CleanCodePlugin implements Plugin<Project> {
     private static final String DEPENDENCY_UPDATES_TASK = "dependencyUpdates";
 
     @Override
-    public void apply(Project project) {
+    public void apply(final Project project) {
         final CleanCodeExtension ext = project.getExtensions()
                 .create("cleanCode", CleanCodeExtension.class);
 
@@ -130,7 +130,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         }
     }
 
-    private void applyStaticAnalysisPlugins(Project project, CleanCodeExtension ext) {
+    private void applyStaticAnalysisPlugins(final Project project, final CleanCodeExtension ext) {
         project.getPluginManager().apply("java");
         project.getPluginManager().apply("pmd");
         project.getPluginManager().apply("checkstyle");
@@ -151,7 +151,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         });
     }
 
-    private void configurePmd(Project project) {
+    private void configurePmd(final Project project) {
         project.getExtensions().configure(PmdExtension.class, pmd -> {
             pmd.setConsoleOutput(false);
             pmd.setIgnoreFailures(true);
@@ -161,7 +161,7 @@ public class CleanCodePlugin implements Plugin<Project> {
                 task.getReports().getXml().getRequired().set(true));
     }
 
-    private void configureCheckstyle(Project project) {
+    private void configureCheckstyle(final Project project) {
         project.getExtensions().configure(CheckstyleExtension.class, cs -> {
             cs.setIgnoreFailures(true);
             cs.setToolVersion("10.26.1");
@@ -175,7 +175,7 @@ public class CleanCodePlugin implements Plugin<Project> {
                 task.getReports().getXml().getRequired().set(true));
     }
 
-    private void configureJacoco(Project project) {
+    private void configureJacoco(final Project project) {
         project.getExtensions().configure(JacocoPluginExtension.class, jacoco ->
                 jacoco.setToolVersion("0.8.14"));
 
@@ -185,7 +185,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         });
     }
 
-    private void configureSpotless(Project project) {
+    private void configureSpotless(final Project project) {
         project.getRepositories().mavenCentral();
         project.getExtensions().configure(SpotlessExtension.class, spotless -> {
             spotless.java(java -> {
@@ -198,7 +198,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         });
     }
 
-    private void configureSpotBugs(Project project) {
+    private void configureSpotBugs(final Project project) {
         project.getExtensions().configure(SpotBugsExtension.class, sb -> {
             sb.getIgnoreFailures().set(true);
             // SpotBugs 4.9.7 added support for class file major version 69
@@ -214,7 +214,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         });
     }
 
-    private void registerCpdTask(Project project, CleanCodeExtension ext) {
+    private void registerCpdTask(final Project project, final CleanCodeExtension ext) {
         final var cpdConfig = project.getConfigurations().create("cpd", conf -> {
             conf.setDescription("CPD classpath");
             conf.setCanBeConsumed(false);
@@ -254,7 +254,7 @@ public class CleanCodePlugin implements Plugin<Project> {
         });
     }
 
-    private void wireTaskDependencies(Project project, TaskProvider<AnalyseTask> analyse) {
+    private void wireTaskDependencies(final Project project, final TaskProvider<AnalyseTask> analyse) {
         project.afterEvaluate(p -> {
             analyse.configure(task -> {
                 task.dependsOn("pmdMain", "checkstyleMain", "jacocoTestReport",
@@ -294,7 +294,7 @@ public class CleanCodePlugin implements Plugin<Project> {
                 + "<!-- END clean-code skills directive -->\n";
     }
 
-    private String loadClasspathResource(String resourcePath) {
+    private String loadClasspathResource(final String resourcePath) {
         try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
             if (is == null) {
                 throw new IllegalStateException("Classpath resource not found: " + resourcePath);

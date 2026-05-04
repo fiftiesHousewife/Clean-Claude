@@ -40,16 +40,16 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(final ExecutionContext ctx) {
         lastAccumulator = new Accumulator();
         return lastAccumulator;
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(final Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.MethodDeclaration visitMethodDeclaration(final J.MethodDeclaration method, final ExecutionContext ctx) {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
 
                 if (BoilerplateMethodSkip.isContractMethod(m)) {
@@ -92,12 +92,12 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
                 return m;
             }
 
-            private boolean isPublic(J.MethodDeclaration method) {
+            private boolean isPublic(final J.MethodDeclaration method) {
                 return method.getModifiers().stream()
                         .anyMatch(mod -> mod.getType() == J.Modifier.Type.Public);
             }
 
-            private boolean isConstructor(J.MethodDeclaration method) {
+            private boolean isConstructor(final J.MethodDeclaration method) {
                 return method.getMethodType() != null && method.getMethodType().isConstructor();
             }
 
@@ -109,7 +109,7 @@ public class FlagArgumentRecipe extends ScanningRecipe<FlagArgumentRecipe.Accumu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(final Accumulator acc) {
         return TreeVisitor.noop();
     }
 

@@ -84,7 +84,7 @@ class FixBriefGeneratorTest {
     }
 
     @Test
-    void siblingBlockListsOtherJavaTypesInTheSameDirectory(@TempDir Path projectRoot) throws IOException {
+    void siblingBlockListsOtherJavaTypesInTheSameDirectory(@TempDir final Path projectRoot) throws IOException {
         final Path pkg = projectRoot.resolve("core/src/main/java/com/example");
         Files.createDirectories(pkg);
         Files.writeString(pkg.resolve("Foo.java"), "package com.example; public class Foo {}");

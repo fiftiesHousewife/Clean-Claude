@@ -19,7 +19,7 @@ public final class JsonReportReader {
 
     private JsonReportReader() {}
 
-    public static AggregatedReport read(Path inputFile) throws IOException {
+    public static AggregatedReport read(final Path inputFile) throws IOException {
         String json = Files.readString(inputFile);
         Gson gson = new Gson();
         Map<String, Object> raw = gson.fromJson(json, new TypeToken<Map<String, Object>>() {}.getType());

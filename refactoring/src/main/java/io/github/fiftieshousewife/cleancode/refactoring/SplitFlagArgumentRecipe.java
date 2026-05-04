@@ -31,8 +31,8 @@ public class SplitFlagArgumentRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl,
-                                                            ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl,
+                                                            final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
                 final List<Statement> original = c.getBody().getStatements();
                 final List<Statement> rewritten = new ArrayList<>(original.size());
@@ -63,7 +63,7 @@ public class SplitFlagArgumentRecipe extends Recipe {
                 return changed ? c.withBody(c.getBody().withStatements(rewritten)) : c;
             }
 
-            private boolean isSplitCandidate(J.MethodDeclaration method) {
+            private boolean isSplitCandidate(final J.MethodDeclaration method) {
                 if (!method.getModifiers().stream()
                         .anyMatch(m -> m.getType() == J.Modifier.Type.Private)) {
                     return false;
@@ -92,22 +92,22 @@ public class SplitFlagArgumentRecipe extends Recipe {
                 return id.getSimpleName().equals(flagParameterName(method));
             }
 
-            private String flagParameterName(J.MethodDeclaration method) {
+            private String flagParameterName(final J.MethodDeclaration method) {
                 final J.VariableDeclarations vd = (J.VariableDeclarations) method.getParameters().getFirst();
                 return vd.getVariables().getFirst().getSimpleName();
             }
 
-            private List<Statement> asStatements(Statement body) {
+            private List<Statement> asStatements(final Statement body) {
                 if (body instanceof J.Block block) {
                     return block.getStatements();
                 }
                 return List.of(body);
             }
 
-            private J.MethodDeclaration emitHelper(J.MethodDeclaration original,
-                                                    String flagName,
-                                                    boolean whenTrue,
-                                                    List<Statement> body) {
+            private J.MethodDeclaration emitHelper(final J.MethodDeclaration original,
+                                                    final String flagName,
+                                                    final boolean whenTrue,
+                                                    final List<Statement> body) {
                 final String helperName = original.getSimpleName() + suffixFor(flagName, whenTrue);
                 final J.Identifier renamed = original.getName().withSimpleName(helperName);
                 final J.Block newBody = original.getBody() == null
@@ -121,7 +121,7 @@ public class SplitFlagArgumentRecipe extends Recipe {
         };
     }
 
-    static String suffixFor(String flagName, boolean whenTrue) {
+    static String suffixFor(final String flagName, final boolean whenTrue) {
         final String capitalised = Character.toUpperCase(flagName.charAt(0))
                 + flagName.substring(1).toLowerCase(Locale.ROOT);
         return "When" + capitalised + (whenTrue ? "" : "IsFalse");

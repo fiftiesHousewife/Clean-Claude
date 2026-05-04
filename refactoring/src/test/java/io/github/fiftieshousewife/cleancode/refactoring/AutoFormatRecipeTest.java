@@ -10,7 +10,7 @@ import static org.openrewrite.java.Assertions.java;
 class AutoFormatRecipeTest implements RewriteTest {
 
     @Override
-    public void defaults(RecipeSpec spec) {
+    public void defaults(final RecipeSpec spec) {
         spec.recipe(new AutoFormat(null));
     }
 

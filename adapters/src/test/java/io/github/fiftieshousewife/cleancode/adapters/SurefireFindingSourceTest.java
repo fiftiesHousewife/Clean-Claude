@@ -41,7 +41,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void collectFindings_producesT9ForSlowTests(@TempDir Path tempDir) throws Exception {
+    void collectFindings_producesT9ForSlowTests(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixtures(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -53,7 +53,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void collectFindings_producesT9ErrorForVerySlowTests(@TempDir Path tempDir) throws Exception {
+    void collectFindings_producesT9ErrorForVerySlowTests(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixtures(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -65,7 +65,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void collectFindings_producesT3ForSkippedTests(@TempDir Path tempDir) throws Exception {
+    void collectFindings_producesT3ForSkippedTests(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixtures(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -75,7 +75,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void collectFindings_noFindingForFastTests(@TempDir Path tempDir) throws Exception {
+    void collectFindings_noFindingForFastTests(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixtures(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -83,7 +83,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void collectFindings_setsToolToSurefire(@TempDir Path tempDir) throws Exception {
+    void collectFindings_setsToolToSurefire(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixtures(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -91,7 +91,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void collectFindings_parsesMultipleReportFiles(@TempDir Path tempDir) throws Exception {
+    void collectFindings_parsesMultipleReportFiles(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixtures(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -101,7 +101,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void collectFindings_messageIncludesExecutionTime(@TempDir Path tempDir) throws Exception {
+    void collectFindings_messageIncludesExecutionTime(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixtures(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -113,7 +113,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void isAvailable_returnsFalseWhenNoReportFiles(@TempDir Path tempDir) {
+    void isAvailable_returnsFalseWhenNoReportFiles(@TempDir final Path tempDir) {
         final Path buildDir = tempDir.resolve("build");
         final ProjectContext ctx = new ProjectContext(
                 tempDir, "test", "1.0", "21",
@@ -123,7 +123,7 @@ class SurefireFindingSourceTest {
     }
 
     @Test
-    void collectFindings_projectLevelWarning_whenHighSkipPercentage(@TempDir Path tempDir) throws Exception {
+    void collectFindings_projectLevelWarning_whenHighSkipPercentage(@TempDir final Path tempDir) throws Exception {
         ProjectContext ctx = contextWithFixtures(tempDir);
         List<Finding> findings = source.collectFindings(ctx);
 
@@ -134,7 +134,7 @@ class SurefireFindingSourceTest {
                         && f.sourceFile() == null));
     }
 
-    private ProjectContext contextWithFixtures(Path tempDir) throws IOException {
+    private ProjectContext contextWithFixtures(final Path tempDir) throws IOException {
         final Path buildDir = tempDir.resolve("build");
         final Path testResultsDir = buildDir.resolve("test-results/test");
         Files.createDirectories(testResultsDir);
@@ -150,7 +150,7 @@ class SurefireFindingSourceTest {
                 buildDir, buildDir.resolve("reports"), List.of());
     }
 
-    private void copyFixture(String resourcePath, Path target) throws IOException {
+    private void copyFixture(final String resourcePath, final Path target) throws IOException {
         try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
             assertNotNull(is, "Test fixture not found: " + resourcePath);
             Files.copy(is, target);

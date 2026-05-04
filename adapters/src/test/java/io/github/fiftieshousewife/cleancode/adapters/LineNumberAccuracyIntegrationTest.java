@@ -156,29 +156,29 @@ class LineNumberAccuracyIntegrationTest {
     }
 
     @Test
-    void serveTaskFindingsAnchorAtTheirActualConstruct(@TempDir Path tempDir) throws Exception {
+    void serveTaskFindingsAnchorAtTheirActualConstruct(@TempDir final Path tempDir) throws Exception {
         runFixture("ServeTask.java", tempDir);
     }
 
     @Test
-    void changeApplierFindingsAnchorAtTheirActualConstruct(@TempDir Path tempDir) throws Exception {
+    void changeApplierFindingsAnchorAtTheirActualConstruct(@TempDir final Path tempDir) throws Exception {
         runFixture("ChangeApplier.java", tempDir);
     }
 
     @Test
-    void harnessRecipePassFindingsAnchorAtTheirActualConstruct(@TempDir Path tempDir) throws Exception {
+    void harnessRecipePassFindingsAnchorAtTheirActualConstruct(@TempDir final Path tempDir) throws Exception {
         runFixture("HarnessRecipePass.java", tempDir);
     }
 
     @Test
-    void openRewriteFindingSourceFindingsAnchorAtTheirActualConstruct(@TempDir Path tempDir) throws Exception {
+    void openRewriteFindingSourceFindingsAnchorAtTheirActualConstruct(@TempDir final Path tempDir) throws Exception {
         // Big self-referential file: stresses the source-text scanner
         // because many methods share helper-shape names.
         runFixture("OpenRewriteFindingSource.java", tempDir);
     }
 
     @Test
-    void htmlReportWriterFindingsAnchorAtTheirActualConstruct(@TempDir Path tempDir) throws Exception {
+    void htmlReportWriterFindingsAnchorAtTheirActualConstruct(@TempDir final Path tempDir) throws Exception {
         // Many string literals (HTML tags, CSS), heavy method count.
         runFixture("HtmlReportWriter.java", tempDir);
     }

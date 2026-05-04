@@ -20,7 +20,7 @@ public class RecordToLombokValueRecipe extends Recipe {
     private final int minComponents;
 
     @JsonCreator
-    public RecordToLombokValueRecipe(@JsonProperty("minComponents") int minComponents) {
+    public RecordToLombokValueRecipe(@JsonProperty("minComponents") final int minComponents) {
         this.minComponents = minComponents;
     }
 
@@ -39,7 +39,7 @@ public class RecordToLombokValueRecipe extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
 
                 if (c.getKind() != J.ClassDeclaration.Kind.Type.Record) {
@@ -87,7 +87,7 @@ public class RecordToLombokValueRecipe extends Recipe {
         };
     }
 
-    private static J.Annotation buildAnnotation(String name) {
+    private static J.Annotation buildAnnotation(final String name) {
         return new J.Annotation(
                 org.openrewrite.Tree.randomId(),
                 Space.format("\n"),
@@ -102,7 +102,7 @@ public class RecordToLombokValueRecipe extends Recipe {
                 null);
     }
 
-    private static org.openrewrite.java.tree.Statement componentToField(J.VariableDeclarations component) {
+    private static org.openrewrite.java.tree.Statement componentToField(final J.VariableDeclarations component) {
         return component
                 .withModifiers(List.of())
                 .withPrefix(Space.format("\n    "));

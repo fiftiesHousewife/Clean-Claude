@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RefactoringApplierTest {
 
     @Test
-    void appliesG34RecipeToSingleFileAndRewritesSource(@TempDir Path projectRoot) throws IOException {
+    void appliesG34RecipeToSingleFileAndRewritesSource(@TempDir final Path projectRoot) throws IOException {
         final Path file = projectRoot.resolve("src/main/java/Foo.java");
         Files.createDirectories(file.getParent());
         Files.writeString(file, """
@@ -48,7 +48,7 @@ class RefactoringApplierTest {
     }
 
     @Test
-    void reportsSoftErrorWhenRecipeMatchesNothing(@TempDir Path projectRoot) throws IOException {
+    void reportsSoftErrorWhenRecipeMatchesNothing(@TempDir final Path projectRoot) throws IOException {
         final Path file = projectRoot.resolve("Foo.java");
         Files.writeString(file, """
                 package x;
@@ -72,7 +72,7 @@ class RefactoringApplierTest {
     }
 
     @Test
-    void reportsErrorWhenCodeHasNoRegisteredRecipe(@TempDir Path projectRoot) {
+    void reportsErrorWhenCodeHasNoRegisteredRecipe(@TempDir final Path projectRoot) {
         final RefactoringApplier applier = new RefactoringApplier(projectRoot);
 
         final RefactoringApplier.Outcome outcome = applier.apply(HeuristicCode.T1, Optional.empty());
@@ -85,7 +85,7 @@ class RefactoringApplierTest {
     }
 
     @Test
-    void bulkModeWalksWholeProjectExceptBuildAndGradle(@TempDir Path projectRoot) throws IOException {
+    void bulkModeWalksWholeProjectExceptBuildAndGradle(@TempDir final Path projectRoot) throws IOException {
         final Path src = projectRoot.resolve("src/main/java/A.java");
         Files.createDirectories(src.getParent());
         Files.writeString(src, """
