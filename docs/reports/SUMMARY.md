@@ -5,30 +5,32 @@ Deterministic: contains no absolute paths, timestamps, or machine-specific
 content, so local and CI runs produce byte-identical output. CI fails if
 this file drifts from the committed state.
 
-**Total: 1331 findings** (162 errors · 1163 warnings · 6 info)
+Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) (extracted from the plugin jar by `./gradlew cleanCodeWriteHeuristics`).
+
+**Total: 1381 findings** (162 errors · 1213 warnings · 6 info)
 
 ## By module
 
 | Module | Errors | Warnings | Info | Total |
 |---|---:|---:|---:|---:|
 | (root) | 0 | 0 | 0 | 0 |
-| adapters | 60 | 217 | 1 | 278 |
+| adapters | 60 | 219 | 1 | 280 |
 | annotations | 0 | 0 | 1 | 1 |
 | claude-review | 6 | 14 | 0 | 20 |
-| core | 59 | 212 | 2 | 273 |
+| core | 59 | 216 | 2 | 277 |
 | mcp | 0 | 0 | 0 | 0 |
-| plugin | 32 | 282 | 0 | 314 |
-| recipes | 0 | 210 | 1 | 211 |
-| refactoring | 5 | 228 | 1 | 234 |
-| **Total** | **162** | **1163** | **6** | **1331** |
+| plugin | 32 | 283 | 0 | 315 |
+| recipes | 0 | 248 | 1 | 249 |
+| refactoring | 5 | 233 | 1 | 239 |
+| **Total** | **162** | **1213** | **6** | **1381** |
 
 ## By heuristic code
 
 | Code | Count |
 |---|---:|
 | G30 | 277 |
-| G5 | 173 |
-| G24 | 154 |
+| G24 | 201 |
+| G5 | 174 |
 | Ch10_1 | 106 |
 | G10 | 104 |
 | G28 | 65 |
@@ -37,14 +39,14 @@ this file drifts from the committed state.
 | G31 | 42 |
 | T1 | 30 |
 | C2 | 27 |
+| Ch7_2 | 25 |
 | G4 | 25 |
 | G8 | 24 |
-| Ch7_2 | 23 |
 | Ch7_1 | 22 |
 | G19 | 21 |
 | G35 | 20 |
 | N5 | 19 |
-| G12 | 16 |
+| G12 | 17 |
 | G26 | 10 |
 | G36 | 10 |
 | G23 | 9 |
@@ -54,10 +56,10 @@ this file drifts from the committed state.
 | C3 | 4 |
 | G18 | 4 |
 | N1 | 3 |
-| T9 | 3 |
 | F3 | 2 |
 | G16 | 2 |
 | J3 | 2 |
+| T9 | 2 |
 | G11 | 1 |
 | G13 | 1 |
 | G14 | 1 |
