@@ -61,7 +61,7 @@ class SelfApplyHarnessTest {
         Files.writeString(projectDir.resolve("build.gradle.kts"), buildScript());
         Files.writeString(projectDir.resolve("CLAUDE.md"), "");
         Files.writeString(projectDir.resolve("gradle.properties"),
-                "org.gradle.jvmargs=-Xss8m -Xmx2g\n");
+                "org.gradle.jvmargs=-Xss8m -Xmx2g -Dcleancode.serve.skipBrowser=true\n");
     }
 
     @Test

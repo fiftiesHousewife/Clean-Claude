@@ -167,14 +167,22 @@ public abstract class ServeTask extends DefaultTask {
     }
 
     private void openInBrowser(final String url) {
-        try {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create(url));
-            }
-        } catch (Exception e) {
-            getLogger().info("Could not auto-open browser ({}); navigate manually to {}",
-                    e.getMessage(), url);
+        if (Boolean.getBoolean("cleancode.serve.skipBrowser")) {
+            return;
         }
+        final Thread opener = new Thread(() -> {
+            try {
+                if (Desktop.isDesktopSupported()
+                        && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop().browse(URI.create(url));
+                }
+            } catch (Exception e) {
+                getLogger().info("Could not auto-open browser ({}); navigate manually to {}",
+                        e.getMessage(), url);
+            }
+        }, "cleanCodeServe-browser-opener");
+        opener.setDaemon(true);
+        opener.start();
     }
 
     private ConfigSnapshot snapshotConfig(final CleanCodeExtension ext) {

@@ -13,7 +13,9 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -31,9 +33,11 @@ public final class ReportServer {
     private static final String HTML = "text/html; charset=utf-8";
 
     private final HttpServer httpServer;
+    private final ExecutorService executor;
 
-    private ReportServer(final HttpServer httpServer) {
+    private ReportServer(final HttpServer httpServer, final ExecutorService executor) {
         this.httpServer = httpServer;
+        this.executor = executor;
     }
 
     public static ReportServer start(final int port,
@@ -73,9 +77,16 @@ public final class ReportServer {
         httpServer.createContext("/api/feedback", new FeedbackEndpointHandler(feedbackHandler, gson, logger));
         httpServer.createContext("/api/shutdown", new ShutdownHandler(shutdownCallback, logger));
 
-        httpServer.setExecutor(Executors.newFixedThreadPool(4));
+        final AtomicInteger threadCounter = new AtomicInteger();
+        final ExecutorService executor = Executors.newFixedThreadPool(4, runnable -> {
+            final Thread thread = new Thread(runnable,
+                    "cleanCodeServe-http-" + threadCounter.incrementAndGet());
+            thread.setDaemon(true);
+            return thread;
+        });
+        httpServer.setExecutor(executor);
         httpServer.start();
-        return new ReportServer(httpServer);
+        return new ReportServer(httpServer, executor);
     }
 
     public int port() {
@@ -88,6 +99,7 @@ public final class ReportServer {
 
     public void stop() {
         httpServer.stop(0);
+        executor.shutdownNow();
     }
 
     private static void send(final HttpExchange exchange, final int status, final String contentType,
