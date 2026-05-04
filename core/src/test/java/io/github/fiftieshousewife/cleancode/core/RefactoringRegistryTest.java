@@ -22,7 +22,7 @@ class RefactoringRegistryTest {
                         "G18 deliberately has NO Fix recipe — auto-applying MakeMethodStaticRecipe "
                                 + "would make the codebase MORE static, contrary to the heuristic"),
                 () -> assertTrue(RefactoringRegistry.hasRecipeFor(HeuristicCode.G12),
-                        "G12 has Shorten + DeleteUnusedImport"));
+                        "G12 has Shorten + RemoveUnusedImports"));
     }
 
     @Test
