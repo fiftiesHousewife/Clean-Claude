@@ -150,7 +150,7 @@ public abstract class SummaryReportTask extends DefaultTask {
         return sb.toString();
     }
 
-oo    private String renderHtml(final Map<String, Counts> byModule, final Counts totals) {
+    private String renderHtml(final Map<String, Counts> byModule, final Counts totals) {
         final StringBuilder sb = new StringBuilder();
         sb.append("<!DOCTYPE html>\n<html lang=\"en\"><head><meta charset=\"UTF-8\">")
                 .append("<title>Clean Code summary</title><style>")
