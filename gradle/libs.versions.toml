@@ -3,6 +3,10 @@ junit = "5.14.4"
 javaparser = "3.28.0"
 gson = "2.14.0"
 openrewrite = "8.81.3"
+openrewrite-static-analysis = "2.34.0"
+openrewrite-logging-frameworks = "3.27.2"
+openrewrite-testing-frameworks = "3.35.2"
+openrewrite-migrate-java = "3.34.0"
 fifties-recipes = "0.8"
 versions = "0.53.0"
 gradle-tooling = "9.0.0"
@@ -31,6 +35,10 @@ openrewrite-java = { module = "org.openrewrite:rewrite-java", version.ref = "ope
 openrewrite-java21 = { module = "org.openrewrite:rewrite-java-21", version.ref = "openrewrite" }
 openrewrite-java25 = { module = "org.openrewrite:rewrite-java-25", version.ref = "openrewrite" }
 openrewrite-test = { module = "org.openrewrite:rewrite-test", version.ref = "openrewrite" }
+openrewrite-static-analysis = { module = "org.openrewrite.recipe:rewrite-static-analysis", version.ref = "openrewrite-static-analysis" }
+openrewrite-logging-frameworks = { module = "org.openrewrite.recipe:rewrite-logging-frameworks", version.ref = "openrewrite-logging-frameworks" }
+openrewrite-testing-frameworks = { module = "org.openrewrite.recipe:rewrite-testing-frameworks", version.ref = "openrewrite-testing-frameworks" }
+openrewrite-migrate-java = { module = "org.openrewrite.recipe:rewrite-migrate-java", version.ref = "openrewrite-migrate-java" }
 fifties-system-out-to-lombok-log4j = { module = "io.github.fiftieshousewife:system-out-to-lombok-log4j", version.ref = "fifties-recipes" }
 ben-manes-versions-plugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versions" }
 gradle-tooling-api = { module = "org.gradle:gradle-tooling-api", version.ref = "gradle-tooling" }
