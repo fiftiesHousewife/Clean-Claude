@@ -7,6 +7,7 @@ dependencies {
     implementation(libs.openrewrite.core)
     implementation(libs.openrewrite.java)
     implementation(libs.fifties.system.out.to.lombok.log4j)
+    implementation(libs.openrewrite.logging.frameworks)
     runtimeOnly(libs.openrewrite.java25)
     testImplementation(libs.openrewrite.test)
 }

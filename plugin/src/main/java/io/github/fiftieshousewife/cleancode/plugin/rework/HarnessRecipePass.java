@@ -57,11 +57,29 @@ public final class HarnessRecipePass {
     private static final String SLF4J_TRANSFORMS_RECIPE =
             "io.github.fiftieshousewife.JavaTransformsClasspathGated";
 
+    // 2026-05-04: upstream composite from rewrite-logging-frameworks
+    // covering ~13 SLF4J best-practice rewrites (parameterised logging,
+    // logger naming, redundant guards, complete exception logging,
+    // catch-block log levels, etc.). Subsumes Tier 2 logging backlog
+    // and overlaps with our G12 mumbling-log detector. Recipe operates
+    // on existing log calls only, so it's safe on classes that don't
+    // use SLF4J (no-op rather than failure). Per
+    // docs/sessions/2026-05-04-recipe-research.md.
+    private static final String SLF4J_BEST_PRACTICES_RECIPE =
+            "org.openrewrite.java.logging.slf4j.Slf4jBestPractices";
+
     private static Recipe loadSlf4jTransformsRecipe() {
         return Environment.builder()
                 .scanRuntimeClasspath()
                 .build()
                 .activateRecipes(SLF4J_TRANSFORMS_RECIPE);
+    }
+
+    private static Recipe loadSlf4jBestPracticesRecipe() {
+        return Environment.builder()
+                .scanRuntimeClasspath()
+                .build()
+                .activateRecipes(SLF4J_BEST_PRACTICES_RECIPE);
     }
 
     /**
@@ -90,7 +108,8 @@ public final class HarnessRecipePass {
                 new AddFinalRecipe(),
                 new InvertNegativeConditionalRecipe(),
                 new ShortenFullyQualifiedReferencesRecipe(),
-                loadSlf4jTransformsRecipe());
+                loadSlf4jTransformsRecipe(),
+                loadSlf4jBestPracticesRecipe());
     }
 
     private HarnessRecipePass() {}
