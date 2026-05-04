@@ -17,6 +17,21 @@ experiment/cron-logs/
 .agent/
 **/AGENTS.md
 
+# Per-module dogfood HTML reports embed absolute file paths and so cannot
+# match byte-for-byte between local and CI runs. The committed sources of
+# truth for "did findings drift" are docs/reports/SUMMARY.md and
+# docs/reports/index.html, both of which are path-free and deterministic.
+# Per-module HTML is regenerated locally for browser viewing and uploaded
+# as a CI artifact.
+docs/reports/adapters.html
+docs/reports/annotations.html
+docs/reports/claude-review.html
+docs/reports/core.html
+docs/reports/plugin.html
+docs/reports/recipes.html
+docs/reports/refactoring.html
+docs/reports/root.html
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

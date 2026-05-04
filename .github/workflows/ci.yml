@@ -54,10 +54,10 @@ jobs:
       - name: Self-apply plugin and refresh docs/reports
         run: ./scripts/dogfood.sh
 
-      - name: Fail if docs/reports/ drifted
+      - name: Fail if SUMMARY drifted
         run: |
-          if ! git diff --exit-code -- docs/reports/; then
-            echo "::error::docs/reports/ is out of sync with the current findings."
+          if ! git diff --exit-code -- docs/reports/SUMMARY.md docs/reports/index.html; then
+            echo "::error::docs/reports/SUMMARY.md or index.html is out of sync with the current findings."
             echo "Run ./scripts/dogfood.sh locally and commit the result."
             exit 1
           fi

@@ -82,4 +82,11 @@ echo "[dogfood] regenerating summary index"
     --init-script "$INIT_SCRIPT" \
     cleanCodeSummary
 
+echo "[dogfood] verifying SUMMARY drift (same check as CI)"
+if ! git diff --exit-code -- docs/reports/SUMMARY.md docs/reports/index.html; then
+    echo "[dogfood] ERROR: docs/reports/SUMMARY.md or index.html drifted from the committed state."
+    echo "[dogfood] Review the diff above, then 'git add docs/reports/SUMMARY.md docs/reports/index.html' and commit."
+    exit 1
+fi
+
 echo "[dogfood] done — see docs/reports/index.html"
