@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="cleancode-pmd"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0
+                             https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    <description>
+        Curated PMD rule set for the Clean Code plugin. Cherry-picks from
+        the standard category rule sets rather than including them
+        wholesale, so consumers get high-signal warnings instead of being
+        flooded by ~40 default errorprone checks.
+    </description>
+
+    <rule ref="category/java/errorprone.xml/AvoidFieldNameMatchingMethodName"/>
+</ruleset>

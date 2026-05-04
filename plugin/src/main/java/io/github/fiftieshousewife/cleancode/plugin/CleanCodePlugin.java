@@ -165,6 +165,12 @@ public class CleanCodePlugin implements Plugin<Project> {
             pmd.setConsoleOutput(false);
             pmd.setIgnoreFailures(true);
             pmd.setToolVersion("7.24.0");
+            final var defaultConfigFile = project.file("config/pmd/pmd.xml");
+            if (!defaultConfigFile.exists()) {
+                final String configContent = loadClasspathResource("/cleancode-pmd.xml");
+                pmd.setRuleSetConfig(project.getResources().getText().fromString(configContent));
+                pmd.setRuleSets(java.util.Collections.emptyList());
+            }
         });
         project.getTasks().withType(Pmd.class).configureEach(task ->
                 task.getReports().getXml().getRequired().set(true));
