@@ -10,6 +10,7 @@ dependencies {
     implementation(libs.openrewrite.logging.frameworks)
     runtimeOnly(libs.openrewrite.java25)
     testImplementation(libs.openrewrite.test)
+    testImplementation(libs.openrewrite.static.analysis)
 }
 
 tasks.register<JavaExec>("extractMethod") {
