@@ -72,6 +72,16 @@ public final class RecipeDiffHarness {
                 .activateRecipes(fullyQualifiedRecipeName);
     }
 
+    public static Recipe loadUpstream(final String first, final String... rest) {
+        final String[] all = new String[rest.length + 1];
+        all[0] = first;
+        System.arraycopy(rest, 0, all, 1, rest.length);
+        return Environment.builder()
+                .scanRuntimeClasspath()
+                .build()
+                .activateRecipes(all);
+    }
+
     public static DiffReport compare(
             final Recipe ours,
             final Recipe upstream,
