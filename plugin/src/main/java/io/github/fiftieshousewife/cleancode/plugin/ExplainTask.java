@@ -42,7 +42,16 @@ public abstract class ExplainTask extends DefaultTask {
         getLogger().lifecycle(Files.readString(file));
     }
 
-    private String resolveSkillPath(final String concern, final String skillsDir) {
+    static String resolveSkillPath(final String concern, final String skillsDir) {
+        final String aliasResolved = resolveAliasSkillPath(concern, skillsDir);
+        if (aliasResolved != null) {
+            return aliasResolved;
+        }
+        final HeuristicCode code = parseHeuristicCode(concern);
+        return code == null ? null : SkillPathRegistry.skillPathFor(code, skillsDir);
+    }
+
+    private static String resolveAliasSkillPath(final String concern, final String skillsDir) {
         return switch (concern.toLowerCase()) {
             case "error-handling", "exceptions" -> SkillPathRegistry.skillPathFor(HeuristicCode.Ch7_1, skillsDir);
             case "null-handling", "nulls" -> SkillPathRegistry.skillPathFor(HeuristicCode.Ch7_2, skillsDir);
@@ -50,5 +59,27 @@ public abstract class ExplainTask extends DefaultTask {
             case "functions", "methods" -> SkillPathRegistry.skillPathFor(HeuristicCode.Ch3_1, skillsDir);
             default -> null;
         };
+    }
+
+    /**
+     * Accepts {@code G18}, {@code Ch7.1}, {@code Ch7_1}, {@code J3}, etc.
+     * — the codes as they appear in the build report and findings.json.
+     * Hyphen and dot separators are normalised to underscore so users can
+     * pass the form they see in the report.
+     */
+    private static HeuristicCode parseHeuristicCode(final String concern) {
+        final String normalised = concern.trim().replace('.', '_').replace('-', '_');
+        if (normalised.isEmpty()) {
+            return null;
+        }
+        try {
+            return HeuristicCode.valueOf(normalised);
+        } catch (final IllegalArgumentException primary) {
+            try {
+                return HeuristicCode.valueOf(normalised.toUpperCase());
+            } catch (final IllegalArgumentException secondary) {
+                return null;
+            }
+        }
     }
 }
