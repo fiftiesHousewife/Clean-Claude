@@ -38,13 +38,19 @@ public enum HeuristicCode {
     META_SUPPRESSION_EXPIRED,
     META_SUPPRESSION_NO_REASON;
 
-    private static final Set<HeuristicCode> ENVIRONMENT_DEPENDENT = EnumSet.of(E1);
+    private static final Set<HeuristicCode> ENVIRONMENT_DEPENDENT = EnumSet.of(E1, T9);
 
     /**
      * Whether this heuristic's count varies with factors outside the source tree
-     * (remote dependency resolution, network state, time of day). Such codes are
-     * excluded from the deterministic drift-checked summary so the check
-     * doesn't fire on every new upstream release.
+     * (remote dependency resolution, network state, time of day, machine load).
+     * Such codes are excluded from the deterministic drift-checked summary so the
+     * check doesn't fire on every new upstream release or busy CI run.
+     *
+     * <p>{@code E1} (outdated dependencies) varies with what's published to
+     * Maven Central. {@code T9} (slow tests, measured at Surefire runtime)
+     * varies with machine load and JVM warm-up — a 250ms test on an idle
+     * laptop can become a 1.2s test on a busy CI runner without the source
+     * changing.
      */
     public boolean isEnvironmentDependent() {
         return ENVIRONMENT_DEPENDENT.contains(this);
