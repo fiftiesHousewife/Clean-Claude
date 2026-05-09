@@ -158,6 +158,9 @@ public class MissingExplanatoryVariableRecipe
                     if (isStringConcatInsideAccessor(expression)) {
                         return r;
                     }
+                    if (isUniformShortCircuitChainOfIdenticalCalls((J.Binary) expression)) {
+                        return r;
+                    }
                     acc.rows.add(new Row(
                             findEnclosingClassName(),
                             findEnclosingMethodName(),
@@ -188,6 +191,67 @@ public class MissingExplanatoryVariableRecipe
                     return false;
                 }
                 return containsStringLiteral(expression);
+            }
+
+            /**
+             * A return like
+             * {@code SLF4J_TRACE.matches(m) || SLF4J_DEBUG.matches(m) || ... }
+             * is visually structured by repetition: every operand is the
+             * same method call with the same argument list, only the
+             * receiver varies. Naming the whole expression as
+             * {@code boolean isLog = ...} adds a line of zero clarity
+             * — the operator does the explaining.
+             *
+             * <p>Skip when (a) all operators in the binary tree are
+             * {@code &&} or all are {@code ||}; (b) every leaf is a
+             * method invocation with the same simple name; and (c) every
+             * leaf's printed argument list is identical.
+             */
+            private boolean isUniformShortCircuitChainOfIdenticalCalls(final J.Binary root) {
+                final J.Binary.Type op = root.getOperator();
+                if (op != J.Binary.Type.Or && op != J.Binary.Type.And) {
+                    return false;
+                }
+                final List<Expression> leaves = new ArrayList<>();
+                if (!flattenChainByOperator(root, op, leaves)) {
+                    return false;
+                }
+                if (leaves.size() < 2) {
+                    return false;
+                }
+                String sharedName = null;
+                String sharedArgs = null;
+                for (final Expression leaf : leaves) {
+                    if (!(leaf instanceof J.MethodInvocation invocation)) {
+                        return false;
+                    }
+                    final String simpleName = invocation.getSimpleName();
+                    final String printedArgs = invocation.getArguments().stream()
+                            .map(arg -> arg.printTrimmed(getCursor()))
+                            .reduce("", (a, b) -> a + "," + b);
+                    if (sharedName == null) {
+                        sharedName = simpleName;
+                        sharedArgs = printedArgs;
+                    } else if (!sharedName.equals(simpleName) || !sharedArgs.equals(printedArgs)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            private boolean flattenChainByOperator(
+                    final Expression expression,
+                    final J.Binary.Type op,
+                    final List<Expression> leaves) {
+                if (expression instanceof J.Binary binary) {
+                    if (binary.getOperator() != op) {
+                        return false;
+                    }
+                    return flattenChainByOperator(binary.getLeft(), op, leaves)
+                            && flattenChainByOperator(binary.getRight(), op, leaves);
+                }
+                leaves.add(expression);
+                return true;
             }
 
             private boolean containsStringLiteral(final Expression expression) {

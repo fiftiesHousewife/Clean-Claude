@@ -211,6 +211,49 @@ class MissingExplanatoryVariableRecipeTest {
     }
 
     @Test
+    void ignoresUniformOrChainOfMatchesCallsWithSameArgument() {
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import org.openrewrite.java.MethodMatcher;
+                public class ConcatThrowableMessageVisitor {
+                    private static final MethodMatcher SLF4J_TRACE = new MethodMatcher("");
+                    private static final MethodMatcher SLF4J_DEBUG = new MethodMatcher("");
+                    private static final MethodMatcher SLF4J_INFO = new MethodMatcher("");
+                    private static final MethodMatcher SLF4J_WARN = new MethodMatcher("");
+                    private static final MethodMatcher SLF4J_ERROR = new MethodMatcher("");
+                    boolean isLog(final Object method) {
+                        return SLF4J_TRACE.matches(method) || SLF4J_DEBUG.matches(method)
+                                || SLF4J_INFO.matches(method) || SLF4J_WARN.matches(method)
+                                || SLF4J_ERROR.matches(method);
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "G19.3: a chain of structurally-identical `X.matches(method)` calls joined by "
+                        + "`||` is visually structured by repetition — extracting to "
+                        + "`boolean isLog = ...` adds one line and zero clarity.");
+    }
+
+    @Test
+    void stillFiresOnMixedOperatorBinaryInReturn() {
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    int compute(int a, int b, int c, int d, int e) {
+                        return a + b * c - d + e;
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "G19 still fires on mixed-operator chains (this case differs only from the "
+                        + "original `detectsComplexBinaryExpressionInReturn` test by name).");
+    }
+
+    @Test
     void ignoresSimpleBinaryExpressionInReturn() {
         final var recipe = new MissingExplanatoryVariableRecipe();
         RecipeTestHelper.runAgainst(recipe, """
