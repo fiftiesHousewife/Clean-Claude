@@ -149,16 +149,17 @@ cleanCode {
 
 ## Suppressions
 
-Three complementary mechanisms, from narrowest to broadest:
+Five complementary mechanisms, from narrowest to broadest:
 
 | Mechanism | Where it lives | Scope |
 |---|---|---|
-| `@SuppressCleanCode({...}, reason="...")` | Method, type, constructor | Exact block, source-anchored |
+| `@SuppressWarnings("CleanCode:Gxx")` | Method, type, constructor | Exact block, JDK-standard annotation |
+| `@SuppressCleanCode({...}, reason="...")` | Method, type, constructor | Exact block, with required reason + optional `until` expiry |
 | `@SuppressCleanCode({...}, reason="...")` on `package-info.java` | Package | Every file in that package (CPD cross-file pairs too) |
 | `cleanCode.packageSuppressions = mapOf(...)` | Gradle build script | Package, config-driven — fallback for findings without a source anchor |
 | `cleanCode.disabledRecipes = listOf(...)` | Gradle build script | Heuristic code, project-wide |
 
-Prefer the annotation. Reasons live next to the code, get reviewed in PRs, and can carry `until="YYYY-MM-DD"` so the suppression expires and reappears as a finding.
+Prefer `@SuppressCleanCode` over plain `@SuppressWarnings`: it forces a `reason`, supports `until="YYYY-MM-DD"` so the suppression expires and reappears as a finding, and emits a meta-finding when the reason is blank or `TODO`. Use `@SuppressWarnings("CleanCode:Gxx")` when the IDE's existing yellow-warning UX matters more than the audit trail (e.g. one-off cleanup, no team policy on suppression hygiene).
 
 Example — suppress CPD duplication and null-density across a whole package:
 
@@ -179,6 +180,18 @@ This repo applies exactly that to `recipes/` and `refactoring/`, together with J
 Gaps worth knowing:
 - `E1` (outdated-dependency findings) have no source anchor; `@SuppressCleanCode` cannot suppress them. Use `disabledRecipes = listOf("E1")` if noise from dependency reports is unwanted.
 - When a suppression expires (`until` date in the past), the index emits a meta-finding pointing at the annotation so it surfaces in the next report.
+
+### What the localhost:7070 buttons do
+
+The interactive report has three persistence buttons. Each writes to a tracked file you can review and commit:
+
+| Button | Writes to | Effect |
+|---|---|---|
+| **Suppress** | The source file at the finding's line | Inserts `@SuppressWarnings("CleanCode:CODE")` directly above the enclosing declaration |
+| **Disable** | `build.gradle.kts` | Appends the code to `cleanCode { disabledRecipes.add(...) }` |
+| **Tune** | `build.gradle.kts` | Updates the named threshold under `cleanCode { thresholds { ... } }` |
+
+There is no separate `.cleancode/suppressions.yml` — every change goes to a file you'd commit anyway.
 
 ## Architecture
 
