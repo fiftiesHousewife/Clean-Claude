@@ -173,6 +173,44 @@ class MissingExplanatoryVariableRecipeTest {
     }
 
     @Test
+    void ignoresStringConcatReturnInsideGetterNamedMethod() {
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class ConcatThrowableMessage {
+                    public String getDescription() {
+                        return "Rewrites SLF4J log calls of the form `log.error(...)` "
+                                + "into `log.error(...)`. Peels the trailing `+ e.getMessage()` "
+                                + "off the message and passes the throwable as a separate argument "
+                                + "so SLF4J can append the stack trace. Multi-part LHS chains are "
+                                + "preserved verbatim.";
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "G19.2: a multi-line `+`-joined string-literal return inside a `getDescription()` "
+                        + "(or any `get[A-Z].*` method) is its own explanation — extracting to a "
+                        + "private static final DESCRIPTION constant just adds indirection.");
+    }
+
+    @Test
+    void stillFiresOnStringConcatReturnInNonGetter() {
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                public class Foo {
+                    String render(int n) {
+                        return "step 1 " + n + " step 2 " + n + " step 3 " + n + " step 4 " + n;
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "G19 still fires on a string concat return when the method is not a getter.");
+    }
+
+    @Test
     void ignoresSimpleBinaryExpressionInReturn() {
         final var recipe = new MissingExplanatoryVariableRecipe();
         RecipeTestHelper.runAgainst(recipe, """

@@ -155,6 +155,9 @@ public class MissingExplanatoryVariableRecipe
                 final Expression expression = r.getExpression();
 
                 if (expression instanceof J.Binary && countOperators(expression) >= BINARY_OPERATOR_THRESHOLD) {
+                    if (isStringConcatInsideAccessor(expression)) {
+                        return r;
+                    }
                     acc.rows.add(new Row(
                             findEnclosingClassName(),
                             findEnclosingMethodName(),
@@ -163,6 +166,39 @@ public class MissingExplanatoryVariableRecipe
                 }
 
                 return r;
+            }
+
+            /**
+             * A long `"..." + "..." + ...` chain returned directly from a
+             * method named like an explanatory accessor (e.g. {@code
+             * getDescription()}) is its own explanation — the accessor name
+             * names the value, and OpenRewrite recipe surfaces in particular
+             * depend on these strings being directly returned from a getter.
+             * Extracting to a {@code private static final DESCRIPTION}
+             * constant adds indirection without explanatory benefit.
+             */
+            private boolean isStringConcatInsideAccessor(final Expression expression) {
+                final J.MethodDeclaration enclosing =
+                        getCursor().firstEnclosing(J.MethodDeclaration.class);
+                if (enclosing == null) {
+                    return false;
+                }
+                final String name = enclosing.getSimpleName();
+                if (name.length() < 4 || !name.startsWith("get") || !Character.isUpperCase(name.charAt(3))) {
+                    return false;
+                }
+                return containsStringLiteral(expression);
+            }
+
+            private boolean containsStringLiteral(final Expression expression) {
+                if (expression instanceof J.Literal literal) {
+                    return literal.getType() == org.openrewrite.java.tree.JavaType.Primitive.String;
+                }
+                if (expression instanceof J.Binary binary) {
+                    return containsStringLiteral(binary.getLeft())
+                            || containsStringLiteral(binary.getRight());
+                }
+                return false;
             }
 
             private int chainDepth(final Expression expression) {
