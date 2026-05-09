@@ -214,7 +214,7 @@ CleanClaude/
 
 ```kotlin
 plugins {
-    id("io.github.fiftieshousewife.cleancode") version "0.1.3"
+    id("io.github.fiftieshousewife.cleancode") version "0.1.4"
 }
 ```
 
@@ -286,7 +286,7 @@ In the target project's `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    id("io.github.fiftieshousewife.cleancode") version "0.1.3"
+    id("io.github.fiftieshousewife.cleancode") version "0.1.4"
 }
 ```
 
