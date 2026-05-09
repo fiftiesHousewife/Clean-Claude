@@ -377,6 +377,35 @@ class InappropriateStaticRecipeTest {
     }
 
     @Test
+    void ignoresUnqualifiedCallToInheritedInstanceMethod() {
+        final var recipe = new InappropriateStaticRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import org.openrewrite.java.JavaIsoVisitor;
+                import org.openrewrite.ExecutionContext;
+                import org.openrewrite.java.tree.J;
+                public class SystemOutVisitor extends JavaIsoVisitor<ExecutionContext> {
+                    public J.MethodInvocation replacePrint(final J.MethodInvocation method, final boolean isError) {
+                        final java.util.List<?> args = method.getArguments();
+                        if (args.size() == 1) {
+                            return handleSingleArgument(getCursor(), method, args.get(0), isError);
+                        }
+                        return method;
+                    }
+                    private J.MethodInvocation handleSingleArgument(Object cursor, J.MethodInvocation method,
+                            Object arg, boolean isError) {
+                        return method;
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "G18.1: getCursor() is an inherited instance method on JavaIsoVisitor — "
+                        + "must count as instance state even when the parser can't resolve its type "
+                        + "(no classpath context in the harness)");
+    }
+
+    @Test
     void ignoresUnqualifiedContainsKeyReadOfInstanceField() {
         final var recipe = new InappropriateStaticRecipe();
         RecipeTestHelper.runAgainst(recipe, """

@@ -143,8 +143,15 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
             @Override
             public J.MethodInvocation visitMethodInvocation(final J.MethodInvocation method, final AtomicBoolean flag) {
                 final J.MethodInvocation mi = super.visitMethodInvocation(method, flag);
-                if (mi.getSelect() == null && mi.getMethodType() != null
-                        && !mi.getMethodType().hasFlags(org.openrewrite.java.tree.Flag.Static)) {
+                if (mi.getSelect() != null) {
+                    return mi;
+                }
+                // Unqualified call. If the parser resolved the type, trust it.
+                // If not (no classpath, inherited from a parent we can't see),
+                // assume instance binding — declaring it static could break an
+                // inherited-method override, e.g. JavaIsoVisitor#getCursor.
+                if (mi.getMethodType() == null
+                        || !mi.getMethodType().hasFlags(org.openrewrite.java.tree.Flag.Static)) {
                     flag.set(true);
                 }
                 return mi;
