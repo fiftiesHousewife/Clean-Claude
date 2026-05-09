@@ -406,6 +406,44 @@ class InappropriateStaticRecipeTest {
     }
 
     @Test
+    void ignoresMethodTargetedByMethodReferenceInAnotherCompilationUnit() {
+        final var recipe = new InappropriateStaticRecipe();
+        RecipeTestHelper.runAgainst(recipe,
+                """
+                package com.example;
+                public class SystemOutVisitor {
+                    public Object replacePrint(final Object method, final boolean isError) {
+                        if (method == null) {
+                            return null;
+                        }
+                        if (isError) {
+                            return method;
+                        }
+                        return method;
+                    }
+                }
+                """,
+                """
+                package com.example;
+                public enum PrintMethod {
+                    PRINT(SystemOutVisitor::replacePrint);
+                    private final Replacer replacer;
+                    PrintMethod(final Replacer r) { this.replacer = r; }
+                    @FunctionalInterface
+                    interface Replacer {
+                        Object apply(SystemOutVisitor visitor, Object method, boolean isError);
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "G18.2: replacePrint is the target of an unbound `SystemOutVisitor::replacePrint` "
+                        + "method reference (different compilation unit). Making it static would "
+                        + "change the SAM arity from (visitor, method, isError) to (method, isError) "
+                        + "and break the binding.");
+    }
+
+    @Test
     void ignoresUnqualifiedContainsKeyReadOfInstanceField() {
         final var recipe = new InappropriateStaticRecipe();
         RecipeTestHelper.runAgainst(recipe, """

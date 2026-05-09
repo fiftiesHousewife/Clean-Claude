@@ -8,7 +8,11 @@ import org.openrewrite.java.tree.J;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import io.github.fiftieshousewife.cleancode.recipes.support.BoilerplateMethodSkip;
 
@@ -18,6 +22,14 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
 
     public static class Accumulator {
         final List<Row> rows = new ArrayList<>();
+        // Class simple-name → method names referenced via `Class::method`.
+        // Anything in this map is potentially the target of an unbound
+        // method reference whose SAM depends on the receiver-as-first-arg
+        // shape; making it static would change the effective arity. Tracked
+        // across compilation units (the cross-file `PrintMethod.java`
+        // referencing `SystemOutVisitor::replacePrint` is the motivating
+        // case from CLEANCODE_PLUGIN_FEEDBACK.md G18.2).
+        final Map<String, Set<String>> methodReferenceTargets = new HashMap<>();
     }
 
     private Accumulator lastAccumulator;
@@ -69,7 +81,29 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
 
                 return m;
             }
+
+            @Override
+            public J.MemberReference visitMemberReference(final J.MemberReference memberRef, final ExecutionContext ctx) {
+                final J.MemberReference ref = super.visitMemberReference(memberRef, ctx);
+                final String containingTypeName = simpleTypeNameOf(ref.getContaining());
+                if (containingTypeName != null && ref.getReference() != null) {
+                    acc.methodReferenceTargets
+                            .computeIfAbsent(containingTypeName, k -> new HashSet<>())
+                            .add(ref.getReference().getSimpleName());
+                }
+                return ref;
+            }
         };
+    }
+
+    private static String simpleTypeNameOf(final org.openrewrite.java.tree.Expression containing) {
+        if (containing instanceof J.Identifier id) {
+            return id.getSimpleName();
+        }
+        if (containing instanceof J.FieldAccess fa) {
+            return fa.getSimpleName();
+        }
+        return null;
     }
 
     @Override
@@ -78,7 +112,19 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
     }
 
     public List<Row> collectedRows() {
-        return lastAccumulator != null ? Collections.unmodifiableList(lastAccumulator.rows) : List.of();
+        if (lastAccumulator == null) {
+            return List.of();
+        }
+        final Map<String, Set<String>> refs = lastAccumulator.methodReferenceTargets;
+        final List<Row> filtered = new ArrayList<>(lastAccumulator.rows.size());
+        for (final Row row : lastAccumulator.rows) {
+            final Set<String> refsForType = refs.get(row.className());
+            if (refsForType != null && refsForType.contains(row.methodName())) {
+                continue;
+            }
+            filtered.add(row);
+        }
+        return Collections.unmodifiableList(filtered);
     }
 
     private static boolean isStatic(final J.MethodDeclaration m) {
