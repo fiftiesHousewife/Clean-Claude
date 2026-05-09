@@ -106,6 +106,73 @@ class MissingExplanatoryVariableRecipeTest {
     }
 
     @Test
+    void ignoresChainArgumentWhereLambdaBodyIsSingleNegatedNamedCall() {
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.List;
+                public class JulToSlf4jVisitor {
+                    static boolean isJulLoggerFqn(final String typeName) {
+                        return "java.util.logging.Logger".equals(typeName);
+                    }
+                    static List<String> wrap(final List<String> v) { return v; }
+                    static List<String> withoutJulLoggerImport(final List<String> imports) {
+                        return wrap(imports.stream()
+                                .filter(imp -> !isJulLoggerFqn(imp))
+                                .toList());
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "G19.1: a stream chain whose only argument-taking intermediate is "
+                        + "`.filter(x -> !namedCall(...))` is already structurally explained — "
+                        + "the lambda body is a single negated call to a named helper.");
+    }
+
+    @Test
+    void ignoresChainArgumentWhereLambdaBodyIsMethodReference() {
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.List;
+                public class Foo {
+                    static boolean isAllowed(final String s) { return !s.isEmpty(); }
+                    static List<String> wrap(final List<String> v) { return v; }
+                    static List<String> active(final List<String> items) {
+                        return wrap(items.stream()
+                                .filter(Foo::isAllowed)
+                                .toList());
+                    }
+                }
+                """);
+
+        assertTrue(recipe.collectedRows().isEmpty(),
+                "G19.1: method-reference arguments are inherently named — "
+                        + "the chain is not 'complex' just because of the .filter(Class::method) hop.");
+    }
+
+    @Test
+    void stillFiresOnChainArgumentWithNonTrivialLambdaBody() {
+        final var recipe = new MissingExplanatoryVariableRecipe();
+        RecipeTestHelper.runAgainst(recipe, """
+                package com.example;
+                import java.util.List;
+                import java.util.stream.Collectors;
+                public class Foo {
+                    List<String> bar;
+                    void process() {
+                        System.out.println(bar.stream().filter(s -> s.length() > 0).collect(Collectors.joining(",")));
+                    }
+                }
+                """);
+
+        assertEquals(1, recipe.collectedRows().size(),
+                "G19 still fires when a lambda body is a real expression (s.length() > 0) — "
+                        + "single-call exclusion only applies to one-method-invocation lambda bodies.");
+    }
+
+    @Test
     void ignoresSimpleBinaryExpressionInReturn() {
         final var recipe = new MissingExplanatoryVariableRecipe();
         RecipeTestHelper.runAgainst(recipe, """

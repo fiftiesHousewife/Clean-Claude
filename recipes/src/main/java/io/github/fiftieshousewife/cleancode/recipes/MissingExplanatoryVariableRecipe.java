@@ -94,10 +94,51 @@ public class MissingExplanatoryVariableRecipe
                 Expression select = invocation.getSelect();
                 while (select instanceof J.MethodInvocation inner) {
                     if (!inner.getArguments().isEmpty()
-                            && !(inner.getArguments().getFirst() instanceof J.Empty)) {
+                            && !(inner.getArguments().getFirst() instanceof J.Empty)
+                            && !allArgumentsAreStructurallyExplained(inner.getArguments())) {
                         return true;
                     }
                     select = inner.getSelect();
+                }
+                return false;
+            }
+
+            /**
+             * Treats arguments shaped as {@code Class::method} or
+             * {@code x -> namedCall(...)} (with optional logical-not) as
+             * already-named — they're the *result* of an explanatory-variable
+             * refactor, not a candidate for further extraction. Without this
+             * skip, a stream chain whose only "complex" hop is
+             * {@code .filter(predicate -> !isAllowed(x))} reads as the G19
+             * smell even though the predicate is structurally trivial.
+             */
+            private boolean allArgumentsAreStructurallyExplained(final List<Expression> arguments) {
+                for (final Expression argument : arguments) {
+                    if (!isStructurallyExplained(argument)) {
+                        return false;
+                    }
+                }
+                return !arguments.isEmpty();
+            }
+
+            private boolean isStructurallyExplained(final Expression expression) {
+                if (expression instanceof J.MemberReference) {
+                    return true;
+                }
+                if (expression instanceof J.Lambda lambda) {
+                    return isSingleCallLambdaBody(lambda.getBody());
+                }
+                return false;
+            }
+
+            private boolean isSingleCallLambdaBody(final Object body) {
+                if (body instanceof J.MethodInvocation) {
+                    return true;
+                }
+                if (body instanceof J.Unary unary
+                        && unary.getOperator() == J.Unary.Type.Not
+                        && unary.getExpression() instanceof J.MethodInvocation) {
+                    return true;
                 }
                 return false;
             }
