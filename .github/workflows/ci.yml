@@ -39,7 +39,13 @@ jobs:
           path: '**/build/reports/tests/'
 
   dogfood:
-    runs-on: ubuntu-latest
+    # macos-latest matches the local dev OS so the SUMMARY/index baseline
+    # stays byte-stable. Two ubuntu runs in this repo produced consistent
+    # ±3-finding drift against macOS-baselined committed reports
+    # (different JaCoCo bytecode introspection and Surefire timing). The
+    # build job above stays on ubuntu — fast and cheap; only the
+    # finding-aggregation job needs OS parity with local dev.
+    runs-on: macos-latest
     needs: build
     steps:
       - uses: actions/checkout@v4
