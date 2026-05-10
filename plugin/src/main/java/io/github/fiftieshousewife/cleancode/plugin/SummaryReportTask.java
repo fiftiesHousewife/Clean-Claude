@@ -203,8 +203,7 @@ public abstract class SummaryReportTask extends DefaultTask {
         sb.append("<p class=\"meta\" style=\"margin-top:1.5rem\">")
                 .append("E1 findings (outdated dependencies) are emitted only at the Gradle root — ")
                 .append("sub-modules skip them once the catalog is anchored at <code>gradle/libs.versions.toml</code>. ")
-                .append("Counts are post-<code>@SuppressCleanCode</code>; raw pre-suppression baseline ")
-                .append("(1,313) lives in <code>experiment/baseline/*.json</code>.")
+                .append("Counts are post-<code>@SuppressCleanCode</code>.")
                 .append("</p>");
         sb.append("</body></html>\n");
         return sb.toString();

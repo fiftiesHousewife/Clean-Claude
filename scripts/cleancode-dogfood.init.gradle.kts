@@ -1,8 +1,8 @@
-// Init script used by scripts/run-experiment.sh to self-apply the Clean Code
-// plugin to this project's Java modules. Kept out of committed build files so
-// normal ./gradlew build does not require publishToMavenLocal first.
+// Init script used by scripts/dogfood.sh to self-apply the Clean Code plugin
+// to this project's Java modules. Kept out of committed build files so normal
+// ./gradlew build does not require publishToMavenLocal first.
 //
-// Preconditions (handled by run-experiment.sh):
+// Preconditions (handled by dogfood.sh):
 //   1. The plugin is already in ~/.m2/repository (./gradlew publishToMavenLocal)
 //   2. This init script is passed via --init-script
 //

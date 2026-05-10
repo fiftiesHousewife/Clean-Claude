@@ -367,9 +367,8 @@ The plugin analyses its own codebase. Each module report includes clickable link
 
 Key context when reading the numbers:
 
-- Counts are **post-`@SuppressCleanCode`**. The raw pre-suppression baseline (1,313) lives in `experiment/baseline/*.json`; `recipes/` and `refactoring/` packages are annotated, which hides most of their findings.
+- Counts are **post-`@SuppressCleanCode`**; `recipes/` and `refactoring/` packages are annotated, which hides most of their findings.
 - **E1 findings** (outdated dependencies) are emitted only at the Gradle root — sub-modules skip them once the catalog is anchored at `gradle/libs.versions.toml`.
-- The `experiment/manual-pilot` branch has agent-fix commits on top of an older tip and is **not merged into `main`** by design — it's a side-by-side data point for the fix-cost experiment, not a shipping branch.
 
 Regenerate locally with (self-applied via init script, no changes to committed build files):
 
@@ -385,90 +384,6 @@ When you've intentionally changed something that shifts finding counts (a rule e
 ./scripts/dogfood.sh --update-baseline
 ```
 
-## Experiment: Manual vs Recipe-Assisted Fix
+## Skills
 
-The project includes token monitoring hooks and a structured experiment plan to compare the cost of fixing all findings manually vs using the refactoring recipes first.
-
-**Protocol:** 6 runs total — 3 manual fix sessions, 3 recipe-assisted sessions. Each starts from the same commit, uses a clean Claude Code session, and saves a git patch + token logs.
-
-**Metrics compared:**
-- Total tokens consumed
-- Number of tool calls and turns
-- Cache hit ratio
-- Patch size and findings remaining
-
-### Skills
-
-Slash-command skills that drive the workflow:
-
-| Skill | Usage | Purpose |
-|---|---|---|
-| `/clean-code` | `/clean-code` | Apply the plugin to any project, generate briefs, delegate per-file fixes to agents |
-| `/experiment` | `/experiment manual 1` | Create branch, clear logs, print the fix prompt |
-| `/experiment-save` | `/experiment-save` | Save patch + token logs after a run |
-| `/experiment-analyse` | `/experiment-analyse` | Compare all runs and write `experiment/analysis.md` |
-
-The plugin also ships ten domain skills (`clean-code-functions`, `clean-code-classes`, `clean-code-naming`, `clean-code-comments-and-clutter`, `clean-code-conditionals-and-expressions`, `clean-code-exception-handling`, `clean-code-null-handling`, `clean-code-java-idioms`, `clean-code-test-quality`, `clean-code-project-conventions`). Claude Code auto-discovers them from `.claude/skills/` and the `cleanCodeFixPlan` briefs route findings to the correct one via `SkillPathRegistry`.
-
-### Running a single experiment (scripted, one command)
-
-```bash
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
-scripts/run-experiment.sh manual 1
-```
-
-The script creates the branch, regenerates per-file fix briefs, invokes `claude -p` non-interactively with the fix prompt, and saves the patch + token usage JSON to `experiment/`. Suitable for `cron` or the `schedule` skill — no interactive input required.
-
-#### Live feedback
-
-The main terminal shows the gradle output and Claude's streamed responses. For a skimmable view of tool activity, open a second terminal:
-
-```bash
-tail -f .claude/tool-log.jsonl | jq -r '"\(.tool) \(.detail // "")"'
-```
-
-To track commit accumulation on the experiment branch, a third terminal:
-
-```bash
-while sleep 60; do
-  git -C /path/to/CleanClaude log --oneline experiment/manual-1 ^main | wc -l
-done
-```
-
-Stop the run with Ctrl-C in the main terminal.
-
-### Running a single experiment (interactive)
-
-```bash
-# 1. In a Claude Code session, set up the run:
-/experiment manual 1
-
-# 2. Exit, then start a fresh session with the task label:
-CLAUDE_TASK_LABEL="manual-fix-1" claude
-
-# 3. Paste the fix prompt (printed by /experiment) and let it run
-
-# 4. When done, save outputs:
-/experiment-save
-
-# 5. Return to main and repeat for the next run
-git checkout main
-```
-
-### Scheduling overnight runs
-
-Any scheduler that can invoke a shell command works. With the `schedule` skill inside Claude Code:
-
-```
-/schedule create --cron "30 23 * * *" --command "scripts/run-experiment.sh manual 1"
-```
-
-Or from `cron`:
-
-```
-30 23 * * * cd /path/to/CleanClaude && scripts/run-experiment.sh manual 1 > experiment/manual-1.log 2>&1
-```
-
-### Analysis
-
-After all 6 runs, invoke `/experiment-analyse` to generate a comparison report at `experiment/analysis.md`.
+The plugin ships ten domain skills (`clean-code-functions`, `clean-code-classes`, `clean-code-naming`, `clean-code-comments-and-clutter`, `clean-code-conditionals-and-expressions`, `clean-code-exception-handling`, `clean-code-null-handling`, `clean-code-java-idioms`, `clean-code-test-quality`, `clean-code-project-conventions`) plus the umbrella `clean-code` skill. Claude Code auto-discovers them from `.claude/skills/`, and the `cleanCodeFixPlan` briefs route findings to the correct one via `SkillPathRegistry`.
