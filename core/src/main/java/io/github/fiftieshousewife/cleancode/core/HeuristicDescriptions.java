@@ -16,6 +16,7 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.C5, "Commented-Out Code"),
             Map.entry(HeuristicCode.E1, "Build Requires More Than One Step"),
             Map.entry(HeuristicCode.E2, "Tests Require More Than One Step"),
+            Map.entry(HeuristicCode.E3, "Outdated Major-Version Dependency"),
             Map.entry(HeuristicCode.F1, "Too Many Arguments"),
             Map.entry(HeuristicCode.F2, "Output Arguments"),
             Map.entry(HeuristicCode.F3, "Flag Arguments"),
@@ -123,6 +124,12 @@ public final class HeuristicDescriptions {
                     "You should be able to run all the unit tests with a single trivial command. " +
                     "Being able to run tests quickly, easily, and without fuss is so fundamental " +
                     "that a failure here poisons the entire development experience."),
+            Map.entry(HeuristicCode.E3,
+                    "A major-version dependency upgrade is an environment risk distinct from a " +
+                    "patch or minor bump. Major versions ship breaking changes; the bump cannot " +
+                    "be applied blind and triaging it together with safe patch/minor updates " +
+                    "muddles the signal. Take majors deliberately: read the changelog, plan a " +
+                    "compatibility commit, and budget for the downstream fan-out."),
 
             // Functions
             Map.entry(HeuristicCode.F1,
@@ -392,6 +399,7 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.C5, "Clean Code Ch.17 'Smells and Heuristics — Comments' p.287"),
             Map.entry(HeuristicCode.E1, "Clean Code Ch.17 'Smells and Heuristics — Environment' p.287"),
             Map.entry(HeuristicCode.E2, "Clean Code Ch.17 'Smells and Heuristics — Environment' p.287"),
+            Map.entry(HeuristicCode.E3, "Extends Clean Code Ch.17 E1; SemVer breaking changes warrant separate triage from patch/minor."),
             Map.entry(HeuristicCode.F1, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
             Map.entry(HeuristicCode.F2, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
             Map.entry(HeuristicCode.F3, "Clean Code Ch.17 'Smells and Heuristics — Functions' p.288"),
@@ -464,7 +472,8 @@ public final class HeuristicDescriptions {
     private static final Map<HeuristicCode, String> SUMMARIES = Map.ofEntries(
             Map.entry(HeuristicCode.C3, "Delete comments that restate the code."),
             Map.entry(HeuristicCode.C5, "Delete commented-out code. Source control remembers."),
-            Map.entry(HeuristicCode.E1, "Keep dependencies up to date."),
+            Map.entry(HeuristicCode.E1, "Keep dependencies up to date (patch and minor bumps)."),
+            Map.entry(HeuristicCode.E3, "Triage major-version dependency upgrades deliberately."),
             Map.entry(HeuristicCode.F1, "Reduce arguments — three is the practical maximum."),
             Map.entry(HeuristicCode.F2, "Don't mutate arguments. Return the result."),
             Map.entry(HeuristicCode.F3, "Split boolean-parameterised methods into two."),

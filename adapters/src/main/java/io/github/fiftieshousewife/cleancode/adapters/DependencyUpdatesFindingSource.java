@@ -74,7 +74,7 @@ public class DependencyUpdatesFindingSource implements FindingSource {
 
     @Override
     public Set<HeuristicCode> coveredCodes() {
-        return Set.of(HeuristicCode.E1);
+        return Set.of(HeuristicCode.E1, HeuristicCode.E3);
     }
 
     @Override
@@ -178,13 +178,60 @@ public class DependencyUpdatesFindingSource implements FindingSource {
             return;
         }
 
+        final boolean majorBump = isMajorVersionBump(currentVersion, latestVersion);
+        final HeuristicCode code = majorBump ? HeuristicCode.E3 : HeuristicCode.E1;
         final String message = "Outdated dependency %s [%s -> %s]"
                 .formatted(coordinate, currentVersion, latestVersion);
         findings.add(hasCatalog
-                ? Finding.at(HeuristicCode.E1, VERSION_CATALOG, 0, 0,
+                ? Finding.at(code, VERSION_CATALOG, 0, 0,
                         message, Severity.ERROR, Confidence.HIGH, TOOL, coordinate)
-                : Finding.projectLevel(HeuristicCode.E1,
+                : Finding.projectLevel(code,
                         message, Severity.ERROR, Confidence.HIGH, TOOL, coordinate));
+    }
+
+    /**
+     * A major-version bump means the leading numeric component of the
+     * version string has changed — e.g. 1.4.2 → 2.0.0, or 8.79.0 → 13.0.0.
+     * Non-numeric prefixes (rare but seen with vendor-tagged versions like
+     * "v1.0.0") are stripped before comparison. When either version lacks
+     * a parseable leading number, the bump is conservatively classified
+     * as patch/minor (E1) so consumers don't get surprise E3 noise from
+     * exotic version strings.
+     */
+    static boolean isMajorVersionBump(final String currentVersion, final String latestVersion) {
+        final Integer current = leadingMajor(currentVersion);
+        final Integer latest = leadingMajor(latestVersion);
+        if (current == null || latest == null) {
+            return false;
+        }
+        return latest > current;
+    }
+
+    private static Integer leadingMajor(final String version) {
+        if (version == null || version.isBlank()) {
+            return null;
+        }
+        final String trimmed = version.startsWith("v") || version.startsWith("V")
+                ? version.substring(1) : version;
+        final int dot = trimmed.indexOf('.');
+        final int dash = trimmed.indexOf('-');
+        final int end = firstNonNegative(dot, dash, trimmed.length());
+        try {
+            return Integer.parseInt(trimmed.substring(0, end));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static int firstNonNegative(final int a, final int b, final int fallback) {
+        int result = fallback;
+        if (a >= 0 && a < result) {
+            result = a;
+        }
+        if (b >= 0 && b < result) {
+            result = b;
+        }
+        return result;
     }
 
     private String latestRelease(final JsonObject dep) {

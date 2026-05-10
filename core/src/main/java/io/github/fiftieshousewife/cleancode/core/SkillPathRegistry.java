@@ -53,6 +53,7 @@ public final class SkillPathRegistry {
 
             // clean-code-dependency-updates
             Map.entry(HeuristicCode.E1, "clean-code-dependency-updates/SKILL.md"),
+            Map.entry(HeuristicCode.E3, "clean-code-dependency-updates/SKILL.md"),
 
             // clean-code-comments-and-clutter
             Map.entry(HeuristicCode.C2, "clean-code-comments-and-clutter/SKILL.md"),

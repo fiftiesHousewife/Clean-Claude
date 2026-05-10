@@ -199,9 +199,14 @@ public final class FixBriefGenerator {
         }
         if (code == HeuristicCode.E1) {
             sb.append("> Act on every E1 finding. Bump the version in `gradle/libs.versions.toml`, "
-                    + "one commit per dep, and run `./gradlew test` before moving on. Only skip a "
-                    + "bump when it is a major-version jump with a breaking changelog — document the "
-                    + "skip and the changelog link in your final summary.\n\n");
+                    + "one commit per dep, and run `./gradlew test` before moving on. These are "
+                    + "patch/minor bumps — major-version jumps surface separately as E3.\n\n");
+        }
+        if (code == HeuristicCode.E3) {
+            sb.append("> E3 findings are major-version bumps; they ship breaking changes. Do NOT "
+                    + "treat them as routine. For each one: read the changelog, plan a separate "
+                    + "compatibility commit, and either bump now (with the changelog link in your "
+                    + "summary) or skip with a documented reason.\n\n");
         }
         for (final Finding f : findings) {
             sb.append("- ");

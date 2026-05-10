@@ -8,7 +8,7 @@ public enum HeuristicCode {
     C1, C2, C3, C4, C5,
 
     // Environment
-    E1, E2,
+    E1, E2, E3,
 
     // Functions
     F1, F2, F3, F4,
@@ -38,7 +38,7 @@ public enum HeuristicCode {
     META_SUPPRESSION_EXPIRED,
     META_SUPPRESSION_NO_REASON;
 
-    private static final Set<HeuristicCode> ENVIRONMENT_DEPENDENT = EnumSet.of(E1, T9);
+    private static final Set<HeuristicCode> ENVIRONMENT_DEPENDENT = EnumSet.of(E1, E3, T9);
 
     /**
      * Whether this heuristic's count varies with factors outside the source tree
@@ -46,7 +46,8 @@ public enum HeuristicCode {
      * Such codes are excluded from the deterministic drift-checked summary so the
      * check doesn't fire on every new upstream release or busy CI run.
      *
-     * <p>{@code E1} (outdated dependencies) varies with what's published to
+     * <p>{@code E1} (outdated dependencies, patch/minor) and {@code E3}
+     * (outdated dependencies, major) both vary with what's published to
      * Maven Central. {@code T9} (slow tests, measured at Surefire runtime)
      * varies with machine load and JVM warm-up — a 250ms test on an idle
      * laptop can become a 1.2s test on a busy CI runner without the source

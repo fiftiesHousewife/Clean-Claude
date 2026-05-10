@@ -196,6 +196,90 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
+    void emitsE3WhenLatestVersionIsMajorBump(@TempDir final Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "org.example",
+                        "name": "framework",
+                        "version": "10.21.4",
+                        "available": { "release": "13.4.2" }
+                      },
+                      {
+                        "group": "com.google.code.gson",
+                        "name": "gson",
+                        "version": "2.10.1",
+                        "available": { "release": "2.11.0" }
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertAll(
+                () -> assertEquals(2, findings.size()),
+                () -> assertEquals(HeuristicCode.E3, findings.get(0).code(),
+                        "framework 10 → 13 is a major-version bump"),
+                () -> assertEquals(HeuristicCode.E1, findings.get(1).code(),
+                        "Gson 2.10 → 2.11 stays minor → still E1"));
+    }
+
+    @Test
+    void treatsExoticVersionStringsAsPatchMinorByDefault(@TempDir final Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "org.example",
+                        "name": "lib",
+                        "version": "RELEASE-2024",
+                        "available": { "release": "RELEASE-2026" }
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertEquals(HeuristicCode.E1, findings.get(0).code(),
+                "unparseable leading numeric component falls back to E1 to avoid surprise E3 noise");
+    }
+
+    @Test
+    void recognisesVPrefixedVersionsForMajorComparison(@TempDir final Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "org.example",
+                        "name": "lib",
+                        "version": "v1.4.0",
+                        "available": { "release": "v2.0.0" }
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertEquals(HeuristicCode.E3, findings.get(0).code());
+    }
+
+    @Test
     void deduplicatesCoordinatesAcrossReport(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """

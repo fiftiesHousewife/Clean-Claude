@@ -95,6 +95,6 @@ class HeuristicCodeTest {
 
     @Test
     void totalEnumCount() {
-        assertEquals(76, HeuristicCode.values().length);
+        assertEquals(77, HeuristicCode.values().length);
     }
 }
