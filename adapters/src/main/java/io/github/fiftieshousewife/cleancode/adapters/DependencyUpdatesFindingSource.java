@@ -17,9 +17,12 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parses Ben-Manes dependency-updates JSON reports and produces E1 findings
@@ -30,6 +33,34 @@ public class DependencyUpdatesFindingSource implements FindingSource {
     private static final String TOOL = "dependency-updates";
     private static final String REPORT_FILE = "dependencyUpdates/report.json";
     private static final String VERSION_CATALOG = "gradle/libs.versions.toml";
+
+    private static final Pattern CATALOG_MODULE = Pattern.compile(
+            "module\\s*=\\s*\"([^\"]+):([^\":]+)\"");
+    private static final Pattern CATALOG_GROUP_NAME = Pattern.compile(
+            "group\\s*=\\s*\"([^\"]+)\"\\s*,\\s*name\\s*=\\s*\"([^\"]+)\"");
+    private static final Pattern CATALOG_NAME_GROUP = Pattern.compile(
+            "name\\s*=\\s*\"([^\"]+)\"\\s*,\\s*group\\s*=\\s*\"([^\"]+)\"");
+    private static final Pattern CATALOG_SHORTHAND = Pattern.compile(
+            "=\\s*\"([^\":]+):([^\":]+):[^\"]+\"");
+
+    /**
+     * Coordinates the Clean Code plugin pulls in transitively (Checkstyle, PMD,
+     * SpotBugs, etc.). Consumers can't act on bumps to these without changes
+     * inside the plugin itself, so we strip them from E1 findings when no
+     * version catalog narrows the scope further.
+     */
+    private static final Set<String> CLEAN_CODE_INTERNAL_GROUPS = Set.of(
+            "com.puppycrawl.tools",
+            "net.sourceforge.pmd",
+            "com.github.spotbugs",
+            "com.github.spotbugs.snom",
+            "com.google.errorprone",
+            "de.aaschmid",
+            "de.thetaphi",
+            "com.diffplug.spotless",
+            "com.gradleup.shadow",
+            "com.vanniktech",
+            "info.solidsoft.pitest");
 
     @Override
     public String id() {
@@ -63,10 +94,15 @@ public class DependencyUpdatesFindingSource implements FindingSource {
             return List.of();
         }
 
+        final boolean hasCatalog = location == CatalogLocation.HERE;
+        final Set<String> declaredCoordinates = hasCatalog
+                ? readDeclaredCoordinates(context.projectRoot().resolve(VERSION_CATALOG))
+                : Set.of();
+
         final JsonObject root = parseReport(report);
         final List<Finding> findings = new ArrayList<>();
         final Set<String> seenCoordinates = new LinkedHashSet<>();
-        extractOutdated(root, findings, seenCoordinates, location == CatalogLocation.HERE);
+        extractOutdated(root, findings, seenCoordinates, hasCatalog, declaredCoordinates);
         return findings;
     }
 
@@ -99,7 +135,8 @@ public class DependencyUpdatesFindingSource implements FindingSource {
     }
 
     private void extractOutdated(final JsonObject root, final List<Finding> findings,
-                                 final Set<String> seenCoordinates, final boolean hasCatalog) {
+                                 final Set<String> seenCoordinates, final boolean hasCatalog,
+                                 final Set<String> declaredCoordinates) {
         final JsonObject outdated = root.getAsJsonObject("outdated");
         if (outdated == null) {
             return;
@@ -111,21 +148,32 @@ public class DependencyUpdatesFindingSource implements FindingSource {
         }
 
         dependencies.forEach(dep ->
-                extractDependency(dep.getAsJsonObject(), findings, seenCoordinates, hasCatalog));
+                extractDependency(dep.getAsJsonObject(), findings, seenCoordinates,
+                        hasCatalog, declaredCoordinates));
     }
 
     private void extractDependency(final JsonObject dep, final List<Finding> findings,
-                                   final Set<String> seenCoordinates, final boolean hasCatalog) {
+                                   final Set<String> seenCoordinates, final boolean hasCatalog,
+                                   final Set<String> declaredCoordinates) {
         final String group = dep.get("group").getAsString();
         final String name = dep.get("name").getAsString();
+        final String coordinate = group + ":" + name;
+
+        if (hasCatalog) {
+            if (!declaredCoordinates.contains(coordinate)) {
+                return;
+            }
+        } else if (CLEAN_CODE_INTERNAL_GROUPS.contains(group)) {
+            return;
+        }
+
         final String currentVersion = dep.get("version").getAsString();
-        final String latestVersion = latestAvailable(dep);
+        final String latestVersion = latestRelease(dep);
 
         if (latestVersion == null) {
             return;
         }
 
-        final String coordinate = group + ":" + name;
         if (!seenCoordinates.add(coordinate)) {
             return;
         }
@@ -139,22 +187,36 @@ public class DependencyUpdatesFindingSource implements FindingSource {
                         message, Severity.ERROR, Confidence.HIGH, TOOL, coordinate));
     }
 
-    private String latestAvailable(final JsonObject dep) {
+    private String latestRelease(final JsonObject dep) {
         final JsonObject available = dep.getAsJsonObject("available");
         if (available == null) {
             return null;
         }
-        return firstNonNull(available, "milestone", "release", "integration");
+        final JsonElement release = available.get("release");
+        return release != null && !release.isJsonNull() ? release.getAsString() : null;
     }
 
-    private String firstNonNull(final JsonObject obj, final String... keys) {
-        for (final String key : keys) {
-            final JsonElement element = obj.get(key);
-            if (element != null && !element.isJsonNull()) {
-                return element.getAsString();
-            }
+    private Set<String> readDeclaredCoordinates(final Path catalog) {
+        try {
+            final String text = Files.readString(catalog);
+            final Set<String> coordinates = new HashSet<>();
+            collectCoordinates(text, CATALOG_MODULE, coordinates, 1, 2);
+            collectCoordinates(text, CATALOG_GROUP_NAME, coordinates, 1, 2);
+            collectCoordinates(text, CATALOG_NAME_GROUP, coordinates, 2, 1);
+            collectCoordinates(text, CATALOG_SHORTHAND, coordinates, 1, 2);
+            return Set.copyOf(coordinates);
+        } catch (IOException e) {
+            return Set.of();
         }
-        return null;
+    }
+
+    private static void collectCoordinates(final String text, final Pattern pattern,
+                                           final Set<String> sink,
+                                           final int groupIndex, final int nameIndex) {
+        final Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            sink.add(matcher.group(groupIndex) + ":" + matcher.group(nameIndex));
+        }
     }
 
     private Path reportPath(final ProjectContext context) {

@@ -33,7 +33,7 @@ class DependencyUpdatesFindingSourceTest {
                         "group": "org.openrewrite",
                         "name": "rewrite-core",
                         "version": "8.40.2",
-                        "available": { "milestone": "8.79.3" }
+                        "available": { "release": "8.79.3" }
                       },
                       {
                         "group": "com.google.code.gson",
@@ -123,7 +123,10 @@ class DependencyUpdatesFindingSourceTest {
                 }
                 """);
         Files.createDirectories(tempDir.resolve("gradle"));
-        Files.writeString(tempDir.resolve("gradle/libs.versions.toml"), "[versions]\n");
+        Files.writeString(tempDir.resolve("gradle/libs.versions.toml"), """
+                [libraries]
+                lib = { module = "org.example:lib", version = "1.0.0" }
+                """);
 
         final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
         final List<Finding> findings = source.collectFindings(context);
@@ -224,7 +227,7 @@ class DependencyUpdatesFindingSourceTest {
     }
 
     @Test
-    void prefersMilestoneOverReleaseVersion(@TempDir final Path tempDir) throws Exception {
+    void recommendsReleaseEvenWhenMilestoneIsHigher(@TempDir final Path tempDir) throws Exception {
         final Path buildDir = tempDir.resolve("build");
         writeReport(buildDir, """
                 {
@@ -234,7 +237,7 @@ class DependencyUpdatesFindingSourceTest {
                         "group": "org.example",
                         "name": "lib",
                         "version": "1.0.0",
-                        "available": { "milestone": "1.1.0", "release": "1.2.0" }
+                        "available": { "milestone": "2.0.0-alpha.1", "release": "1.2.0" }
                       }
                     ]
                   }
@@ -244,7 +247,148 @@ class DependencyUpdatesFindingSourceTest {
         final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
         final List<Finding> findings = source.collectFindings(context);
 
-        assertTrue(findings.get(0).message().contains("1.1.0"));
+        assertAll(
+                () -> assertEquals(1, findings.size()),
+                () -> assertTrue(findings.get(0).message().contains("1.2.0")),
+                () -> assertFalse(findings.get(0).message().contains("alpha"),
+                        "must never recommend a milestone/RC/alpha version"));
+    }
+
+    @Test
+    void skipsDependencyWhenOnlyMilestoneOrIntegrationAvailable(@TempDir final Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "org.example",
+                        "name": "lib",
+                        "version": "1.0.0",
+                        "available": { "milestone": "2.0.0-alpha.1", "integration": "2.0.0-SNAPSHOT" }
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertTrue(findings.isEmpty(),
+                "without a stable release, no E1 finding — pre-release versions never count as 'outdated'");
+    }
+
+    @Test
+    void filtersToCoordinatesDeclaredInVersionCatalog(@TempDir final Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "com.google.code.gson",
+                        "name": "gson",
+                        "version": "2.10.1",
+                        "available": { "release": "2.11.0" }
+                      },
+                      {
+                        "group": "com.puppycrawl.tools",
+                        "name": "checkstyle",
+                        "version": "10.21.4",
+                        "available": { "release": "13.4.2" }
+                      }
+                    ]
+                  }
+                }
+                """);
+        Files.createDirectories(tempDir.resolve("gradle"));
+        Files.writeString(tempDir.resolve("gradle/libs.versions.toml"), """
+                [versions]
+                gson = "2.10.1"
+
+                [libraries]
+                gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertAll(
+                () -> assertEquals(1, findings.size(),
+                        "only catalog-declared coordinates produce E1 findings"),
+                () -> assertTrue(findings.get(0).message().contains("gson")),
+                () -> assertFalse(findings.get(0).message().contains("checkstyle"),
+                        "Checkstyle is pulled in by the cleancode plugin, not declared in the consumer's catalog"));
+    }
+
+    @Test
+    void readsCatalogShorthandLibraryDeclarations(@TempDir final Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "com.google.code.gson",
+                        "name": "gson",
+                        "version": "2.10.1",
+                        "available": { "release": "2.11.0" }
+                      }
+                    ]
+                  }
+                }
+                """);
+        Files.createDirectories(tempDir.resolve("gradle"));
+        Files.writeString(tempDir.resolve("gradle/libs.versions.toml"), """
+                [libraries]
+                gson = "com.google.code.gson:gson:2.10.1"
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertEquals(1, findings.size(),
+                "shorthand 'group:name:version' library entries are recognised by the catalog filter");
+    }
+
+    @Test
+    void skipsCleanCodeInternalCoordinatesWhenNoCatalogPresent(@TempDir final Path tempDir) throws Exception {
+        final Path buildDir = tempDir.resolve("build");
+        writeReport(buildDir, """
+                {
+                  "outdated": {
+                    "dependencies": [
+                      {
+                        "group": "com.puppycrawl.tools",
+                        "name": "checkstyle",
+                        "version": "10.21.4",
+                        "available": { "release": "13.4.2" }
+                      },
+                      {
+                        "group": "net.sourceforge.pmd",
+                        "name": "pmd-java",
+                        "version": "7.9.0",
+                        "available": { "release": "7.24.0" }
+                      },
+                      {
+                        "group": "com.example",
+                        "name": "user-lib",
+                        "version": "1.0.0",
+                        "available": { "release": "1.1.0" }
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        final ProjectContext context = contextWithBuildDir(tempDir, buildDir);
+        final List<Finding> findings = source.collectFindings(context);
+
+        assertAll(
+                () -> assertEquals(1, findings.size(),
+                        "Checkstyle and PMD come from the cleancode plugin classpath; only the user's lib remains"),
+                () -> assertTrue(findings.get(0).message().contains("user-lib")));
     }
 
     private void writeReport(final Path buildDir, final String json) throws Exception {
