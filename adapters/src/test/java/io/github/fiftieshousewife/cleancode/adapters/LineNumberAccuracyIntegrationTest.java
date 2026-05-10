@@ -93,6 +93,7 @@ class LineNumberAccuracyIntegrationTest {
         p.put(HeuristicCode.G24, Pattern.compile(".{120,}"));
         p.put(HeuristicCode.G25, Pattern.compile("[^a-zA-Z_\"]\\d{2,}|\\b\\d+\\.\\d+\\b"));
         p.put(HeuristicCode.G5, Pattern.compile("\".*\""));
+        p.put(HeuristicCode.G37, Pattern.compile("\".*\""));
         p.put(HeuristicCode.G18, Pattern.compile("\\b(public|private|protected|static)\\b.*\\("));
         // Method-level findings: the line MUST contain a method
         // declaration, not just any code. Rejects the common "fell back

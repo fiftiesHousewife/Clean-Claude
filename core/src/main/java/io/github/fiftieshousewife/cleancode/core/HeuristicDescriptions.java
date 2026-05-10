@@ -57,6 +57,7 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.G34, "Functions Should Descend Only One Level of Abstraction"),
             Map.entry(HeuristicCode.G35, "Keep Configurable Data at High Levels"),
             Map.entry(HeuristicCode.G36, "Avoid Transitive Navigation"),
+            Map.entry(HeuristicCode.G37, "Magic String Literals"),
             Map.entry(HeuristicCode.J1, "Avoid Long Import Lists by Using Wildcards"),
             Map.entry(HeuristicCode.J2, "Don't Inherit Constants"),
             Map.entry(HeuristicCode.J3, "Constants versus Enums"),
@@ -292,6 +293,13 @@ public final class HeuristicDescriptions {
                     "objects passed as arguments to f, and objects held in instance variables. " +
                     "a.getB().getC().doSomething() is a train wreck — it couples you to the " +
                     "entire chain."),
+            Map.entry(HeuristicCode.G37,
+                    "String literals repeated across a class — \"POST\", \".java\", \"UTF-8\" " +
+                    "— have the same problem as magic numbers: no context, no documentation, no " +
+                    "single source of truth. The fix is identical to G25: extract them to a " +
+                    "named constant. Tracked separately from CPD's block-duplication finding " +
+                    "(G5) because the fix shape is different — extract a constant, not refactor " +
+                    "a block."),
 
             // Java
             Map.entry(HeuristicCode.J1,
@@ -440,6 +448,7 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.G34, "Clean Code Ch.17 'Smells and Heuristics — General' p.304"),
             Map.entry(HeuristicCode.G35, "Clean Code Ch.17 'Smells and Heuristics — General' p.306"),
             Map.entry(HeuristicCode.G36, "Clean Code Ch.17 'Smells and Heuristics — General' p.306"),
+            Map.entry(HeuristicCode.G37, "Project extension; mirrors G25 (magic numbers) for repeated string literals. Distinct from CPD block-duplication (G5)."),
             Map.entry(HeuristicCode.J1, "Clean Code Ch.17 'Smells and Heuristics — Java' p.307"),
             Map.entry(HeuristicCode.J2, "Clean Code Ch.17 'Smells and Heuristics — Java' p.307"),
             Map.entry(HeuristicCode.J3, "Clean Code Ch.17 'Smells and Heuristics — Java' p.308"),
@@ -502,6 +511,7 @@ public final class HeuristicDescriptions {
             Map.entry(HeuristicCode.G34, "Section comments mean the method mixes abstraction levels. Extract."),
             Map.entry(HeuristicCode.G35, "Extract magic numbers from private methods to named class constants."),
             Map.entry(HeuristicCode.G36, "Don't reach through objects. Talk to immediate collaborators only."),
+            Map.entry(HeuristicCode.G37, "Extract repeated string literals to a named constant."),
             Map.entry(HeuristicCode.J1, "Replace wildcard imports with explicit ones."),
             Map.entry(HeuristicCode.J2, "Use static imports instead of inheriting from a constants interface."),
             Map.entry(HeuristicCode.J3, "Use enums instead of static final constant groups."),

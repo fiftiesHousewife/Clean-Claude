@@ -73,6 +73,7 @@ public final class SkillPathRegistry {
             Map.entry(HeuristicCode.J3, "clean-code-java-idioms/SKILL.md"),
             Map.entry(HeuristicCode.G4, "clean-code-java-idioms/SKILL.md"),
             Map.entry(HeuristicCode.G25, "clean-code-java-idioms/SKILL.md"),
+            Map.entry(HeuristicCode.G37, "clean-code-java-idioms/SKILL.md"),
             Map.entry(HeuristicCode.G26, "clean-code-java-idioms/SKILL.md"),
 
             // clean-code-test-quality

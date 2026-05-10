@@ -122,6 +122,7 @@ public class OpenRewriteFindingSource implements FindingSource {
             HeuristicCode.G23, HeuristicCode.G24, HeuristicCode.G25, HeuristicCode.G26,
             HeuristicCode.G28, HeuristicCode.G29,
             HeuristicCode.G30, HeuristicCode.G33, HeuristicCode.G34, HeuristicCode.G36,
+            HeuristicCode.G37,
             HeuristicCode.J2, HeuristicCode.J3,
             HeuristicCode.N1, HeuristicCode.N5, HeuristicCode.N6, HeuristicCode.N7,
             HeuristicCode.T1, HeuristicCode.T3, HeuristicCode.T4);
@@ -891,10 +892,12 @@ public class OpenRewriteFindingSource implements FindingSource {
     }
 
     private List<Finding> mapMagicStrings(final List<MagicStringRecipe.Row> rows) {
-        // G25 in Clean Code is specifically about magic NUMBERS. Repeated
-        // string literals are duplication — G5. The fix (extract to a
-        // named constant) is the same shape, but the heuristic banner the
-        // user reads should match the kind of smell.
+        // Clean Code's G25 covers magic NUMBERS specifically; G5 covers
+        // CPD-style block duplication. Repeated string literals share G25's
+        // fix shape (extract to a named constant) but neither code is a
+        // good fit on its own, so we route them to G37 — a project
+        // extension that keeps block-duplication (G5) and string-literal
+        // duplication separate, since they need different fixes.
         //
         // The recipe currently records lineNumber=-1 for each occurrence,
         // so we resolve the line ourselves by searching the source for
@@ -902,7 +905,7 @@ public class OpenRewriteFindingSource implements FindingSource {
         return rows.stream()
                 .map(r -> {
                     final int line = lineOfFirstStringLiteral(r.className(), r.value());
-                    return finding(HeuristicCode.G5, r.className(), line,
+                    return finding(HeuristicCode.G37, r.className(), line,
                             "String \"%s\" appears %d times — extract to a named constant".formatted(
                                     r.value(), r.count()));
                 })
