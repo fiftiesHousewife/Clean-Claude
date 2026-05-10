@@ -228,8 +228,8 @@ If you do something a certain way, do all similar things the same way. If you na
 
 Clutter is anything that adds noise without adding value: unused variables, never-called functions, redundant imports, purposeless comments. Keep your source files clean. A lean source file is easier to read, easier to understand, and easier to change.
 
-**Detection:** [(refactoring) DeleteUnusedImportRecipe](refactoring/src/main/java/io/github/fiftieshousewife/cleancode/refactoring/DeleteUnusedImportRecipe.java) — removes unused import statements. Also PMD `UnusedImports`, Checkstyle `UnusedImports`, `RedundantImport`. [FullyQualifiedReferenceRecipe](recipes/src/main/java/io/github/fiftieshousewife/cleancode/recipes/FullyQualifiedReferenceRecipe.java) — flags inline FQN references (`java.util.List` used directly instead of imported).
-**Fix:** [ShortenFullyQualifiedReferencesRecipe](refactoring/src/main/java/io/github/fiftieshousewife/cleancode/refactoring/ShortenFullyQualifiedReferencesRecipe.java) — rewrites inline FQN references into imports + short names.
+**Detection:** Upstream `org.openrewrite.java.RemoveUnusedImports` — removes unused import statements. Also PMD `UnusedImports`, Checkstyle `UnusedImports`, `RedundantImport`. [FullyQualifiedReferenceRecipe](recipes/src/main/java/io/github/fiftieshousewife/cleancode/recipes/FullyQualifiedReferenceRecipe.java) — flags inline FQN references (`java.util.List` used directly instead of imported).
+**Fix:** Upstream `org.openrewrite.java.ShortenFullyQualifiedTypeReferences` — rewrites inline FQN references into imports + short names.
 **Skill file:** [clean-code-comments-and-clutter](.claude/skills/clean-code-comments-and-clutter/SKILL.md)
 
 ---
@@ -475,7 +475,7 @@ Write shy code — modules that don't reveal anything unnecessary and that don't
 
 Long lists of imports are daunting to the reader. If you're importing from many different packages, it's worth asking whether this class has too many responsibilities. Wildcard imports can reduce clutter, but the real fix is often to split the class.
 
-**Detection:** [(refactoring) DeleteUnusedImportRecipe](refactoring/src/main/java/io/github/fiftieshousewife/cleancode/refactoring/DeleteUnusedImportRecipe.java) — removes unused import statements. Also Checkstyle `AvoidStarImport`.
+**Detection:** Upstream `org.openrewrite.java.RemoveUnusedImports` — removes unused import statements. Also Checkstyle `AvoidStarImport`.
 **Skill file:** [clean-code-java-idioms](.claude/skills/clean-code-java-idioms/SKILL.md)
 
 ---
