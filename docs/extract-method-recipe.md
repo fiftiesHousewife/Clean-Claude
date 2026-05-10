@@ -77,7 +77,7 @@ recipe in code and add it to a `RecipeList`:
 ```java
 final var extract = new ExtractMethodRecipe(
         "HeuristicDescriptions.java", 80, 120, "nameForClassHeuristic");
-final var shortenFqn = new ShortenFullyQualifiedReferencesRecipe();
+final var shortenFqn = new org.openrewrite.java.ShortenFullyQualifiedTypeReferences();
 final var recipeList = List.of(extract, shortenFqn);
 // then drive via LargeSourceSet → recipe.run(...)
 ```

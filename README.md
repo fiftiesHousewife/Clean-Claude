@@ -5,7 +5,7 @@
 [![Gradle](https://img.shields.io/badge/Gradle-9.0-blue)](https://gradle.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 53 custom OpenRewrite detection recipes and 11 refactoring recipes, normalises all findings into Martin's taxonomy, and produces linked HTML reports with book references and prescriptive guidance.
+A Gradle plugin that detects violations of Robert C. Martin's *Clean Code* heuristics across a Java codebase. It combines static analysis tools (PMD, Checkstyle, SpotBugs, JaCoCo) with 56 custom OpenRewrite detection recipes and 29 refactoring recipes, normalises all findings into Martin's taxonomy, and produces linked HTML reports with book references and prescriptive guidance.
 
 > *"Clean code reads like well-written prose."* -- Robert C. Martin, *Clean Code* (2008)
 
@@ -319,8 +319,8 @@ The `refactoring` module contains OpenRewrite recipes that **transform** code, n
 | Recipe | Fixes | What it does |
 |--------|-------|--------------|
 | AddFinalRecipe | G22 | Adds `final` to non-reassigned local variables |
-| DeleteUnusedImportRecipe | G12/J1 | Removes unused imports, expands star imports |
-| ShortenFullyQualifiedReferencesRecipe | G12 | Replaces inline `org.pkg.Foo` with `Foo` + an import statement |
+| `org.openrewrite.java.RemoveUnusedImports` | G12/J1 | (upstream) Removes unused imports, expands star imports |
+| `org.openrewrite.java.ShortenFullyQualifiedTypeReferences` | G12 | (upstream) Replaces inline `org.pkg.Foo` with `Foo` + an import statement |
 | ExtractConstantRecipe | G25 | Adds `private static final` for repeated string literals |
 | ReduceVisibilityRecipe | T1/Ch3.1 | Changes `private` to package-private for testability |
 | RecordToLombokValueRecipe | F1 | Converts large records to `@Value @Builder` classes |

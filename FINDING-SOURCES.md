@@ -10,7 +10,7 @@ For full heuristic descriptions see [HEURISTICS.md](HEURISTICS.md).
 
 [Checkstyle](https://checkstyle.org/) enforces coding conventions and formatting. The plugin bundles a default configuration if the project has none.
 
-**Tool version:** 10.21.4
+**Tool version:** 10.26.1
 
 | Rule | Heuristic | Severity | Confidence | Documentation |
 |---|---|---|---|---|
@@ -47,7 +47,7 @@ For full heuristic descriptions see [HEURISTICS.md](HEURISTICS.md).
 
 [PMD](https://pmd.github.io/) detects common programming flaws including dead code, empty blocks, overcomplicated expressions, and coding style issues.
 
-**Tool version:** 7.9.0
+**Tool version:** 7.24.0
 
 | Rule | Heuristic | Severity | Confidence | Documentation |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@ For full heuristic descriptions see [HEURISTICS.md](HEURISTICS.md).
 
 [SpotBugs](https://spotbugs.github.io/) performs bytecode analysis to find bug patterns, null pointer risks, and concurrency issues.
 
-**Tool version:** 4.9.3
+**Tool version:** 4.9.8
 
 | Bug Pattern | Heuristic | Severity | Confidence | Documentation |
 |---|---|---|---|---|
@@ -128,7 +128,7 @@ For full heuristic descriptions see [HEURISTICS.md](HEURISTICS.md).
 
 [CPD](https://pmd.github.io/pmd/pmd_userdocs_cpd.html) detects duplicated code blocks using token-based analysis.
 
-**Tool version:** 7.9.0 (bundled with PMD)
+**Tool version:** 7.24.0 (bundled with PMD)
 
 | Detection | Heuristic | Severity | Confidence |
 |---|---|---|---|
@@ -142,7 +142,7 @@ Configurable via `cleanCode.thresholds.cpdMinimumTokens` (default: 50).
 
 [JaCoCo](https://www.jacoco.org/jacoco/) measures test coverage at the line and branch level.
 
-**Tool version:** 0.8.12
+**Tool version:** 0.8.14
 
 | Detection | Heuristic | Severity | Confidence |
 |---|---|---|---|
@@ -177,9 +177,9 @@ Parses JUnit XML test results from `build/test-results/test/`. Despite the name,
 
 ## OpenRewrite (Custom Recipes)
 
-40 custom [OpenRewrite](https://docs.openrewrite.org/) `ScanningRecipe` implementations that detect Clean Code patterns via AST analysis.
+56 custom [OpenRewrite](https://docs.openrewrite.org/) `ScanningRecipe` implementations that detect Clean Code patterns via AST analysis.
 
-**Tool version:** 8.40.2
+**Tool version:** 8.81.3
 
 **Important:** Requires JDK 21. See [README.md](README.md#build) for details.
 
