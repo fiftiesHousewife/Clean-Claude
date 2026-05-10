@@ -2,18 +2,9 @@ package io.github.fiftieshousewife.cleancode.recipes;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class InappropriateStaticRecipeTest {
-
-    private static String loadSandboxFixture(final String className) throws Exception {
-        final Path project = Path.of(System.getProperty("user.dir")).getParent();
-        final Path file = project.resolve("sandbox/src/main/java/io/github/fiftieshousewife/cleancode/sandbox/" + className + ".java");
-        return Files.readString(file);
-    }
 
     @Test
     void detectsMethodNotUsingInstanceState() {
@@ -338,42 +329,6 @@ class InappropriateStaticRecipeTest {
 
         assertTrue(recipe.collectedRows().isEmpty(),
                 "activeSessionCount iterates instance field `sessions.values()` — not G18-able");
-    }
-
-    @Test
-    void ignoresActualSandboxCsvParser() throws Exception {
-        final var recipe = new InappropriateStaticRecipe();
-        RecipeTestHelper.runAgainst(recipe, loadSandboxFixture("CsvParser"));
-
-        assertTrue(recipe.collectedRows().isEmpty(),
-                "real sandbox CsvParser.parseRow reads separator/quote and mutates rowsParsed");
-    }
-
-    @Test
-    void ignoresActualSandboxHttpRetryPolicy() throws Exception {
-        final var recipe = new InappropriateStaticRecipe();
-        RecipeTestHelper.runAgainst(recipe, loadSandboxFixture("HttpRetryPolicy"));
-
-        assertTrue(recipe.collectedRows().isEmpty(),
-                "real sandbox HttpRetryPolicy.execute mutates the audit instance field");
-    }
-
-    @Test
-    void ignoresActualSandboxSessionStore() throws Exception {
-        final var recipe = new InappropriateStaticRecipe();
-        RecipeTestHelper.runAgainst(recipe, loadSandboxFixture("SessionStore"));
-
-        assertTrue(recipe.collectedRows().isEmpty(),
-                "every SessionStore method reads or writes the sessions instance field");
-    }
-
-    @Test
-    void ignoresActualSandboxNotificationDispatcher() throws Exception {
-        final var recipe = new InappropriateStaticRecipe();
-        RecipeTestHelper.runAgainst(recipe, loadSandboxFixture("NotificationDispatcher"));
-
-        assertTrue(recipe.collectedRows().isEmpty(),
-                "NotificationDispatcher.dispatchUrgent mutates the dispatched instance field");
     }
 
     @Test

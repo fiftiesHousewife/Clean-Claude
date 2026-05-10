@@ -34,22 +34,16 @@ import java.util.Set;
 
 /**
  * Runs the full clean-code analysis in-process against a Gradle project
- * and returns the filtered {@link AggregatedReport}. {@link AnalyseTask}
- * calls this once per build; {@link ReworkCompareTask} calls it once per
- * variant (after the agent edits the sandbox, before the files are
- * restored) so it can count findings fixed and introduced per variant.
- * Pure in-memory — does not write {@code findings.json} or any report
- * file, so it's safe to invoke from within another running task.
+ * and returns the filtered {@link AggregatedReport} alongside per-source
+ * states. {@link AnalyseTask} and {@link ServeTask} call this. Pure
+ * in-memory — does not write {@code findings.json} or any report file,
+ * so it's safe to invoke from within another running task.
  */
 public final class SandboxAnalysis {
 
     public record Result(AggregatedReport report, List<SourceState> sourceStates) {}
 
     private SandboxAnalysis() {}
-
-    public static AggregatedReport analyse(final Project project) throws FindingSourceException {
-        return analyseWithStates(project).report();
-    }
 
     public static Result analyseWithStates(final Project project) throws FindingSourceException {
         final Path projectRoot = project.getProjectDir().toPath();

@@ -230,8 +230,6 @@ plugins {
 | `cleanCodeExplain` | help | Print skill guidance for a finding code, e.g. `cleanCodeExplain --finding=error-handling`. |
 | `cleanCodeServe` | clean code | Long-running interactive triage UI at `http://localhost:7070` (see below). |
 | `cleanCodeStop` | clean code | Stop a running `cleanCodeServe` daemon. |
-| `reworkClass` | clean code | Rework a single class via the `ReworkOrchestrator` Java API. |
-| `reworkCompare` | clean code | Run rework with vs without recipe tools on a sandbox fixture; produces a side-by-side comparison. |
 | `updateVersionCatalog` | verification | *(root only)* Rewrite `gradle/libs.versions.toml` with non-major updates from the `dependencyUpdates` report. |
 
 The `analyseCleanCode` text summary (per-module banner, sources breakdown, total) is what the [Sample Output](#sample-output) section shows. Run `./gradlew analyseCleanCode` on any module to reproduce it; on this repo run `./scripts/dogfood.sh` to apply the plugin to every module and aggregate.
