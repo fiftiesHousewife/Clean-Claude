@@ -60,6 +60,41 @@ class JsonReportWriterTest {
     }
 
     @Test
+    void projectLevelFindingsEmitNullLineFieldsNotMinusOne(@TempDir final Path tempDir) throws Exception {
+        Path output = tempDir.resolve("findings.json");
+
+        JsonReportWriter.write(sampleReport(), output);
+
+        String json = Files.readString(output);
+        assertAll(
+                () -> assertTrue(json.contains("\"sourceFile\": null"),
+                        "project-level findings keep sourceFile as JSON null"),
+                () -> assertTrue(json.contains("\"startLine\": null"),
+                        "project-level findings emit startLine as JSON null, not -1"),
+                () -> assertTrue(json.contains("\"endLine\": null"),
+                        "project-level findings emit endLine as JSON null, not -1"),
+                () -> assertFalse(json.contains("\"startLine\": -1"),
+                        "no -1 sentinel anywhere — null is the canonical 'no line' marker"));
+    }
+
+    @Test
+    void readerRoundTripsNullLineFieldsAsMinusOne(@TempDir final Path tempDir) throws Exception {
+        Path output = tempDir.resolve("findings.json");
+
+        JsonReportWriter.write(sampleReport(), output);
+        AggregatedReport restored = JsonReportReader.read(output);
+
+        Finding projectLevel = restored.findings().stream()
+                .filter(f -> f.sourceFile() == null)
+                .findFirst()
+                .orElseThrow();
+        assertAll(
+                () -> assertEquals(-1, projectLevel.startLine(),
+                        "reader normalises JSON null back to -1 internally"),
+                () -> assertEquals(-1, projectLevel.endLine()));
+    }
+
+    @Test
     void sourceFieldUsesDisplayNameWhenSourceStatesSupplied(@TempDir final Path tempDir) throws Exception {
         Path output = tempDir.resolve("findings.json");
 

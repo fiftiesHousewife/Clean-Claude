@@ -39,8 +39,8 @@ public final class JsonReportReader {
             coveredCodes.add(code);
 
             String sourceFile = (String) rf.get("sourceFile");
-            int startLine = ((Double) rf.get("startLine")).intValue();
-            int endLine = ((Double) rf.get("endLine")).intValue();
+            int startLine = readLine(rf.get("startLine"));
+            int endLine = readLine(rf.get("endLine"));
             String message = (String) rf.get("message");
             Severity severity = Severity.valueOf((String) rf.get("severity"));
             Confidence confidence = Confidence.valueOf((String) rf.get("confidence"));
@@ -57,5 +57,15 @@ public final class JsonReportReader {
         }
 
         return new AggregatedReport(findings, coveredCodes, generatedAt, projectName, projectVersion);
+    }
+
+    /**
+     * Project-global findings (e.g. T1 coverage) emit JSON null for line
+     * fields rather than -1. Reader normalises both shapes back to -1
+     * internally so downstream code only handles one missing-value
+     * marker.
+     */
+    private static int readLine(final Object value) {
+        return value instanceof Number n ? n.intValue() : -1;
     }
 }

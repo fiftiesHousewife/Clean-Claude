@@ -24,8 +24,8 @@ public final class JsonReportWriter {
     private record JsonFinding(
             String code,
             String sourceFile,
-            int startLine,
-            int endLine,
+            Integer startLine,
+            Integer endLine,
             String message,
             String severity,
             String confidence,
@@ -50,8 +50,8 @@ public final class JsonReportWriter {
                 .map(f -> new JsonFinding(
                         f.code().name(),
                         f.sourceFile(),
-                        f.startLine(),
-                        f.endLine(),
+                        nullableLine(f.sourceFile(), f.startLine()),
+                        nullableLine(f.sourceFile(), f.endLine()),
                         f.message(),
                         f.severity().name(),
                         f.confidence().name(),
@@ -67,7 +67,24 @@ public final class JsonReportWriter {
                 report.generatedAt().toString(),
                 jsonFindings);
 
-        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        // serializeNulls keeps null sourceFile + null startLine/endLine
+        // visible in the JSON so consumers can rely on field presence
+        // and use jq's // fallback rather than re-deriving "absent" from
+        // -1 sentinels.
+        final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
         Files.writeString(outputFile, gson.toJson(jsonReport));
+    }
+
+    /**
+     * Project-global findings (e.g. T1 coverage) have no line anchor.
+     * Emitting -1 in JSON forced consumers to special-case a magic
+     * number; emitting null lets {@code jq '.startLine // "n/a"'} fall
+     * through cleanly.
+     */
+    private static Integer nullableLine(final String sourceFile, final int line) {
+        if (sourceFile == null || line < 0) {
+            return null;
+        }
+        return line;
     }
 }
