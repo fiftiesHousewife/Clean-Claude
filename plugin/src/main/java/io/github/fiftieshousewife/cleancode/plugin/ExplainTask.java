@@ -74,12 +74,8 @@ public abstract class ExplainTask extends DefaultTask {
         }
         try {
             return HeuristicCode.valueOf(normalised);
-        } catch (final IllegalArgumentException primary) {
-            try {
-                return HeuristicCode.valueOf(normalised.toUpperCase());
-            } catch (final IllegalArgumentException secondary) {
-                return null;
-            }
+        } catch (final IllegalArgumentException unknownCode) {
+            return null;
         }
     }
 }

@@ -1,19 +1,21 @@
 package io.github.fiftieshousewife.cleancode.recipes;
 
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
+import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import org.openrewrite.java.tree.Statement;
 
 public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecipe.Accumulator> {
 
@@ -50,43 +52,54 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
             public J.ClassDeclaration visitClassDeclaration(final J.ClassDeclaration classDecl, final ExecutionContext ctx) {
                 final J.ClassDeclaration c = super.visitClassDeclaration(classDecl, ctx);
 
-                final List<J.VariableDeclarations> staticFinalDecls = c.getBody().getStatements().stream()
-                        .filter(s -> s instanceof J.VariableDeclarations)
-                        .map(s -> (J.VariableDeclarations) s)
-                        .filter(this::isStaticFinal)
-                        .toList();
-
-                final Map<String, List<J.VariableDeclarations>> declsByName = new HashMap<>();
-                for (final J.VariableDeclarations decl : staticFinalDecls) {
-                    for (final J.VariableDeclarations.NamedVariable variable : decl.getVariables()) {
-                        declsByName.put(variable.getSimpleName(), List.of(decl));
+                final Map<String, J.VariableDeclarations> declsByName = new LinkedHashMap<>();
+                for (final Statement stmt : c.getBody().getStatements()) {
+                    if (stmt instanceof J.VariableDeclarations decl && isStaticFinal(decl)) {
+                        for (final J.VariableDeclarations.NamedVariable variable : decl.getVariables()) {
+                            declsByName.put(variable.getSimpleName(), decl);
+                        }
                     }
                 }
 
-                final List<String> constantNames = staticFinalDecls.stream()
-                        .flatMap(v -> v.getVariables().stream())
-                        .map(J.VariableDeclarations.NamedVariable::getSimpleName)
-                        .toList();
-
-                final Map<String, ReferenceProfile> referenceProfiles = profileReferences(c, declsByName.keySet());
-
-                findPrefixGroups(constantNames).forEach((prefix, count) -> {
-                    if (count >= PREFIX_GROUP_THRESHOLD) {
-                        if (isFlatOneShotList(prefix, constantNames, declsByName, referenceProfiles)) {
-                            return;
-                        }
-                        acc.rows.add(new Row(c.getSimpleName(), prefix, count.intValue(), -1));
+                final Map<String, List<String>> namesByPrefix = groupNamesByPrefix(declsByName.keySet());
+                final Map<String, List<String>> qualifyingGroups = new LinkedHashMap<>();
+                namesByPrefix.forEach((prefix, members) -> {
+                    if (members.size() >= PREFIX_GROUP_THRESHOLD) {
+                        qualifyingGroups.put(prefix, members);
                     }
+                });
+                if (qualifyingGroups.isEmpty()) {
+                    return c;
+                }
+
+                // Only profile the constants that *might* be filtered as
+                // one-shot — usually a small subset of the class's
+                // static-finals — so we don't walk every method body for
+                // unrelated classes.
+                final java.util.Set<String> namesToProfile = new java.util.HashSet<>();
+                qualifyingGroups.values().forEach(namesToProfile::addAll);
+                final Map<String, ReferenceProfile> referenceProfiles = profileReferences(c, namesToProfile);
+
+                qualifyingGroups.forEach((prefix, members) -> {
+                    if (isFlatOneShotList(members, declsByName, referenceProfiles)) {
+                        return;
+                    }
+                    acc.rows.add(new Row(c.getSimpleName(), prefix, members.size(), -1));
                 });
 
                 return c;
             }
 
             private boolean isStaticFinal(final J.VariableDeclarations varDecl) {
-                final boolean isStatic = varDecl.getModifiers().stream()
-                        .anyMatch(m -> m.getType() == J.Modifier.Type.Static);
-                final boolean isFinal = varDecl.getModifiers().stream()
-                        .anyMatch(m -> m.getType() == J.Modifier.Type.Final);
+                boolean isStatic = false;
+                boolean isFinal = false;
+                for (final J.Modifier modifier : varDecl.getModifiers()) {
+                    if (modifier.getType() == J.Modifier.Type.Static) {
+                        isStatic = true;
+                    } else if (modifier.getType() == J.Modifier.Type.Final) {
+                        isFinal = true;
+                    }
+                }
                 return isStatic && isFinal;
             }
 
@@ -105,21 +118,13 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
              * consumers iterate over — also fires.
              */
             private boolean isFlatOneShotList(
-                    final String prefix,
-                    final List<String> allConstantNames,
-                    final Map<String, List<J.VariableDeclarations>> declsByName,
+                    final List<String> groupMembers,
+                    final Map<String, J.VariableDeclarations> declsByName,
                     final Map<String, ReferenceProfile> referenceProfiles) {
-                final List<String> groupMembers = allConstantNames.stream()
-                        .filter(n -> n.startsWith(prefix + "_"))
-                        .toList();
-
                 Statement sharedStatement = null;
                 for (final String member : groupMembers) {
-                    final List<J.VariableDeclarations> decls = declsByName.get(member);
-                    if (decls == null || decls.isEmpty()) {
-                        return false;
-                    }
-                    if (isApiSurface(decls.getFirst())) {
+                    final J.VariableDeclarations decl = declsByName.get(member);
+                    if (decl == null || isApiSurface(decl)) {
                         return false;
                     }
                     final ReferenceProfile profile = referenceProfiles.get(member);
@@ -164,7 +169,7 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
                         return id;
                     }
 
-                    private boolean isOwnDeclaration(final org.openrewrite.Cursor cursor) {
+                    private boolean isOwnDeclaration(final Cursor cursor) {
                         return cursor.firstEnclosing(J.VariableDeclarations.NamedVariable.class) != null
                                 && cursor.firstEnclosing(J.MethodDeclaration.class) == null;
                     }
@@ -180,16 +185,16 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
                      * not three (J.MethodInvocation is both Expression and
                      * Statement and would otherwise short-circuit the lookup).
                      */
-                    private Statement topLevelStatementOf(final org.openrewrite.Cursor cursor) {
+                    private Statement topLevelStatementOf(final Cursor cursor) {
                         Object lastTreeValue = cursor.getValue();
-                        org.openrewrite.Cursor current = cursor;
+                        Cursor current = cursor;
                         while (current.getParent() != null) {
                             current = current.getParent();
                             final Object value = current.getValue();
                             if (value instanceof J.Block && lastTreeValue instanceof Statement stmt) {
                                 return stmt;
                             }
-                            if (value instanceof org.openrewrite.Tree) {
+                            if (value instanceof Tree) {
                                 lastTreeValue = value;
                             }
                         }
@@ -199,11 +204,16 @@ public class EnumForConstantsRecipe extends ScanningRecipe<EnumForConstantsRecip
                 return profiles;
             }
 
-            private Map<String, Long> findPrefixGroups(final List<String> names) {
-                return names.stream()
-                        .filter(n -> n.contains("_"))
-                        .map(n -> n.substring(0, n.indexOf('_')))
-                        .collect(Collectors.groupingBy(prefix -> prefix, Collectors.counting()));
+            private Map<String, List<String>> groupNamesByPrefix(final java.util.Set<String> names) {
+                final Map<String, List<String>> grouped = new LinkedHashMap<>();
+                for (final String name : names) {
+                    final int underscore = name.indexOf('_');
+                    if (underscore <= 0) {
+                        continue;
+                    }
+                    grouped.computeIfAbsent(name.substring(0, underscore), k -> new ArrayList<>()).add(name);
+                }
+                return grouped;
             }
         };
     }

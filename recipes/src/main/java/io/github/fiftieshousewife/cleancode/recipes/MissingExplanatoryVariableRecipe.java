@@ -118,7 +118,7 @@ public class MissingExplanatoryVariableRecipe
                         return false;
                     }
                 }
-                return !arguments.isEmpty();
+                return true;
             }
 
             private boolean isStructurallyExplained(final Expression expression) {
@@ -219,24 +219,29 @@ public class MissingExplanatoryVariableRecipe
                 if (leaves.size() < 2) {
                     return false;
                 }
-                String sharedName = null;
-                String sharedArgs = null;
-                for (final Expression leaf : leaves) {
-                    if (!(leaf instanceof J.MethodInvocation invocation)) {
+                if (!(leaves.getFirst() instanceof J.MethodInvocation reference)) {
+                    return false;
+                }
+                final String sharedName = reference.getSimpleName();
+                final String sharedArgs = printedArgList(reference);
+                for (int i = 1; i < leaves.size(); i++) {
+                    if (!(leaves.get(i) instanceof J.MethodInvocation invocation)) {
                         return false;
                     }
-                    final String simpleName = invocation.getSimpleName();
-                    final String printedArgs = invocation.getArguments().stream()
-                            .map(arg -> arg.printTrimmed(getCursor()))
-                            .reduce("", (a, b) -> a + "," + b);
-                    if (sharedName == null) {
-                        sharedName = simpleName;
-                        sharedArgs = printedArgs;
-                    } else if (!sharedName.equals(simpleName) || !sharedArgs.equals(printedArgs)) {
+                    if (!sharedName.equals(invocation.getSimpleName())
+                            || !sharedArgs.equals(printedArgList(invocation))) {
                         return false;
                     }
                 }
                 return true;
+            }
+
+            private String printedArgList(final J.MethodInvocation invocation) {
+                final List<String> printed = new ArrayList<>(invocation.getArguments().size());
+                for (final Expression argument : invocation.getArguments()) {
+                    printed.add(argument.printTrimmed(getCursor()));
+                }
+                return String.join(",", printed);
             }
 
             private boolean flattenChainByOperator(

@@ -25,10 +25,7 @@ public class InappropriateStaticRecipe extends ScanningRecipe<InappropriateStati
         // Class simple-name → method names referenced via `Class::method`.
         // Anything in this map is potentially the target of an unbound
         // method reference whose SAM depends on the receiver-as-first-arg
-        // shape; making it static would change the effective arity. Tracked
-        // across compilation units (the cross-file `PrintMethod.java`
-        // referencing `SystemOutVisitor::replacePrint` is the motivating
-        // case from CLEANCODE_PLUGIN_FEEDBACK.md G18.2).
+        // shape; making it static would change the effective arity.
         final Map<String, Set<String>> methodReferenceTargets = new HashMap<>();
     }
 
