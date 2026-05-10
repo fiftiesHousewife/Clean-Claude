@@ -5,6 +5,105 @@ All notable changes to this project are documented here. Format follows
 project uses semantic-ish versioning (the rule set is the public API;
 breaking heuristic-code renames bump the minor).
 
+## [0.2.0] — 2026-05-10
+
+Hone-and-tighten release. The MCP server, the AI-vs-OpenRewrite
+experiment harness, the seeded `sandbox/` demo module, the
+`reworkCompare`/`reworkClass` agent-rework infrastructure, and the
+optional `claude-review` LLM finding source are all removed. The
+published plugin's transitive dependency on the Anthropic Java SDK
+goes with them. Six consumer-reported bugs from
+`CLEANCODE_FEEDBACK_0.1.4.md` are fixed.
+
+### Breaking
+
+- **Removed `mcp/` module + `.mcp.json`** (JSON-RPC tools server).
+- **Removed `sandbox/` module** + the `cleanCodeSelfApply=true` opt-in
+  toggle in `settings.gradle.kts`.
+- **Removed `reworkCompare` and `reworkClass` Gradle tasks** along with
+  the supporting `plugin/.../rework/` agent infrastructure
+  (PromptBuilder, ReworkOrchestrator, AgentRunner, RunVariant, …) and
+  the `scripts/watch-rework-run.sh` / `rework-class.sh` helpers.
+- **Removed `claude-review/` module + the `cleanCode.claudeReview { }`
+  extension block + `ANTHROPIC_API_KEY` plumbing.** `com.anthropic:anthropic-java`
+  is no longer a transitive of the published plugin. C2, G6, G7, G13,
+  G15, G20, G31, N4 are no longer covered by an LLM source — the
+  static-analysis layer remains.
+- **Removed the AI-vs-OpenRewrite experiment harness:** the `experiment/`
+  directory (3.9 MB of baselines + cron logs + manual-pilot artefacts),
+  `scripts/run-experiment.sh` + `cron-run-experiment.sh` +
+  `experiment-{manual,recipe}-prompt.txt` + `run-single-file.sh` +
+  `nightly-compare.sh` + `compare-runs.py`, the
+  `.claude/skills/{experiment,experiment-save,experiment-analyse}`
+  skills, and `docs/experiment-analysis-plan.md`. Net: ~6,900 source
+  lines and ~20,000 generated-artefact lines deleted.
+
+### Added
+
+- **`E3` heuristic — Outdated Major-Version Dependency.** Patch and
+  minor bumps stay on `E1`; major bumps surface as `E3` so consumers
+  can triage them separately. Environment-dependent (excluded from
+  drift-checks alongside `E1` and `T9`).
+- **`G37` heuristic — Magic String Literals.** Repeated string
+  literals (`"POST"`, `"UTF-8"`, …) now route to `G37` instead of
+  `G5`. CPD block-duplication keeps `G5`; the two have different fix
+  shapes (extract a constant vs refactor a block) and now have
+  different codes.
+- **`source` field in `findings.json`** (human-readable display name:
+  `"OpenRewrite"`, `"CPD"`, `"JaCoCo"`, …) alongside the existing
+  machine-readable `tool` id. Lets `jq` queries group by source
+  without re-deriving from `tool`/`ruleRef`.
+
+### Fixed — consumer-reported
+
+All six items in
+[`CLEANCODE_FEEDBACK_0.1.4.md`](CLEANCODE_FEEDBACK_0.1.4.md) ship
+fixed in this release:
+
+- **E1 no longer recommends alpha/RC/milestone versions.** The
+  Ben-Manes report exposes `available.{release,milestone,integration}`;
+  the source used to read `milestone` first, so a project on `1.0.0`
+  could be told to bump to `2.0.0-alpha.1`. Now reads `release` only —
+  pre-release versions never count as 'outdated'.
+- **E1 no longer reports cleancode-internal dependencies.** Findings
+  like `com.puppycrawl.tools:checkstyle [10.21.4 -> 13.4.2]` came from
+  the plugin's bundled classpath, not the consumer's catalog. When
+  `gradle/libs.versions.toml` exists, findings are scoped to
+  coordinates declared there. When no catalog exists, a deny-list of
+  cleancode-internal groups (puppycrawl, pmd, spotbugs, errorprone, …)
+  is applied. The catalog parser recognises `module="g:n"`,
+  `group="g",name="n"`, and shorthand `"g:n:v"` library declarations.
+- **`G5` no longer conflates block-duplication and string-literal
+  duplication.** See "Added" above.
+- **`source` field in `findings.json` is no longer null.** See "Added"
+  above.
+- **Project-global findings (e.g. `T1` coverage) now emit JSON `null`
+  for `sourceFile`/`startLine`/`endLine`** instead of `-1` sentinels.
+  `jq '.startLine // "n/a"'` falls through cleanly; tooling no longer
+  needs to special-case the magic number. Reader normalises null back
+  to `-1` internally so downstream code only deals with one
+  missing-value marker.
+- **`SkillFileScaffolder` writeHashFile stack trace (0.1.3 only).**
+  Verified: source code is unchanged between 0.1.3 and 0.1.4 and all
+  four IOException sites already log-and-continue. The consumer's
+  observation that 0.1.4 doesn't trip is environmental (filesystem
+  state, permissions), not a code change.
+
+### Changed
+
+- **OpenRewrite bumped to `8.81.10`** (was 8.81.3) — rewrite-core /
+  rewrite-java / rewrite-java-25 / rewrite-test.
+- **`rewrite-static-analysis` bumped to `2.34.1`**, **`rewrite-logging-frameworks`
+  bumped to `3.27.3`**, **`fifties-recipes` bumped to `0.9`** (the
+  upcoming `clean-logging` artefact will replace it; see backlog).
+- **Phase B mismatch pairs closed.** `BroadCatchRecipe`,
+  `SwallowedExceptionRecipe`, `MagicStringRecipe`, `RemoveNestedTernaryRecipe`
+  marked "Closed — not paired" in
+  `docs/sessions/2026-05-04-recipe-research.md` with per-pair
+  rationale. Detector-vs-fixer mismatches, classpath-attribution
+  asymmetries, and silent-extraction UX-shift trade-offs make these
+  bad candidates for upstream replacement.
+
 ## [0.1.4] — 2026-05-09
 
 ### Fixed — heuristic false positives

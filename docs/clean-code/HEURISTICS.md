@@ -60,7 +60,7 @@ Commented-out code rots. Others who see it won't have the courage to delete it �
 
 You should be able to build the system with a single trivial command. You should not have to search around for dependencies, scripts, or obscure commands. Outdated dependencies make that one-step build fragile — every stale library is a silent accumulation of risk, incompatibility, and unfixed vulnerabilities.
 
-**Detection:** [DependencyUpdatesFindingSource](adapters/src/main/java/io/github/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java) — parses Ben-Manes dependency update reports for outdated minor versions.
+**Detection:** [DependencyUpdatesFindingSource](adapters/src/main/java/io/github/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java) — parses Ben-Manes dependency update reports for outdated patch and minor versions. Major-version bumps surface as `E3` so they can be triaged separately. Only stable `release` candidates count; alpha/RC/milestone versions never trigger a finding. Findings are scoped to coordinates declared in `gradle/libs.versions.toml` when present, or skip a deny-list of cleancode-internal groups when no catalog exists.
 
 ---
 
@@ -70,6 +70,17 @@ You should be able to build the system with a single trivial command. You should
 You should be able to run all the unit tests with a single trivial command. Being able to run tests quickly, easily, and without fuss is so fundamental that a failure here poisons the entire development experience.
 
 **Detection:** Manual review only. No automated detection.
+
+---
+
+### E3: Outdated Major-Version Dependency
+*Project extension; extends Ch.17 E1*
+
+A major-version dependency upgrade is an environment risk distinct from a patch or minor bump. Major versions ship breaking changes; the bump cannot be applied blind, and triaging it together with safe patch/minor updates muddles the signal. Take majors deliberately: read the changelog, plan a compatibility commit, and budget for the downstream fan-out.
+
+**Detection:** [DependencyUpdatesFindingSource](adapters/src/main/java/io/github/fiftieshousewife/cleancode/adapters/DependencyUpdatesFindingSource.java) — emits `E3` when the leading numeric component of the version string bumped (e.g. `1.4.2 -> 2.0.0`, `8.79.0 -> 13.0.0`). `v`-prefixed versions (`v1.0.0`) are recognised; exotic non-semver versions fall back to `E1`.
+
+**Skill file:** [clean-code-dependency-updates](.claude/skills/clean-code-dependency-updates/SKILL.md) (shared with E1)
 
 ---
 
@@ -465,6 +476,16 @@ Write shy code — modules that don't reveal anything unnecessary and that don't
 
 **Detection:** [LawOfDemeterRecipe](recipes/src/main/java/io/github/fiftieshousewife/cleancode/recipes/LawOfDemeterRecipe.java) — detects method chains of depth >= 3 (configurable, fluent APIs excluded).
 **Skill file:** [clean-code-functions](.claude/skills/clean-code-functions/SKILL.md)
+
+---
+
+### G37: Magic String Literals
+*Project extension; mirrors G25 for repeated string literals*
+
+String literals repeated across a class — `"POST"`, `".java"`, `"UTF-8"` — have the same problem as magic numbers: no context, no documentation, no single source of truth. The fix is identical to G25: extract them to a named constant. Tracked separately from CPD's block-duplication finding (G5) because the fix shape is different — extract a constant, not refactor a block.
+
+**Detection:** [MagicStringRecipe](recipes/src/main/java/io/github/fiftieshousewife/cleancode/recipes/MagicStringRecipe.java) — surfaces via `OpenRewriteFindingSource.mapMagicStrings`. Detects strings appearing >= the configured `magicStringMinOccurrences` threshold (default 2) within a single class, filtered for typographic noise, paths, content-type literals, and short tool-id patterns.
+**Skill file:** [clean-code-java-idioms](.claude/skills/clean-code-java-idioms/SKILL.md) (shared with G25)
 
 ---
 
