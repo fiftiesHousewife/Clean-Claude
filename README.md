@@ -381,6 +381,12 @@ Regenerate locally with (self-applied via init script, no changes to committed b
 
 The script publishes all modules to mavenLocal, runs `analyseCleanCode` against every Java module via the init script, copies each module's `findings.html` into `docs/reports/`, and regenerates `docs/reports/index.html` via `cleanCodeSummary`. CI runs the same script and fails if `docs/reports/` drifts from the committed state, so the summary on this README always matches `main`.
 
+When you've intentionally changed something that shifts finding counts (a rule edit, a new recipe), pass `--update-baseline` to stage the new `SUMMARY.md` and `index.html` for commit instead of failing:
+
+```bash
+./scripts/dogfood.sh --update-baseline
+```
+
 ## Experiment: Manual vs Recipe-Assisted Fix
 
 The project includes token monitoring hooks and a structured experiment plan to compare the cost of fixing all findings manually vs using the refactoring recipes first.

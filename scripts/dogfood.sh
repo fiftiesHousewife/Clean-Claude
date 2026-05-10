@@ -15,9 +15,32 @@
 #      links emitted by cleanCodeSummary.
 #   4. Run cleanCodeSummary to regenerate docs/reports/index.html.
 #
-# Usage: scripts/dogfood.sh
+# Usage: scripts/dogfood.sh [--update-baseline]
+#
+# --update-baseline: if SUMMARY.md or index.html drifted, stage the new
+#                    versions for commit and exit 0 instead of failing.
+#                    Use after intentional changes that shift finding
+#                    counts (rule edits, new recipes, etc.).
 
 set -euo pipefail
+
+UPDATE_BASELINE=false
+for arg in "$@"; do
+    case "$arg" in
+        --update-baseline)
+            UPDATE_BASELINE=true
+            ;;
+        --help|-h)
+            sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'
+            exit 0
+            ;;
+        *)
+            echo "[dogfood] unknown argument: $arg" >&2
+            echo "[dogfood] usage: $0 [--update-baseline]" >&2
+            exit 64
+            ;;
+    esac
+done
 
 REPO="$(git rev-parse --show-toplevel)"
 cd "$REPO"
@@ -84,9 +107,17 @@ echo "[dogfood] regenerating summary index"
 
 echo "[dogfood] verifying SUMMARY drift (same check as CI)"
 if ! git diff --exit-code -- docs/reports/SUMMARY.md docs/reports/index.html; then
-    echo "[dogfood] ERROR: docs/reports/SUMMARY.md or index.html drifted from the committed state."
-    echo "[dogfood] Review the diff above, then 'git add docs/reports/SUMMARY.md docs/reports/index.html' and commit."
-    exit 1
+    if [[ "$UPDATE_BASELINE" == "true" ]]; then
+        git add docs/reports/SUMMARY.md docs/reports/index.html
+        echo "[dogfood] baseline drift staged."
+        echo "[dogfood] review with: git diff --staged -- docs/reports/"
+        echo "[dogfood] commit when ready."
+    else
+        echo "[dogfood] ERROR: docs/reports/SUMMARY.md or index.html drifted from the committed state."
+        echo "[dogfood] Review the diff above, then 'git add docs/reports/SUMMARY.md docs/reports/index.html' and commit."
+        echo "[dogfood] Or re-run with --update-baseline to auto-stage."
+        exit 1
+    fi
 fi
 
 echo "[dogfood] done — see docs/reports/index.html"
