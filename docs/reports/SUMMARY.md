@@ -7,7 +7,7 @@ this file drifts from the committed state.
 
 Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) (extracted from the plugin jar by `./gradlew cleanCodeWriteHeuristics`).
 
-**Total: 1283 findings** (160 errors · 1117 warnings · 6 info)
+**Total: 1280 findings** (160 errors · 1114 warnings · 6 info)
 
 ## By module
 
@@ -20,9 +20,9 @@ Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) (extracted from the
 | core | 57 | 210 | 2 | 269 |
 | mcp | 0 | 0 | 0 | 0 |
 | plugin | 32 | 264 | 0 | 296 |
-| recipes | 0 | 238 | 1 | 239 |
+| recipes | 0 | 235 | 1 | 236 |
 | refactoring | 5 | 185 | 1 | 191 |
-| **Total** | **160** | **1117** | **6** | **1283** |
+| **Total** | **160** | **1114** | **6** | **1280** |
 
 ## By heuristic code
 
@@ -32,13 +32,13 @@ Code reference: [HEURISTICS.md](../clean-code/HEURISTICS.md) (extracted from the
 | G30 | 175 |
 | G5 | 174 |
 | Ch10_1 | 110 |
-| G10 | 106 |
+| G10 | 105 |
 | G28 | 68 |
 | F2 | 63 |
 | F1 | 46 |
 | G31 | 42 |
 | T1 | 30 |
-| C2 | 29 |
+| C2 | 27 |
 | Ch7_2 | 25 |
 | G8 | 24 |
 | G4 | 23 |
