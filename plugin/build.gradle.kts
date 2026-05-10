@@ -26,7 +26,6 @@ configurations.compileOnly.get().extendsFrom(bundled)
 dependencies {
     implementation(project(":core"))
     implementation(project(":adapters"))
-    implementation(project(":claude-review"))
     implementation(project(":annotations"))
     implementation(project(":refactoring"))
     implementation(libs.openrewrite.core)
@@ -84,11 +83,11 @@ tasks.named<ProcessResources>("processResources") {
 }
 
 // The shadow jar is the single self-contained artifact we publish: the
-// sibling project modules (core, adapters, claude-review, annotations,
-// refactoring) never get their own Maven coordinate, so consumers can
-// only resolve them if they're embedded here. External deps (openrewrite,
-// gson, spotless) are bundled too so a user applying the plugin from
-// Maven Central gets a working classpath without transitive surprises.
+// sibling project modules (core, adapters, annotations, refactoring) never
+// get their own Maven coordinate, so consumers can only resolve them if
+// they're embedded here. External deps (openrewrite, gson, spotless) are
+// bundled too so a user applying the plugin from Maven Central gets a
+// working classpath without transitive surprises.
 tasks.shadowJar {
     archiveClassifier.set("")
     isZip64 = true
@@ -117,8 +116,8 @@ gradlePlugin {
             implementationClass = "io.github.fiftieshousewife.cleancode.plugin.CleanCodePlugin"
             displayName = "Clean Code"
             description = "Aggregates PMD, Checkstyle, SpotBugs, CPD, JaCoCo, " +
-                    "OpenRewrite recipe detectors, and an optional Claude " +
-                    "review pass into a single clean-code analysis for Gradle."
+                    "and OpenRewrite recipe detectors into a single clean-code " +
+                    "analysis for Gradle."
         }
     }
 }
@@ -136,10 +135,10 @@ mavenPublishing {
     pom {
         name.set("Clean Code")
         description.set(
-            "Aggregates PMD, Checkstyle, SpotBugs, CPD, JaCoCo, OpenRewrite " +
-                "recipe detectors, and an optional Claude review pass into a " +
-                "single clean-code analysis for Gradle. Published as a " +
-                "self-contained plugin jar — no extra transitive deps."
+            "Aggregates PMD, Checkstyle, SpotBugs, CPD, JaCoCo, and " +
+                "OpenRewrite recipe detectors into a single clean-code " +
+                "analysis for Gradle. Published as a self-contained plugin " +
+                "jar — no extra transitive deps."
         )
         url.set("https://github.com/fiftiesHousewife/Clean-Claude")
         licenses {

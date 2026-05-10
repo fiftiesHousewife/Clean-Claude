@@ -8,8 +8,6 @@ import io.github.fiftieshousewife.cleancode.adapters.OpenRewriteFindingSource;
 import io.github.fiftieshousewife.cleancode.adapters.PmdFindingSource;
 import io.github.fiftieshousewife.cleancode.adapters.SpotBugsFindingSource;
 import io.github.fiftieshousewife.cleancode.adapters.SurefireFindingSource;
-import io.github.fiftieshousewife.cleancode.claudereview.ClaudeReviewConfig;
-import io.github.fiftieshousewife.cleancode.claudereview.ClaudeReviewFindingSource;
 import io.github.fiftieshousewife.cleancode.core.AggregatedReport;
 import io.github.fiftieshousewife.cleancode.core.Finding;
 import io.github.fiftieshousewife.cleancode.core.FindingAggregator;
@@ -52,8 +50,6 @@ public final class SandboxAnalysis {
 
         final CleanCodeExtension ext = project.getExtensions().getByType(CleanCodeExtension.class);
         final RecipeThresholds thresholds = ext.buildRecipeThresholds();
-        final String anthropicApiKey = resolveApiKey(project);
-        final ClaudeReviewConfig claudeConfig = ext.buildClaudeReviewConfig(anthropicApiKey);
         final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
         final Set<String> enabledOptionalRules = Set.copyOf(ext.getEnabledOptionalRules().get());
         final PackageSuppression packageSuppression = PackageSuppression.of(ext.getPackageSuppressions().get());
@@ -85,8 +81,7 @@ public final class SandboxAnalysis {
                 new JacocoFindingSource(),
                 new SurefireFindingSource(),
                 new DependencyUpdatesFindingSource(),
-                new OpenRewriteFindingSource(thresholds),
-                new ClaudeReviewFindingSource(claudeConfig));
+                new OpenRewriteFindingSource(thresholds));
 
         final FindingAggregator.Result aggregated = FindingAggregator.aggregateWithStates(sources, context);
         final AggregatedReport afterDisabled = filterDisabledRecipes(aggregated.report(), disabledRecipes);
@@ -150,14 +145,5 @@ public final class SandboxAnalysis {
             return List.of(projectRoot.resolve(fallback));
         }
         return srcDirs.stream().map(File::toPath).toList();
-    }
-
-    private static String resolveApiKey(final Project project) {
-        final Object prop = project.findProperty("ANTHROPIC_API_KEY");
-        if (prop != null && !prop.toString().isBlank()) {
-            return prop.toString();
-        }
-        final String env = System.getenv("ANTHROPIC_API_KEY");
-        return env != null ? env : "";
     }
 }

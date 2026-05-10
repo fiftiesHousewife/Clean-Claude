@@ -137,13 +137,6 @@ cleanCode {
     packageSuppressions = mapOf(
         "io.github.fiftieshousewife.cleancode.recipes" to listOf("G5", "Ch7_2")
     )
-
-    claudeReview {                             // opt-in LLM assessment (requires ANTHROPIC_API_KEY)
-        enabled.set(true)                      // default: false
-        model.set("claude-sonnet-4-6")         // default
-        maxFilesPerRun.set(50)                 // default
-        codes.set(listOf("G6", "G20", "N4"))   // default — the 3 codes needing semantic judgement
-    }
 }
 ```
 
@@ -203,9 +196,8 @@ CleanClaude/
 │                   ClaudeMdGenerator, HtmlReportWriter, JSON report I/O
 ├── recipes/        53 custom OpenRewrite ScanningRecipes (detection)
 ├── refactoring/    11 OpenRewrite Recipes (code transformation)
-├── adapters/       9 FindingSource implementations (PMD, Checkstyle, SpotBugs,
-│                   CPD, JaCoCo, Surefire, Dependency Updates, OpenRewrite, Claude Review)
-├── claude-review/  Claude API FindingSource for G6/G20/N4 (opt-in)
+├── adapters/       8 FindingSource implementations (PMD, Checkstyle, SpotBugs,
+│                   CPD, JaCoCo, Surefire, Dependency Updates, OpenRewrite)
 ├── plugin/         Gradle plugin, tasks, extension DSL
 └── build-logic/    Convention plugins
 ```
@@ -341,7 +333,6 @@ The `refactoring` module contains OpenRewrite recipes that **transform** code, n
 | JavaParser             | 3.28.0  | core (SuppressionIndex)    |
 | Gson                   | 2.14.0  | core, adapters (JSON I/O)  |
 | OpenRewrite            | 8.81.3  | recipes, refactoring, adapters |
-| Anthropic Java SDK     | 2.27.0  | claude-review              |
 | SpotBugs Gradle Plugin | 6.5.4   | plugin                     |
 | PMD                    | 7.24.0  | plugin (analyzer)          |
 | Checkstyle             | 10.26.1 | plugin (analyzer)          |

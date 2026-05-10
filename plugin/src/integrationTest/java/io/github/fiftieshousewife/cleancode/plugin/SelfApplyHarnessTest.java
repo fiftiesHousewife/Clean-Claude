@@ -232,7 +232,6 @@ class SelfApplyHarnessTest {
         script.append("    compileOnly(\"com.google.code.gson:gson:2.11.0\")\n");
         script.append("    compileOnly(\"com.diffplug.spotless:spotless-plugin-gradle:6.25.0\")\n");
         script.append("    compileOnly(\"com.github.javaparser:javaparser-core:3.26.2\")\n");
-        script.append("    compileOnly(\"com.anthropic:anthropic-java:2.25.0\")\n");
         script.append("}\n\n");
         script.append("tasks.named(\"compileJava\") { enabled = false }\n");
         script.append("tasks.named(\"classes\") { enabled = false }\n");

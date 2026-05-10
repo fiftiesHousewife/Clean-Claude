@@ -12,7 +12,6 @@ versions = "0.53.0"
 gradle-tooling = "9.0.0"
 slf4j = "2.0.16"
 
-anthropic = "2.27.0"
 spotbugs-plugin = "6.5.4"
 spotbugs-core = "4.9.8"
 cpd-plugin = "3.4"
@@ -22,7 +21,6 @@ vanniktech-maven-publish = "0.36.0"
 forbiddenapis = "3.10"
 
 [libraries]
-anthropic-java = { module = "com.anthropic:anthropic-java", version.ref = "anthropic" }
 spotbugs-gradle-plugin = { module = "com.github.spotbugs:com.github.spotbugs.gradle.plugin", version.ref = "spotbugs-plugin" }
 spotless-gradle-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-plugin" }
 cpd-gradle-plugin = { module = "de.aaschmid:gradle-cpd-plugin", version.ref = "cpd-plugin" }
