@@ -60,7 +60,7 @@ public abstract class ServeTask extends DefaultTask {
                 ? AnalyseTask.detectIdeUrlScheme(projectRoot)
                 : ext.getIdeUrlScheme().get();
 
-        JsonReportWriter.write(report, outputDir.resolve("findings.json"));
+        JsonReportWriter.write(report, outputDir.resolve("findings.json"), sourceStates);
         HtmlReportWriter.write(report, htmlReport, repositoryUrl, projectRoot, ideScheme, sourceStates);
 
         writePidFile(pidFile);
@@ -152,7 +152,7 @@ public abstract class ServeTask extends DefaultTask {
         try {
             getLogger().lifecycle("re-running analysis...");
             final SandboxAnalysis.Result rerun = SandboxAnalysis.analyseWithStates(getProject());
-            JsonReportWriter.write(rerun.report(), outputDir.resolve("findings.json"));
+            JsonReportWriter.write(rerun.report(), outputDir.resolve("findings.json"), rerun.sourceStates());
             HtmlReportWriter.write(rerun.report(), htmlReport, repositoryUrl,
                     getProject().getProjectDir().toPath(), ideScheme, rerun.sourceStates());
             getLogger().lifecycle("  applied {} change(s); {} findings remain.",

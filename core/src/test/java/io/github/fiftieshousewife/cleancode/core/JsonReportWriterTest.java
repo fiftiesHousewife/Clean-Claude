@@ -43,8 +43,37 @@ class JsonReportWriterTest {
         assertTrue(json.contains("\"message\""));
         assertTrue(json.contains("\"severity\""));
         assertTrue(json.contains("\"confidence\""));
+        assertTrue(json.contains("\"source\""));
         assertTrue(json.contains("\"tool\""));
         assertTrue(json.contains("\"ruleRef\""));
+    }
+
+    @Test
+    void sourceFieldDefaultsToToolIdWhenNoSourceStatesSupplied(@TempDir final Path tempDir) throws Exception {
+        Path output = tempDir.resolve("findings.json");
+
+        JsonReportWriter.write(sampleReport(), output);
+
+        String json = Files.readString(output);
+        assertTrue(json.contains("\"source\": \"cpd\""),
+                "without sourceStates, source falls back to the tool id so the field is never null");
+    }
+
+    @Test
+    void sourceFieldUsesDisplayNameWhenSourceStatesSupplied(@TempDir final Path tempDir) throws Exception {
+        Path output = tempDir.resolve("findings.json");
+
+        JsonReportWriter.write(sampleReport(), output, List.of(
+                SourceState.produced("cpd", "CPD", 1),
+                SourceState.produced("jacoco", "JaCoCo", 1)));
+
+        String json = Files.readString(output);
+        assertAll(
+                () -> assertTrue(json.contains("\"source\": \"CPD\""),
+                        "human-readable display name surfaces in JSON when sourceStates are supplied"),
+                () -> assertTrue(json.contains("\"source\": \"JaCoCo\"")),
+                () -> assertTrue(json.contains("\"tool\": \"cpd\""),
+                        "machine-readable tool id is preserved alongside the display name"));
     }
 
     @Test

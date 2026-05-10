@@ -34,7 +34,7 @@ public abstract class AnalyseTask extends DefaultTask {
                 : baseRepoUrl + "/blob/main" + (modulePath.isEmpty() ? "" : "/" + modulePath);
         final Path outputDir = buildDir.resolve("reports/clean-code");
         final Path htmlReport = outputDir.resolve("findings.html");
-        JsonReportWriter.write(report, outputDir.resolve("findings.json"));
+        JsonReportWriter.write(report, outputDir.resolve("findings.json"), sourceStates);
         final String ideScheme = ext.getIdeUrlScheme().getOrElse("").isBlank()
                 ? detectIdeUrlScheme(projectRoot)
                 : ext.getIdeUrlScheme().get();
