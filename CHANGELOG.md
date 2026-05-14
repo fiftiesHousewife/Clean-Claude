@@ -5,7 +5,15 @@ All notable changes to this project are documented here. Format follows
 project uses semantic-ish versioning (the rule set is the public API;
 breaking heuristic-code renames bump the minor).
 
-## [0.2.0] — 2026-05-10
+## [0.2.1] — 2026-05-14
+
+The 0.2.0 publish attempt on 2026-05-10 never reached Sonatype — the
+local build's connection to the maven-central-build-service was
+cancelled by the upstream proxy mid-upload and no deployment landed in
+Sonatype Central. The 0.2.0 tag in git history points at the same code
+that ships as 0.2.1; the version number bumped only to keep Maven
+Central coordinates monotonic. Contents identical to the unpublished
+0.2.0.
 
 Hone-and-tighten release. The MCP server, the AI-vs-OpenRewrite
 experiment harness, the seeded `sandbox/` demo module, the
