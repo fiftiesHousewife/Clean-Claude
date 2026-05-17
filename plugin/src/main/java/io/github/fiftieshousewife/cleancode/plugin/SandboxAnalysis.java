@@ -44,16 +44,10 @@ public final class SandboxAnalysis {
     private SandboxAnalysis() {}
 
     public static Result analyseWithStates(final Project project) throws FindingSourceException {
+        final CleanCodeExtension ext = project.getExtensions().getByType(CleanCodeExtension.class);
+
         final Path projectRoot = project.getProjectDir().toPath();
         final Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
-        final Path reportsDir = buildDir.resolve("reports");
-
-        final CleanCodeExtension ext = project.getExtensions().getByType(CleanCodeExtension.class);
-        final RecipeThresholds thresholds = ext.buildRecipeThresholds();
-        final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
-        final Set<String> enabledOptionalRules = Set.copyOf(ext.getEnabledOptionalRules().get());
-        final PackageSuppression packageSuppression = PackageSuppression.of(ext.getPackageSuppressions().get());
-
         final List<String> dependencies = project.getConfigurations().stream()
                 .filter(c -> "runtimeClasspath".equals(c.getName()))
                 .flatMap(c -> c.getResolvedConfiguration().getResolvedArtifacts().stream())
@@ -61,7 +55,6 @@ public final class SandboxAnalysis {
                         + ":" + a.getModuleVersion().getId().getName())
                 .distinct()
                 .toList();
-
         final ProjectContext context = new ProjectContext(
                 projectRoot,
                 project.getName(),
@@ -70,9 +63,10 @@ public final class SandboxAnalysis {
                 resolveSourceRoots(project, projectRoot, SourceSet.MAIN_SOURCE_SET_NAME, "src/main/java"),
                 resolveSourceRoots(project, projectRoot, SourceSet.TEST_SOURCE_SET_NAME, "src/test/java"),
                 buildDir,
-                reportsDir,
+                buildDir.resolve("reports"),
                 dependencies);
 
+        final RecipeThresholds thresholds = ext.buildRecipeThresholds();
         final List<FindingSource> sources = List.of(
                 new PmdFindingSource(),
                 new CheckstyleFindingSource(thresholds),
@@ -84,8 +78,12 @@ public final class SandboxAnalysis {
                 new OpenRewriteFindingSource(thresholds));
 
         final FindingAggregator.Result aggregated = FindingAggregator.aggregateWithStates(sources, context);
+
+        final Set<String> disabledRecipes = Set.copyOf(ext.getDisabledRecipes().get());
         final AggregatedReport afterDisabled = filterDisabledRecipes(aggregated.report(), disabledRecipes);
+        final Set<String> enabledOptionalRules = Set.copyOf(ext.getEnabledOptionalRules().get());
         final AggregatedReport afterOptional = filterOptionalRules(afterDisabled, enabledOptionalRules);
+        final PackageSuppression packageSuppression = PackageSuppression.of(ext.getPackageSuppressions().get());
         final AggregatedReport finalReport = filterSuppressions(afterOptional, projectRoot, packageSuppression);
         return new Result(finalReport, aggregated.sourceStates());
     }

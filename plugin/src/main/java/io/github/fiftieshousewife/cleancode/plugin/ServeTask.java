@@ -41,16 +41,13 @@ public abstract class ServeTask extends DefaultTask {
 
     @TaskAction
     public void serve() throws Exception {
-        final Path projectRoot = getProject().getProjectDir().toPath();
         final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
         final Path outputDir = buildDir.resolve("reports/clean-code");
-        final Path htmlReport = outputDir.resolve("findings.html");
-        final Path pidFile = buildDir.resolve("clean-code/serve.pid");
 
         final SandboxAnalysis.Result analysis = SandboxAnalysis.analyseWithStates(getProject());
         final AggregatedReport report = analysis.report();
-        final List<SourceState> sourceStates = analysis.sourceStates();
 
+        final Path projectRoot = getProject().getProjectDir().toPath();
         final CleanCodeExtension ext = getProject().getExtensions().getByType(CleanCodeExtension.class);
         final String baseRepoUrl = ext.getRepositoryUrl().get();
         final String modulePath = getProject().getRootDir().toPath().relativize(projectRoot).toString();
@@ -60,18 +57,17 @@ public abstract class ServeTask extends DefaultTask {
                 ? AnalyseTask.detectIdeUrlScheme(projectRoot)
                 : ext.getIdeUrlScheme().get();
 
+        final Path htmlReport = outputDir.resolve("findings.html");
+        final List<SourceState> sourceStates = analysis.sourceStates();
         JsonReportWriter.write(report, outputDir.resolve("findings.json"), sourceStates);
         HtmlReportWriter.write(report, htmlReport, repositoryUrl, projectRoot, ideScheme, sourceStates);
 
+        final Path pidFile = buildDir.resolve("clean-code/serve.pid");
         writePidFile(pidFile);
 
-        final int port = ext.getServePort().get();
-        final ChangeApplier applier = new ChangeApplier(projectRoot);
-        final FeedbackHandler feedback = new FeedbackHandler(projectRoot);
-
-        final CountDownLatch shutdownLatch = new CountDownLatch(1);
-        final AtomicBoolean shuttingDown = new AtomicBoolean(false);
         final AtomicReference<ReportServer> serverRef = new AtomicReference<>();
+        final AtomicBoolean shuttingDown = new AtomicBoolean(false);
+        final CountDownLatch shutdownLatch = new CountDownLatch(1);
         final Runnable shutdown = () -> {
             if (!shuttingDown.compareAndSet(false, true)) {
                 return;
@@ -84,6 +80,9 @@ public abstract class ServeTask extends DefaultTask {
             shutdownLatch.countDown();
         };
 
+        final ChangeApplier applier = new ChangeApplier(projectRoot);
+        final FeedbackHandler feedback = new FeedbackHandler(projectRoot);
+        final int port = ext.getServePort().get();
         final ReportServer server = ReportServer.start(
                 port,
                 () -> htmlReport,
