@@ -22,11 +22,6 @@ public abstract class GenerateClaudeMdTask extends DefaultTask {
                 ext.getAgentInstructionsFile().getOrElse(""),
                 ext.getSkillsDir().getOrElse(""));
 
-        final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
-        final Path reportFile = buildDir.resolve("reports/clean-code/findings.json");
-        final Path agentMdFile = projectDir.resolve(layout.instructionsFile());
-        final Path baselineFile = projectDir.resolve("clean-code-baseline.json");
-
         final List<String> dependencies = getProject().getConfigurations().stream()
                 .filter(c -> "runtimeClasspath".equals(c.getName()))
                 .flatMap(c -> c.getResolvedConfiguration().getResolvedArtifacts().stream())
@@ -35,7 +30,12 @@ public abstract class GenerateClaudeMdTask extends DefaultTask {
                 .distinct()
                 .toList();
 
+        final Path buildDir = getProject().getLayout().getBuildDirectory().get().getAsFile().toPath();
+        final Path reportFile = buildDir.resolve("reports/clean-code/findings.json");
         final AggregatedReport report = JsonReportReader.read(reportFile);
+
+        final Path agentMdFile = projectDir.resolve(layout.instructionsFile());
+        final Path baselineFile = projectDir.resolve("clean-code-baseline.json");
         ClaudeMdGenerator.generate(report, agentMdFile, baselineFile, dependencies, layout);
 
         getLogger().lifecycle("Generated {} with {} findings", layout.instructionsFile(), report.findings().size());
