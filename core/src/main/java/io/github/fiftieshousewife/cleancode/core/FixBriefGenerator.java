@@ -65,49 +65,49 @@ public final class FixBriefGenerator {
 
     private static String renderBrief(final String sourceFile, final List<Finding> findings,
                                        final Path projectRoot, final String skillsDir) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("# Fix brief: ").append(sourceFile).append('\n');
-        sb.append('\n');
-        sb.append(findings.size()).append(" finding").append(findings.size() == 1 ? "" : "s")
+        final StringBuilder brief = new StringBuilder();
+        brief.append("# Fix brief: ").append(sourceFile).append('\n');
+        brief.append('\n');
+        brief.append(findings.size()).append(" finding").append(findings.size() == 1 ? "" : "s")
                 .append(" on this file.\n");
-        sb.append('\n');
+        brief.append('\n');
 
         final List<String> siblings = findSiblings(sourceFile, projectRoot);
         if (!siblings.isEmpty()) {
-            sb.append("## Sibling types in this package\n");
-            sb.append("Types that live alongside this file. Read them directly from disk only when a "
+            brief.append("## Sibling types in this package\n");
+            brief.append("Types that live alongside this file. Read them directly from disk only when a "
                     + "finding needs their detail; the names alone should answer most package-context "
                     + "questions.\n\n");
             for (final String sibling : siblings) {
-                sb.append("- ").append(sibling).append('\n');
+                brief.append("- ").append(sibling).append('\n');
             }
-            sb.append('\n');
+            brief.append('\n');
         }
 
-        sb.append("## Before you touch any code\n");
-        sb.append("Your first tool calls MUST be Reads of every skill path cited in the sections below. ")
+        brief.append("## Before you touch any code\n");
+        brief.append("Your first tool calls MUST be Reads of every skill path cited in the sections below. ")
                 .append("Do not call Edit or Write before every skill file has been read in full. ")
                 .append("These skills contain the worked examples, false-positive patterns, and rewrite ")
                 .append("templates you need to make the correct fix.\n");
-        sb.append('\n');
-        sb.append("## Rules\n");
-        sb.append("- Address only findings on this file. Do not modify other files except to fix compilation.\n");
-        sb.append("- Prefer deleting dead code to refactoring it.\n");
-        sb.append("- Never degrade readability to satisfy a metric. If a fix would make the code harder to "
+        brief.append('\n');
+        brief.append("## Rules\n");
+        brief.append("- Address only findings on this file. Do not modify other files except to fix compilation.\n");
+        brief.append("- Prefer deleting dead code to refactoring it.\n");
+        brief.append("- Never degrade readability to satisfy a metric. If a fix would make the code harder to "
                 + "read (e.g. cramming methods onto one line to pass a line-count check), leave the finding "
                 + "and note it in your final summary.\n");
-        sb.append("- Run `./gradlew :<module>:test` after your changes. Tests must pass.\n");
+        brief.append("- Run `./gradlew :<module>:test` after your changes. Tests must pass.\n");
 
         if (triggersMetricSqueezingWarning(findings)) {
-            sb.append("\n> **Do not metric-squeeze.** This brief contains both a size-based finding "
+            brief.append("\n> **Do not metric-squeeze.** This brief contains both a size-based finding "
                     + "(Ch10.1 / G30) and a duplication finding (G5). Split by responsibility, not by LOC. "
                     + "If splitting creates near-duplicate helpers or copy-pasted guard clauses, you are "
                     + "making the code worse — leave the size finding and note the design tradeoff in your "
                     + "final summary.\n");
         }
-        sb.append('\n');
+        brief.append('\n');
 
-        appendNewClassChecklist(sb);
+        appendNewClassChecklist(brief);
 
         final Map<HeuristicCode, List<Finding>> byCode = new LinkedHashMap<>();
         findings.stream()
@@ -116,15 +116,15 @@ public final class FixBriefGenerator {
                 .forEach(f -> byCode.computeIfAbsent(f.code(), k -> new ArrayList<>()).add(f));
 
         for (final Map.Entry<HeuristicCode, List<Finding>> entry : byCode.entrySet()) {
-            appendCodeSection(sb, entry.getKey(), entry.getValue(), skillsDir);
+            appendCodeSection(brief, entry.getKey(), entry.getValue(), skillsDir);
         }
 
-        sb.append("## Final self-check\n");
-        sb.append("Before handing back, confirm:\n");
-        sb.append("1. Tests pass for the affected module.\n");
-        sb.append("2. Each change makes the code clearer, not just shorter.\n");
-        sb.append("3. List any findings you intentionally did not fix and why.\n");
-        return sb.toString();
+        brief.append("## Final self-check\n");
+        brief.append("Before handing back, confirm:\n");
+        brief.append("1. Tests pass for the affected module.\n");
+        brief.append("2. Each change makes the code clearer, not just shorter.\n");
+        brief.append("3. List any findings you intentionally did not fix and why.\n");
+        return brief.toString();
     }
 
     private static List<String> findSiblings(final String sourceFile, final Path projectRoot) {
@@ -224,22 +224,22 @@ public final class FixBriefGenerator {
 
     private static String renderIndex(final String projectName,
                                       final Map<String, List<Finding>> byFile) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("# Fix briefs for ").append(projectName).append('\n');
-        sb.append('\n');
-        sb.append("One brief per file. Each brief lists every finding on that file and points at the "
+        final StringBuilder index = new StringBuilder();
+        index.append("# Fix briefs for ").append(projectName).append('\n');
+        index.append('\n');
+        index.append("One brief per file. Each brief lists every finding on that file and points at the "
                 + "relevant skill. Designed to be handed to a single agent so two agents never edit the same "
                 + "file.\n");
-        sb.append('\n');
-        sb.append("| File | Findings | Brief |\n");
-        sb.append("|---|---:|---|\n");
+        index.append('\n');
+        index.append("| File | Findings | Brief |\n");
+        index.append("|---|---:|---|\n");
         byFile.entrySet().stream()
                 .sorted(Map.Entry.<String, List<Finding>>comparingByValue(
                         Comparator.comparingInt(List::size)).reversed())
-                .forEach(e -> sb.append("| ").append(e.getKey())
+                .forEach(e -> index.append("| ").append(e.getKey())
                         .append(" | ").append(e.getValue().size())
                         .append(" | [").append(briefFileName(e.getKey())).append("](")
                         .append(briefFileName(e.getKey())).append(") |\n"));
-        return sb.toString();
+        return index.toString();
     }
 }

@@ -59,17 +59,17 @@ public class RemoveNestedTernaryRecipe extends Recipe {
         final var truePart = ternary.getTruePart();
         final var falsePart = ternary.getFalsePart();
 
-        final StringBuilder sb = new StringBuilder();
-        sb.append("if (").append(condition).append(") { ")
+        final StringBuilder ifChain = new StringBuilder();
+        ifChain.append("if (").append(condition).append(") { ")
                 .append(varName).append(" = ").append(truePart.toString().trim()).append("; }");
 
         if (falsePart instanceof J.Ternary nested) {
-            sb.append(" else ").append(ternaryToIfElse(nested, varName));
+            ifChain.append(" else ").append(ternaryToIfElse(nested, varName));
         } else {
-            sb.append(" else { ").append(varName).append(" = ")
+            ifChain.append(" else { ").append(varName).append(" = ")
                     .append(falsePart.toString().trim()).append("; }");
         }
 
-        return sb.toString();
+        return ifChain.toString();
     }
 }

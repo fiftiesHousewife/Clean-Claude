@@ -250,16 +250,16 @@ public final class ReturnInsteadOfMutateArgRecipe extends Recipe {
         }
 
         private static String renderModifiers(final J.MethodDeclaration method) {
-            final StringBuilder sb = new StringBuilder();
+            final StringBuilder modifiers = new StringBuilder();
             for (final J.Modifier mod : method.getModifiers()) {
                 switch (mod.getType()) {
-                    case Static -> sb.append("static ");
-                    case Final -> sb.append("final ");
-                    case Synchronized -> sb.append("synchronized ");
+                    case Static -> modifiers.append("static ");
+                    case Final -> modifiers.append("final ");
+                    case Synchronized -> modifiers.append("synchronized ");
                     default -> { /* public/protected are filtered by classify(); skip others */ }
                 }
             }
-            return sb.toString();
+            return modifiers.toString();
         }
 
         private static boolean stillMatchesCandidate(final J.MethodDeclaration method,
@@ -275,7 +275,7 @@ public final class ReturnInsteadOfMutateArgRecipe extends Recipe {
         }
 
         private static String renderParamsExcluding(final J.MethodDeclaration method, final String excluding) {
-            final StringBuilder sb = new StringBuilder();
+            final StringBuilder paramList = new StringBuilder();
             boolean first = true;
             for (final Statement p : method.getParameters()) {
                 if (!(p instanceof J.VariableDeclarations vd) || vd.getVariables().isEmpty()) {
@@ -286,18 +286,18 @@ public final class ReturnInsteadOfMutateArgRecipe extends Recipe {
                     continue;
                 }
                 if (!first) {
-                    sb.append(", ");
+                    paramList.append(", ");
                 }
                 for (final J.Modifier mod : vd.getModifiers()) {
                     if (mod.getType() == J.Modifier.Type.Final) {
-                        sb.append("final ");
+                        paramList.append("final ");
                     }
                 }
-                sb.append(vd.getTypeExpression().toString().trim())
+                paramList.append(vd.getTypeExpression().toString().trim())
                         .append(' ').append(name);
                 first = false;
             }
-            return sb.toString();
+            return paramList.toString();
         }
     }
 

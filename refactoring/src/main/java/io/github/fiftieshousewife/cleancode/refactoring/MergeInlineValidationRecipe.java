@@ -366,17 +366,17 @@ public final class MergeInlineValidationRecipe extends Recipe {
         }
 
         private static String renderParam(final J.VariableDeclarations vd) {
-            final StringBuilder sb = new StringBuilder();
+            final StringBuilder paramSrc = new StringBuilder();
             for (final J.Modifier mod : vd.getModifiers()) {
                 if (mod.getType() == J.Modifier.Type.Final) {
-                    sb.append("final ");
+                    paramSrc.append("final ");
                 }
             }
-            sb.append(vd.getTypeExpression() == null ? "Object"
+            paramSrc.append(vd.getTypeExpression() == null ? "Object"
                             : vd.getTypeExpression().toString().trim())
                     .append(' ')
                     .append(vd.getVariables().getFirst().getSimpleName());
-            return sb.toString();
+            return paramSrc.toString();
         }
 
         private static ValidateTarget findValidate(final J.ClassDeclaration classDecl) {

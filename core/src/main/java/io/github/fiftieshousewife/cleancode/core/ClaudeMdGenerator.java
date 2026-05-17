@@ -43,15 +43,15 @@ public final class ClaudeMdGenerator {
             preservedAnnotations.putAll(parseAnnotateSections(Files.readString(claudeMdFile)));
         }
 
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder claudeMd = new StringBuilder();
 
-        appendPreamble(sb, layout.skillsDir());
-        appendFrameworksSection(sb, dependencies);
-        appendDeltaTable(sb, report, baselineFile);
-        appendFindingSections(sb, report, preservedAnnotations, layout.skillsDir());
-        appendNarrativeStubs(sb, report, preservedAnnotations);
+        appendPreamble(claudeMd, layout.skillsDir());
+        appendFrameworksSection(claudeMd, dependencies);
+        appendDeltaTable(claudeMd, report, baselineFile);
+        appendFindingSections(claudeMd, report, preservedAnnotations, layout.skillsDir());
+        appendNarrativeStubs(claudeMd, report, preservedAnnotations);
 
-        Files.writeString(claudeMdFile, sb.toString());
+        Files.writeString(claudeMdFile, claudeMd.toString());
     }
 
     private static void appendPreamble(final StringBuilder sb, final String skillsDir) {

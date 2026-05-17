@@ -146,8 +146,12 @@ public class JacocoFindingSource implements FindingSource {
     }
 
     private Severity coverageSeverity(final double percentage) {
-        if (percentage < 50) return Severity.ERROR;
-        if (percentage < 75) return Severity.WARNING;
+        if (percentage < 50) {
+            return Severity.ERROR;
+        }
+        if (percentage < 75) {
+            return Severity.WARNING;
+        }
         return Severity.INFO;
     }
 
